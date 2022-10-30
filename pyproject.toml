@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "competitive-verifier"
+version = "0.0.1"
+description = "Verifier for libraries of competitive programming"
+
+license = "MIT"
+authors = ["kzrnm <gengesa@gmail.com>"]
+
+repository = "https://github.com/kzrnm/competitive-verifier"
+readme = ["README.md", "LICENSE"]
+
+packages = [{ include = "competitive_verifier", from = "src" }]
+include = [{ path = "tests", format = "sdist" }]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+toml = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.0"
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = { version = "^5.0.4", extras = ["lint"] }
+black = { version = "^22.10.0", extras = ["lint"] }
+isort = { version = "^5.10.1", extras = ["lint"] }
+mypy = { version = "^0.982", extras = ["lint"] }
+
+[tool.poetry.scripts]
+competitive-verifier = "competitive_verifier.console.app:main"
+
+
+[tool.black]
+target-version = ['py39']
+line-length = 88
+
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+known_local_folder = ['config']
+
+[tool.flake8]
+max-line-length = 88
+max-complexity = 18
+ignore = "E203,E266,W503,"
+
+[tool.mypy]
+python_version = "3.9"
+no_strict_optional = true
+ignore_missing_imports = true
+check_untyped_defs = true
