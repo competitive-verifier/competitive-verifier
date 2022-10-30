@@ -1,4 +1,8 @@
 {
     "python.analysis.typeCheckingMode": "strict",
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "python.linting.lintOnSave": true
 }

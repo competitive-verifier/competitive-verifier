@@ -1,0 +1,104 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "files": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "file path"
+                    },
+                    "dependencies": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "dependent file path"
+                        }
+                    },
+                    "verification": {
+                        "type": "object",
+                        "description": "verification command definition",
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "command": {
+                                        "type": "string",
+                                        "description": "test command"
+                                    },
+                                    "type": {
+                                        "description": "command type",
+                                        "enum": [
+                                            "problem",
+                                            "command"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "command",
+                                    "type"
+                                ]
+                            },
+                            {
+                                "oneOf": [
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "const": "command"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "properties": {
+                                            "type": {
+                                                "const": "problem"
+                                            },
+                                            "problem": {
+                                                "type": "string",
+                                                "description": "specify the URL of the problem to submit."
+                                            },
+                                            "tle": {
+                                                "type": "number",
+                                                "examples": [
+                                                    1800
+                                                ],
+                                                "description": "TLE threshold seconds"
+                                            },
+                                            "error": {
+                                                "type": "number",
+                                                "examples": [
+                                                    0.000001
+                                                ],
+                                                "description": "specify the absolute or relative error to be considered as correct."
+                                            }
+                                        },
+                                        "required": [
+                                            "problem"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "embedding-type": {
+                        "description": "embedding type",
+                        "type": "string",
+                        "default": "gzipBase32768",
+                        "enum": [
+                            "raw",
+                            "gzipBase32768"
+                        ]
+                    }
+                },
+                "required": [
+                    "path",
+                    "dependencies"
+                ]
+            }
+        }
+    }
+}
