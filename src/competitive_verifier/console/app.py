@@ -1,36 +1,72 @@
 import argparse
+import os
 import pathlib
+import sys
+import textwrap
+from logging import INFO, basicConfig, getLogger
 from typing import Optional
 
-import competitive_verifier.console.config as config
+import colorlog
+
+import competitive_verifier.documents.main as docs
+import competitive_verifier.verify.main as verify
+
+_config_directory_name = '.competitive-verifier'
+logger = getLogger(__name__)
+
+
+def configure_logging() -> None:
+    log_format = '%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s'
+    handler = colorlog.StreamHandler()
+    handler.setFormatter(colorlog.ColoredFormatter(log_format))
+    basicConfig(level=INFO, handlers=[handler])
+
+
+def find_project_root_directory() -> Optional[pathlib.Path]:
+    dir = pathlib.Path(os.getcwd())
+    if (dir / _config_directory_name).exists():
+        return dir
+    for dir in dir.parents:
+        if (dir / _config_directory_name).exists():
+            return dir
+    return None
+
+
+def generate_gitignore() -> None:
+    dir_path = pathlib.Path('.verify-helper')
+    if dir_path.exists():
+        return
+    dir_path.mkdir(parents=True, exist_ok=True)
+
+    gitignore_path = dir_path / '.gitignore'
+    data = textwrap.dedent("""\
+        cache/
+        timestamps.local.json
+    """)
+    with open(gitignore_path, 'w') as fh:
+        fh.write(data)
 
 
 def get_parser() -> argparse.ArgumentParser:
+    default_verify_files_json = pathlib.Path(
+        f'{_config_directory_name}/verify_files.json'
+    )
+
+    default_verify_result_json = pathlib.Path(
+        f'{_config_directory_name}/verify_result.json'
+    )
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config-file',
-                        type=pathlib.Path,
-                        default=config.default_config_path,
-                        help='default: "{}"'.format(config.default_config_path))
+    subparsers = parser.add_subparsers(dest='subcommand')
 
-    # subparsers = parser.add_subparsers(dest='subcommand')
+    subparser = subparsers.add_parser('verify')
+    verify.argument_verify(subparser, default_json=default_verify_files_json)
 
-    # subparser = subparsers.add_parser('all')
-    # subparser.add_argument('-j', '--jobs', type=int, default=1)
-    # subparser.add_argument('--timeout', type=float, default=600)
-    # subparser.add_argument('--tle', type=float, default=60)
+    subparser = subparsers.add_parser('docs')
+    docs.argument_docs(subparser, default_json=default_verify_result_json)
 
-    # subparser = subparsers.add_parser('run')
-    # subparser.add_argument('path', nargs='*', type=pathlib.Path)
-    # subparser.add_argument('-j', '--jobs', type=int, default=1)
-    # subparser.add_argument('--timeout', type=float, default=600)
-    # subparser.add_argument('--tle', type=float, default=60)
-
-    # subparser = subparsers.add_parser('docs')
-    # subparser.add_argument('-j', '--jobs', type=int, default=1)
-
-    # subparser = subparsers.add_parser('stats')
-    # subparser.add_argument('-j', '--jobs', type=int, default=1)
-
+    subparser = subparsers.add_parser('all')
+    verify.argument_verify(subparser, default_json=default_verify_files_json)
     return parser
 
 
@@ -39,8 +75,21 @@ def parse_args(args: Optional[list[str]]) -> argparse.Namespace:
 
 
 def main(args: Optional[list[str]] = None):
+    # Move to directory which contains .competitive-verifier/
+    root = find_project_root_directory()
+    if root is not None:
+        os.chdir(root)
+
     parsed = parse_args(args)
-    print(parsed)
+    configure_logging()
+
+    generate_gitignore()
+
+    summary = verify.run(parsed)
+    docs.run_impl(summary)
+
+    if not summary.succeeded():
+        sys.exit(1)
 
 
 if __name__ == "__main__":
