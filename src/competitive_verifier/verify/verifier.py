@@ -158,3 +158,17 @@ class Verifier:
             r.path for r in self.prev_result.files if self.is_success_file(r)
         )
         return [f for f in verification_files if f.path not in succeeded_files]
+
+    @cached_property
+    def current_verification_files(self) -> list[VerificationFile]:
+        """
+        List of verification files that self should verify.
+
+        if ``split_state`` is None the property is ``remaining_verification_files``;
+
+        else ``split_state.split(remaining_verification_files)``.
+        """
+        if self.split_state is None:
+            return self.remaining_verification_files
+
+        return self.split_state.split(self.remaining_verification_files)
