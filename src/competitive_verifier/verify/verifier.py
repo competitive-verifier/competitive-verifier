@@ -1,6 +1,9 @@
 import datetime
 import pathlib
 from functools import cached_property
+from logging import getLogger
+import subprocess
+import textwrap
 from typing import Optional, TypeVar
 
 from competitive_verifier import github
@@ -9,8 +12,10 @@ from competitive_verifier.models.result import (
     FileVerificationResult,
     VerificationResult,
 )
-from competitive_verifier.verify.util import VerifyError
+from competitive_verifier.error import VerifierError
+from competitive_verifier.verify.resource import ulimit_stack
 
+logger = getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -33,7 +38,10 @@ class SplitState:
         return self.size == other.size and self.index == other.index
 
     def __repr__(self) -> str:
-        return f"<state:{self.index}/{self.size}>"
+        return f"SplitState(size={self.size}, index={self.index})"
+
+    def __str__(self) -> str:
+        return f"{self.index}/{self.size}"
 
     def split(self, lst: list[T]) -> list[T]:
         """Split list
@@ -104,7 +112,7 @@ class Verifier:
     @property
     def force_result(self) -> VerificationResult:
         if self._result is None:
-            raise VerifyError("Not verified yet.")
+            raise VerifierError("Not verified yet.")
         return self._result
 
     def is_success_file(self, file_result: FileVerificationResult) -> bool:
@@ -172,3 +180,57 @@ class Verifier:
             return self.remaining_verification_files
 
         return self.split_state.split(self.remaining_verification_files)
+
+    def verify(self) -> VerificationResult:
+        logger.info(
+            "current_verification_files=%s",
+            [str(f.path) for f in self.current_verification_files],
+        )
+        try:
+            ulimit_stack()
+        except Exception:
+            logger.warning("failed to increase the stack size[ulimit]")
+
+        compile_command = self.input.compile_command
+        if compile_command:
+            try:
+                compile_result = subprocess.run(
+                    self.input.compile_command,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                logger.info(compile_result)
+            except (subprocess.CalledProcessError) as e:
+                logger.error("Failed to compile: %s", compile_command)
+                stdout: str = e.stdout  # type: ignore
+                stderr: str = e.stderr  # type: ignore
+                raise VerifierError(
+                    textwrap.dedent(
+                        f"""\
+                        Failed to compile
+
+                        stdout:
+                            {stdout}
+
+                        stderr:
+                            {stderr}
+                        """
+                    ),
+                    inner=e,
+                )
+            except (FileNotFoundError) as e:
+                logger.error("Failed to compile: %s", compile_command)
+                raise VerifierError(
+                    textwrap.dedent(
+                        """\
+                        The command is not found
+                        """
+                    ),
+                    inner=e,
+                )
+        else:
+            logger.debug("There is no complie command")
+
+        # TODO: Finish
+        return VerificationResult(files=[])

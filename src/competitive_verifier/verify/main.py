@@ -13,7 +13,7 @@ from competitive_verifier.models.file import (
     decode_verification_files,
 )
 from competitive_verifier.models.result import VerificationResult, decode_result_json
-from competitive_verifier.verify.util import VerifyError
+from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
@@ -37,12 +37,12 @@ def run_impl(
         prev_result=prev_result,
         split_state=split_state,
     )
-    for f in verification.files:
-        logger.info({"file": f.path, "time": verifier.get_current_timestamp(f.path)})
+    verifier.verify()
     return verifier
 
 
 def run(args: argparse.Namespace) -> Verifier:
+    logger.info("arguments=%s", vars(args))
     with open(args.verify_files_json, encoding="utf-8") as f:
         verification = decode_verification_files(json.load(f))
     if args.prev_result is None:
@@ -127,28 +127,32 @@ def get_split_state(
 
     if split_index is not None and split is not None:
         if split <= 0:
-            raise VerifyError("--split must be greater than 0.")
+            raise VerifierError("--split must be greater than 0.")
         if not (0 <= split_index < split):
-            raise VerifyError(
+            raise VerifierError(
                 "--split-index must be greater than 0 and less than --split."
             )
         return SplitState(size=split, index=split_index)
 
     if split is not None:
-        raise VerifyError("--split argument requires --split-index argument.")
+        raise VerifierError("--split argument requires --split-index argument.")
 
     if split_index is not None:
-        raise VerifyError("--split-index argument requires --split argument.")
+        raise VerifierError("--split-index argument requires --split argument.")
 
-    raise VerifyError("invalid state.")
+    raise VerifierError("invalid state.")
 
 
 def main(args: Optional[list[str]] = None) -> None:
-    configure_logging()
-    parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
-    verifier = run(parsed)
-    if not verifier.is_success():
-        sys.exit(1)
+    try:
+        configure_logging()
+        parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
+        verifier = run(parsed)
+        if not verifier.is_success():
+            sys.exit(1)
+    except (VerifierError) as e:
+        sys.stderr.write(e.message)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

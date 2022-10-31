@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 
 from competitive_verifier.verify.main import argument_verify, get_split_state
-from competitive_verifier.verify.util import VerifyError
+from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.verifier import SplitState
 
 get_split_state_params = [
@@ -63,7 +63,7 @@ def test_get_split_state_error(args: list[str], message: str):
     parser = argument_verify(argparse.ArgumentParser())
     parsed = parser.parse_args(args)
 
-    with pytest.raises(VerifyError) as e:
+    with pytest.raises(VerifierError) as e:
         get_split_state(parsed.split, parsed.split_index)
 
     assert e.value.message == message

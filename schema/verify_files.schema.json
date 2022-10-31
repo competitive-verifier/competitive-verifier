@@ -99,6 +99,10 @@
                     "dependencies"
                 ]
             }
+        },
+        "compile": {
+            "type": "string",
+            "description": "Compile command for verification"
         }
     }
 }

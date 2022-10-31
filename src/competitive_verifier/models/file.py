@@ -33,10 +33,17 @@ class VerificationFile:
 
 
 class VerificationInput:
+    compile_command: str
     files: list[VerificationFile]
     _cached_resolve_dependencies: Optional[dict[pathlib.Path, set[pathlib.Path]]]
 
-    def __init__(self, *, files: list[VerificationFile]):
+    def __init__(
+        self,
+        *,
+        files: list[VerificationFile],
+        compile: Optional[str] = None,
+    ):
+        self.compile_command = compile or ""
         self.files = files
         self._cached_resolve_dependencies = None
 
@@ -82,6 +89,7 @@ def decode_verification_files(d: dict[Any, Any]) -> VerificationInput:
         return command.decode(d) if d else None
 
     return VerificationInput(
+        compile=d.get("compile"),
         files=[
             VerificationFile(
                 pathlib.Path(f["path"]),
@@ -89,5 +97,5 @@ def decode_verification_files(d: dict[Any, Any]) -> VerificationInput:
                 verification=decode_verification(f.get("verification")),
             )
             for f in d["files"]
-        ]
+        ],
     )

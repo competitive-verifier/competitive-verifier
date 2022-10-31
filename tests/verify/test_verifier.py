@@ -11,7 +11,7 @@ from competitive_verifier.models.result import (
     FileVerificationResult,
     VerificationResult,
 )
-from competitive_verifier.verify.util import VerifyError
+from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 
@@ -76,7 +76,7 @@ def test_force_result():
 
 def test_force_result_failue():
     verifier = get_verifier()
-    with pytest.raises(VerifyError) as e:
+    with pytest.raises(VerifierError) as e:
         _ = verifier.force_result
 
     assert e.value.message == "Not verified yet."
