@@ -2,11 +2,17 @@ from typing import Any, Optional
 
 
 class VerificationCommand:
+    command: str
+
     def __init__(self, *, command: str):
         self.command = command
 
 
 class ProblemVerificationCommand(VerificationCommand):
+    problem: str
+    error: Optional[float]
+    tle: Optional[float]
+
     def __init__(
         self,
         *,

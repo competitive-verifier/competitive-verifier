@@ -15,6 +15,7 @@ include = [{ path = "tests", format = "sdist" }]
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 colorlog = "^6.7.0"
+online-judge-tools = "^11.5.1"
 
 
 [build-system]

@@ -3,7 +3,7 @@ import pathlib
 from typing import Optional
 
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models import VerificationResult
+from competitive_verifier.models.result import VerificationResult
 
 
 def run_impl(verification: VerificationResult) -> None:

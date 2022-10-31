@@ -5,27 +5,49 @@ import sys
 from logging import getLogger
 from typing import Optional
 
+from competitive_verifier import github
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models import (
+from competitive_verifier.models.file import (
     VerificationFiles,
-    VerificationResult,
     decode_verification_files,
 )
+from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.verify.util import VerifyError
+from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
 
 
 def run_impl(
-    files: VerificationFiles, *, timeout: float = 1800, default_tle: float = 60
+    verification: VerificationFiles,
+    *,
+    timeout: float = 1800,
+    default_tle: float = 60,
+    split: Optional[int] = None,
+    split_index: Optional[int] = None,
 ) -> VerificationResult:
-    logger.info(files.__dict__)
+    split_state = get_split_state(split, split_index)
+    verifier = Verifier(
+        verification,
+        json_path=pathlib.Path("downloads/times.json"),
+        use_git_timestamp=github.is_in_github_actions(),
+        timeout=timeout,
+        default_tle=default_tle,
+        split_state=split_state,
+    )
+    for f in verification.files:
+        logger.info({"file": f.path, "time": verifier.get_current_timestamp(f.path)})
     return VerificationResult(file_results=[])
 
 
 def run(args: argparse.Namespace) -> VerificationResult:
     with open(args.verify_files_json, encoding="utf-8") as f:
-        files = decode_verification_files(json.load(f))
-        return run_impl(files, timeout=args.timeout, default_tle=args.default_tle)
+        verification = decode_verification_files(json.load(f))
+        return run_impl(
+            verification,
+            timeout=args.timeout,
+            default_tle=args.default_tle,
+        )
 
 
 def argument_verify(
@@ -48,9 +70,67 @@ def argument_verify(
             type=pathlib.Path,
         )
 
-    parser.add_argument("--timeout", dest="timeout", type=float, default=1800)
-    parser.add_argument("--tle", dest="default_tle", type=float, default=60)
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=1800,
+        help="Timeout",
+    )
+    parser.add_argument(
+        "--tle",
+        dest="default_tle",
+        type=float,
+        default=60,
+        help="TLE threshold seconds",
+    )
+    parser.add_argument(
+        "--prev-status",
+        type=pathlib.Path,
+        required=False,
+        help="Preview status json path",
+    )
+
+    parser.add_argument_group()
+    parallel_group = parser.add_argument_group("parallel")
+    parallel_group.add_argument(
+        "--split",
+        type=int,
+        help="Parallel job size",
+        required=False,
+    )
+    parallel_group.add_argument(
+        "--split-index",
+        type=int,
+        help="Parallel job index",
+        required=False,
+    )
+
     return parser
+
+
+def get_split_state(
+    split: Optional[int] = None,
+    split_index: Optional[int] = None,
+) -> Optional[SplitState]:
+    if split_index is None and split is None:
+        return None
+
+    if split_index is not None and split is not None:
+        if split <= 0:
+            raise VerifyError("--split must be greater than 0.")
+        if not (0 <= split_index < split):
+            raise VerifyError(
+                "--split-index must be greater than 0 and less than --split."
+            )
+        return SplitState(size=split, index=split_index)
+
+    if split is not None:
+        raise VerifyError("--split argument requires --split-index argument.")
+
+    if split_index is not None:
+        raise VerifyError("--split-index argument requires --split argument.")
+
+    raise VerifyError("invalid state.")
 
 
 def main(args: Optional[list[str]] = None) -> None:
