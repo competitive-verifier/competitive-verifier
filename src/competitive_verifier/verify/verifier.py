@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from functools import cached_property
-from typing import Optional
+from typing import Optional, TypeVar
 
 from competitive_verifier import github
 from competitive_verifier.models.file import VerificationFile, VerificationInput
@@ -10,6 +10,8 @@ from competitive_verifier.models.result import (
     VerificationResult,
 )
 from competitive_verifier.verify.util import VerifyError
+
+T = TypeVar("T")
 
 
 class SplitState:
@@ -29,6 +31,42 @@ class SplitState:
         if not isinstance(other, SplitState):
             return NotImplemented
         return self.size == other.size and self.index == other.index
+
+    def __repr__(self) -> str:
+        return f"<state:{self.index}/{self.size}>"
+
+    def split(self, lst: list[T]) -> list[T]:
+        """Split list
+
+
+        Args:
+            lst (list[T]): Target list
+
+        Returns:
+            list[T]: Splited list
+
+        Example:
+            state = SplitState(size=3, index=0)
+            assert state.split([0, 1, 2, 3, 4]) == [0]
+            state = SplitState(size=3, index=1)
+            assert state.split([0, 1, 2, 3, 4]) == [1, 2]
+            state = SplitState(size=3, index=2)
+            assert state.split([0, 1, 2, 3, 4]) == [3, 4]
+            state = SplitState(size=6, index=4)
+            assert state.split([0, 1, 2, 3, 4]) == [4]
+            state = SplitState(size=6, index=5)
+            assert state.split([0, 1, 2, 3, 4]) == []
+        """
+
+        if len(lst) <= self.size:
+            if len(lst) <= self.index:
+                return []
+            else:
+                return [lst[self.index]]
+
+        from_index = len(lst) * self.index // self.size
+        to_index = len(lst) * (self.index + 1) // self.size
+        return lst[from_index:to_index]
 
 
 class Verifier:
