@@ -26,7 +26,7 @@ def run_impl(
     default_tle: float = 60,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
-) -> VerificationResult:
+) -> Verifier:
     split_state = get_split_state(split, split_index)
     verifier = Verifier(
         verification,
@@ -38,10 +38,10 @@ def run_impl(
     )
     for f in verification.files:
         logger.info({"file": f.path, "time": verifier.get_current_timestamp(f.path)})
-    return VerificationResult(results=[])
+    return verifier
 
 
-def run(args: argparse.Namespace) -> VerificationResult:
+def run(args: argparse.Namespace) -> Verifier:
     with open(args.verify_files_json, encoding="utf-8") as f:
         verification = decode_verification_files(json.load(f))
     if args.prev_result is None:
@@ -145,8 +145,8 @@ def get_split_state(
 def main(args: Optional[list[str]] = None) -> None:
     configure_logging()
     parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
-    verification = run(parsed)
-    if not verification.is_success():
+    verifier = run(parsed)
+    if not verifier.is_success():
         sys.exit(1)
 
 

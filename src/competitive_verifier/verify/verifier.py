@@ -1,10 +1,12 @@
 import datetime
+from functools import cached_property
 import pathlib
 from typing import Optional
 
 from competitive_verifier import github
-from competitive_verifier.models.file import VerificationFiles
+from competitive_verifier.models.file import VerificationFile, VerificationFiles
 from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.verify.util import VerifyError
 
 
 class SplitState:
@@ -27,32 +29,50 @@ class SplitState:
 
 
 class Verifier:
-    verification: VerificationFiles
+    files: VerificationFiles
+
     use_git_timestamp: bool
     timeout: float
     default_tle: float
     prev_result: Optional[VerificationResult]
     split_state: Optional[SplitState]
 
+    result: Optional[VerificationResult]
+    verification_time: datetime.datetime
+
     def __init__(
         self,
-        verification: VerificationFiles,
+        files: VerificationFiles,
         *,
         use_git_timestamp: bool,
         timeout: float,
         default_tle: float,
         prev_result: Optional[VerificationResult],
         split_state: Optional[SplitState],
+        verification_time: Optional[datetime.datetime] = None,
     ) -> None:
-        self.verification = verification
+        self.files = files
         self.prev_result = prev_result
         self.use_git_timestamp = use_git_timestamp
         self.timeout = timeout
         self.default_tle = default_tle
         self.split_state = split_state
+        self.verification_time = verification_time or datetime.datetime.now()
+        self.result = None
+
+    @property
+    def force_result(self) -> VerificationResult:
+        if self.result is None:
+            raise VerifyError("Not verified yet.")
+        return self.result
+
+    def is_success(self):
+        return self.result is not None and self.result.is_success(
+            self.verification_time
+        )
 
     def get_current_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        dependicies = self.verification.resolve_dependencies(path)
+        dependicies = self.files.resolve_dependencies(path)
         if self.use_git_timestamp:
             return github.get_commit_time(dependicies)
         else:
@@ -65,3 +85,7 @@ class Verifier:
             ).replace(
                 microsecond=0
             )  # microsecond=0 is required because it's erased in git commit
+
+    @cached_property
+    def verification_files(self) -> list[VerificationFile]:
+        return [f for f in self.files.files if f.verification is not None]

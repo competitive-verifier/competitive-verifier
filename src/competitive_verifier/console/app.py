@@ -56,10 +56,10 @@ def main(args: Optional[list[str]] = None):
     parser = get_parser()
     parsed = parser.parse_args(args)
 
-    verification = verify.run(parsed)
-    docs.run_impl(verification)
+    verifier = verify.run(parsed)
+    docs.run_impl(verifier.force_result)
 
-    if not verification.is_success():
+    if not verifier.is_success():
         sys.exit(1)
 
 

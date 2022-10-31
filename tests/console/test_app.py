@@ -45,8 +45,8 @@ def test_parse_args_time():
     assert parsed.prev_result is None
 
 
-def test_parse_args_prev_status():
-    parsed = parse_args(["verify", "--prev-status", ".cv/prev.json"])
+def test_parse_args_prev_result():
+    parsed = parse_args(["verify", "--prev-result", ".cv/prev.json"])
     assert parsed.prev_result == pathlib.Path(".cv/prev.json")
 
 
