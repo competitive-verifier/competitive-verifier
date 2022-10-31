@@ -1,6 +1,5 @@
 import datetime
 import pathlib
-
 from typing import Optional
 
 from competitive_verifier import github

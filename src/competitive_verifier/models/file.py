@@ -1,7 +1,7 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import competitive_verifier.models.command as command
 from competitive_verifier.models.command import VerificationCommand
@@ -19,11 +19,11 @@ class VerificationFile:
         self,
         path: pathlib.Path,
         *,
-        dependencies: list[pathlib.Path],
+        dependencies: list[Union[str, pathlib.Path]],
         verification: Optional[VerificationCommand] = None,
     ):
         self.path = path
-        self.dependencies = dependencies
+        self.dependencies = [pathlib.Path(dep) for dep in dependencies]
         self.verification = verification
 
 
@@ -79,7 +79,7 @@ def decode_verification_files(d: dict[Any, Any]) -> VerificationFiles:
     return VerificationFiles(
         files=[
             VerificationFile(
-                f["path"],
+                pathlib.Path(f["path"]),
                 dependencies=f["dependencies"],
                 verification=decode_verification(f.get("verification")),
             )

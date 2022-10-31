@@ -56,7 +56,7 @@ def main(args: Optional[list[str]] = None):
     parser = get_parser()
     parsed = parser.parse_args(args)
 
-    verification = verify.run(parsed, parser)
+    verification = verify.run(parsed)
     docs.run_impl(verification)
 
     if not verification.is_success():

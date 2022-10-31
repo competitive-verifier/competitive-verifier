@@ -1,8 +1,7 @@
 import datetime
-import json
 import pathlib
 from logging import getLogger
-from typing import Any, Optional, TextIO
+from typing import Any, Optional
 
 logger = getLogger(__name__)
 
@@ -50,6 +49,16 @@ class VerificationResult:
 
 
 def decode_result_json(d: dict[Any, Any]) -> VerificationResult:
-    return VerificationResult(
-        results=[FileVerificationResult(**x) for x in d["results"]]
-    )
+    def decode_datetime(s: Optional[str]) -> Optional[datetime.datetime]:
+        if s is None:
+            return None
+        return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S %z")
+
+    def decode_file_result(d: dict[Any, Any]) -> FileVerificationResult:
+        return FileVerificationResult(
+            path=pathlib.Path(d['path']),
+            last_verifid_time=decode_datetime(d.get("last_verifid_time")),
+            last_success_time=decode_datetime(d.get("last_success_time")),
+        )
+
+    return VerificationResult(results=[decode_file_result(x) for x in d["results"]])
