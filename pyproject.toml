@@ -31,10 +31,30 @@ flake8 = { version = "^5.0.4", extras = ["lint"] }
 black = { version = "^22.10.0", extras = ["lint"] }
 isort = { version = "^5.10.1", extras = ["lint"] }
 mypy = { version = "^0.982", extras = ["lint"] }
+pyproject-flake8 = { version = "^5.0.4.post1", extras = ["lint"] }
+poethepoet = "^0.16.4"
 
 [tool.poetry.scripts]
 competitive-verifier = "competitive_verifier.console.app:main"
 
+[tool.poe.tasks]
+flake8 = "pflake8 src tests"
+isort = "isort src tests"
+black = "black src tests"
+mypy = "mypy src"
+format = ["flake8", "isort", "black", "mypy"]
+
+test = "pytest --cov=poethepoet"                                 # simple command based task
+serve = { script = "my_app.service:run(debug=True)" }            # python script based task
+tunnel = { shell = "ssh -N -L 0.0.0.0:8080:$PROD:8080 $PROD &" } # (posix) shell based task
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    missing-module-docstring,
+    missing-function-docstring,
+    consider-using-f-string
+"""
 
 [tool.black]
 target-version = ['py39']

@@ -1,0 +1,35 @@
+name: format
+
+on: [push, pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Set up poetry
+        run: pip3 install poetry
+
+      - name: Install dependencies
+        run: poetry install --only dev
+
+      - name: Run --help
+        run: competitive-verifier -h
+
+      - name: Run flake8
+        run: poetry run pflake8 src tests
+
+      - name: Run isort
+        run: poetry run isort --check-only --diff src tests
+
+      - name: Run black
+        run: poetry run black --diff --check src tests
+
+      - name: Run mypy
+        run: poetry run mypy src

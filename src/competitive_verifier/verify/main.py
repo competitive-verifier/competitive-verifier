@@ -23,7 +23,7 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> VerificationResult:
-    with open(args.verify_files_json) as f:
+    with open(args.verify_files_json, encoding="utf-8") as f:
         files = decode_verification_files(json.load(f))
         return run_impl(files, timeout=args.timeout, default_tle=args.default_tle)
 
