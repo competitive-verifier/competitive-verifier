@@ -2,9 +2,9 @@ import pathlib
 
 import pytest
 
-from competitive_verifier.models.file import VerificationFile, VerificationFiles
+from competitive_verifier.models.file import VerificationFile, VerificationInput
 
-_test_files = VerificationFiles(
+test_input = VerificationInput(
     files=[
         VerificationFile(path=pathlib.Path("foo/bar1.py"), dependencies=[]),
         VerificationFile(
@@ -104,12 +104,12 @@ def test_files_dict():
         ),
     }
 
-    assert len(_test_files.files_dict) == len(expected)
-    for k, v in _test_files.files_dict.items():
+    assert len(test_input.files_dict) == len(expected)
+    for k, v in test_input.files_dict.items():
         assert expected[k].__dict__ == v.__dict__
 
     # cache
-    assert _test_files.files_dict is _test_files.files_dict
+    assert test_input.files_dict is test_input.files_dict
 
 
 resolve_dependencies_params: list[tuple[str, list[str]]] = [
@@ -150,5 +150,5 @@ resolve_dependencies_params: list[tuple[str, list[str]]] = [
 )
 def test_resolve_dependencies(path: str, expected: list[str]):
     expected_paths = set(pathlib.Path(p) for p in expected)
-    assert expected_paths == _test_files.resolve_dependencies(pathlib.Path(path))
-    assert expected_paths == _test_files.resolve_dependencies(pathlib.Path(path))
+    assert expected_paths == test_input.resolve_dependencies(pathlib.Path(path))
+    assert expected_paths == test_input.resolve_dependencies(pathlib.Path(path))

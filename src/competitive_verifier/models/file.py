@@ -26,8 +26,12 @@ class VerificationFile:
         self.dependencies = [pathlib.Path(dep) for dep in dependencies]
         self.verification = verification
 
+    @property
+    def is_verification(self) -> bool:
+        return self.verification is not None
 
-class VerificationFiles:
+
+class VerificationInput:
     files: list[VerificationFile]
     _cached_resolve_dependencies: Optional[dict[pathlib.Path, set[pathlib.Path]]]
 
@@ -70,13 +74,13 @@ class VerificationFiles:
         return self._cached_resolve_dependencies[path]
 
 
-def decode_verification_files(d: dict[Any, Any]) -> VerificationFiles:
+def decode_verification_files(d: dict[Any, Any]) -> VerificationInput:
     def decode_verification(
         d: Optional[dict[Any, Any]]
     ) -> Optional[VerificationCommand]:
         return command.decode(d) if d else None
 
-    return VerificationFiles(
+    return VerificationInput(
         files=[
             VerificationFile(
                 pathlib.Path(f["path"]),

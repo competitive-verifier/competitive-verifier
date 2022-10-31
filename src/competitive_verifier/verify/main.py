@@ -9,7 +9,7 @@ from typing import Optional
 from competitive_verifier import github
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models.file import (
-    VerificationFiles,
+    VerificationInput,
     decode_verification_files,
 )
 from competitive_verifier.models.result import VerificationResult, decode_result_json
@@ -20,7 +20,7 @@ logger = getLogger(__name__)
 
 
 def run_impl(
-    verification: VerificationFiles,
+    verification: VerificationInput,
     *,
     prev_result: Optional[VerificationResult],
     timeout: float = 1800,
