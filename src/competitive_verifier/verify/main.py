@@ -11,7 +11,7 @@ from competitive_verifier.models.file import (
     VerificationFiles,
     decode_verification_files,
 )
-from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.models.result import VerificationResult, decode_result_json
 from competitive_verifier.verify.util import VerifyError
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
@@ -21,6 +21,7 @@ logger = getLogger(__name__)
 def run_impl(
     verification: VerificationFiles,
     *,
+    prev_result: Optional[VerificationResult],
     timeout: float = 1800,
     default_tle: float = 60,
     split: Optional[int] = None,
@@ -29,25 +30,33 @@ def run_impl(
     split_state = get_split_state(split, split_index)
     verifier = Verifier(
         verification,
-        json_path=pathlib.Path("downloads/times.json"),
         use_git_timestamp=github.is_in_github_actions(),
         timeout=timeout,
         default_tle=default_tle,
+        prev_result=prev_result,
         split_state=split_state,
     )
     for f in verification.files:
         logger.info({"file": f.path, "time": verifier.get_current_timestamp(f.path)})
-    return VerificationResult(file_results=[])
+    return VerificationResult(results=[])
 
 
 def run(args: argparse.Namespace) -> VerificationResult:
     with open(args.verify_files_json, encoding="utf-8") as f:
         verification = decode_verification_files(json.load(f))
-        return run_impl(
-            verification,
-            timeout=args.timeout,
-            default_tle=args.default_tle,
-        )
+    if args.prev_result is None:
+        prev_result = None
+    else:
+        with open(args.prev_result, encoding="utf-8") as f:
+            prev_result = decode_result_json(json.load(f))
+    return run_impl(
+        verification,
+        timeout=args.timeout,
+        default_tle=args.default_tle,
+        prev_result=prev_result,
+        split=args.split,
+        split_index=args.split_index,
+    )
 
 
 def argument_verify(
@@ -84,10 +93,10 @@ def argument_verify(
         help="TLE threshold seconds",
     )
     parser.add_argument(
-        "--prev-status",
+        "--prev-result",
         type=pathlib.Path,
         required=False,
-        help="Preview status json path",
+        help="Previout result json path",
     )
 
     parser.add_argument_group()

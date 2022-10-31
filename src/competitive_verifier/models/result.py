@@ -1,7 +1,8 @@
 import datetime
+import json
 import pathlib
 from logging import getLogger
-from typing import Optional
+from typing import Any, Optional, TextIO
 
 logger = getLogger(__name__)
 
@@ -15,8 +16,8 @@ class FileVerificationResult:
         self,
         path: pathlib.Path,
         *,
-        last_verifid_time: Optional[datetime.datetime],
-        last_success_time: Optional[datetime.datetime],
+        last_verifid_time: Optional[datetime.datetime] = None,
+        last_success_time: Optional[datetime.datetime] = None,
     ):
         self.path = path
         self.last_verifid_time = last_verifid_time
@@ -30,11 +31,11 @@ class FileVerificationResult:
 
 
 class VerificationResult:
-    def __init__(self, *, file_results: list[FileVerificationResult]):
-        self.file_results = file_results
+    def __init__(self, *, results: list[FileVerificationResult]):
+        self.results = results
 
     def show_summary(self) -> None:
-        failed_results = [r for r in self.file_results if not r.is_success()]
+        failed_results = [r for r in self.results if not r.is_success()]
         if failed_results:
             logger.error(f"{len(failed_results)} tests failed")
             for r in failed_results:
@@ -45,4 +46,10 @@ class VerificationResult:
             logger.info("all tests succeeded")
 
     def is_success(self) -> bool:
-        return all(r.is_success() for r in self.file_results)
+        return all(r.is_success() for r in self.results)
+
+
+def decode_result_json(d: dict[Any, Any]) -> VerificationResult:
+    return VerificationResult(
+        results=[FileVerificationResult(**x) for x in d["results"]]
+    )

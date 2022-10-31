@@ -5,6 +5,7 @@ from typing import Optional
 
 from competitive_verifier import github
 from competitive_verifier.models.file import VerificationFiles
+from competitive_verifier.models.result import VerificationResult
 
 
 class SplitState:
@@ -28,24 +29,24 @@ class SplitState:
 
 class Verifier:
     verification: VerificationFiles
-    json_path: pathlib.Path
     use_git_timestamp: bool
     timeout: float
     default_tle: float
+    prev_result: Optional[VerificationResult]
     split_state: Optional[SplitState]
 
     def __init__(
         self,
         verification: VerificationFiles,
         *,
-        json_path: pathlib.Path,
         use_git_timestamp: bool,
         timeout: float,
         default_tle: float,
+        prev_result: Optional[VerificationResult],
         split_state: Optional[SplitState],
     ) -> None:
         self.verification = verification
-        self.json_path = json_path
+        self.prev_result = prev_result
         self.use_git_timestamp = use_git_timestamp
         self.timeout = timeout
         self.default_tle = default_tle

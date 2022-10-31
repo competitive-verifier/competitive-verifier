@@ -16,7 +16,7 @@ def test_parse_args_default():
     )
     assert parsed.timeout == 1800.0
     assert parsed.default_tle == 60.0
-    assert parsed.prev_status is None
+    assert parsed.prev_result is None
     assert parsed.split is None
     assert parsed.split_index is None
 
@@ -42,12 +42,12 @@ def test_parse_args_time():
 
     assert parsed.timeout == 600.0
     assert parsed.default_tle == 10.0
-    assert parsed.prev_status is None
+    assert parsed.prev_result is None
 
 
 def test_parse_args_prev_status():
     parsed = parse_args(["verify", "--prev-status", ".cv/prev.json"])
-    assert parsed.prev_status == pathlib.Path(".cv/prev.json")
+    assert parsed.prev_result == pathlib.Path(".cv/prev.json")
 
 
 def test_parallel_split():
