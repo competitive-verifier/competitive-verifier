@@ -77,7 +77,7 @@ class Verifier:
     def is_success(self) -> bool:
         if self._result is None:
             return False
-        for fr in self._result.results:
+        for fr in self._result.files:
             if not self.is_success_file(fr):
                 return False
         return True
@@ -99,6 +99,24 @@ class Verifier:
 
     @cached_property
     def verification_files(self) -> list[VerificationFile]:
+        """
+        List of verification files.
+        """
         res = [f for f in self.input.files if f.is_verification]
         res.sort(key=lambda f: str(f.path))
         return res
+
+    @cached_property
+    def remaining_verification_files(self) -> list[VerificationFile]:
+        """
+        List of verification files that have not yet been verified.
+        """
+        verification_files = self.verification_files
+
+        if self.prev_result is None:
+            return verification_files
+
+        succeeded_files = set(
+            r.path for r in self.prev_result.files if self.is_success_file(r)
+        )
+        return [f for f in verification_files if f.path not in succeeded_files]

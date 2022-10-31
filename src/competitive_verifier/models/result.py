@@ -27,11 +27,11 @@ class FileVerificationResult:
 
 
 class VerificationResult:
-    def __init__(self, *, results: list[FileVerificationResult]):
-        self.results = results
+    def __init__(self, *, files: list[FileVerificationResult]):
+        self.files = files
 
     def show_summary(self, start_time: datetime.datetime) -> None:
-        failed_results = [r for r in self.results if not r.is_success(start_time)]
+        failed_results = [r for r in self.files if not r.is_success(start_time)]
         if failed_results:
             logger.error(f"{len(failed_results)} tests failed")
             for r in failed_results:
@@ -54,4 +54,4 @@ def decode_result_json(d: dict[Any, Any]) -> VerificationResult:
             last_success_time=decode_datetime(d.get("last_success_time")),
         )
 
-    return VerificationResult(results=[decode_file_result(x) for x in d["results"]])
+    return VerificationResult(files=[decode_file_result(x) for x in d["results"]])
