@@ -9,18 +9,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Set up poetry
-        run: pip3 install poetry
+          cache: "poetry"
 
       - name: Install dependencies
         run: poetry install --only dev
-
-      - name: Run --help
-        run: competitive-verifier -h
 
       - name: Run flake8
         run: poetry run pflake8 src tests
