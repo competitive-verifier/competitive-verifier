@@ -1,6 +1,6 @@
 import datetime
-from functools import cached_property
 import pathlib
+from functools import cached_property
 from typing import Optional
 
 from competitive_verifier import github
@@ -66,10 +66,15 @@ class Verifier:
             raise VerifyError("Not verified yet.")
         return self.result
 
-    def is_success(self):
-        return self.result is not None and self.result.is_success(
-            self.verification_time
-        )
+    def is_success(self) -> bool:
+        if self.result is None:
+            return False
+        for res in self.result.results:
+            if not res.is_success(
+                min(self.verification_time, self.get_current_timestamp(res.path))
+            ):
+                return False
+        return True
 
     def get_current_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         dependicies = self.files.resolve_dependencies(path)

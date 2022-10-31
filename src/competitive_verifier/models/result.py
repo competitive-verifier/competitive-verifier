@@ -8,7 +8,6 @@ logger = getLogger(__name__)
 
 class FileVerificationResult:
     path: pathlib.Path
-    last_verifid_time: Optional[datetime.datetime]
     last_success_time: Optional[datetime.datetime]
 
     def __init__(
@@ -40,9 +39,6 @@ class VerificationResult:
                 )
         else:
             logger.info("all tests succeeded")
-
-    def is_success(self, start_time: datetime.datetime) -> bool:
-        return all(r.is_success(start_time) for r in self.results)
 
 
 def decode_result_json(d: dict[Any, Any]) -> VerificationResult:

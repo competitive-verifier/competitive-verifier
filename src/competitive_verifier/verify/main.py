@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import pathlib
 import sys
 from logging import getLogger
@@ -23,7 +24,7 @@ def run_impl(
     *,
     prev_result: Optional[VerificationResult],
     timeout: float = 1800,
-    default_tle: float = 60,
+    default_tle: float = math.inf,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
 ) -> Verifier:
@@ -82,7 +83,7 @@ def argument_verify(
     parser.add_argument(
         "--timeout",
         type=float,
-        default=1800,
+        default=math.inf,
         help="Timeout",
     )
     parser.add_argument(

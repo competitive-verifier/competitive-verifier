@@ -1,4 +1,5 @@
 import argparse
+import math
 import pathlib
 
 import competitive_verifier.console.app as app
@@ -14,7 +15,7 @@ def test_parse_args_default():
     assert parsed.verify_files_json == pathlib.Path(
         ".competitive-verifier/verify_files.json"
     )
-    assert parsed.timeout == 1800.0
+    assert parsed.timeout == math.inf
     assert parsed.default_tle == 60.0
     assert parsed.prev_result is None
     assert parsed.split is None
