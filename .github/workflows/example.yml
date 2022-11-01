@@ -31,7 +31,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .competitive-verifier/cache
-          key: ${{ runner.os }}-competitive-verifier
+          key: verifier-example-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            verifier-example-${{ runner.os }}
 
       - name: Run download
         run: poetry run competitive-verifier download examples/awk/verify_files.json
