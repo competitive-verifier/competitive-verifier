@@ -29,8 +29,8 @@ def download(url: str) -> None:
     )
 
     if not (directory / "test").exists() or list((directory / "test").iterdir()) == []:
+        logger.info("download: %s", url)
         with log.group(f"download: {url}", use_stderr=True):
-            logger.info("download: %s", url)
             directory.mkdir(parents=True, exist_ok=True)
             # time.sleep(2)
 
