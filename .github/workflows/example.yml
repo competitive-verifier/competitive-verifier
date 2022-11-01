@@ -6,6 +6,9 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+
 jobs:
   test:
     runs-on: ubuntu-latest
