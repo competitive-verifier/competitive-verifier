@@ -31,4 +31,4 @@ jobs:
           key: ${{ runner.os }}-competitive-verifier
 
       - name: Run download
-        run: poetry run competitive-verifier verify examples/awk/verify_files.json
+        run: poetry run competitive-verifier download examples/awk/verify_files.json

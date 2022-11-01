@@ -5,9 +5,9 @@ import sys
 from logging import getLogger
 from typing import Optional
 
-import competitive_verifier
+import competitive_verifier.config
 
-_config_directory_name = competitive_verifier.config_dir.name
+_config_directory_name = competitive_verifier.config.config_dir.name
 
 
 def find_project_root_directory() -> Optional[pathlib.Path]:

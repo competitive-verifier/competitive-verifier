@@ -17,8 +17,8 @@ from competitive_verifier.models.file import (
 logger = getLogger(__name__)
 
 
-def run_impl(urls: Iterable[str]) -> None:
-    for url in urls:
+def run_impl(input: VerificationInput) -> None:
+    for url in enumerate_urls(input):
         oj.download(url)
 
 
@@ -33,7 +33,7 @@ def run(args: argparse.Namespace) -> None:
     with open(args.verify_files_json, encoding="utf-8") as f:
         verification = decode_verification_files(json.load(f))
 
-    return run_impl(enumerate_urls(verification))
+    return run_impl(verification)
 
 
 def argument_download(

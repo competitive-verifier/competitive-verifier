@@ -9,11 +9,11 @@ import onlinejudge_command.subcommand.download
 from onlinejudge.service.yukicoder import YukicoderService
 from onlinejudge.type import NotLoggedInError
 
-import competitive_verifier
+import competitive_verifier.config
 from competitive_verifier import log
 
 oj_cache_dir = (
-    competitive_verifier.cache_dir.resolve(strict=False) / "online-judge-tools"
+    competitive_verifier.config.cache_dir.resolve(strict=False) / "online-judge-tools"
 )
 onlinejudge._implementation.utils.user_cache_dir = oj_cache_dir
 logger = getLogger(__name__)
@@ -24,7 +24,9 @@ def is_yukicoder(url: str) -> bool:
 
 
 def download(url: str) -> None:
-    directory = competitive_verifier.cache_dir / hashlib.md5(url.encode()).hexdigest()
+    directory = (
+        competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
+    )
 
     if not (directory / "test").exists() or list((directory / "test").iterdir()) == []:
         with log.group(f"download: {url}", use_stderr=True):

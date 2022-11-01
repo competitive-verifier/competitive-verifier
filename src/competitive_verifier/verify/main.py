@@ -25,6 +25,7 @@ def run_impl(
     prev_result: Optional[VerificationResult],
     timeout: float = 1800,
     default_tle: float = math.inf,
+    download: bool = True,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
 ) -> Verifier:
@@ -37,7 +38,7 @@ def run_impl(
         prev_result=prev_result,
         split_state=split_state,
     )
-    verifier.verify()
+    verifier.verify(download=download)
     return verifier
 
 
@@ -50,11 +51,13 @@ def run(args: argparse.Namespace) -> Verifier:
     else:
         with open(args.prev_result, encoding="utf-8") as f:
             prev_result = decode_result_json(json.load(f))
+
     return run_impl(
         verification,
         timeout=args.timeout,
         default_tle=args.default_tle,
         prev_result=prev_result,
+        download=args.download,
         split=args.split,
         split_index=args.split_index,
     )
@@ -98,6 +101,13 @@ def argument_verify(
         type=pathlib.Path,
         required=False,
         help="Previout result json path",
+    )
+
+    parser.add_argument(
+        "--no-download",
+        action="store_false",
+        dest="download",
+        help="Suppress `oj download`",
     )
 
     parser.add_argument_group()

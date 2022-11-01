@@ -9,6 +9,7 @@ from logging import getLogger
 from typing import Optional, TypeVar
 
 from competitive_verifier import github
+from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
@@ -183,8 +184,11 @@ class Verifier:
 
         return self.split_state.split(self.remaining_verification_files)
 
-    def verify(self) -> VerificationResult:
+    def verify(self, *, download: bool = True) -> VerificationResult:
         start_time = datetime.datetime.now()
+
+        if download:
+            run_download(self.input)
 
         logger.info(
             "current_verification_files=%s",
