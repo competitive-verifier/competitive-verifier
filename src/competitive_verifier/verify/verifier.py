@@ -1,5 +1,6 @@
 import datetime
 import pathlib
+import shlex
 import subprocess
 import textwrap
 import time
@@ -199,7 +200,7 @@ class Verifier:
             try:
                 logger.info("compile: %s", compile_command)
                 compile_result = subprocess.run(
-                    self.input.compile_command,
+                    shlex.split(compile_command),
                     capture_output=True,
                     text=True,
                     check=True,
