@@ -10,7 +10,7 @@ env:
   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
 jobs:
-  test:
+  test-example:
     runs-on: ubuntu-latest
 
     steps:
