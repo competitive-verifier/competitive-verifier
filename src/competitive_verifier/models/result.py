@@ -1,8 +1,9 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
+PathLike = Union[str, pathlib.Path]
 logger = getLogger(__name__)
 
 
@@ -12,11 +13,11 @@ class FileVerificationResult:
 
     def __init__(
         self,
-        path: pathlib.Path,
+        path: PathLike,
         *,
         last_success_time: Optional[datetime.datetime] = None,
     ):
-        self.path = path
+        self.path = pathlib.Path(path)
         self.last_success_time = last_success_time
 
     def is_success(self, start_time: datetime.datetime) -> bool:
@@ -49,7 +50,7 @@ def decode_result_json(d: dict[Any, Any]) -> VerificationResult:
 
     def decode_file_result(d: dict[Any, Any]) -> FileVerificationResult:
         return FileVerificationResult(
-            path=pathlib.Path(d["path"]),
+            path=d["path"],
             last_success_time=decode_datetime(d.get("last_success_time")),
         )
 

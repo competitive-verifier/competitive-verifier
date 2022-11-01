@@ -1,3 +1,4 @@
+# pyright: reportPrivateUsage=none
 import datetime
 from pathlib import Path
 
@@ -23,8 +24,8 @@ def test_force_result():
         use_git_timestamp=True,
         verification_time=None,
     )
-    verifier.result = VerificationResult(results=[])
-    assert verifier.force_result is verifier.result
+    verifier._result = VerificationResult(results=[])
+    assert verifier.force_result is verifier._result
 
 
 def test_force_result_failue():
@@ -99,7 +100,7 @@ class VerifierForIsSuccessTest(Verifier):
             use_git_timestamp=True,
             verification_time=verification_time,
         )
-        self.result = result
+        self._result = result
         self.default_current_timestamp = default_current_timestamp
         self.current_timestamp_dict = current_timestamp_dict
 

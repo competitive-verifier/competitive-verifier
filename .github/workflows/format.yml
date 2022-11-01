@@ -28,7 +28,7 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --only dev
+        run: poetry install --with dev
 
       - name: Run flake8
         run: poetry run pflake8 src tests
@@ -39,5 +39,5 @@ jobs:
       - name: Run black
         run: poetry run black --diff --check src tests
 
-      - name: Run mypy
-        run: poetry run mypy src
+      - name: Run pyright
+        run: poetry run pyright

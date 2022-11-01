@@ -7,6 +7,7 @@ import competitive_verifier.models.command as command
 from competitive_verifier.models.command import VerificationCommand
 from competitive_verifier.models.scc import SccGraph
 
+PathLike = Union[str, pathlib.Path]
 logger = getLogger(__name__)
 
 
@@ -17,12 +18,12 @@ class VerificationFile:
 
     def __init__(
         self,
-        path: pathlib.Path,
+        path: PathLike,
         *,
-        dependencies: list[Union[str, pathlib.Path]],
+        dependencies: list[PathLike],
         verification: Optional[VerificationCommand] = None,
     ):
-        self.path = path
+        self.path = pathlib.Path(path)
         self.dependencies = [pathlib.Path(dep) for dep in dependencies]
         self.verification = verification
 

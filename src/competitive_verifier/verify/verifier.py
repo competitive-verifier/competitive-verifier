@@ -40,7 +40,7 @@ class Verifier:
     prev_result: Optional[VerificationResult]
     split_state: Optional[SplitState]
 
-    result: Optional[VerificationResult]
+    _result: Optional[VerificationResult]
     verification_time: datetime.datetime
 
     def __init__(
@@ -61,13 +61,13 @@ class Verifier:
         self.default_tle = default_tle
         self.split_state = split_state
         self.verification_time = verification_time or datetime.datetime.now()
-        self.result = None
+        self._result = None
 
     @property
     def force_result(self) -> VerificationResult:
-        if self.result is None:
+        if self._result is None:
             raise VerifyError("Not verified yet.")
-        return self.result
+        return self._result
 
     def is_success_file(self, file_result: FileVerificationResult) -> bool:
         return file_result.is_success(
@@ -75,9 +75,9 @@ class Verifier:
         )
 
     def is_success(self) -> bool:
-        if self.result is None:
+        if self._result is None:
             return False
-        for fr in self.result.results:
+        for fr in self._result.results:
             if not self.is_success_file(fr):
                 return False
         return True

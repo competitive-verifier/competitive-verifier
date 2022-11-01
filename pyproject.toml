@@ -31,7 +31,7 @@ pytest = "^7.2.0"
 flake8 = { version = "^5.0.4", extras = ["lint"] }
 black = { version = "^22.10.0", extras = ["lint"] }
 isort = { version = "^5.10.1", extras = ["lint"] }
-mypy = { version = "^0.982", extras = ["lint"] }
+pyright = { version = "^1.1.277", extras = ["lint"] }
 pyproject-flake8 = { version = "^5.0.4.post1", extras = ["lint"] }
 poethepoet = "^0.16.4"
 
@@ -42,8 +42,8 @@ competitive-verifier = "competitive_verifier.console.app:main"
 flake8 = "pflake8 src tests"
 isort = "isort src tests"
 black = "black src tests"
-mypy = "mypy src"
-format = ["flake8", "isort", "black", "mypy"]
+pyright = "pyright src"
+format = ["pyright", "flake8", "isort", "black"]
 
 test = "pytest --cov=poethepoet"                                 # simple command based task
 serve = { script = "my_app.service:run(debug=True)" }            # python script based task
@@ -72,8 +72,9 @@ max-line-length = 88
 max-complexity = 18
 ignore = "E203,E266,W503,"
 
-[tool.mypy]
-python_version = "3.9"
-no_strict_optional = true
-ignore_missing_imports = true
-check_untyped_defs = true
+[tool.pyright]
+pythonVersion = "3.9"
+typeCheckingMode = "strict"
+include = ["src", "tests"]
+reportMissingImports = true
+reportMissingTypeStubs = false
