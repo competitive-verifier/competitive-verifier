@@ -13,6 +13,7 @@ logger = getLogger(__name__)
 
 class VerificationFile:
     path: pathlib.Path
+    display_path: pathlib.Path
     dependencies: list[pathlib.Path]
     verification: Optional[VerificationCommand]
 
@@ -22,8 +23,10 @@ class VerificationFile:
         *,
         dependencies: list[PathLike],
         verification: Optional[VerificationCommand] = None,
+        display_path: Optional[PathLike] = None,
     ):
         self.path = pathlib.Path(path)
+        self.display_path = pathlib.Path(display_path) if display_path else self.path
         self.dependencies = list(map(pathlib.Path, dependencies))
         self.verification = verification
 

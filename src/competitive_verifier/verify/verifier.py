@@ -11,6 +11,7 @@ from competitive_verifier import github
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
     FileVerificationResult,
+    ResultStatus,
     VerificationResult,
 )
 from competitive_verifier.error import VerifierError
@@ -116,18 +117,17 @@ class Verifier:
             raise VerifierError("Not verified yet.")
         return self._result
 
-    def is_success_file(self, file_result: FileVerificationResult) -> bool:
-        return file_result.is_success(
+    def is_updated_file(self, file_result: FileVerificationResult) -> bool:
+        return file_result.is_updated(
             min(self.verification_time, self.get_current_timestamp(file_result.path))
         )
 
     def is_success(self) -> bool:
         if self._result is None:
             return False
-        for fr in self._result.files:
-            if not self.is_success_file(fr):
-                return False
-        return True
+        return all(
+            fr.command_result != ResultStatus.FAILURE for fr in self._result.files
+        )
 
     def get_current_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         dependicies = self.input.resolve_dependencies(path)
@@ -163,10 +163,10 @@ class Verifier:
         if self.prev_result is None:
             return verification_files
 
-        succeeded_files = set(
-            r.path for r in self.prev_result.files if self.is_success_file(r)
+        not_updated_files = set(
+            r.path for r in self.prev_result.files if self.is_updated_file(r)
         )
-        return [f for f in verification_files if f.path not in succeeded_files]
+        return [f for f in verification_files if f.path not in not_updated_files]
 
     @cached_property
     def current_verification_files(self) -> list[VerificationFile]:
@@ -236,45 +236,46 @@ class Verifier:
         else:
             logger.debug("There is no complie command")
 
-        files = list[FileVerificationResult]()
-        for f in self.current_verification_files:
-            logger.info("Start verify: %s", f)
+        # TODO: verify
+        # files = list[FileVerificationResult]()
+        # for f in self.current_verification_files:
+        #     logger.info("Start verify: %s", f)
 
-            prev_time = datetime.datetime.now()
-            if (
-                self.timeout is not None
-                and (prev_time - start_time).total_seconds() > self.timeout
-            ):
-                break
-            ok = verify_file(f)
-            finish_time = datetime.datetime.now()
-            if ok:
-                success_time = finish_time
-            else:
-                success_time = None
-                github.print_error(
-                    "Failed to verify",
-                    file=str(
-                        f.path.resolve(strict=True).relative_to(
-                            pathlib.Path.cwd().resolve(strict=True)
-                        )
-                    ),
-                )
+        #     prev_time = datetime.datetime.now()
+        #     if (
+        #         self.timeout is not None
+        #         and (prev_time - start_time).total_seconds() > self.timeout
+        #     ):
+        #         break
+        #     ok = verify_file(f)
+        #     finish_time = datetime.datetime.now()
+        #     if ok:
+        #         success_time = finish_time
+        #     else:
+        #         success_time = None
+        #         github.print_error(
+        #             "Failed to verify",
+        #             file=str(
+        #                 f.path.resolve(strict=True).relative_to(
+        #                     pathlib.Path.cwd().resolve(strict=True)
+        #                 )
+        #             ),
+        #         )
 
-            logger.info(
-                "Finish verify: total time = %f seconds, %s",
-                (finish_time - prev_time).total_seconds(),
-                f,
-            )
+        #     logger.info(
+        #         "Finish verify: total time = %f seconds, %s",
+        #         (finish_time - prev_time).total_seconds(),
+        #         f,
+        #     )
 
-            files.append(
-                FileVerificationResult(
-                    f.path,
-                    last_success_time=success_time,
-                )
-            )
+        #     # files.append(
+        #     #     FileVerificationResult(
+        #     #         f.path,
+        #     #         last_success_time=success_time,
+        #     #     )
+        #     # )
 
-        return VerificationResult(files=files)
+        return VerificationResult()
 
 
 def verify_file(file: VerificationFile) -> bool:

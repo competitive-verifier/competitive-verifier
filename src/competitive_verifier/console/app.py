@@ -7,9 +7,10 @@ from typing import Optional
 
 import competitive_verifier.documents.main as docs
 import competitive_verifier.verify.main as verify
+import competitive_verifier.util as util
 from competitive_verifier.log import configure_logging
 
-_config_directory_name = ".competitive-verifier"
+_config_directory_name = util.config_dir.name
 logger = getLogger(__name__)
 
 

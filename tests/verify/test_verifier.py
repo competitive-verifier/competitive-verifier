@@ -2,6 +2,7 @@
 import datetime
 from pathlib import Path
 from typing import Iterable, Optional
+import uuid
 
 import pytest
 
@@ -9,13 +10,14 @@ from competitive_verifier.models.command import VerificationCommand
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
     FileVerificationResult,
+    ResultStatus,
     VerificationResult,
 )
 from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 
-class VerifierForIsSuccessTest(Verifier):
+class VerifierForTest(Verifier):
     def __init__(
         self,
         result: VerificationResult,
@@ -26,9 +28,9 @@ class VerifierForIsSuccessTest(Verifier):
         default_tle: float = 60,
         prev_result: Optional[VerificationResult] = None,
         split_state: Optional[SplitState] = None,
-        verification_time: datetime.datetime,
-        default_current_timestamp: datetime.datetime,
-        current_timestamp_dict: dict[Path, datetime.datetime],
+        verification_time: datetime.datetime = datetime.datetime.max,
+        default_current_timestamp: datetime.datetime = datetime.datetime.max,
+        current_timestamp_dict: dict[Path, datetime.datetime] = {},
     ) -> None:
         super().__init__(
             input=input,
@@ -87,7 +89,7 @@ def test_verification_files():
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -117,10 +119,11 @@ def test_verification_files():
 
 def test_remaining_verification_files():
     def get_verification_file(path_str: str) -> VerificationFile:
+        uuid.uuid4()
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -128,7 +131,7 @@ def test_remaining_verification_files():
     baz_foo = get_verification_file("baz/foo.py")
     hoge_piyo = get_verification_file("hoge/piyo.py")
     hoge_hoge = get_verification_file("hoge/hoge.py")
-    verifier = VerifierForIsSuccessTest(
+    verifier = VerifierForTest(
         VerificationResult(files=[]),
         VerificationInput(
             files=[
@@ -150,14 +153,17 @@ def test_remaining_verification_files():
                 FileVerificationResult(
                     baz_foo.path,
                     last_success_time=None,
+                    command_result=ResultStatus.SUCCESS,
                 ),
                 FileVerificationResult(
                     hoge_hoge.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
+                    command_result=ResultStatus.SUCCESS,
                 ),
                 FileVerificationResult(
                     hoge_piyo.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
+                    command_result=ResultStatus.SUCCESS,
                 ),
             ]
         ),
@@ -177,7 +183,7 @@ def generate_current_verification_files() -> Iterable[
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -187,7 +193,7 @@ def generate_current_verification_files() -> Iterable[
     hoge_hoge = get_verification_file("hoge/hoge.py")
 
     def get_verifier_with_split_state(state: Optional[SplitState]):
-        return VerifierForIsSuccessTest(
+        return VerifierForTest(
             VerificationResult(files=[]),
             VerificationInput(
                 files=[
@@ -209,14 +215,17 @@ def generate_current_verification_files() -> Iterable[
                     FileVerificationResult(
                         baz_foo.path,
                         last_success_time=None,
+                        command_result=ResultStatus.SUCCESS,
                     ),
                     FileVerificationResult(
                         hoge_hoge.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
+                        command_result=ResultStatus.SUCCESS,
                     ),
                     FileVerificationResult(
                         hoge_piyo.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
+                        command_result=ResultStatus.SUCCESS,
                     ),
                 ]
             ),
@@ -259,46 +268,43 @@ def test_current_verification_files(
 
 
 def test_is_success():
-    def get_result(path: str) -> FileVerificationResult:
+    def get_result(
+        path: str, *, command_result: ResultStatus = ResultStatus.SUCCESS
+    ) -> FileVerificationResult:
         return FileVerificationResult(
             Path(path),
             last_success_time=datetime.datetime(2017, 9, 20, 18, 0, 0),
+            command_result=command_result,
         )
 
-    res = VerificationResult(
-        files=[
-            get_result("lib/bar.py"),
-            get_result("lib/baz.py"),
-            get_result("lib/hoge.py"),
-            get_result("lib/fuga.py"),
-            get_result("test/1.py"),
-            get_result("test/2.py"),
-            get_result("test/3.py"),
-            get_result("test/4.py"),
-        ]
-    )
-    verifier = VerifierForIsSuccessTest(
-        res,
-        verification_time=datetime.datetime(2017, 9, 20, 18, 0, 1),
-        default_current_timestamp=datetime.datetime(2016, 12, 24, 18, 36, 45),
-        current_timestamp_dict={},
+    verifier = VerifierForTest(
+        VerificationResult(
+            files=[
+                get_result("lib/bar.py"),
+                get_result("lib/baz.py"),
+                get_result("lib/hoge.py"),
+                get_result("lib/fuga.py"),
+                get_result("test/1.py"),
+                get_result("test/2.py"),
+                get_result("test/3.py"),
+                get_result("test/4.py"),
+            ]
+        )
     )
     assert verifier.is_success()
 
-    verifier = VerifierForIsSuccessTest(
-        res,
-        verification_time=datetime.datetime(2017, 9, 20, 18, 0, 1),
-        default_current_timestamp=datetime.datetime(2019, 12, 24, 18, 36, 45),
-        current_timestamp_dict={},
-    )
-    assert not verifier.is_success()
-
-    verifier = VerifierForIsSuccessTest(
-        res,
-        verification_time=datetime.datetime(2017, 9, 20, 18, 0, 1),
-        default_current_timestamp=datetime.datetime(2016, 12, 24, 18, 36, 45),
-        current_timestamp_dict={
-            Path("test/1.py"): datetime.datetime(2018, 12, 24, 18, 36, 45),
-        },
+    verifier = VerifierForTest(
+        VerificationResult(
+            files=[
+                get_result("lib/bar.py"),
+                get_result("lib/baz.py"),
+                get_result("lib/hoge.py"),
+                get_result("lib/fuga.py"),
+                get_result("test/1.py"),
+                get_result("test/2.py"),
+                get_result("test/3.py"),
+                get_result("test/4.py", command_result=ResultStatus.FAILURE),
+            ]
+        )
     )
     assert not verifier.is_success()
