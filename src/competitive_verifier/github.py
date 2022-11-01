@@ -22,6 +22,7 @@ def print_debug(
     endColumn: Optional[int] = None,
     line: Optional[int] = None,
     endLine: Optional[int] = None,
+    force: bool = False,
 ) -> None:
     _print_github(
         "debug",
@@ -32,6 +33,7 @@ def print_debug(
         endColumn=endColumn,
         line=line,
         endLine=endLine,
+        force=force,
     )
 
 
@@ -44,6 +46,7 @@ def print_warning(
     endColumn: Optional[int] = None,
     line: Optional[int] = None,
     endLine: Optional[int] = None,
+    force: bool = False,
 ) -> None:
     _print_github(
         "warning",
@@ -54,6 +57,7 @@ def print_warning(
         endColumn=endColumn,
         line=line,
         endLine=endLine,
+        force=force,
     )
 
 
@@ -66,6 +70,7 @@ def print_error(
     endColumn: Optional[int] = None,
     line: Optional[int] = None,
     endLine: Optional[int] = None,
+    force: bool = False,
 ) -> None:
     _print_github(
         "error",
@@ -76,6 +81,7 @@ def print_error(
         endColumn=endColumn,
         line=line,
         endLine=endLine,
+        force=force,
     )
 
 
@@ -89,6 +95,7 @@ def _print_github(
     endColumn: Optional[int] = None,
     line: Optional[int] = None,
     endLine: Optional[int] = None,
+    force: bool = False,
 ) -> None:
     """print Github Actions style message
 
@@ -114,7 +121,8 @@ def _print_github(
         )
         if tup[1] is not None
     )
-    print(f"::{command} {annotation}::{message}")
+    if(force or is_in_github_actions()):
+        print(f"::{command} {annotation}::{message}")
 
 
 def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:

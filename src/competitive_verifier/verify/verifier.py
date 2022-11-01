@@ -4,6 +4,7 @@ from functools import cached_property
 from logging import getLogger
 import subprocess
 import textwrap
+import time
 from typing import Optional, TypeVar
 
 from competitive_verifier import github
@@ -182,6 +183,8 @@ class Verifier:
         return self.split_state.split(self.remaining_verification_files)
 
     def verify(self) -> VerificationResult:
+        start_time = datetime.datetime.now()
+
         logger.info(
             "current_verification_files=%s",
             [str(f.path) for f in self.current_verification_files],
@@ -194,6 +197,7 @@ class Verifier:
         compile_command = self.input.compile_command
         if compile_command:
             try:
+                logger.info("compile: %s", compile_command)
                 compile_result = subprocess.run(
                     self.input.compile_command,
                     capture_output=True,
@@ -232,5 +236,47 @@ class Verifier:
         else:
             logger.debug("There is no complie command")
 
-        # TODO: Finish
-        return VerificationResult(files=[])
+        files = list[FileVerificationResult]()
+        for f in self.current_verification_files:
+            logger.info("Start verify: %s", f)
+
+            prev_time = datetime.datetime.now()
+            if (
+                self.timeout is not None
+                and (prev_time - start_time).total_seconds() > self.timeout
+            ):
+                break
+            ok = verify_file(f)
+            finish_time = datetime.datetime.now()
+            if ok:
+                success_time = finish_time
+            else:
+                success_time = None
+                github.print_error(
+                    "Failed to verify",
+                    file=str(
+                        f.path.resolve(strict=True).relative_to(
+                            pathlib.Path.cwd().resolve(strict=True)
+                        )
+                    ),
+                )
+
+            logger.info(
+                "Finish verify: total time = %f seconds, %s",
+                (finish_time - prev_time).total_seconds(),
+                f,
+            )
+
+            files.append(
+                FileVerificationResult(
+                    f.path,
+                    last_success_time=success_time,
+                )
+            )
+
+        return VerificationResult(files=files)
+
+
+def verify_file(file: VerificationFile) -> bool:
+    time.sleep(0.2)
+    return False

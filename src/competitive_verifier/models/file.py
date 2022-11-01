@@ -24,8 +24,11 @@ class VerificationFile:
         verification: Optional[VerificationCommand] = None,
     ):
         self.path = pathlib.Path(path)
-        self.dependencies = [pathlib.Path(dep) for dep in dependencies]
+        self.dependencies = list(map(pathlib.Path, dependencies))
         self.verification = verification
+
+    def __repr__(self) -> str:
+        return f"VerificationFile({repr(str(self.path))}, dependencies={[list(map(str, self.dependencies))]}, verification={self.verification})"
 
     @property
     def is_verification(self) -> bool:
