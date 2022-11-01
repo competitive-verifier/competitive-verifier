@@ -1,0 +1,34 @@
+name: example
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: .competitive-verifier/cache
+          key: ${{ runner.os }}-competitive-verifier
+
+      - name: Run download
+        run: poetry run competitive-verifier verify examples/awk/verify_files.json
