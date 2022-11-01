@@ -1,11 +1,12 @@
 # pyright: reportPrivateUsage=none
 import datetime
+import uuid
 from pathlib import Path
 from typing import Iterable, Optional
-import uuid
 
 import pytest
 
+from competitive_verifier.error import VerifierError
 from competitive_verifier.models.command import VerificationCommand
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
@@ -13,7 +14,6 @@ from competitive_verifier.models.result import (
     ResultStatus,
     VerificationResult,
 )
-from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 

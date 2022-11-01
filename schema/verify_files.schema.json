@@ -30,10 +30,6 @@
                         "allOf": [
                             {
                                 "properties": {
-                                    "id": {
-                                        "type": "string",
-                                        "description": "command id"
-                                    },
                                     "command": {
                                         "type": "string",
                                         "description": "test command"
@@ -47,7 +43,6 @@
                                     }
                                 },
                                 "required": [
-                                    "id",
                                     "command",
                                     "type"
                                 ]

@@ -6,11 +6,9 @@ PathLike = Union[str, pathlib.Path]
 
 
 class VerificationCommand:
-    id: str
     command: str
 
-    def __init__(self, *, id: str, command: str):
-        self.id = id
+    def __init__(self, *, command: str):
         self.command = command
 
     @classmethod
@@ -20,14 +18,14 @@ class VerificationCommand:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, VerificationCommand):
-            return self.id == other.id and self.command == other.command
+            return self.command == other.command
         return NotImplemented
 
     def __hash__(self) -> int:
-        return hash(self.id)
+        return hash(self.command)
 
     def __repr__(self) -> str:
-        return f"VerificationCommand(id={repr(self.id)}, command={repr(self.command)})"
+        return f"VerificationCommand(command={repr(self.command)})"
 
     def to_json(self) -> str:
         d = self.__dict__.copy()
@@ -37,6 +35,10 @@ class VerificationCommand:
 
 class ProblemVerificationCommand(VerificationCommand):
     problem: str
+    """
+    problem: URL of problem
+    """
+
     error: Optional[float]
     tle: Optional[float]
 
@@ -49,7 +51,7 @@ class ProblemVerificationCommand(VerificationCommand):
         error: Optional[float] = None,
         tle: Optional[float] = None,
     ):
-        super().__init__(id=id, command=command)
+        super().__init__(command=command)
         self.problem = problem
         self.error = error
         self.tle = tle
@@ -57,8 +59,7 @@ class ProblemVerificationCommand(VerificationCommand):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ProblemVerificationCommand):
             return (
-                self.id == other.id
-                and self.command == other.command
+                self.command == other.command
                 and self.problem == other.problem
                 and self.error == other.error
                 and self.tle == other.tle
@@ -71,7 +72,15 @@ class ProblemVerificationCommand(VerificationCommand):
         return "problem"
 
     def __repr__(self) -> str:
-        return f"ProblemVerificationCommand(id={repr(self.id)}, command={repr(self.command)},error={repr(self.error)},problem={repr(self.problem)},tle={repr(self.tle)})"
+        args = ",".join(
+            (
+                "command=" + repr(self.command),
+                "error=" + repr(self.error),
+                "problem=" + repr(self.problem),
+                "tle=" + repr(self.tle),
+            )
+        )
+        return f"ProblemVerificationCommand({args})"
 
 
 def decode(d: dict[Any, Any]) -> VerificationCommand:
@@ -97,4 +106,10 @@ class Verification:
         self.verification = verification
 
     def __repr__(self) -> str:
-        return f"VerificationFile(paths={[list(map(str, self.paths))]}, verification={self.verification})"
+        args = ",".join(
+            (
+                "paths=" + repr([list(map(str, self.paths))]),
+                "verification=" + repr(self.verification),
+            )
+        )
+        return f"Verification({args})"

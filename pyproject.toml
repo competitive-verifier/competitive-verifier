@@ -16,6 +16,7 @@ include = [{ path = "tests", format = "sdist" }]
 python = ">=3.9,<4.0"
 colorlog = "^6.7.0"
 online-judge-tools = "^11.5.1"
+colorama = "^0.4.6"
 
 
 [build-system]

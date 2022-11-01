@@ -1,10 +1,9 @@
-from collections import Counter
 import datetime
-from enum import Enum
 import pathlib
+from collections import Counter
+from enum import Enum
 from logging import getLogger
 from typing import Any, Optional, Union
-
 
 PathLike = Union[str, pathlib.Path]
 logger = getLogger(__name__)

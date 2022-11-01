@@ -1,17 +1,21 @@
+import sys
+from contextlib import contextmanager
 from logging import (
     CRITICAL,
     DEBUG,
     ERROR,
     WARNING,
     Filter,
+    Handler,
     LogRecord,
     basicConfig,
-    Handler,
 )
 from typing import Optional
 
-import competitive_verifier.github as github
 import colorlog
+from colorama import Fore, Style
+
+import competitive_verifier.github as github
 
 
 class GitHubActionsHandler(Handler):
@@ -68,3 +72,34 @@ def configure_logging(
         level=level,
         handlers=handlers,
     )
+
+
+@contextmanager
+def group(title: str, *, use_stderr: bool):
+    file = sys.stderr if use_stderr else None
+
+    try:
+        if github.is_in_github_actions():
+            github.begin_group(title, use_stderr=use_stderr)
+        else:
+            print(
+                (
+                    "<-------------"
+                    f"{Fore.YELLOW}Start group:{title}{Style.RESET_ALL}"
+                    "------------->"
+                ),
+                file=file,
+            )
+        yield
+    finally:
+        if github.is_in_github_actions():
+            github.end_group(use_stderr=use_stderr)
+        else:
+            print(
+                (
+                    "<-------------"
+                    f"{Fore.YELLOW}Finish group:{title}{Style.RESET_ALL}"
+                    "------------->"
+                ),
+                file=file,
+            )

@@ -31,7 +31,14 @@ class VerificationFile:
         self.verification = verification
 
     def __repr__(self) -> str:
-        return f"VerificationFile({repr(str(self.path))}, dependencies={[list(map(str, self.dependencies))]}, verification={self.verification})"
+        args = ",".join(
+            (
+                repr(str(self.path)),
+                "dependencies=" + repr([list(map(str, self.dependencies))]),
+                "verification=" + repr(self.verification),
+            )
+        )
+        return f"VerificationFile({args})"
 
     @property
     def is_verification(self) -> bool:

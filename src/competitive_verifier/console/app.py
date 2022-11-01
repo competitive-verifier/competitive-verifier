@@ -5,13 +5,9 @@ import sys
 from logging import getLogger
 from typing import Optional
 
-import competitive_verifier.documents.main as docs
-import competitive_verifier.verify.main as verify
-import competitive_verifier.util as util
-from competitive_verifier.log import configure_logging
+import competitive_verifier
 
-_config_directory_name = util.config_dir.name
-logger = getLogger(__name__)
+_config_directory_name = competitive_verifier.config_dir.name
 
 
 def find_project_root_directory() -> Optional[pathlib.Path]:
@@ -24,7 +20,23 @@ def find_project_root_directory() -> Optional[pathlib.Path]:
     return None
 
 
+# Move to directory which contains .competitive-verifier/
+orig_directory = pathlib.Path.cwd()
+root = find_project_root_directory()
+if root is None:
+    root = orig_directory
+else:
+    os.chdir(root)
+
+
+logger = getLogger(__name__)
+
+
 def get_parser() -> argparse.ArgumentParser:
+    import competitive_verifier.documents.main as docs
+    import competitive_verifier.download.main as download
+    import competitive_verifier.verify.main as verify
+
     default_verify_files_json = pathlib.Path(
         f"{_config_directory_name}/verify_files.json"
     )
@@ -42,14 +54,17 @@ def get_parser() -> argparse.ArgumentParser:
     subparser = subparsers.add_parser("docs")
     docs.argument_docs(subparser, default_json=default_verify_result_json)
 
+    subparser = subparsers.add_parser("download")
+    download.argument_download(subparser, default_json=default_verify_result_json)
+
     return parser
 
 
 def main(args: Optional[list[str]] = None):
-    # Move to directory which contains .competitive-verifier/
-    root = find_project_root_directory()
-    if root is not None:
-        os.chdir(root)
+    import competitive_verifier.documents.main as docs
+    import competitive_verifier.download.main as download
+    import competitive_verifier.verify.main as verify
+    from competitive_verifier.log import configure_logging
 
     configure_logging()
 
@@ -57,11 +72,21 @@ def main(args: Optional[list[str]] = None):
     parser = get_parser()
     parsed = parser.parse_args(args)
 
-    verifier = verify.run(parsed)
-    docs.run_impl(verifier.force_result)
+    os.chdir(orig_directory)
+    args_dict = vars(parsed)
+    for k, v in args_dict.items():
+        if isinstance(v, pathlib.Path):
+            args_dict[k] = v.resolve(strict=True)
+    os.chdir(root)
 
-    if not verifier.is_success():
-        sys.exit(1)
+    if parsed.subcommand == "download":
+        download.run(parsed)
+    elif parsed.subcommand == "verify":
+        verifier = verify.run(parsed)
+        if not verifier.is_success():
+            sys.exit(1)
+    elif parsed.subcommand == "docs":
+        docs.run(parsed)
 
 
 if __name__ == "__main__":

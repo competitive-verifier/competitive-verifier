@@ -1,0 +1,45 @@
+{
+    "$schema": "../schema/verify_files.schema.json",
+    "compile": "ls .",
+    "files": [
+        {
+            "path": "examples/awk/circle.test.awk",
+            "dependencies": [
+                "examples/awk/circle.awk"
+            ],
+            "verification": {
+                "id": "command-id-001",
+                "command": "awk -f examples/awk/circle.test.awk",
+                "problem": "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_4_B",
+                "type": "problem",
+                "error": 0.00001,
+                "tle": 1
+            }
+        },
+        {
+            "path": "examples/awk/circle.awk",
+            "dependencies": []
+        },
+        {
+            "path": "examples/awk/aplusb.awk",
+            "dependencies": [],
+            "verification": {
+                "id": "aplusb",
+                "command": "awk -f examples/awk/aplusb.awk",
+                "type": "problem",
+                "problem": "https://judge.yosupo.jp/problem/aplusb"
+            }
+        },
+        {
+            "path": "examples/awk/aplusb2.awk",
+            "display_path": "examples/awk/aplusb2.awk[const A+B]",
+            "dependencies": [],
+            "verification": {
+                "id": "aplusb2",
+                "command": "awk -f examples/awk/aplusb2.awk",
+                "type": "problem",
+                "problem": "https://yukicoder.me/problems/no/3040"
+            }
+        }
+    ]
+}

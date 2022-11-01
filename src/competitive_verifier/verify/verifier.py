@@ -1,20 +1,20 @@
 import datetime
 import pathlib
-from functools import cached_property
-from logging import getLogger
 import subprocess
 import textwrap
 import time
+from functools import cached_property
+from logging import getLogger
 from typing import Optional, TypeVar
 
 from competitive_verifier import github
+from competitive_verifier.error import VerifierError
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
     FileVerificationResult,
     ResultStatus,
     VerificationResult,
 )
-from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.resource import ulimit_stack
 
 logger = getLogger(__name__)
@@ -236,17 +236,16 @@ class Verifier:
         else:
             logger.debug("There is no complie command")
 
-        # TODO: verify
-        # files = list[FileVerificationResult]()
-        # for f in self.current_verification_files:
-        #     logger.info("Start verify: %s", f)
+        files = list[FileVerificationResult]()
+        for f in self.current_verification_files:
+            logger.info("Start verify: %s", f)
 
-        #     prev_time = datetime.datetime.now()
-        #     if (
-        #         self.timeout is not None
-        #         and (prev_time - start_time).total_seconds() > self.timeout
-        #     ):
-        #         break
+            prev_time = datetime.datetime.now()
+            if (
+                self.timeout is not None
+                and (prev_time - start_time).total_seconds() > self.timeout
+            ):
+                logger.warning("Skip %s [Timeout]", f)
         #     ok = verify_file(f)
         #     finish_time = datetime.datetime.now()
         #     if ok:
@@ -275,7 +274,7 @@ class Verifier:
         #     #     )
         #     # )
 
-        return VerificationResult()
+        return VerificationResult(files=files)
 
 
 def verify_file(file: VerificationFile) -> bool:

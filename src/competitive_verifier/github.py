@@ -2,6 +2,8 @@ import datetime
 import os
 import pathlib
 import subprocess
+import sys
+from contextlib import contextmanager
 from typing import Iterable, Optional
 
 
@@ -23,6 +25,7 @@ def print_debug(
     line: Optional[int] = None,
     endLine: Optional[int] = None,
     force: bool = False,
+    use_stderr: bool = False,
 ) -> None:
     _print_github(
         "debug",
@@ -34,6 +37,7 @@ def print_debug(
         line=line,
         endLine=endLine,
         force=force,
+        use_stderr=use_stderr,
     )
 
 
@@ -47,6 +51,7 @@ def print_warning(
     line: Optional[int] = None,
     endLine: Optional[int] = None,
     force: bool = False,
+    use_stderr: bool = False,
 ) -> None:
     _print_github(
         "warning",
@@ -58,6 +63,7 @@ def print_warning(
         line=line,
         endLine=endLine,
         force=force,
+        use_stderr=use_stderr,
     )
 
 
@@ -71,6 +77,7 @@ def print_error(
     line: Optional[int] = None,
     endLine: Optional[int] = None,
     force: bool = False,
+    use_stderr: bool = False,
 ) -> None:
     _print_github(
         "error",
@@ -82,6 +89,7 @@ def print_error(
         line=line,
         endLine=endLine,
         force=force,
+        use_stderr=use_stderr,
     )
 
 
@@ -96,6 +104,7 @@ def _print_github(
     line: Optional[int] = None,
     endLine: Optional[int] = None,
     force: bool = False,
+    use_stderr: bool = False,
 ) -> None:
     """print Github Actions style message
 
@@ -121,8 +130,29 @@ def _print_github(
         )
         if tup[1] is not None
     )
-    if(force or is_in_github_actions()):
-        print(f"::{command} {annotation}::{message}")
+
+    print_file = sys.stderr if use_stderr else None
+    if force or is_in_github_actions():
+        print(f"::{command} {annotation}::{message}", file=print_file)
+
+
+def begin_group(title: str, *, use_stderr: bool = False):
+    file = sys.stderr if use_stderr else None
+    print(f"::group::{title}", file=file)
+
+
+def end_group(*, use_stderr: bool = False):
+    file = sys.stderr if use_stderr else None
+    print("::endgroup::", file=file)
+
+
+@contextmanager
+def group(title: str, *, use_stderr: bool = False):
+    try:
+        begin_group(title, use_stderr=use_stderr)
+        yield
+    finally:
+        end_group(use_stderr=use_stderr)
 
 
 def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
