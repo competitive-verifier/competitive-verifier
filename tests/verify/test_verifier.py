@@ -89,7 +89,7 @@ def test_verification_files():
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
+            verification=VerificationCommand(command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -123,7 +123,7 @@ def test_remaining_verification_files():
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
+            verification=VerificationCommand(command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -183,7 +183,7 @@ def generate_current_verification_files() -> Iterable[
         return VerificationFile(
             Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(id=str(uuid.uuid4()), command="true"),
+            verification=VerificationCommand(command="true"),
         )
 
     foo_baz = get_verification_file("foo/baz.py")

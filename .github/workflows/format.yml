@@ -2,10 +2,8 @@ name: format
 
 on:
   push:
-    paths:
-      - "src/**.py"
-      - "tests/**.py"
-      - pyproject.toml
+    branches:
+      - master
   pull_request:
     paths:
       - "src/**.py"
