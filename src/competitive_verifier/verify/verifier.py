@@ -305,7 +305,8 @@ class Verifier:
         #     #     )
         #     # )
 
-        return VerificationResult(files=files)
+        self._result = VerificationResult(files=files)
+        return self._result
 
 
 def verify_file(file: VerificationFile) -> bool:
