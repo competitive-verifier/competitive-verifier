@@ -106,7 +106,7 @@ def test_files_dict():
 
     assert len(test_input.files_dict) == len(expected)
     for k, v in test_input.files_dict.items():
-        assert expected[k].__dict__ == v.__dict__
+        assert vars(expected[k]) == vars(v)
 
     # cache
     assert test_input.files_dict is test_input.files_dict

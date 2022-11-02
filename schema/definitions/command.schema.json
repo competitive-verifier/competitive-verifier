@@ -1,0 +1,87 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "definitions": {
+        "verification_command": {
+            "type": "object",
+            "description": "Verification command definition",
+            "allOf": [
+                {
+                    "properties": {
+                        "type": {
+                            "description": "command type",
+                            "enum": [
+                                "dummy",
+                                "problem",
+                                "command"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                },
+                {
+                    "oneOf": [
+                        {
+                            "description": "Dummy definition",
+                            "properties": {
+                                "type": {
+                                    "const": "dummy"
+                                }
+                            }
+                        },
+                        {
+                            "description": "Command for unittest",
+                            "properties": {
+                                "type": {
+                                    "const": "command"
+                                },
+                                "command": {
+                                    "type": "string",
+                                    "description": "unittest command"
+                                }
+                            },
+                            "required": [
+                                "command"
+                            ]
+                        },
+                        {
+                            "description": "Command for system test using problem",
+                            "properties": {
+                                "type": {
+                                    "const": "problem"
+                                },
+                                "command": {
+                                    "type": "string",
+                                    "description": "problem solving command"
+                                },
+                                "problem": {
+                                    "type": "string",
+                                    "description": "specify the URL of the problem to submit."
+                                },
+                                "tle": {
+                                    "type": "number",
+                                    "examples": [
+                                        1800
+                                    ],
+                                    "description": "TLE threshold seconds."
+                                },
+                                "error": {
+                                    "type": "number",
+                                    "examples": [
+                                        0.000001
+                                    ],
+                                    "description": "specify the absolute or relative error to be considered as correct."
+                                }
+                            },
+                            "required": [
+                                "command",
+                                "problem"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

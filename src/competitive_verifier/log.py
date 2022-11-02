@@ -75,7 +75,7 @@ def configure_logging(
 
 
 @contextmanager
-def group(title: str, *, use_stderr: bool):
+def group(title: str, *, use_stderr: bool = False):
     file = sys.stderr if use_stderr else None
 
     try:
@@ -85,7 +85,7 @@ def group(title: str, *, use_stderr: bool):
             print(
                 (
                     "<-------------"
-                    f"{Fore.YELLOW}Start group:{title}{Style.RESET_ALL}"
+                    f"{Fore.YELLOW} Start group:{title}{Style.RESET_ALL}"
                     "------------->"
                 ),
                 file=file,

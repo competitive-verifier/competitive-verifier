@@ -24,8 +24,9 @@ def run_impl(input: VerificationInput) -> None:
 
 def enumerate_urls(input: VerificationInput) -> Iterable[str]:
     for f in input.files:
-        if isinstance(f.verification, ProblemVerificationCommand):
-            yield f.verification.problem
+        for verification_command in f.verification:
+            if isinstance(verification_command, ProblemVerificationCommand):
+                yield verification_command.problem
 
 
 def run(args: argparse.Namespace) -> None:

@@ -1,15 +1,33 @@
 import json
 import pathlib
+from abc import ABC, abstractmethod
 from typing import Any, Optional, Union
 
 PathLike = Union[str, pathlib.Path]
 
 
-class VerificationCommand:
-    command: str
+class Command(ABC):
+    @classmethod
+    @property
+    @abstractmethod
+    def type(cls) -> str:
+        pass
 
-    def __init__(self, *, command: str):
+
+class DummyCommand(Command):
+    @classmethod
+    @property
+    def type(cls) -> str:
+        return "dummy"
+
+
+class VerificationCommand(Command):
+    command: str
+    compile: Optional[str]
+
+    def __init__(self, *, command: str, compile: Optional[str] = None):
         self.command = command
+        self.compile = compile
 
     @classmethod
     @property
@@ -18,17 +36,20 @@ class VerificationCommand:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, VerificationCommand):
-            return self.command == other.command
+            return self.command == other.command and self.compile == other.compile
         return NotImplemented
 
-    def __hash__(self) -> int:
-        return hash(self.command)
-
     def __repr__(self) -> str:
-        return f"VerificationCommand(command={repr(self.command)})"
+        args = ",".join(
+            (
+                "command=" + repr(self.command),
+                "compile=" + repr(self.compile),
+            )
+        )
+        return f"VerificationCommand({args})"
 
     def to_json(self) -> str:
-        d = self.__dict__.copy()
+        d = vars(self).copy()
         d["type"] = self.type
         return json.dumps(d)
 
@@ -45,13 +66,13 @@ class ProblemVerificationCommand(VerificationCommand):
     def __init__(
         self,
         *,
-        id: str,
         command: str,
         problem: str,
+        compile: Optional[str] = None,
         error: Optional[float] = None,
         tle: Optional[float] = None,
     ):
-        super().__init__(command=command)
+        super().__init__(command=command, compile=compile)
         self.problem = problem
         self.error = error
         self.tle = tle
@@ -61,6 +82,7 @@ class ProblemVerificationCommand(VerificationCommand):
             return (
                 self.command == other.command
                 and self.problem == other.problem
+                and self.compile == other.compile
                 and self.error == other.error
                 and self.tle == other.tle
             )
@@ -75,8 +97,9 @@ class ProblemVerificationCommand(VerificationCommand):
         args = ",".join(
             (
                 "command=" + repr(self.command),
-                "error=" + repr(self.error),
                 "problem=" + repr(self.problem),
+                "compile=" + repr(self.compile),
+                "error=" + repr(self.error),
                 "tle=" + repr(self.tle),
             )
         )

@@ -15,20 +15,28 @@ class VerificationFile:
     path: pathlib.Path
     display_path: pathlib.Path
     dependencies: list[pathlib.Path]
-    verification: Optional[VerificationCommand]
+    verification: list[VerificationCommand]
 
     def __init__(
         self,
         path: PathLike,
         *,
-        dependencies: list[PathLike],
-        verification: Optional[VerificationCommand] = None,
+        dependencies: Optional[list[PathLike]],
+        verification: Optional[
+            Union[VerificationCommand, list[VerificationCommand]]
+        ] = None,
         display_path: Optional[PathLike] = None,
     ):
         self.path = pathlib.Path(path)
         self.display_path = pathlib.Path(display_path) if display_path else self.path
-        self.dependencies = list(map(pathlib.Path, dependencies))
-        self.verification = verification
+        self.dependencies = list(map(pathlib.Path, dependencies or []))
+
+        if isinstance(verification, list):
+            self.verification = verification
+        elif isinstance(verification, VerificationCommand):
+            self.verification = [verification]
+        else:
+            self.verification = []
 
     def __repr__(self) -> str:
         args = ",".join(
@@ -42,11 +50,11 @@ class VerificationFile:
 
     @property
     def is_verification(self) -> bool:
-        return self.verification is not None
+        return bool(self.verification)
 
 
 class VerificationInput:
-    compile_command: str
+    pre_command: str
     files: list[VerificationFile]
     _cached_resolve_dependencies: Optional[dict[pathlib.Path, set[pathlib.Path]]]
 
@@ -54,9 +62,9 @@ class VerificationInput:
         self,
         *,
         files: list[VerificationFile],
-        compile: Optional[str] = None,
+        pre_command: Optional[str] = None,
     ):
-        self.compile_command = compile or ""
+        self.pre_command = pre_command or ""
         self.files = files
         self._cached_resolve_dependencies = None
 
@@ -102,11 +110,11 @@ def decode_verification_files(d: dict[Any, Any]) -> VerificationInput:
         return command.decode(d) if d else None
 
     return VerificationInput(
-        compile=d.get("compile"),
+        pre_command=d.get("pre_command"),
         files=[
             VerificationFile(
                 pathlib.Path(f["path"]),
-                dependencies=f["dependencies"],
+                dependencies=f.get("dependencies"),
                 verification=decode_verification(f.get("verification")),
             )
             for f in d["files"]

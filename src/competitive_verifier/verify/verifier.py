@@ -1,14 +1,13 @@
 import datetime
 import pathlib
-import shlex
 import subprocess
 import textwrap
 import time
 from functools import cached_property
 from logging import getLogger
-from typing import Optional, TypeVar
+from typing import Literal, Optional, TypeVar, Union, overload
 
-from competitive_verifier import github
+from competitive_verifier import github, log
 from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.models.file import VerificationFile, VerificationInput
@@ -21,6 +20,38 @@ from competitive_verifier.verify.resource import ulimit_stack
 
 logger = getLogger(__name__)
 T = TypeVar("T")
+
+
+@overload
+def exec_command(
+    command: str,
+    text: Literal[False] = False,
+    check: bool = False,
+    capture_output: bool = False,
+) -> subprocess.CompletedProcess[bytes]:
+    ...
+
+
+@overload
+def exec_command(
+    command: str,
+    text: Literal[True],
+    check: bool = False,
+    capture_output: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    ...
+
+
+def exec_command(
+    command: str,
+    text: bool = False,
+    check: bool = False,
+    capture_output: bool = False,
+) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
+    with log.group(f"subprocess.run: {command}"):
+        return subprocess.run(
+            command, shell=True, text=text, check=check, capture_output=capture_output
+        )
 
 
 class SplitState:
@@ -199,25 +230,20 @@ class Verifier:
         except Exception:
             logger.warning("failed to increase the stack size[ulimit]")
 
-        compile_command = self.input.compile_command
-        if compile_command:
+        pre_command = self.input.pre_command
+        if pre_command:
             try:
-                logger.info("compile: %s", compile_command)
-                compile_result = subprocess.run(
-                    shlex.split(compile_command),
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-                logger.info(compile_result)
+                logger.info("pre_command: %s", pre_command)
+                pre_command_result = exec_command(pre_command, check=True)
+                logger.info(pre_command_result)
             except (subprocess.CalledProcessError) as e:
-                logger.error("Failed to compile: %s", compile_command)
+                logger.error("Failed to pre_command: %s", pre_command)
                 stdout: str = e.stdout  # type: ignore
                 stderr: str = e.stderr  # type: ignore
                 raise VerifierError(
                     textwrap.dedent(
                         f"""\
-                        Failed to compile
+                        Failed to pre_command
 
                         stdout:
                             {stdout}
@@ -229,7 +255,7 @@ class Verifier:
                     inner=e,
                 )
             except (FileNotFoundError) as e:
-                logger.error("Failed to compile: %s", compile_command)
+                logger.error("Failed to pre_command: %s", pre_command)
                 raise VerifierError(
                     textwrap.dedent(
                         """\
@@ -239,7 +265,7 @@ class Verifier:
                     inner=e,
                 )
         else:
-            logger.debug("There is no complie command")
+            logger.debug("There is no pre_command")
 
         files = list[FileVerificationResult]()
         for f in self.current_verification_files:

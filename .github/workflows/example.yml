@@ -10,11 +10,52 @@ env:
   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
 jobs:
-  test-example:
+  setup:
     runs-on: ubuntu-latest
-
+    env:
+      artifact-path: .competitive-verifier/tmp/
+    outputs:
+      artifact-path: ${{ env.artifact-path }}
+      verify-json: ${{ steps.create-json.outputs.verify-json  }}
+      hash: ${{ steps.create-hash.outputs.hash  }}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Create verify-files.json
+        id: create-json
+        run: |
+          mkdir -p .competitive-verifier/tmp
+          cp examples/awk/verify_files.json .competitive-verifier/tmp/awk-verify-files.json
+          echo "verify-json=.competitive-verifier/tmp/awk-verify-files.json" > $GITHUB_OUTPUT
+      - name: Create hash
+        id: create-hash
+        run: |
+          echo "hash=${{ hashFiles('**/*verify-files.json') }}" > $GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v3
+        with:
+          name: setup-${{ runner.os }}
+          path: ${{ env.artifact-path }}
+
+  download:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    env:
+      verify_json: ${{ needs.setup.outputs.verify-json  }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: setup-${{ runner.os }}
+          path: ${{ needs.setup.outputs.artifact-path }}
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: .competitive-verifier/cache
+          key: verifier-${{ runner.os }}-${{ needs.setup.outputs.hash }}
+          restore-keys: |
+            verifier-${{ runner.os }}
 
       - name: Set up poetry
         run: pipx install poetry
@@ -27,13 +68,42 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Run download
+        run: poetry run competitive-verifier download "$verify_json"
+        env:
+          YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+
+  verify:
+    runs-on: ubuntu-latest
+    needs: [setup, download]
+    env:
+      verify_json: ${{ needs.setup.outputs.verify-json  }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: setup-${{ runner.os }}
+          path: ${{ needs.setup.outputs.artifact-path }}
+
       - name: Cache
         uses: actions/cache@v3
         with:
           path: .competitive-verifier/cache
-          key: verifier-${{ runner.os }}-${{ hashFiles('**/verify_files.json') }}
+          key: verifier-${{ runner.os }}-${{ needs.setup.outputs.hash }}
           restore-keys: |
             verifier-${{ runner.os }}
 
-      - name: Run download
-        run: poetry run competitive-verifier download examples/awk/verify_files.json
+      - name: Set up poetry
+        run: pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "poetry"
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run verify
+        run: poetry run competitive-verifier verify "$verify_json" --no-download

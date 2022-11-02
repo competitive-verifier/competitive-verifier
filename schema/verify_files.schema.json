@@ -1,13 +1,11 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
     "type": "object",
-    "additionalProperties": true,
     "properties": {
         "files": {
             "type": "array",
             "items": {
                 "type": "object",
-                "additionalProperties": true,
                 "properties": {
                     "path": {
                         "type": "string",
@@ -25,88 +23,27 @@
                         }
                     },
                     "verification": {
-                        "type": "object",
-                        "description": "verification command definition",
-                        "allOf": [
+                        "oneOf": [
                             {
-                                "properties": {
-                                    "command": {
-                                        "type": "string",
-                                        "description": "test command"
-                                    },
-                                    "type": {
-                                        "description": "command type",
-                                        "enum": [
-                                            "problem",
-                                            "command"
-                                        ]
-                                    }
-                                },
-                                "required": [
-                                    "command",
-                                    "type"
-                                ]
+                                "$ref": "definitions/command.schema.json#/definitions/verification_command"
                             },
                             {
-                                "oneOf": [
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "const": "command"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "properties": {
-                                            "type": {
-                                                "const": "problem"
-                                            },
-                                            "problem": {
-                                                "type": "string",
-                                                "description": "specify the URL of the problem to submit."
-                                            },
-                                            "tle": {
-                                                "type": "number",
-                                                "examples": [
-                                                    1800
-                                                ],
-                                                "description": "TLE threshold seconds"
-                                            },
-                                            "error": {
-                                                "type": "number",
-                                                "examples": [
-                                                    0.000001
-                                                ],
-                                                "description": "specify the absolute or relative error to be considered as correct."
-                                            }
-                                        },
-                                        "required": [
-                                            "problem"
-                                        ]
-                                    }
-                                ]
+                                "type": "array",
+                                "items": {
+                                    "$ref": "definitions/command.schema.json#/definitions/verification_command"
+                                }
                             }
-                        ]
-                    },
-                    "embedding-type": {
-                        "description": "embedding type",
-                        "type": "string",
-                        "default": "gzipBase32768",
-                        "enum": [
-                            "raw",
-                            "gzipBase32768"
                         ]
                     }
                 },
                 "required": [
-                    "path",
-                    "dependencies"
+                    "path"
                 ]
             }
         },
-        "compile": {
+        "pre_command": {
             "type": "string",
-            "description": "Compile command for verification"
+            "description": "Command; called before verification"
         }
     }
 }
