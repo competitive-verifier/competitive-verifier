@@ -1,5 +1,4 @@
 import argparse
-import json
 import math
 import pathlib
 import sys
@@ -9,11 +8,8 @@ from typing import Optional
 from competitive_verifier import github
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models.file import (
-    VerificationInput,
-    decode_verification_files,
-)
-from competitive_verifier.models.result import VerificationResult, decode_result_json
+from competitive_verifier.models.file import VerificationInput
+from competitive_verifier.models.result import VerificationResult
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
@@ -44,13 +40,11 @@ def run_impl(
 
 def run(args: argparse.Namespace) -> Verifier:
     logger.info("arguments=%s", vars(args))
-    with open(args.verify_files_json, encoding="utf-8") as f:
-        verification = decode_verification_files(json.load(f))
+    verification = VerificationInput.parse_file(args.verify_files_json)
     if args.prev_result is None:
         prev_result = None
     else:
-        with open(args.prev_result, encoding="utf-8") as f:
-            prev_result = decode_result_json(json.load(f))
+        prev_result = VerificationResult.parse_file(args.prev_result)
 
     return run_impl(
         verification,

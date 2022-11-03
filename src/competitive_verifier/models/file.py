@@ -1,76 +1,162 @@
 import pathlib
 from functools import cached_property
-from logging import getLogger
-from typing import Any, Optional, Union
+from typing import AbstractSet, Any, Callable, Mapping, Optional, Union
 
-import competitive_verifier.models.command as command
-from competitive_verifier.models.command import VerificationCommand
-from competitive_verifier.models.scc import SccGraph
+from pydantic import BaseModel, Field, Protocol, StrBytes, validator
 
-PathLike = Union[str, pathlib.Path]
-logger = getLogger(__name__)
+from competitive_verifier.models._scc import SccGraph
+from competitive_verifier.models.command import Command
+
+_IntStr = Union[int, str]
+_AbstractSetIntStr = AbstractSet[_IntStr]
+_MappingIntStrAny = Mapping[_IntStr, Any]
 
 
-class VerificationFile:
+class VerificationFile(BaseModel):
     path: pathlib.Path
-    display_path: pathlib.Path
-    dependencies: list[pathlib.Path]
-    verification: list[VerificationCommand]
+    display_path: Optional[pathlib.Path] = None
+    dependencies: list[pathlib.Path] = Field(default_factory=list)
+    verification: list[Command] = Field(default_factory=list)
 
-    def __init__(
-        self,
-        path: PathLike,
-        *,
-        dependencies: Optional[list[PathLike]],
-        verification: Optional[
-            Union[VerificationCommand, list[VerificationCommand]]
-        ] = None,
-        display_path: Optional[PathLike] = None,
-    ):
-        self.path = pathlib.Path(path)
-        self.display_path = pathlib.Path(display_path) if display_path else self.path
-        self.dependencies = list(map(pathlib.Path, dependencies or []))
-
-        if isinstance(verification, list):
-            self.verification = verification
-        elif isinstance(verification, VerificationCommand):
-            self.verification = [verification]
-        else:
-            self.verification = []
-
-    def __repr__(self) -> str:
-        args = ",".join(
-            (
-                repr(str(self.path)),
-                "dependencies=" + repr([list(map(str, self.dependencies))]),
-                "verification=" + repr(self.verification),
-            )
-        )
-        return f"VerificationFile({args})"
+    @validator("verification", pre=True)
+    def verification_list(cls, v: Any) -> list[Any]:
+        if isinstance(v, list):
+            return v  # type: ignore
+        return [v]
 
     @property
     def is_verification(self) -> bool:
         return bool(self.verification)
 
 
+# NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625
+class VerificationInputImpl(BaseModel):
+    pre_command: Optional[str] = None
+    files: list[VerificationFile] = Field(default_factory=list)
+
+
 class VerificationInput:
-    pre_command: str
-    files: list[VerificationFile]
-    _cached_resolve_dependencies: Optional[dict[pathlib.Path, set[pathlib.Path]]]
+    impl: VerificationInputImpl
 
     def __init__(
         self,
-        *,
-        files: list[VerificationFile],
-        pre_command: Optional[str] = None,
-    ):
-        self.pre_command = pre_command or ""
-        self.files = files
-        self._cached_resolve_dependencies = None
+        impl: Optional[VerificationInputImpl] = None,
+        **data: Any,
+    ) -> None:
+        if impl:
+            self.impl = impl
+        else:
+            self.impl = VerificationInputImpl(**data)
 
-    @cached_property
-    def files_dict(self) -> dict[pathlib.Path, VerificationFile]:
-        return {f.path: f for f in self.files}
+    def __repr__(self) -> str:
+        return repr(self.impl)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, VerificationInput):
+            other_input = other.impl
+        elif isinstance(other, VerificationInputImpl):
+            other_input = other
+        else:
+            return NotImplemented
+        return self.impl == other_input
+
+    def dict(
+        self,
+        *,
+        include: Optional[Union[_AbstractSetIntStr, _MappingIntStrAny]] = None,
+        exclude: Optional[Union[_AbstractSetIntStr, _MappingIntStrAny]] = None,
+        by_alias: bool = False,
+        skip_defaults: Optional[bool] = None,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+    ) -> dict[str, Any]:
+        return self.impl.dict(
+            include=include,
+            exclude=exclude,
+            by_alias=by_alias,
+            skip_defaults=skip_defaults,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+        )
+
+    def json(
+        self,
+        *,
+        include: Optional[Union[_AbstractSetIntStr, _MappingIntStrAny]] = None,
+        exclude: Optional[Union[_AbstractSetIntStr, _MappingIntStrAny]] = None,
+        by_alias: bool = False,
+        skip_defaults: Optional[bool] = None,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        encoder: Optional[Callable[[Any], Any]] = None,
+        models_as_dict: bool = True,
+        **dumps_kwargs: Any,
+    ) -> str:
+        return self.impl.json(
+            include=include,
+            exclude=exclude,
+            by_alias=by_alias,
+            skip_defaults=skip_defaults,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+            encoder=encoder,
+            models_as_dict=models_as_dict,
+            **dumps_kwargs,
+        )
+
+    @staticmethod
+    def parse_raw(
+        b: StrBytes,
+        *,
+        content_type: str = None,  # type: ignore
+        encoding: str = "utf8",
+        proto: Protocol = None,  # type: ignore
+        allow_pickle: bool = False,
+    ) -> "VerificationInput":
+        return VerificationInput(
+            VerificationInputImpl.parse_raw(
+                b,
+                content_type=content_type,
+                encoding=encoding,
+                proto=proto,
+                allow_pickle=allow_pickle,
+            )
+        )
+
+    @staticmethod
+    def parse_file(
+        path: Union[str, pathlib.Path],
+        *,
+        content_type: str = None,  # type: ignore
+        encoding: str = "utf8",
+        proto: Protocol = None,  # type: ignore
+        allow_pickle: bool = False,
+    ) -> "VerificationInput":
+        return VerificationInput(
+            VerificationInputImpl.parse_file(
+                path,
+                content_type=content_type,
+                encoding=encoding,
+                proto=proto,
+                allow_pickle=allow_pickle,
+            )
+        )
+
+    @staticmethod
+    def parse_obj(obj: Any) -> "VerificationInput":
+        return VerificationInput(VerificationInputImpl.parse_obj(obj))
+
+    @property
+    def pre_command(self) -> Optional[str]:
+        return self.impl.pre_command
+
+    @property
+    def files(self) -> list[VerificationFile]:
+        return self.impl.files
 
     def _scc(self) -> list[set[pathlib.Path]]:
         vers_rev = {v.path: i for i, v in enumerate(self.files)}
@@ -83,40 +169,25 @@ class VerificationInput:
         return [set(self.files[ix].path for ix in ls) for ls in reversed(g.scc())]
 
     def resolve_dependencies(self, path: pathlib.Path) -> set[pathlib.Path]:
-        cached = self._cached_resolve_dependencies
-        if cached:
-            return cached[path]
+        return self._all_dependencies[path]
 
-        self._cached_resolve_dependencies = dict()
+    @cached_property
+    def files_dict(self) -> "dict[pathlib.Path, VerificationFile]":
+        return {f.path: f for f in self.files}
+
+    @cached_property
+    def _all_dependencies(self) -> "dict[pathlib.Path, set[pathlib.Path]]":
+        d = dict[pathlib.Path, set[pathlib.Path]]()
         g = self._scc()
         for group in g:
             result = group.copy()
             for p in group:
                 for dep in self.files_dict[p].dependencies:
                     if dep not in result:
-                        resolved = self._cached_resolve_dependencies.get(dep)
+                        resolved = d.get(dep)
                         if resolved is not None:
                             result.update(resolved)
             for p in group:
-                self._cached_resolve_dependencies[p] = result
+                d[p] = result
 
-        return self._cached_resolve_dependencies[path]
-
-
-def decode_verification_files(d: dict[Any, Any]) -> VerificationInput:
-    def decode_verification(
-        d: Optional[dict[Any, Any]]
-    ) -> Optional[VerificationCommand]:
-        return command.decode(d) if d else None
-
-    return VerificationInput(
-        pre_command=d.get("pre_command"),
-        files=[
-            VerificationFile(
-                pathlib.Path(f["path"]),
-                dependencies=f.get("dependencies"),
-                verification=decode_verification(f.get("verification")),
-            )
-            for f in d["files"]
-        ],
-    )
+        return d

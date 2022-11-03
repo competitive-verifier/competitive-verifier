@@ -87,9 +87,9 @@ def test_force_result_failue():
 def test_verification_files():
     def get_verification_file(path_str: str) -> VerificationFile:
         return VerificationFile(
-            Path(path_str),
+            path=Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=[VerificationCommand(command="true")],
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -121,9 +121,9 @@ def test_remaining_verification_files():
     def get_verification_file(path_str: str) -> VerificationFile:
         uuid.uuid4()
         return VerificationFile(
-            Path(path_str),
+            path=Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=[VerificationCommand(command="true")],
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -151,17 +151,17 @@ def test_remaining_verification_files():
         prev_result=VerificationResult(
             files=[
                 FileVerificationResult(
-                    baz_foo.path,
+                    path=baz_foo.path,
                     last_success_time=None,
                     command_result=ResultStatus.SUCCESS,
                 ),
                 FileVerificationResult(
-                    hoge_hoge.path,
+                    path=hoge_hoge.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                     command_result=ResultStatus.SUCCESS,
                 ),
                 FileVerificationResult(
-                    hoge_piyo.path,
+                    path=hoge_piyo.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                     command_result=ResultStatus.SUCCESS,
                 ),
@@ -181,9 +181,9 @@ def generate_current_verification_files() -> Iterable[
 ]:
     def get_verification_file(path_str: str) -> VerificationFile:
         return VerificationFile(
-            Path(path_str),
+            path=Path(path_str),
             dependencies=[],
-            verification=VerificationCommand(command="true"),
+            verification=[VerificationCommand(command="true")],
         )
 
     foo_baz = get_verification_file("foo/baz.py")
@@ -213,17 +213,17 @@ def generate_current_verification_files() -> Iterable[
             prev_result=VerificationResult(
                 files=[
                     FileVerificationResult(
-                        baz_foo.path,
+                        path=baz_foo.path,
                         last_success_time=None,
                         command_result=ResultStatus.SUCCESS,
                     ),
                     FileVerificationResult(
-                        hoge_hoge.path,
+                        path=hoge_hoge.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                         command_result=ResultStatus.SUCCESS,
                     ),
                     FileVerificationResult(
-                        hoge_piyo.path,
+                        path=hoge_piyo.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                         command_result=ResultStatus.SUCCESS,
                     ),
@@ -272,7 +272,7 @@ def test_is_success():
         path: str, *, command_result: ResultStatus = ResultStatus.SUCCESS
     ) -> FileVerificationResult:
         return FileVerificationResult(
-            Path(path),
+            path=Path(path),
             last_success_time=datetime.datetime(2017, 9, 20, 18, 0, 0),
             command_result=command_result,
         )

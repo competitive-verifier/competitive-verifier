@@ -1,7 +1,6 @@
 import datetime
 import pathlib
 import subprocess
-import textwrap
 import time
 from functools import cached_property
 from logging import getLogger
@@ -50,7 +49,11 @@ def exec_command(
 ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
     with log.group(f"subprocess.run: {command}"):
         return subprocess.run(
-            command, shell=True, text=text, check=check, capture_output=capture_output
+            command,
+            shell=True,
+            text=text,
+            check=check,
+            capture_output=capture_output,
         )
 
 
@@ -236,36 +239,11 @@ class Verifier:
                 logger.info("pre_command: %s", pre_command)
                 pre_command_result = exec_command(pre_command, check=True)
                 logger.info(pre_command_result)
-            except (subprocess.CalledProcessError) as e:
+            except subprocess.CalledProcessError:
                 logger.error("Failed to pre_command: %s", pre_command)
-                stdout: str = e.stdout  # type: ignore
-                stderr: str = e.stderr  # type: ignore
-                raise VerifierError(
-                    textwrap.dedent(
-                        f"""\
-                        Failed to pre_command
-
-                        stdout:
-                            {stdout}
-
-                        stderr:
-                            {stderr}
-                        """
-                    ),
-                    inner=e,
-                )
-            except (FileNotFoundError) as e:
-                logger.error("Failed to pre_command: %s", pre_command)
-                raise VerifierError(
-                    textwrap.dedent(
-                        """\
-                        The command is not found
-                        """
-                    ),
-                    inner=e,
-                )
+                raise
         else:
-            logger.debug("There is no pre_command")
+            logger.info("There is no pre_command")
 
         files = list[FileVerificationResult]()
         for f in self.current_verification_files:

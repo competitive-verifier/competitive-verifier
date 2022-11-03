@@ -1,5 +1,4 @@
 import argparse
-import json
 import pathlib
 import sys
 from logging import getLogger
@@ -9,10 +8,7 @@ from competitive_verifier import oj
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models.command import ProblemVerificationCommand
-from competitive_verifier.models.file import (
-    VerificationInput,
-    decode_verification_files,
-)
+from competitive_verifier.models.file import VerificationInput
 
 logger = getLogger(__name__)
 
@@ -31,8 +27,7 @@ def enumerate_urls(input: VerificationInput) -> Iterable[str]:
 
 def run(args: argparse.Namespace) -> None:
     logger.info("arguments=%s", vars(args))
-    with open(args.verify_files_json, encoding="utf-8") as f:
-        verification = decode_verification_files(json.load(f))
+    verification = VerificationInput.parse_file(args.verify_files_json)
 
     return run_impl(verification)
 

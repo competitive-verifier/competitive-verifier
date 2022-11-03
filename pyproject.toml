@@ -12,16 +12,17 @@ readme = ["README.md", "LICENSE"]
 packages = [{ include = "competitive_verifier", from = "src" }]
 include = [{ path = "tests", format = "sdist" }]
 
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 colorlog = "^6.7.0"
 online-judge-tools = "^11.5.1"
 colorama = "^0.4.6"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+pydantic = "^1.10.2"
 
 
 [tool.poetry.group.test.dependencies]
@@ -43,12 +44,9 @@ competitive-verifier = "competitive_verifier.console.app:main"
 flake8 = "pflake8 src tests"
 isort = "isort src tests"
 black = "black src tests"
-pyright = "pyright src"
+pyright = "pyright src tests"
 format = ["pyright", "flake8", "isort", "black"]
-
-test = "pytest --cov=poethepoet"                                 # simple command based task
-serve = { script = "my_app.service:run(debug=True)" }            # python script based task
-tunnel = { shell = "ssh -N -L 0.0.0.0:8080:$PROD:8080 $PROD &" } # (posix) shell based task
+test = "pytest"
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
