@@ -11,46 +11,45 @@ from competitive_verifier.models.command import (
     VerificationCommand,
 )
 
+command_union_json_params = [  # type: ignore
+    (DummyCommand(), '{"type": "dummy"}', '{"type": "dummy"}'),
+    (
+        VerificationCommand(command="ls ~"),
+        '{"type":"command","command":"ls ~"}',
+        '{"type": "command", "command": "ls ~", "compile": null}',
+    ),
+    (
+        VerificationCommand(compile="cat LICENSE", command="ls ~"),
+        '{"type": "command", "compile": "cat LICENSE", "command": "ls ~"}',
+        '{"type": "command", "command": "ls ~", "compile": "cat LICENSE"}',
+    ),
+    (
+        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
+        '{"type":"problem","problem":"https://example.com","command":"ls ~"}',
+        '{"type": "problem", "command": "ls ~", "compile": null, "problem": "https://example.com", "error": null, "tle": null}',
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE", command="ls ~", problem="https://example.com"
+        ),
+        '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "command": "ls ~"}',
+        '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": null, "tle": null}',
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "error": 0.000001, "tle": 2, "command": "ls ~"}',
+        '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": 1e-06, "tle": 2.0}',
+    ),
+]
 
-@pytest.mark.parametrize(
-    "obj, raw_json, output_json",
-    [
-        (DummyCommand(), '{"type": "dummy"}', '{"type": "dummy"}'),
-        (
-            VerificationCommand(command="ls ~"),
-            '{"type":"command","command":"ls ~"}',
-            '{"type": "command", "command": "ls ~", "compile": null}',
-        ),
-        (
-            VerificationCommand(compile="cat LICENSE", command="ls ~"),
-            '{"type": "command", "compile": "cat LICENSE", "command": "ls ~"}',
-            '{"type": "command", "command": "ls ~", "compile": "cat LICENSE"}',
-        ),
-        (
-            ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
-            '{"type":"problem","problem":"https://example.com","command":"ls ~"}',
-            '{"type": "problem", "command": "ls ~", "compile": null, "problem": "https://example.com", "error": null, "tle": null}',
-        ),
-        (
-            ProblemVerificationCommand(
-                compile="cat LICENSE", command="ls ~", problem="https://example.com"
-            ),
-            '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "command": "ls ~"}',
-            '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": null, "tle": null}',
-        ),
-        (
-            ProblemVerificationCommand(
-                compile="cat LICENSE",
-                command="ls ~",
-                problem="https://example.com",
-                error=1e-6,
-                tle=2,
-            ),
-            '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "error": 0.000001, "tle": 2, "command": "ls ~"}',
-            '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": 1e-06, "tle": 2.0}',
-        ),
-    ],
-)
+
+@pytest.mark.parametrize("obj, raw_json, output_json", command_union_json_params)
 def test_command_union_json(
     obj: Command,
     raw_json: str,
@@ -65,42 +64,42 @@ def test_command_union_json(
     assert obj == CommandUnion.parse_raw(raw_json).__root__
 
 
-@pytest.mark.parametrize(
-    "obj, command, compile",
-    [
-        (DummyCommand(), None, None),
-        (VerificationCommand(command="ls ~"), "ls ~", None),
-        (VerificationCommand(command="ls ~"), "ls ~", None),
-        (
-            VerificationCommand(compile="cat LICENSE", command="ls ~"),
-            "ls ~",
-            "cat LICENSE",
+command_command_params = [  # type: ignore
+    (DummyCommand(), None, None),
+    (VerificationCommand(command="ls ~"), "ls ~", None),
+    (VerificationCommand(command="ls ~"), "ls ~", None),
+    (
+        VerificationCommand(compile="cat LICENSE", command="ls ~"),
+        "ls ~",
+        "cat LICENSE",
+    ),
+    (
+        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
+        "ls ~",
+        None,
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
-        (
-            ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
-            "ls ~",
-            None,
+        "ls ~",
+        "cat LICENSE",
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
         ),
-        (
-            ProblemVerificationCommand(
-                compile="cat LICENSE", command="ls ~", problem="https://example.com"
-            ),
-            "ls ~",
-            "cat LICENSE",
-        ),
-        (
-            ProblemVerificationCommand(
-                compile="cat LICENSE",
-                command="ls ~",
-                problem="https://example.com",
-                error=1e-6,
-                tle=2,
-            ),
-            "ls ~",
-            "cat LICENSE",
-        ),
-    ],
-)
+        "ls ~",
+        "cat LICENSE",
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, command, compile", command_command_params)
 def test_command_command(
     obj: Command,
     command: Optional[str],
