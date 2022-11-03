@@ -39,16 +39,23 @@
             }
         },
         {
-            "path": "examples/awk/echo.sh",
+            "path": "examples/awk/echo.sh"
+        },
+        {
+            "path": ".",
+            "display_path": false,
+            "dependencies": [
+                "examples/awk/dummy.awk"
+            ],
             "verification": [
                 {
                     "type": "command",
-                    "command": "bash examples/awk/echo.sh"
+                    "command": "true"
                 }
             ]
         },
         {
-            "path": "examples/awk/dummy.sh",
+            "path": "examples/awk/dummy.awk",
             "dependencies": [
                 "examples/awk/echo.sh"
             ],

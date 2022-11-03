@@ -12,7 +12,14 @@
                         "description": "file path"
                     },
                     "display_path": {
-                        "type": "string",
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "const": false
+                            }
+                        ],
                         "description": "file path for document"
                     },
                     "dependencies": {

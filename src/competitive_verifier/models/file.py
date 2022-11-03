@@ -1,6 +1,6 @@
 import pathlib
 from functools import cached_property
-from typing import AbstractSet, Any, Callable, Mapping, Optional, Union
+from typing import AbstractSet, Any, Callable, Literal, Mapping, Optional, Union
 
 from pydantic import BaseModel, Field, Protocol, StrBytes, validator
 
@@ -14,7 +14,7 @@ _MappingIntStrAny = Mapping[_IntStr, Any]
 
 class VerificationFile(BaseModel):
     path: pathlib.Path
-    display_path: Optional[pathlib.Path] = None
+    display_path: Union[pathlib.Path, Literal[False], None] = None
     dependencies: list[pathlib.Path] = Field(default_factory=list)
     verification: list[Command] = Field(default_factory=list)
 
