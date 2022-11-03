@@ -37,6 +37,24 @@
                 "command": "awk -f examples/awk/aplusb2.awk",
                 "problem": "https://yukicoder.me/problems/no/3040"
             }
+        },
+        {
+            "path": "examples/awk/echo.sh",
+            "verification": [
+                {
+                    "type": "command",
+                    "command": "bash examples/awk/echo.sh"
+                }
+            ]
+        },
+        {
+            "path": "examples/awk/dummy.sh",
+            "dependencies": [
+                "examples/awk/echo.sh"
+            ],
+            "verification": {
+                "type": "dummy"
+            }
         }
     ]
 }

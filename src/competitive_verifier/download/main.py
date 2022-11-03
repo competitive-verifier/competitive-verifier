@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import sys
 from logging import getLogger
@@ -26,7 +27,7 @@ def enumerate_urls(input: VerificationInput) -> Iterable[str]:
 
 
 def run(args: argparse.Namespace) -> None:
-    logger.info("arguments=%s", vars(args))
+    logger.debug("arguments=%s", vars(args))
     verification = VerificationInput.parse_file(args.verify_files_json)
 
     return run_impl(verification)
@@ -56,7 +57,7 @@ def argument_download(
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        configure_logging()
+        configure_logging(logging.INFO)
         parsed = argument_download(argparse.ArgumentParser()).parse_args(args)
         run(parsed)
     except (VerifierError) as e:

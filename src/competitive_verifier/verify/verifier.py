@@ -1,10 +1,11 @@
+from contextlib import contextmanager
 import datetime
 import pathlib
 import subprocess
 import time
 from functools import cached_property
 from logging import getLogger
-from typing import Literal, Optional, TypeVar, Union, overload
+from typing import Iterable, Literal, Optional, TypeVar, Union, overload
 
 from competitive_verifier import github, log
 from competitive_verifier.download.main import run_impl as run_download
@@ -47,13 +48,33 @@ def exec_command(
     check: bool = False,
     capture_output: bool = False,
 ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
-    with log.group(f"subprocess.run: {command}"):
+    @contextmanager
+    def dummy_group():
+        yield
+
+    def group():
+        if capture_output:
+            logger.info("subprocess.run: %s", command)
+            return dummy_group()
+        else:
+            return log.group(f"subprocess.run: {command}")
+
+    if capture_output:
         return subprocess.run(
             command,
             shell=True,
             text=text,
             check=check,
-            capture_output=capture_output,
+            capture_output=True,
+        )
+
+    with group():
+        return subprocess.run(
+            command,
+            shell=True,
+            text=text,
+            check=check,
+            capture_output=False,
         )
 
 
@@ -185,7 +206,7 @@ class Verifier:
         """
         List of verification files.
         """
-        res = [f for f in self.input.files if f.is_verification]
+        res = [f for f in self.input.files if f.is_verification()]
         res.sort(key=lambda f: str(f.path))
         return res
 
@@ -194,13 +215,16 @@ class Verifier:
         """
         List of verification files that have not yet been verified.
         """
-        verification_files = self.verification_files
+        verification_files: Iterable[VerificationFile] = self.verification_files
 
         if self.prev_result is None:
             return verification_files
 
         not_updated_files = set(
             r.path for r in self.prev_result.files if self.is_updated_file(r)
+        )
+        verification_files = (
+            f for f in verification_files if f.path not in not_updated_files
         )
         return [f for f in verification_files if f.path not in not_updated_files]
 
@@ -218,6 +242,18 @@ class Verifier:
 
         return self.split_state.split(self.remaining_verification_files)
 
+    def exec_pre_command(self):
+        pre_command = self.input.pre_command
+        if pre_command:
+            try:
+                logger.info("pre_command: %s", pre_command)
+                exec_command(pre_command, check=True)
+            except subprocess.CalledProcessError:
+                logger.error("Failed to pre_command: %s", pre_command)
+                raise
+        else:
+            logger.info("There is no pre_command")
+
     def verify(self, *, download: bool = True) -> VerificationResult:
         start_time = datetime.datetime.now()
 
@@ -225,25 +261,15 @@ class Verifier:
             run_download(self.input)
 
         logger.info(
-            "current_verification_files=%s",
-            [str(f.path) for f in self.current_verification_files],
+            "current_verification_files: %s",
+            " ".join(str(f.path) for f in self.current_verification_files),
         )
         try:
             ulimit_stack()
         except Exception:
             logger.warning("failed to increase the stack size[ulimit]")
 
-        pre_command = self.input.pre_command
-        if pre_command:
-            try:
-                logger.info("pre_command: %s", pre_command)
-                pre_command_result = exec_command(pre_command, check=True)
-                logger.info(pre_command_result)
-            except subprocess.CalledProcessError:
-                logger.error("Failed to pre_command: %s", pre_command)
-                raise
-        else:
-            logger.info("There is no pre_command")
+        self.exec_pre_command()
 
         files = list[FileVerificationResult]()
         for f in self.current_verification_files:

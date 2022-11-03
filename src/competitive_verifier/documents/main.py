@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 from typing import Optional
 
@@ -35,6 +36,6 @@ def argument_docs(
 
 
 def main(args: Optional[list[str]] = None) -> None:
-    configure_logging()
+    configure_logging(logging.INFO)
     parsed = argument_docs(argparse.ArgumentParser()).parse_args(args)
     run(parsed)

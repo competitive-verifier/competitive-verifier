@@ -24,7 +24,6 @@ class VerificationFile(BaseModel):
             return v  # type: ignore
         return [v]
 
-    @property
     def is_verification(self) -> bool:
         return bool(self.verification)
 

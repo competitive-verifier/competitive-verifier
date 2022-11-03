@@ -1,4 +1,5 @@
 import argparse
+import logging
 import math
 import pathlib
 import sys
@@ -39,7 +40,7 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> Verifier:
-    logger.info("arguments=%s", vars(args))
+    logger.debug("arguments=%s", vars(args))
     verification = VerificationInput.parse_file(args.verify_files_json)
     if args.prev_result is None:
         prev_result = None
@@ -149,7 +150,7 @@ def get_split_state(
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        configure_logging()
+        configure_logging(logging.INFO)
         parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
         verifier = run(parsed)
         if not verifier.is_success():

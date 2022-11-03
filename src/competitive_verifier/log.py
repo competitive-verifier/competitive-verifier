@@ -49,13 +49,12 @@ class ExceptGitHubActionsFilter(Filter):
 
 
 def configure_logging(
-    default_level: int = DEBUG,
+    default_level: Optional[int] = None,
     in_github_actions: Optional[bool] = None,
 ) -> None:
     formatter = colorlog.ColoredFormatter(
         "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
     )
-    level = default_level
 
     colorlog_handler = colorlog.StreamHandler()
     colorlog_handler.setFormatter(formatter)
@@ -69,7 +68,7 @@ def configure_logging(
         colorlog_handler.addFilter(ExceptGitHubActionsFilter())
 
     basicConfig(
-        level=level,
+        level=default_level,
         handlers=handlers,
     )
 
