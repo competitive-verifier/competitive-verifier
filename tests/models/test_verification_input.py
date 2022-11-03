@@ -1,5 +1,7 @@
 # flake8: noqa E501
 from pathlib import Path
+from typing import Any
+from pydantic import ValidationError
 
 import pytest
 
@@ -153,58 +155,113 @@ def test_resolve_dependencies(path: str, expected: list[str]):
     assert expected_paths == test_input.resolve_dependencies(Path(path))
 
 
-def test_repr():
-    path_type_name = type(Path("")).__name__
-    assert repr(test_input) == (
-        "VerificationInputImpl("
-        + "pre_command=None, "
-        + "files=["
-        + ("VerificationFile(path=" + f"{path_type_name}")
-        + "('foo/bar1.py'), display_path=None, dependencies=[], verification=[]), "
-        + ("VerificationFile(path=" + f"{path_type_name}")
-        + ("('foo/bar2.py'), display_path=None, dependencies=[" + f"{path_type_name}")
-        + "('foo/bar1.py')], verification=[]), "
-        + ("VerificationFile(path=" + f"{path_type_name}")
-        + "('foo/baz.py'), display_path=None, dependencies=[], verification=[]), "
-        + ("VerificationFile(path=" + f"{path_type_name}")
-        + ("('foo/barbaz.py'), display_path=None, dependencies=[" + f"{path_type_name}")
-        + ("('foo/bar2.py'), " + f"{path_type_name}")
-        + (
-            "('foo/baz.py')], verification=[]), VerificationFile(path="
-            + f"{path_type_name}"
-        )
-        + (
-            "('hoge/1.py'), display_path=None, dependencies=[], verification=[]), VerificationFile(path="
-            + f"{path_type_name}"
-        )
-        + ("('hoge/hoge.py'), display_path=None, dependencies=[" + f"{path_type_name}")
-        + ("('hoge/fuga.py'), " + f"{path_type_name}")
-        + (
-            "('hoge/1.py')], verification=[]), VerificationFile(path="
-            + f"{path_type_name}"
-        )
-        + ("('hoge/piyo.py'), display_path=None, dependencies=[" + f"{path_type_name}")
-        + ("('hoge/fuga.py'), " + f"{path_type_name}")
-        + (
-            "('hoge/hoge.py')], verification=[]), VerificationFile(path="
-            + f"{path_type_name}"
-        )
-        + ("('hoge/fuga.py'), display_path=None, dependencies=[" + f"{path_type_name}")
-        + (
-            "('hoge/piyo.py')], verification=[]), VerificationFile(path="
-            + f"{path_type_name}"
-        )
-        + (
-            "('hoge/piyopiyo.py'), display_path=None, dependencies=["
-            + f"{path_type_name}"
-        )
-        + "('hoge/piyo.py')], verification=[])])"
-    )
-
-
-def test_dict():
+def test_to_dict():
     assert test_input.dict() == test_input.impl.dict()
 
 
-def test_json():
+def test_to_json():
     assert test_input.json() == test_input.impl.json()
+
+
+def test_repr():
+    obj = VerificationInput.parse_obj(
+        {
+            "pre_command": "ls .",
+            "files": [
+                {"path": "foo/bar.py"},
+                {
+                    "path": "foo/baz.py",
+                    "display_path": "baz.py",
+                    "dependencies": ["foo/bar.py"],
+                    "verification": [{"type": "dummy"}],
+                },
+            ],
+        }
+    )
+    assert repr(obj) == (
+        "VerificationInput(pre_command=['ls .'], "
+        + f"files=[VerificationFile(path={repr(Path('foo/bar.py'))}, display_path=None, dependencies=[], verification=[]),"
+        + f" VerificationFile(path={repr(Path('foo/baz.py'))}, display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[DummyCommand(type='dummy')])"
+        + f"])"
+    )
+
+
+parse_pre_command_params: list[Any] = [
+    (
+        VerificationInput(pre_command="ls .", files=[]),
+        {"pre_command": "ls ."},
+    ),
+    (
+        VerificationInput(pre_command=["ls .", "true"], files=[]),
+        {"pre_command": ["ls .", "true"]},
+    ),
+    (
+        VerificationInput(pre_command=None, files=[]),
+        {"pre_command": None},
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, raw_obj", parse_pre_command_params)
+def test_parse_pre_command(obj: VerificationInput, raw_obj: dict[str, Any]):
+    assert VerificationInput.parse_obj(raw_obj) == obj
+
+
+pre_command_params: list[Any] = [
+    (
+        VerificationInput(pre_command="ls .", files=[]),
+        ["ls ."],
+    ),
+    (
+        VerificationInput(pre_command=["ls .", "true"], files=[]),
+        ["ls .", "true"],
+    ),
+    (
+        VerificationInput(pre_command=None, files=[]),
+        None,
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, pre_command", pre_command_params)
+def test_pre_command(obj: VerificationInput, pre_command: Any):
+    assert obj.pre_command == pre_command
+
+
+duplicate_path_error_params = [  # type: ignore
+    (
+        {
+            "files": [
+                {"path": "foo/bar.sh"},
+                {"path": "foo/bar.sh"},
+                {"path": "foo/baz.sh"},
+                {"path": "hoge/piyo.sh"},
+            ],
+        },
+        f"Duplicate files.path {str(Path('foo/bar.sh'))}",
+    ),
+    (
+        {
+            "files": [
+                {"path": "foo/bar.sh"},
+                {"path": "foo/bar.sh"},
+                {"path": "foo/bar.sh"},
+                {"path": "foo/baz.sh"},
+                {"path": "foo/bak.sh"},
+                {"path": "foo/bar.sh"},
+                {"path": "foo/baz.sh"},
+                {"path": "hoge/piyo.sh"},
+            ],
+        },
+        f"Duplicate files.path {str(Path('foo/bar.sh'))}, {str(Path('foo/baz.sh'))}",
+    ),
+]
+
+
+@pytest.mark.parametrize("d, error_msg", duplicate_path_error_params)
+def test_duplicate_path_error(d: dict[str, Any], error_msg: str):
+    with pytest.raises(ValidationError) as e:
+        VerificationInput.parse_obj(d)
+    errors = e.value.errors()
+    assert len(errors) == 1
+    assert str(errors[0]["msg"]) == error_msg

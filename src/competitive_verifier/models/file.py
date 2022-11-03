@@ -1,3 +1,4 @@
+from collections import Counter
 import pathlib
 from functools import cached_property
 from typing import AbstractSet, Any, Callable, Literal, Mapping, Optional, Union
@@ -20,7 +21,9 @@ class VerificationFile(BaseModel):
 
     @validator("verification", pre=True)
     def verification_list(cls, v: Any) -> list[Any]:
-        if isinstance(v, list):
+        if v is None:
+            return []
+        elif isinstance(v, list):
             return v  # type: ignore
         return [v]
 
@@ -33,9 +36,18 @@ class VerificationInputImpl(BaseModel):
     pre_command: Optional[list[str]] = None
     files: list[VerificationFile] = Field(default_factory=list)
 
+    @validator("files")
+    def validate_files(cls, v: list[VerificationFile]) -> list[VerificationFile]:
+        counter = Counter(f.path for f in v)
+        dups = [str(path) for path, cnt in counter.items() if cnt > 1]
+        if len(dups):
+            msg = "Duplicate files.path " + ", ".join(dups)
+            raise ValueError(msg)
+        return v
+
     @validator("pre_command", pre=True)
     def pre_command_list(cls, v: Any) -> list[Any]:
-        if isinstance(v, list):
+        if v is None or isinstance(v, list):
             return v  # type: ignore
         return [v]
 
@@ -59,7 +71,7 @@ class VerificationInput:
             )
 
     def __repr__(self) -> str:
-        return repr(self.impl)
+        return "VerificationInput" + repr(self.impl)[len("VerificationInputImpl") :]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, VerificationInput):
