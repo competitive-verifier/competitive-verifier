@@ -42,8 +42,25 @@
             }
         },
         "pre_command": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/shell_command"
+                },
+                {
+                    "type": "array",
+                    "items": [
+                        {
+                            "$ref": "#/definitions/shell_command"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "definitions": {
+        "shell_command": {
             "type": "string",
-            "description": "Command; called before verification"
+            "description": "Shell command"
         }
     }
 }

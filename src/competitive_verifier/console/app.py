@@ -4,7 +4,9 @@ import pathlib
 import sys
 from logging import DEBUG, INFO, getLogger
 from typing import Optional
+
 import pkg_resources
+
 import competitive_verifier.config
 
 _config_directory_name = competitive_verifier.config.config_dir.name

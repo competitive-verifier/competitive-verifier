@@ -1,6 +1,5 @@
 # pyright: reportPrivateUsage=none
 import datetime
-import uuid
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -29,8 +28,7 @@ class VerifierForTest(Verifier):
         prev_result: Optional[VerificationResult] = None,
         split_state: Optional[SplitState] = None,
         verification_time: datetime.datetime = datetime.datetime.max,
-        default_current_timestamp: datetime.datetime = datetime.datetime.max,
-        current_timestamp_dict: dict[Path, datetime.datetime] = {},
+        current_timestamp_dict: dict[Optional[Path], datetime.datetime] = {},
     ) -> None:
         super().__init__(
             input=input,
@@ -42,11 +40,10 @@ class VerifierForTest(Verifier):
             verification_time=verification_time,
         )
         self._result = result
-        self.default_current_timestamp = default_current_timestamp
         self.current_timestamp_dict = current_timestamp_dict
 
     def get_current_timestamp(self, path: Path) -> datetime.datetime:
-        return self.current_timestamp_dict.get(path, self.default_current_timestamp)
+        return self.current_timestamp_dict.get(path, self.current_timestamp_dict[None])
 
 
 def get_verifier(
@@ -119,7 +116,6 @@ def test_verification_files():
 
 def test_remaining_verification_files():
     def get_verification_file(path_str: str) -> VerificationFile:
-        uuid.uuid4()
         return VerificationFile(
             path=Path(path_str),
             dependencies=[],
@@ -143,8 +139,8 @@ def test_remaining_verification_files():
             ]
         ),
         verification_time=datetime.datetime(2020, 2, 27, 19, 0, 0),
-        default_current_timestamp=datetime.datetime(2019, 12, 25, 19, 0, 0),
         current_timestamp_dict={
+            None: datetime.datetime(2019, 12, 25, 19, 0, 0),
             Path("hoge/piyo.py"): datetime.datetime(2019, 12, 28, 19, 0, 0),
             Path("hoge/hoge.py"): datetime.datetime(2019, 12, 27, 19, 0, 0),
         },
@@ -205,8 +201,8 @@ def generate_current_verification_files() -> Iterable[
                 ]
             ),
             verification_time=datetime.datetime(2020, 2, 27, 19, 0, 0),
-            default_current_timestamp=datetime.datetime(2019, 12, 25, 19, 0, 0),
             current_timestamp_dict={
+                None: datetime.datetime(2019, 12, 25, 19, 0, 0),
                 Path("hoge/piyo.py"): datetime.datetime(2019, 12, 28, 19, 0, 0),
                 Path("hoge/hoge.py"): datetime.datetime(2019, 12, 27, 19, 0, 0),
             },

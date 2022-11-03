@@ -1,15 +1,15 @@
-from contextlib import contextmanager
 import datetime
 import pathlib
 import subprocess
 import time
 from functools import cached_property
 from logging import getLogger
-from typing import Iterable, Literal, Optional, TypeVar, Union, overload
+from typing import Iterable, Optional, TypeVar
 
 from competitive_verifier import github, log
 from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
+from competitive_verifier.exec import exec_command
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
     FileVerificationResult,
@@ -20,62 +20,6 @@ from competitive_verifier.verify.resource import ulimit_stack
 
 logger = getLogger(__name__)
 T = TypeVar("T")
-
-
-@overload
-def exec_command(
-    command: str,
-    text: Literal[False] = False,
-    check: bool = False,
-    capture_output: bool = False,
-) -> subprocess.CompletedProcess[bytes]:
-    ...
-
-
-@overload
-def exec_command(
-    command: str,
-    text: Literal[True],
-    check: bool = False,
-    capture_output: bool = False,
-) -> subprocess.CompletedProcess[str]:
-    ...
-
-
-def exec_command(
-    command: str,
-    text: bool = False,
-    check: bool = False,
-    capture_output: bool = False,
-) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
-    @contextmanager
-    def dummy_group():
-        yield
-
-    def group():
-        if capture_output:
-            logger.info("subprocess.run: %s", command)
-            return dummy_group()
-        else:
-            return log.group(f"subprocess.run: {command}")
-
-    if capture_output:
-        return subprocess.run(
-            command,
-            shell=True,
-            text=text,
-            check=check,
-            capture_output=True,
-        )
-
-    with group():
-        return subprocess.run(
-            command,
-            shell=True,
-            text=text,
-            check=check,
-            capture_output=False,
-        )
 
 
 class SplitState:
@@ -221,7 +165,7 @@ class Verifier:
             return verification_files
 
         not_updated_files = set(
-            r.path for r in self.prev_result.files if self.is_updated_file(r)
+            r.path for r in self.prev_result.files if not self.is_updated_file(r)
         )
         verification_files = (
             f for f in verification_files if f.path not in not_updated_files
@@ -242,15 +186,17 @@ class Verifier:
 
         return self.split_state.split(self.remaining_verification_files)
 
-    def exec_pre_command(self):
-        pre_command = self.input.pre_command
-        if pre_command:
-            try:
-                logger.info("pre_command: %s", pre_command)
-                exec_command(pre_command, check=True)
-            except subprocess.CalledProcessError:
-                logger.error("Failed to pre_command: %s", pre_command)
-                raise
+    def exec_pre_commands(self):
+        pre_commands = self.input.pre_command
+        if pre_commands:
+            logger.info("pre_command size %d", len(pre_commands))
+            for cmd in pre_commands:
+                try:
+                    logger.debug("pre_command: %s", cmd)
+                    exec_command(cmd, check=True, group_log=True)
+                except subprocess.CalledProcessError:
+                    logger.error("Failed to pre_command: %s", cmd)
+                    raise
         else:
             logger.info("There is no pre_command")
 
@@ -269,32 +215,36 @@ class Verifier:
         except Exception:
             logger.warning("failed to increase the stack size[ulimit]")
 
-        self.exec_pre_command()
+        self.exec_pre_commands()
 
         files = list[FileVerificationResult]()
         for f in self.current_verification_files:
-            logger.info("Start verify: %s", f)
-
             prev_time = datetime.datetime.now()
             if (
                 self.timeout is not None
                 and (prev_time - start_time).total_seconds() > self.timeout
             ):
-                logger.warning("Skip %s [Timeout]", f)
-        #     ok = verify_file(f)
-        #     finish_time = datetime.datetime.now()
-        #     if ok:
-        #         success_time = finish_time
-        #     else:
-        #         success_time = None
-        #         github.print_error(
-        #             "Failed to verify",
-        #             file=str(
-        #                 f.path.resolve(strict=True).relative_to(
-        #                     pathlib.Path.cwd().resolve(strict=True)
-        #                 )
-        #             ),
-        #         )
+                logger.warning("Skip[Timeout]: %s", f)
+                continue
+
+            logger.info("Start: %s", str(f.path))
+            with log.group(f"Verify: {str(f.path)}", use_stderr=True):
+                logger.debug(repr(f))
+
+            #     ok = verify_file(f)
+            #     finish_time = datetime.datetime.now()
+            #     if ok:
+            #         success_time = finish_time
+            #     else:
+            #         success_time = None
+            #         github.print_error(
+            #             "Failed to verify",
+            #             file=str(
+            #                 f.path.resolve(strict=True).relative_to(
+            #                     pathlib.Path.cwd().resolve(strict=True)
+            #                 )
+            #             ),
+            #         )
 
         #     logger.info(
         #         "Finish verify: total time = %f seconds, %s",

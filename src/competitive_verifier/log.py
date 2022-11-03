@@ -10,7 +10,7 @@ from logging import (
     LogRecord,
     basicConfig,
 )
-from typing import Optional
+from typing import Optional, TextIO
 
 import colorlog
 from colorama import Fore, Style
@@ -41,8 +41,7 @@ class ExceptGitHubActionsFilter(Filter):
 
     def filter(self, record: LogRecord) -> bool:
         return (
-            record.levelno != DEBUG
-            and record.levelno != WARNING
+            record.levelno != WARNING
             and record.levelno != ERROR
             and record.levelno != CRITICAL
         )
@@ -73,32 +72,29 @@ def configure_logging(
     )
 
 
+def _console_group(category: str, *, title: str, file: Optional[TextIO]):
+    print(
+        (
+            f"<------------- {Fore.CYAN}{category}:"
+            f"{Fore.YELLOW}{title}"
+            f"{Style.RESET_ALL} ------------->"
+        ),
+        file=file,
+    )
+
+
 @contextmanager
 def group(title: str, *, use_stderr: bool = False):
     file = sys.stderr if use_stderr else None
-
-    try:
-        if github.is_in_github_actions():
+    if github.is_in_github_actions():
+        try:
             github.begin_group(title, use_stderr=use_stderr)
-        else:
-            print(
-                (
-                    "<-------------"
-                    f"{Fore.YELLOW} Start group:{title}{Style.RESET_ALL}"
-                    "------------->"
-                ),
-                file=file,
-            )
-        yield
-    finally:
-        if github.is_in_github_actions():
+            yield
+        finally:
             github.end_group(use_stderr=use_stderr)
-        else:
-            print(
-                (
-                    "<-------------"
-                    f"{Fore.YELLOW}Finish group:{title}{Style.RESET_ALL}"
-                    "------------->"
-                ),
-                file=file,
-            )
+    else:
+        try:
+            _console_group(" Start group", title=title, file=file)
+            yield
+        finally:
+            _console_group("Finish group", title=title, file=file)

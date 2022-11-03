@@ -30,8 +30,14 @@ class VerificationFile(BaseModel):
 
 # NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625
 class VerificationInputImpl(BaseModel):
-    pre_command: Optional[str] = None
+    pre_command: Optional[list[str]] = None
     files: list[VerificationFile] = Field(default_factory=list)
+
+    @validator("pre_command", pre=True)
+    def pre_command_list(cls, v: Any) -> list[Any]:
+        if isinstance(v, list):
+            return v  # type: ignore
+        return [v]
 
 
 class VerificationInput:
@@ -40,24 +46,27 @@ class VerificationInput:
     def __init__(
         self,
         impl: Optional[VerificationInputImpl] = None,
-        **data: Any,
+        *,
+        pre_command: Union[str, list[str], None] = None,
+        files: Optional[list[VerificationFile]] = None,
     ) -> None:
         if impl:
             self.impl = impl
         else:
-            self.impl = VerificationInputImpl(**data)
+            self.impl = VerificationInputImpl(
+                pre_command=pre_command,  # type: ignore
+                files=files,  # type: ignore
+            )
 
     def __repr__(self) -> str:
         return repr(self.impl)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, VerificationInput):
-            other_input = other.impl
+            return self.impl == other.impl
         elif isinstance(other, VerificationInputImpl):
-            other_input = other
-        else:
-            return NotImplemented
-        return self.impl == other_input
+            return self.impl == other
+        return NotImplemented
 
     def dict(
         self,
@@ -150,7 +159,7 @@ class VerificationInput:
         return VerificationInput(VerificationInputImpl.parse_obj(obj))
 
     @property
-    def pre_command(self) -> Optional[str]:
+    def pre_command(self) -> Optional[list[str]]:
         return self.impl.pre_command
 
     @property
