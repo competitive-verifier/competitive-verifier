@@ -1,5 +1,6 @@
 import hashlib
 import os
+import pathlib
 from logging import getLogger
 
 import onlinejudge._implementation.utils
@@ -19,16 +20,19 @@ onlinejudge._implementation.utils.user_cache_dir = oj_cache_dir
 logger = getLogger(__name__)
 
 
+def get_directory(url: str) -> pathlib.Path:
+    return competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
+
+
 def is_yukicoder(url: str) -> bool:
     return YukicoderService.from_url(url) is not None
 
 
 def download(url: str) -> None:
-    directory = (
-        competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
-    )
+    directory = get_directory(url)
+    test_directory = directory / "test"
 
-    if not (directory / "test").exists() or list((directory / "test").iterdir()) == []:
+    if not (test_directory).exists() or list((test_directory).iterdir()) == []:
         logger.info("download: %s", url)
         with log.group(f"download: {url}", use_stderr=True):
             directory.mkdir(parents=True, exist_ok=True)
@@ -40,7 +44,7 @@ def download(url: str) -> None:
                 "download",
                 "--system",
                 "-d",
-                str(directory / "test"),
+                str(test_directory),
                 "--silent",
                 url,
             ]

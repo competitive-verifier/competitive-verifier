@@ -3,11 +3,10 @@ import pathlib
 from collections import Counter
 from enum import Enum
 from logging import getLogger
-from typing import Optional, Union
+from typing import Optional
 
 from pydantic import BaseModel
 
-PathLike = Union[str, pathlib.Path]
 logger = getLogger(__name__)
 
 
@@ -17,7 +16,7 @@ class ResultStatus(str, Enum):
     SKIPPED = "SKIPPED"
 
 
-class FileVerificationResult(BaseModel):
+class VerificationFileResult(BaseModel):
     path: pathlib.Path
     command_result: ResultStatus
     last_success_time: Optional[datetime.datetime] = None
@@ -32,7 +31,7 @@ class FileVerificationResult(BaseModel):
 
 
 class VerificationResult(BaseModel):
-    files: list[FileVerificationResult]
+    files: list[VerificationFileResult]
 
     def show_summary(self) -> None:
         counter = Counter(r.command_result for r in self.files)

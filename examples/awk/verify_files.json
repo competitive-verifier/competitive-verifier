@@ -1,9 +1,8 @@
 {
     "$schema": "../../schema/verify_files.schema.json",
     "pre_command": "ls .",
-    "files": [
-        {
-            "path": "examples/awk/circle.test.awk",
+    "files": {
+        "examples/awk/circle.test.awk": {
             "dependencies": [
                 "examples/awk/circle.awk"
             ],
@@ -15,11 +14,8 @@
                 "tle": 1
             }
         },
-        {
-            "path": "examples/awk/circle.awk"
-        },
-        {
-            "path": "examples/awk/aplusb.awk",
+        "examples/awk/circle.awk": {},
+        "examples/awk/aplusb.awk": {
             "dependencies": [],
             "verification": {
                 "type": "problem",
@@ -27,8 +23,7 @@
                 "problem": "https://judge.yosupo.jp/problem/aplusb"
             }
         },
-        {
-            "path": "examples/awk/aplusb2.awk",
+        "examples/awk/aplusb2.awk": {
             "display_path": "examples/awk/aplusb2.awk[const A+B]",
             "dependencies": [],
             "verification": {
@@ -38,11 +33,8 @@
                 "problem": "https://yukicoder.me/problems/no/3040"
             }
         },
-        {
-            "path": "examples/awk/echo.sh"
-        },
-        {
-            "path": ".",
+        "examples/awk/echo.sh": {},
+        ".": {
             "display_path": false,
             "dependencies": [
                 "examples/awk/dummy.awk"
@@ -54,8 +46,7 @@
                 }
             ]
         },
-        {
-            "path": "examples/awk/dummy.awk",
+        "examples/awk/dummy.awk": {
             "dependencies": [
                 "examples/awk/echo.sh"
             ],
@@ -63,5 +54,5 @@
                 "type": "dummy"
             }
         }
-    ]
+    }
 }

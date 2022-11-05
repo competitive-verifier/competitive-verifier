@@ -12,7 +12,7 @@ from competitive_verifier.error import VerifierError
 from competitive_verifier.exec import exec_command
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
-    FileVerificationResult,
+    VerificationFileResult,
     ResultStatus,
     VerificationResult,
 )
@@ -118,7 +118,7 @@ class Verifier:
             raise VerifierError("Not verified yet.")
         return self._result
 
-    def is_updated_file(self, file_result: FileVerificationResult) -> bool:
+    def is_updated_file(self, file_result: VerificationFileResult) -> bool:
         return file_result.is_updated(
             min(self.verification_time, self.get_current_timestamp(file_result.path))
         )
@@ -217,7 +217,7 @@ class Verifier:
 
         self.exec_pre_commands()
 
-        files = list[FileVerificationResult]()
+        files = list[VerificationFileResult]()
         for f in self.current_verification_files:
             prev_time = datetime.datetime.now()
             if (
@@ -253,7 +253,7 @@ class Verifier:
         #     )
 
         #     # files.append(
-        #     #     FileVerificationResult(
+        #     #     VerificationFileResult(
         #     #         f.path,
         #     #         last_success_time=success_time,
         #     #     )

@@ -39,14 +39,6 @@ def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.download.main as download
     import competitive_verifier.verify.main as verify
 
-    default_verify_files_json = pathlib.Path(
-        f"{_config_directory_name}/verify_files.json"
-    )
-
-    default_verify_result_json = pathlib.Path(
-        f"{_config_directory_name}/verify_result.json"
-    )
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument(
@@ -58,13 +50,13 @@ def get_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="subcommand")
 
     subparser = subparsers.add_parser("verify")
-    verify.argument_verify(subparser, default_json=default_verify_files_json)
+    verify.argument_verify(subparser)
 
     subparser = subparsers.add_parser("docs")
-    docs.argument_docs(subparser, default_json=default_verify_result_json)
+    docs.argument_docs(subparser)
 
     subparser = subparsers.add_parser("download")
-    download.argument_download(subparser, default_json=default_verify_result_json)
+    download.argument_download(subparser)
 
     return parser
 

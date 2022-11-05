@@ -7,6 +7,7 @@ from logging import getLogger
 from typing import Optional
 
 from competitive_verifier import github
+from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models.file import VerificationInput
@@ -41,6 +42,7 @@ def run_impl(
 
 def run(args: argparse.Namespace) -> Verifier:
     logger.debug("arguments=%s", vars(args))
+    logger.info("verify_files_json=%s", str(args.verify_files_json))
     verification = VerificationInput.parse_file(args.verify_files_json)
     if args.prev_result is None:
         prev_result = None
@@ -58,26 +60,8 @@ def run(args: argparse.Namespace) -> Verifier:
     )
 
 
-def argument_verify(
-    parser: argparse.ArgumentParser,
-    *,
-    default_json: Optional[pathlib.Path] = None,
-) -> argparse.ArgumentParser:
-    if default_json is None:
-        parser.add_argument(
-            "verify_files_json",
-            help="File path of verify_files.json.",
-            type=pathlib.Path,
-        )
-    else:
-        parser.add_argument(
-            "verify_files_json",
-            nargs="?",
-            default=default_json,
-            help='File path of verify_files.json. default: "{}"'.format(default_json),
-            type=pathlib.Path,
-        )
-
+def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verify_files_json_argument(parser)
     parser.add_argument(
         "--timeout",
         type=float,

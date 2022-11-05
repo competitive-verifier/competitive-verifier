@@ -9,7 +9,7 @@ from competitive_verifier.error import VerifierError
 from competitive_verifier.models.command import VerificationCommand
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
-    FileVerificationResult,
+    VerificationFileResult,
     ResultStatus,
     VerificationResult,
 )
@@ -146,17 +146,17 @@ def test_remaining_verification_files():
         },
         prev_result=VerificationResult(
             files=[
-                FileVerificationResult(
+                VerificationFileResult(
                     path=baz_foo.path,
                     last_success_time=None,
                     command_result=ResultStatus.SUCCESS,
                 ),
-                FileVerificationResult(
+                VerificationFileResult(
                     path=hoge_hoge.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                     command_result=ResultStatus.SUCCESS,
                 ),
-                FileVerificationResult(
+                VerificationFileResult(
                     path=hoge_piyo.path,
                     last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                     command_result=ResultStatus.SUCCESS,
@@ -208,17 +208,17 @@ def generate_current_verification_files() -> Iterable[
             },
             prev_result=VerificationResult(
                 files=[
-                    FileVerificationResult(
+                    VerificationFileResult(
                         path=baz_foo.path,
                         last_success_time=None,
                         command_result=ResultStatus.SUCCESS,
                     ),
-                    FileVerificationResult(
+                    VerificationFileResult(
                         path=hoge_hoge.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                         command_result=ResultStatus.SUCCESS,
                     ),
-                    FileVerificationResult(
+                    VerificationFileResult(
                         path=hoge_piyo.path,
                         last_success_time=datetime.datetime(2019, 12, 27, 19, 0, 0),
                         command_result=ResultStatus.SUCCESS,
@@ -266,8 +266,8 @@ def test_current_verification_files(
 def test_is_success():
     def get_result(
         path: str, *, command_result: ResultStatus = ResultStatus.SUCCESS
-    ) -> FileVerificationResult:
-        return FileVerificationResult(
+    ) -> VerificationFileResult:
+        return VerificationFileResult(
             path=Path(path),
             last_success_time=datetime.datetime(2017, 9, 20, 18, 0, 0),
             command_result=command_result,

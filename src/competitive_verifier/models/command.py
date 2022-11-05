@@ -1,31 +1,32 @@
 from abc import ABC, abstractmethod
+from subprocess import CompletedProcess
 from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
+from competitive_verifier.exec import exec_command
+
+_dummy_true: CompletedProcess[str] = CompletedProcess("true", 0)
+
 
 class BaseCommand(BaseModel, ABC):
-    @property
     @abstractmethod
-    def get_command(self) -> Optional[str]:
+    def run_command(self) -> CompletedProcess[str]:
         ...
 
-    @property
     @abstractmethod
-    def get_compile_command(self) -> Optional[str]:
+    def run_compile_command(self) -> CompletedProcess[str]:
         ...
 
 
 class DummyCommand(BaseCommand):
     type: Literal["dummy"] = "dummy"
 
-    @property
-    def get_command(self) -> None:
-        return None
+    def run_command(self) -> CompletedProcess[str]:
+        return _dummy_true
 
-    @property
-    def get_compile_command(self) -> None:
-        return None
+    def run_compile_command(self) -> CompletedProcess[str]:
+        return _dummy_true
 
 
 class VerificationCommand(BaseCommand):
@@ -34,13 +35,13 @@ class VerificationCommand(BaseCommand):
     command: str
     compile: Optional[str] = None
 
-    @property
-    def get_command(self) -> str:
-        return self.command
+    def run_command(self) -> CompletedProcess[str]:
+        return exec_command(self.command, text=True)
 
-    @property
-    def get_compile_command(self) -> Optional[str]:
-        return self.compile
+    def run_compile_command(self) -> CompletedProcess[str]:
+        if self.compile:
+            return exec_command(self.compile, text=True)
+        return _dummy_true
 
 
 class ProblemVerificationCommand(BaseCommand):
@@ -57,13 +58,13 @@ class ProblemVerificationCommand(BaseCommand):
     error: Optional[float] = None
     tle: Optional[float] = None
 
-    @property
-    def get_command(self) -> str:
-        return self.command
+    def run_command(self) -> CompletedProcess[str]:
+        return exec_command(self.command, text=True)
 
-    @property
-    def get_compile_command(self) -> Optional[str]:
-        return self.compile
+    def run_compile_command(self) -> CompletedProcess[str]:
+        if self.compile:
+            return exec_command(self.compile, text=True)
+        return _dummy_true
 
 
 Command = Annotated[
