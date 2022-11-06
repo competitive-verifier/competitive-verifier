@@ -7,10 +7,12 @@ from competitive_verifier import log
 
 logger = getLogger(__name__)
 
+_StrOrListStr = Union[str, list[str]]
+
 
 @overload
 def exec_command(
-    command: str,
+    command: _StrOrListStr,
     text: Literal[False] = False,
     check: bool = False,
     capture_output: bool = False,
@@ -21,7 +23,7 @@ def exec_command(
 
 @overload
 def exec_command(
-    command: str,
+    command: _StrOrListStr,
     text: Literal[True],
     check: bool = False,
     capture_output: bool = False,
@@ -31,7 +33,7 @@ def exec_command(
 
 
 def exec_command(
-    command: str,
+    command: _StrOrListStr,
     text: bool = False,
     check: bool = False,
     capture_output: bool = False,

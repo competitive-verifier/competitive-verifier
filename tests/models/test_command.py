@@ -1,5 +1,8 @@
 # flake8: noqa E501
-from typing import Optional
+import pathlib
+from dataclasses import dataclass
+from typing import Any, Sequence
+from unittest import mock
 
 import pytest
 from pydantic import BaseModel
@@ -10,6 +13,13 @@ from competitive_verifier.models.command import (
     ProblemVerificationCommand,
     VerificationCommand,
 )
+
+
+@dataclass
+class DataVerificationParams:
+    default_tle: float
+    test_directory: pathlib.Path
+
 
 command_union_json_params = [  # type: ignore
     (DummyCommand(), '{"type": "dummy"}', '{"type": "dummy"}'),
@@ -67,7 +77,6 @@ def test_command_union_json(
 command_command_params = [  # type: ignore
     (DummyCommand(), None, None),
     (VerificationCommand(command="ls ~"), "ls ~", None),
-    (VerificationCommand(command="ls ~"), "ls ~", None),
     (
         VerificationCommand(compile="cat LICENSE", command="ls ~"),
         "ls ~",
@@ -99,11 +108,201 @@ command_command_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, command, compile", command_command_params)
-def test_command_command(
-    obj: Command,
-    command: Optional[str],
-    compile: Optional[str],
-):
-    assert obj.get_command == command
-    assert obj.get_compile_command == compile
+def mock_exec_command():
+    return mock.patch("competitive_verifier.models.command.exec_command")
+
+
+def test_dummy():
+    obj = DummyCommand()
+    with mock_exec_command() as patch:
+        obj.run_command()
+        obj.run_compile_command()
+        patch.assert_not_called()
+
+
+run_command_params = [  # type: ignore
+    (VerificationCommand(command="ls ~"), ("ls ~",), {"text": True}),
+    (
+        VerificationCommand(compile="cat LICENSE", command="ls ~"),
+        ("ls ~",),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
+        (
+            [
+                "oj",
+                "test",
+                "-c",
+                "ls ~",
+                "-d",
+                str(pathlib.Path("/foo/test")),
+                "--print-input",
+                "--tle",
+                "22",
+            ],
+        ),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE", command="ls ~", problem="https://example.com"
+        ),
+        (
+            [
+                "oj",
+                "test",
+                "-c",
+                "ls ~",
+                "-d",
+                str(pathlib.Path("/foo/test")),
+                "--print-input",
+                "--tle",
+                "22",
+            ],
+        ),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        (
+            [
+                "oj",
+                "test",
+                "-c",
+                "ls ~",
+                "-d",
+                str(pathlib.Path("/foo/test")),
+                "--print-input",
+                "--tle",
+                "2.0",
+                "-e",
+                "1e-06",
+            ],
+        ),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+            error=1e-6,
+            tle=2,
+        ),
+        (
+            [
+                "oj",
+                "test",
+                "-c",
+                "ls ~",
+                "-d",
+                str(pathlib.Path("/foo/test")),
+                "--print-input",
+                "--tle",
+                "2.0",
+                "--judge-command",
+                str(
+                    pathlib.Path("/bar/baz")
+                    / "library-checker-problems/sample/aplusb/checker"
+                ),
+                "-e",
+                "1e-06",
+            ],
+        ),
+        {"text": True},
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, args, kwargs", run_command_params)
+def test_run_command(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
+    with mock.patch(
+        "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
+    ), mock_exec_command() as patch:
+        obj.run_command(
+            DataVerificationParams(
+                default_tle=22,
+                test_directory=pathlib.Path("/foo/test"),
+            ),
+        )
+        patch.assert_called_once_with(*args, **kwargs)
+
+
+run_compile_params = [  # type: ignore
+    (
+        VerificationCommand(command="ls ~"),
+        None,
+        None,
+    ),
+    (
+        VerificationCommand(compile="cat LICENSE", command="ls ~"),
+        ("cat LICENSE",),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
+        None,
+        None,
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE", command="ls ~", problem="https://example.com"
+        ),
+        ("cat LICENSE",),
+        {"text": True},
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        ("cat LICENSE",),
+        {"text": True},
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, args, kwargs", run_compile_params)
+def test_run_compile(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
+    with mock_exec_command() as patch:
+        obj.run_compile_command(
+            DataVerificationParams(
+                default_tle=22,
+                test_directory=pathlib.Path("/foo/test"),
+            ),
+        )
+        if args is None:
+            patch.assert_not_called()
+        else:
+            patch.assert_called_once_with(*args, **kwargs)
+
+
+params_run_command_params = [  # type: ignore
+    (DummyCommand(), None),
+    (VerificationCommand(command="true"), None),
+    (
+        ProblemVerificationCommand(command="true", problem="http://example.com"),
+        "ProblemVerificationCommand.run_command requires VerificationParams",
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, error_message", params_run_command_params)
+def test_params_run_command(obj: Command, error_message: str):
+    with mock_exec_command():
+        if error_message:
+            with pytest.raises(ValueError) as e:
+                obj.run_command()
+            assert e.value.args == (error_message,)
+        else:
+            obj.run_command()

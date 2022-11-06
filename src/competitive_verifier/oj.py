@@ -2,11 +2,13 @@ import hashlib
 import os
 import pathlib
 from logging import getLogger
+from typing import Optional
 
 import onlinejudge._implementation.utils
 import onlinejudge.utils
 import onlinejudge_command.main
 import onlinejudge_command.subcommand.download
+from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 from onlinejudge.type import NotLoggedInError
 
@@ -26,6 +28,10 @@ def get_directory(url: str) -> pathlib.Path:
 
 def is_yukicoder(url: str) -> bool:
     return YukicoderService.from_url(url) is not None
+
+
+def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
+    return LibraryCheckerProblem.from_url(url)
 
 
 def download(url: str) -> None:
