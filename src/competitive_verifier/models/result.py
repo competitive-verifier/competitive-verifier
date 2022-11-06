@@ -1,11 +1,9 @@
 import datetime
 import pathlib
-from collections import Counter
 from enum import Enum
 from logging import getLogger
-from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = getLogger(__name__)
 
@@ -16,25 +14,42 @@ class ResultStatus(str, Enum):
     SKIPPED = "SKIPPED"
 
 
-class VerificationFileResult(BaseModel):
-    path: pathlib.Path
-    command_result: ResultStatus
-    last_success_time: Optional[datetime.datetime] = None
+class CommandResult(BaseModel):
+    status: ResultStatus
+    last_execution_time: datetime.datetime = Field(
+        default_factory=datetime.datetime.now
+    )
 
     class Config:
         use_enum_values = True
 
-    def is_updated(self, base_time: datetime.datetime) -> bool:
-        return (
-            self.last_success_time is not None and self.last_success_time >= base_time
-        )
+    def need_reverifying(self, base_time: datetime.datetime) -> bool:
+        if self.status != ResultStatus.SUCCESS:
+            return True
+        if self.last_execution_time is None:
+            return True
+
+        return self.last_execution_time < base_time
+
+
+class FileResult(BaseModel):
+    command_results: list[CommandResult]
+
+    def need_verification(self, base_time: datetime.datetime) -> bool:
+        return any(r.need_reverifying(base_time) for r in self.command_results)
+
+    def is_success(self) -> bool:
+        return all(r.status == ResultStatus.SUCCESS for r in self.command_results)
 
 
 class VerificationResult(BaseModel):
-    files: list[VerificationFileResult]
+    files: dict[pathlib.Path, FileResult]
 
-    def show_summary(self) -> None:
-        counter = Counter(r.command_result for r in self.files)
-        logger.info(
-            " ".join(f"Test result: {s.value}: {counter.get(s)}" for s in ResultStatus)
-        )
+    def is_success(self) -> bool:
+        return all(f.is_success() for f in self.files.values())
+
+    # def show_summary(self) -> None:
+    #     counter = Counter(r.command_result for r in self.files)
+    #     logger.info(
+    #         " ".join(f"Test result: {s.value}: {counter.get(s)}" for s in ResultStatus)
+    #     )

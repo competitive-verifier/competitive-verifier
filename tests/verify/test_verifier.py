@@ -1,35 +1,61 @@
 # pyright: reportPrivateUsage=none
 import datetime
-import pathlib
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Optional
 
 import pytest
 
-from competitive_verifier.error import VerifierError
 from competitive_verifier.models.command import DummyCommand, VerificationCommand
 from competitive_verifier.models.file import VerificationFile, VerificationInput
 from competitive_verifier.models.result import (
+    CommandResult,
+    FileResult,
     ResultStatus,
-    VerificationFileResult,
     VerificationResult,
 )
-from competitive_verifier.verify.verifier import InputResolver, SplitState, Verifier
+from competitive_verifier.verify.verifier import InputContainer, SplitState, Verifier
 
 
-class MockInputResolver(InputResolver):
-    def __init__(self, obj: Any) -> None:
-        super().__init__()
-        self._input = VerificationInput.parse_obj(obj)
+class MockInputContainer(InputContainer):
+    def __init__(
+        self,
+        obj: Any = None,
+        *,
+        prev_result: Optional[VerificationResult] = None,
+        verification_time: Optional[datetime.datetime] = None,
+        file_timestamps: dict[Optional[Path], datetime.datetime] = {},
+    ) -> None:
+        if obj:
+            self._input = VerificationInput.parse_obj(obj)
+        self._verification_time = verification_time
+        self._prev_result = prev_result
+        self.file_timestamps = file_timestamps
 
     @property
     def input(self) -> VerificationInput:
+        assert self._input is not None
         return self._input
 
+    @property
+    def verification_time(self) -> datetime.datetime:
+        assert self._verification_time is not None
+        return self._verification_time
 
-verification_files_params: list[tuple[InputResolver, dict[Path, VerificationFile]]] = [
+    @property
+    def prev_result(self) -> Optional[VerificationResult]:
+        return self._prev_result
+
+    def get_file_timestamp(self, path: Path) -> datetime.datetime:
+        assert self.file_timestamps is not None
+        dt = self.file_timestamps.get(path)
+        if dt:
+            return dt
+        return self.file_timestamps[None]
+
+
+verification_files_params: list[tuple[InputContainer, dict[Path, VerificationFile]]] = [
     (
-        MockInputResolver(
+        MockInputContainer(
             {
                 "files": {
                     "foo": {},
@@ -41,7 +67,7 @@ verification_files_params: list[tuple[InputResolver, dict[Path, VerificationFile
         {},
     ),
     (
-        MockInputResolver(
+        MockInputContainer(
             {
                 "files": {
                     "foo": {"verification": {"type": "dummy"}},
@@ -51,13 +77,13 @@ verification_files_params: list[tuple[InputResolver, dict[Path, VerificationFile
             }
         ),
         {
-            pathlib.Path("foo"): VerificationFile(verification=[DummyCommand()]),
-            pathlib.Path("bar"): VerificationFile(verification=[DummyCommand()]),
-            pathlib.Path("baz"): VerificationFile(verification=[DummyCommand()]),
+            Path("foo"): VerificationFile(verification=[DummyCommand()]),
+            Path("bar"): VerificationFile(verification=[DummyCommand()]),
+            Path("baz"): VerificationFile(verification=[DummyCommand()]),
         },
     ),
     (
-        MockInputResolver(
+        MockInputContainer(
             {
                 "files": {
                     "foo": {"verification": {"type": "dummy"}},
@@ -67,8 +93,8 @@ verification_files_params: list[tuple[InputResolver, dict[Path, VerificationFile
             }
         ),
         {
-            pathlib.Path("foo"): VerificationFile(verification=[DummyCommand()]),
-            pathlib.Path("baz"): VerificationFile(verification=[DummyCommand()]),
+            Path("foo"): VerificationFile(verification=[DummyCommand()]),
+            Path("baz"): VerificationFile(verification=[DummyCommand()]),
         },
     ),
 ]
@@ -76,10 +102,164 @@ verification_files_params: list[tuple[InputResolver, dict[Path, VerificationFile
 
 @pytest.mark.parametrize("resolver, expected", verification_files_params)
 def test_verification_files(
-    resolver: InputResolver,
+    resolver: InputContainer,
     expected: dict[Path, VerificationFile],
 ):
     assert resolver.verification_files == expected
+
+
+file_need_verification_params: list[tuple[InputContainer, Path, FileResult, bool]] = [
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2015, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        False,
+    ),
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2017, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        True,
+    ),
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2015, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.FAILURE,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        True,
+    ),
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2015, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.SKIPPED,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        True,
+    ),
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2015, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        False,
+    ),
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2015, 12, 25),
+            file_timestamps={
+                Path("foo"): datetime.datetime(2017, 12, 25),
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            command_results=[
+                CommandResult(
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ]
+        ),
+        False,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "resolver, path, file_result, expected",
+    file_need_verification_params,
+)
+def test_file_need_verification(
+    resolver: InputContainer,
+    path: Path,
+    file_result: FileResult,
+    expected: bool,
+):
+    assert resolver.file_need_verification(path, file_result) == expected
+
+
+remaining_verification_files_params: list[
+    tuple[InputContainer, dict[Path, VerificationFile]]
+] = [
+    (
+        MockInputContainer(
+            {
+                "files": {
+                    "foo": {"verification": {"type": "dummy"}},
+                    "bar": {},
+                    "baz": {"verification": {"type": "dummy"}},
+                },
+            }
+        ),
+        {},
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "resolver, expected",
+    remaining_verification_files_params,
+)
+def test_remaining_verification_files(
+    resolver: InputContainer,
+    expected: dict[Path, VerificationFile],
+):
+    assert resolver.remaining_verification_files == expected
 
 
 # class VerifierForTest(Verifier):

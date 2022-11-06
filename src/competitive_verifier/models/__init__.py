@@ -7,7 +7,7 @@ from .command import (
     VerificationParams,
 )
 from .file import VerificationFile, VerificationInput, VerificationInputImpl
-from .result import ResultStatus, VerificationFileResult, VerificationResult
+from .result import CommandResult, FileResult, ResultStatus, VerificationResult
 
 __all__ = [
     "VerificationParams",
@@ -20,6 +20,7 @@ __all__ = [
     "VerificationInputImpl",
     "VerificationInput",
     "ResultStatus",
-    "VerificationFileResult",
+    "FileResult",
+    "CommandResult",
     "VerificationResult",
 ]

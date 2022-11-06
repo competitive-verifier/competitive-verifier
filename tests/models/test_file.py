@@ -3,7 +3,11 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.models import DummyCommand, VerificationFile
+from competitive_verifier.models import (
+    DummyCommand,
+    VerificationCommand,
+    VerificationFile,
+)
 
 parse_VerificationFile_params: list[
     tuple[VerificationFile, dict[str, Any], dict[str, Any]]
@@ -89,3 +93,54 @@ def test_parse_VerificationFile(
 ):
     assert obj == VerificationFile.parse_obj(raw_dict)
     assert obj.dict() == output_dict
+
+
+is_verification_params = [
+    (
+        VerificationFile(
+            verification=[DummyCommand()],
+        ),
+        True,
+        True,
+    ),
+    (
+        VerificationFile(
+            verification=[DummyCommand(), DummyCommand()],
+        ),
+        True,
+        True,
+    ),
+    (
+        VerificationFile(
+            verification=[VerificationCommand(command="true")],
+        ),
+        True,
+        False,
+    ),
+    (
+        VerificationFile(
+            verification=[DummyCommand(), VerificationCommand(command="true")],
+        ),
+        True,
+        False,
+    ),
+    (
+        VerificationFile(
+            verification=[],
+        ),
+        False,
+        False,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "obj, is_verification, is_dummy_verification", is_verification_params
+)
+def test_is_verification(
+    obj: VerificationFile,
+    is_verification: bool,
+    is_dummy_verification: bool,
+):
+    assert obj.is_verification() == is_verification
+    assert obj.is_dummy_verification() == is_dummy_verification

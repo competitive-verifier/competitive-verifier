@@ -5,7 +5,7 @@ from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field, StrBytes, validator
 
 from ._scc import SccGraph
-from .command import Command
+from .command import Command, DummyCommand
 
 
 class VerificationFile(BaseModel):
@@ -23,6 +23,11 @@ class VerificationFile(BaseModel):
 
     def is_verification(self) -> bool:
         return bool(self.verification)
+
+    def is_dummy_verification(self) -> bool:
+        return self.is_verification() and all(
+            isinstance(c, DummyCommand) for c in self.verification
+        )
 
 
 # NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625
