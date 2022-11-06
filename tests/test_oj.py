@@ -21,7 +21,7 @@ def test_oj_download(clear_env: Any):
     ), mock.patch.object(pathlib.Path, "mkdir") as mkdir, mock.patch(
         "onlinejudge_command.subcommand.download.run"
     ) as patch:
-        oj.download("http://example.com")
+        oj.download("http://example.com", group_log=False)
         mkdir.assert_called_once()
         patch.assert_called_once()
         args = patch.call_args[0][0]
@@ -45,7 +45,7 @@ def test_oj_download_yukicoder():
     ) as patch:
         try:
             os.environ["YUKICODER_TOKEN"] = "YKTK"
-            oj.download("http://example.com")
+            oj.download("http://example.com", group_log=False)
             mkdir.assert_called_once()
             patch.assert_called_once()
             args = patch.call_args[0][0]
@@ -76,7 +76,6 @@ def test_oj_test():
         args = patch.call_args[0][0]
 
         assert isinstance(args, argparse.Namespace)
-        print(args)
         assert args.subcommand == "test"
         assert args.print_input is True
         assert args.cookie == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"

@@ -49,7 +49,7 @@ test_input = VerificationInput(
 )
 
 
-resolve_dependencies_params: list[tuple[str, list[str]]] = [
+test_resolve_dependencies_params: list[tuple[str, list[str]]] = [
     ("foo/bar1.py", ["foo/bar1.py"]),
     ("foo/bar2.py", ["foo/bar1.py", "foo/bar2.py"]),
     ("foo/baz.py", ["foo/baz.py"]),
@@ -82,8 +82,8 @@ resolve_dependencies_params: list[tuple[str, list[str]]] = [
 
 @pytest.mark.parametrize(
     "path, expected",
-    resolve_dependencies_params,
-    ids=[tup[0] for tup in resolve_dependencies_params],
+    test_resolve_dependencies_params,
+    ids=[tup[0] for tup in test_resolve_dependencies_params],
 )
 def test_resolve_dependencies(path: str, expected: list[str]):
     expected_paths = set(Path(p) for p in expected)
@@ -152,7 +152,7 @@ def test_repr():
     )
 
 
-parse_pre_command_params: list[Any] = [
+test_parse_pre_command_params: list[Any] = [
     (
         VerificationInput(pre_command="ls .", files={}),
         {"pre_command": "ls ."},
@@ -168,12 +168,12 @@ parse_pre_command_params: list[Any] = [
 ]
 
 
-@pytest.mark.parametrize("obj, raw_obj", parse_pre_command_params)
+@pytest.mark.parametrize("obj, raw_obj", test_parse_pre_command_params)
 def test_parse_pre_command(obj: VerificationInput, raw_obj: dict[str, Any]):
     assert VerificationInput.parse_obj(raw_obj) == obj
 
 
-pre_command_params: list[Any] = [
+test_pre_command_params: list[Any] = [
     (
         VerificationInput(pre_command="ls .", files={}),
         ["ls ."],
@@ -189,6 +189,6 @@ pre_command_params: list[Any] = [
 ]
 
 
-@pytest.mark.parametrize("obj, pre_command", pre_command_params)
+@pytest.mark.parametrize("obj, pre_command", test_pre_command_params)
 def test_pre_command(obj: VerificationInput, pre_command: Any):
     assert obj.pre_command == pre_command

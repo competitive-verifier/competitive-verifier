@@ -2,6 +2,7 @@ import datetime
 import pathlib
 from enum import Enum
 from logging import getLogger
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -44,6 +45,14 @@ class FileResult(BaseModel):
 
 class VerificationResult(BaseModel):
     files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
+
+    def json(self, **kwargs: Any) -> str:
+        class WithStrDict(BaseModel):
+            files: dict[str, FileResult]
+
+        return WithStrDict(
+            files={str(k): v for k, v in self.files.items()},
+        ).json(**kwargs)
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())

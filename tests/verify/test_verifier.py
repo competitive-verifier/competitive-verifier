@@ -43,7 +43,9 @@ class MockInputContainer(InputContainer):
         return self.file_timestamps[None]
 
 
-verification_files_params: list[tuple[InputContainer, dict[Path, VerificationFile]]] = [
+test_verification_files_params: list[
+    tuple[InputContainer, dict[Path, VerificationFile]]
+] = [
     (
         MockInputContainer(
             {
@@ -90,7 +92,7 @@ verification_files_params: list[tuple[InputContainer, dict[Path, VerificationFil
 ]
 
 
-@pytest.mark.parametrize("resolver, expected", verification_files_params)
+@pytest.mark.parametrize("resolver, expected", test_verification_files_params)
 def test_verification_files(
     resolver: InputContainer,
     expected: dict[Path, VerificationFile],
@@ -98,7 +100,9 @@ def test_verification_files(
     assert resolver.verification_files == expected
 
 
-file_need_verification_params: list[tuple[InputContainer, Path, FileResult, bool]] = [
+test_file_need_verification_params: list[
+    tuple[InputContainer, Path, FileResult, bool]
+] = [
     (
         MockInputContainer(
             verification_time=datetime.datetime(2018, 12, 25),
@@ -212,7 +216,7 @@ file_need_verification_params: list[tuple[InputContainer, Path, FileResult, bool
 
 @pytest.mark.parametrize(
     "resolver, path, file_result, expected",
-    file_need_verification_params,
+    test_file_need_verification_params,
 )
 def test_file_need_verification(
     resolver: InputContainer,
@@ -223,7 +227,7 @@ def test_file_need_verification(
     assert resolver.file_need_verification(path, file_result) == expected
 
 
-remaining_verification_files_params: list[
+test_remaining_verification_files_params: list[
     tuple[InputContainer, dict[Path, VerificationFile]]
 ] = [
     (
@@ -294,7 +298,7 @@ remaining_verification_files_params: list[
 
 @pytest.mark.parametrize(
     "resolver, expected",
-    remaining_verification_files_params,
+    test_remaining_verification_files_params,
 )
 def test_remaining_verification_files(
     resolver: InputContainer,
@@ -303,7 +307,9 @@ def test_remaining_verification_files(
     assert resolver.remaining_verification_files == expected
 
 
-current_verification_files_params: list[tuple[int, dict[Path, VerificationFile]]] = [
+test_current_verification_files_params: list[
+    tuple[int, dict[Path, VerificationFile]]
+] = [
     (
         0,
         {
@@ -369,7 +375,7 @@ current_verification_files_params: list[tuple[int, dict[Path, VerificationFile]]
 
 @pytest.mark.parametrize(
     "index, expected",
-    current_verification_files_params,
+    test_current_verification_files_params,
 )
 def test_current_verification_files(index: int, expected: dict[Path, VerificationFile]):
     command_verification = {"verification": {"type": "command", "command": "true"}}

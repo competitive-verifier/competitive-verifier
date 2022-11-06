@@ -138,8 +138,8 @@ def main(args: Optional[list[str]] = None) -> None:
         verifier = run(parsed)
         if not verifier.force_result.is_success():
             sys.exit(1)
-    except (VerifierError) as e:
-        sys.stderr.write(e.message)
+    except Exception as e:
+        sys.stderr.write(str(e))
         sys.exit(2)
 
 

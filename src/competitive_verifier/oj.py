@@ -3,6 +3,7 @@ import os
 import pathlib
 import shutil
 import sys
+from contextlib import nullcontext
 from logging import getLogger
 from typing import Optional
 
@@ -53,13 +54,19 @@ def get_checker_path(url: str) -> Optional[pathlib.Path]:
         return problem_dir / _checker_exe_path
 
 
-def download(url: str) -> bool:
+def download(url: str, *, group_log: bool) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
     if not (test_directory).exists() or list((test_directory).iterdir()) == []:
         logger.info("download: %s", url)
-        with log.group(f"download: {url}", use_stderr=True):
+
+        if group_log:
+            cm = log.group(f"download: {url}", use_stderr=True)
+        else:
+            logger.info("download: %s", url)
+            cm = nullcontext()
+        with cm:
             directory.mkdir(parents=True, exist_ok=True)
             # time.sleep(2)
 

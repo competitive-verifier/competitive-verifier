@@ -21,7 +21,7 @@ class DataVerificationParams:
     default_tle: float
 
 
-command_union_json_params = [  # type: ignore
+test_command_union_json_params = [  # type: ignore
     (DummyCommand(), '{"type": "dummy"}', '{"type": "dummy"}'),
     (
         VerificationCommand(command="ls ~"),
@@ -59,7 +59,7 @@ command_union_json_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, raw_json, output_json", command_union_json_params)
+@pytest.mark.parametrize("obj, raw_json, output_json", test_command_union_json_params)
 def test_command_union_json(
     obj: Command,
     raw_json: str,
@@ -74,40 +74,6 @@ def test_command_union_json(
     assert obj == CommandUnion.parse_raw(raw_json).__root__
 
 
-command_command_params = [  # type: ignore
-    (DummyCommand(), None, None),
-    (VerificationCommand(command="ls ~"), "ls ~", None),
-    (
-        VerificationCommand(compile="cat LICENSE", command="ls ~"),
-        "ls ~",
-        "cat LICENSE",
-    ),
-    (
-        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
-        "ls ~",
-        None,
-    ),
-    (
-        ProblemVerificationCommand(
-            compile="cat LICENSE", command="ls ~", problem="https://example.com"
-        ),
-        "ls ~",
-        "cat LICENSE",
-    ),
-    (
-        ProblemVerificationCommand(
-            compile="cat LICENSE",
-            command="ls ~",
-            problem="https://example.com",
-            error=1e-6,
-            tle=2,
-        ),
-        "ls ~",
-        "cat LICENSE",
-    ),
-]
-
-
 def mock_exec_command():
     return mock.patch.object(competitive_verifier.models.command.exec, "exec_command")
 
@@ -120,7 +86,7 @@ def test_dummy():
         patch.assert_not_called()
 
 
-run_command_params = [  # type: ignore
+test_run_command_params = [  # type: ignore
     (VerificationCommand(command="ls ~"), ("ls ~",), {"text": True}),
     (
         VerificationCommand(compile="cat LICENSE", command="ls ~"),
@@ -130,7 +96,7 @@ run_command_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", run_command_params)
+@pytest.mark.parametrize("obj, args, kwargs", test_run_command_params)
 def test_run_command(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
     with mock.patch(
         "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
@@ -143,7 +109,9 @@ def test_run_command(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
         patch.assert_called_once_with(*args, **kwargs)
 
 
-run_problem_command_params: list[tuple[ProblemVerificationCommand, dict[str, Any]]] = [
+test_run_problem_command_params: list[
+    tuple[ProblemVerificationCommand, dict[str, Any]]
+] = [
     (
         ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
         {
@@ -197,7 +165,7 @@ run_problem_command_params: list[tuple[ProblemVerificationCommand, dict[str, Any
 ]
 
 
-@pytest.mark.parametrize("obj, kwargs", run_problem_command_params)
+@pytest.mark.parametrize("obj, kwargs", test_run_problem_command_params)
 def test_run_problem_command(obj: ProblemVerificationCommand, kwargs: dict[str, Any]):
     with mock.patch.object(competitive_verifier.models.command.oj, "test") as patch:
         obj.run_command(
@@ -206,7 +174,7 @@ def test_run_problem_command(obj: ProblemVerificationCommand, kwargs: dict[str, 
         patch.assert_called_once_with(**kwargs)
 
 
-run_compile_params = [  # type: ignore
+test_run_compile_params = [  # type: ignore
     (
         VerificationCommand(command="ls ~"),
         None,
@@ -243,7 +211,7 @@ run_compile_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", run_compile_params)
+@pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
 def test_run_compile(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
     with mock_exec_command() as patch:
         obj.run_compile_command(
@@ -257,7 +225,7 @@ def test_run_compile(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
             patch.assert_called_once_with(*args, **kwargs)
 
 
-params_run_command_params = [  # type: ignore
+test_params_run_command_params = [  # type: ignore
     (DummyCommand(), None),
     (VerificationCommand(command="true"), None),
     (
@@ -267,7 +235,7 @@ params_run_command_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, error_message", params_run_command_params)
+@pytest.mark.parametrize("obj, error_message", test_params_run_command_params)
 def test_params_run_command(obj: Command, error_message: str):
     with mock_exec_command():
         if error_message:

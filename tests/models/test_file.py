@@ -9,7 +9,7 @@ from competitive_verifier.models import (
     VerificationFile,
 )
 
-parse_VerificationFile_params: list[
+test_parse_VerificationFile_params: list[
     tuple[VerificationFile, dict[str, Any], dict[str, Any]]
 ] = [
     (
@@ -85,7 +85,9 @@ parse_VerificationFile_params: list[
 ]
 
 
-@pytest.mark.parametrize("obj, raw_dict, output_dict", parse_VerificationFile_params)
+@pytest.mark.parametrize(
+    "obj, raw_dict, output_dict", test_parse_VerificationFile_params
+)
 def test_parse_VerificationFile(
     obj: VerificationFile,
     raw_dict: dict[str, Any],
@@ -95,7 +97,7 @@ def test_parse_VerificationFile(
     assert obj.dict() == output_dict
 
 
-is_verification_params = [
+test_is_verification_params = [
     (
         VerificationFile(
             verification=[DummyCommand()],
@@ -135,7 +137,7 @@ is_verification_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, is_verification, is_dummy_verification", is_verification_params
+    "obj, is_verification, is_dummy_verification", test_is_verification_params
 )
 def test_is_verification(
     obj: VerificationFile,

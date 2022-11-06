@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from itertools import chain
 from logging import getLogger
 from typing import Iterable, Optional, Union
 
@@ -16,23 +17,21 @@ from competitive_verifier.models import (
 
 logger = getLogger(__name__)
 
+UrlOrVerificationFile = Union[str, VerificationFile]
 
-def run_impl(url_or_files: Iterable[Union[str, VerificationFile]]) -> bool:
-    result = True
-    for uf in url_or_files:
-        if isinstance(uf, str):
-            urls = (uf,)
-            if not oj.download(uf):
-                result = False
+
+def parse_urls(
+    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]]
+) -> Iterable[str]:
+    def parse_single(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
+        if isinstance(url_or_file, str):
+            return (url_or_file,)
         else:
-            urls = enumerate_urls(uf)
+            return enumerate_urls(url_or_file)
 
-        for url in urls:
-            if not oj.download(url):
-                result = False
-    if not result:
-        raise VerifierError("Failed to download")
-    return result
+    if isinstance(input, (str, VerificationFile)):
+        return parse_single(input)
+    return chain.from_iterable(parse_single(uf) for uf in input)
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
@@ -41,12 +40,27 @@ def enumerate_urls(file: VerificationFile) -> Iterable[str]:
             yield verification_command.problem
 
 
+def run_impl(
+    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]],
+    check: bool = False,
+    group_log: bool = False,
+) -> bool:
+    result = True
+    for url in parse_urls(input):
+        if not oj.download(url, group_log=group_log):
+            result = False
+
+    if check and not result:
+        raise VerifierError("Failed to download")
+    return result
+
+
 def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     verification = VerificationInput.parse_file(args.verify_files_json)
 
-    return run_impl(verification.files.values())
+    return run_impl(verification.files.values(), group_log=True)
 
 
 def argument_download(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -58,9 +72,10 @@ def main(args: Optional[list[str]] = None) -> None:
     try:
         configure_logging(logging.INFO)
         parsed = argument_download(argparse.ArgumentParser()).parse_args(args)
-        run(parsed)
-    except (VerifierError) as e:
-        sys.stderr.write(e.message)
+        if not run(parsed):
+            sys.exit(1)
+    except Exception as e:
+        sys.stderr.write(str(e))
         sys.exit(2)
 
 

@@ -7,7 +7,7 @@ import pytest
 from competitive_verifier.models import FileResult, ResultStatus
 from competitive_verifier.models.result import CommandResult
 
-parse_FileResult_params = [  # type: ignore
+test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             command_results=[
@@ -123,7 +123,7 @@ parse_FileResult_params = [  # type: ignore
 
 @pytest.mark.parametrize(
     "obj, raw_dict, output_dict, output_json_dict",
-    parse_FileResult_params,
+    test_parse_FileResult_params,
 )
 def test_parse_FileResult(
     obj: FileResult,
@@ -136,7 +136,7 @@ def test_parse_FileResult(
     assert obj.json() == json_dumps(output_json_dict)
 
 
-file_result_need_verification_params = [  # type: ignore
+test_file_result_need_verification_params = [  # type: ignore
     (FileResult(command_results=[]), datetime(2016, 12, 24, 19, 0, 0), False),
     (
         FileResult(
@@ -231,7 +231,7 @@ file_result_need_verification_params = [  # type: ignore
 
 @pytest.mark.parametrize(
     "obj, dt, expected",
-    file_result_need_verification_params,
+    test_file_result_need_verification_params,
 )
 def test_file_result_need_verification(
     obj: FileResult,
@@ -241,7 +241,7 @@ def test_file_result_need_verification(
     assert obj.need_verification(dt) == expected
 
 
-is_success_params = [
+test_is_success_params = [
     (
         FileResult(
             command_results=[
@@ -274,7 +274,7 @@ is_success_params = [
 
 @pytest.mark.parametrize(
     "obj, expected",
-    is_success_params,
+    test_is_success_params,
 )
 def test_is_success(
     obj: FileResult,

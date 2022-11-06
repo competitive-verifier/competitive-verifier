@@ -89,13 +89,15 @@ def main(args: Optional[list[str]] = None):
     os.chdir(root)
 
     if parsed.subcommand == "download":
-        download.run(parsed)
+        if not download.run(parsed):
+            sys.exit(1)
     elif parsed.subcommand == "verify":
         verifier = verify.run(parsed)
         if not verifier.force_result.is_success():
             sys.exit(1)
     elif parsed.subcommand == "docs":
-        docs.run(parsed)
+        if not docs.run(parsed):
+            sys.exit(1)
 
 
 if __name__ == "__main__":

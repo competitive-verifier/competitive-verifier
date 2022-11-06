@@ -125,7 +125,7 @@ class Verifier(InputContainer):
     ) -> None:
         super().__init__(
             input=input,
-            verification_time=verification_time or datetime.datetime.now(),
+            verification_time=verification_time or datetime.datetime.now().astimezone(),
             prev_result=prev_result,
             split_state=split_state,
         )
@@ -148,9 +148,7 @@ class Verifier(InputContainer):
             dependicies = self.input.resolve_dependencies(path)
 
             timestamp = max(x.stat().st_mtime for x in dependicies)
-            system_local_timezone = (
-                datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-            )
+            system_local_timezone = datetime.datetime.now().astimezone().tzinfo
             return datetime.datetime.fromtimestamp(
                 timestamp, tz=system_local_timezone
             ).replace(
@@ -174,9 +172,6 @@ class Verifier(InputContainer):
     def verify(self, *, download: bool = True) -> VerificationResult:
         start_time = datetime.datetime.now()
 
-        if download:
-            run_download(f for f in self.current_verification_files.values())
-
         logger.info(
             "current_verification_files: %s",
             " ".join(str(p) for p in self.current_verification_files.keys()),
@@ -189,26 +184,45 @@ class Verifier(InputContainer):
         self.exec_pre_commands()
         file_results = dict[pathlib.Path, FileResult]()
         for p, f in self.current_verification_files.items():
-            prev_time = datetime.datetime.now()
-            if (
-                self.timeout is not None
-                and (prev_time - start_time).total_seconds() > self.timeout
-            ):
-                logger.warning("Skip[Timeout]: %s, %s", p, repr(f))
-                if p not in file_results:
-                    file_results[p] = FileResult()
-                file_results[p].command_results.append(
-                    CommandResult(
-                        status=ResultStatus.SKIPPED,
-                        last_execution_time=self.verification_time,
-                    )
-                )
-                continue
-
             logger.info("Start: %s", str(p))
             with log.group(f"Verify: {str(p)}", use_stderr=True):
                 logger.debug(repr(f))
 
+                prev_time = datetime.datetime.now()
+                if p not in file_results:
+                    file_results[p] = FileResult()
+
+                results = file_results[p]
+                if (
+                    self.timeout is not None
+                    and (prev_time - start_time).total_seconds() > self.timeout
+                ):
+                    logger.warning("Skip[Timeout]: %s, %s", p, repr(f))
+                    results.command_results.append(
+                        CommandResult(
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=self.verification_time,
+                        )
+                    )
+                    continue
+
+                try:
+                    if download:
+                        run_download(f, check=True, group_log=False)
+                    results.command_results.append(
+                        CommandResult(
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=self.verification_time,
+                        )
+                    )
+                except Exception as e:
+                    results.command_results.append(
+                        CommandResult(
+                            status=ResultStatus.FAILURE,
+                            last_execution_time=self.verification_time,
+                        )
+                    )
+                    logger.error(e)
         #     ok = verify_file(f)
         #     finish_time = datetime.datetime.now()
         #     if ok:

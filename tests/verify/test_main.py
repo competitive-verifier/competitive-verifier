@@ -7,7 +7,7 @@ from competitive_verifier.error import VerifierError
 from competitive_verifier.verify.main import argument_verify, get_split_state
 from competitive_verifier.verify.verifier import SplitState
 
-get_split_state_params = [
+test_get_split_state_params = [
     (None, None, None),
     (5, 0, SplitState(size=5, index=0)),
     (5, 1, SplitState(size=5, index=1)),
@@ -19,8 +19,8 @@ get_split_state_params = [
 
 @pytest.mark.parametrize(
     "size, index, expected",
-    get_split_state_params,
-    ids=list(f"{tup[1]}/{tup[0]}" for tup in get_split_state_params),
+    test_get_split_state_params,
+    ids=list(f"{tup[1]}/{tup[0]}" for tup in test_get_split_state_params),
 )
 def test_get_split_state(
     size: Optional[int],
