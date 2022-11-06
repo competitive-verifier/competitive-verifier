@@ -7,7 +7,8 @@ from unittest import mock
 import pytest
 from pydantic import BaseModel
 
-from competitive_verifier.models.command import (
+import competitive_verifier.models
+from competitive_verifier.models import (
     Command,
     DummyCommand,
     ProblemVerificationCommand,
@@ -18,7 +19,6 @@ from competitive_verifier.models.command import (
 @dataclass
 class DataVerificationParams:
     default_tle: float
-    test_directory: pathlib.Path
 
 
 command_union_json_params = [  # type: ignore
@@ -109,7 +109,7 @@ command_command_params = [  # type: ignore
 
 
 def mock_exec_command():
-    return mock.patch("competitive_verifier.models.command.exec_command")
+    return mock.patch.object(competitive_verifier.models.command.exec, "exec_command")
 
 
 def test_dummy():
@@ -127,97 +127,6 @@ run_command_params = [  # type: ignore
         ("ls ~",),
         {"text": True},
     ),
-    (
-        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
-        (
-            [
-                "oj",
-                "test",
-                "-c",
-                "ls ~",
-                "-d",
-                str(pathlib.Path("/foo/test")),
-                "--print-input",
-                "--tle",
-                "22",
-            ],
-        ),
-        {"text": True},
-    ),
-    (
-        ProblemVerificationCommand(
-            compile="cat LICENSE", command="ls ~", problem="https://example.com"
-        ),
-        (
-            [
-                "oj",
-                "test",
-                "-c",
-                "ls ~",
-                "-d",
-                str(pathlib.Path("/foo/test")),
-                "--print-input",
-                "--tle",
-                "22",
-            ],
-        ),
-        {"text": True},
-    ),
-    (
-        ProblemVerificationCommand(
-            compile="cat LICENSE",
-            command="ls ~",
-            problem="https://example.com",
-            error=1e-6,
-            tle=2,
-        ),
-        (
-            [
-                "oj",
-                "test",
-                "-c",
-                "ls ~",
-                "-d",
-                str(pathlib.Path("/foo/test")),
-                "--print-input",
-                "--tle",
-                "2.0",
-                "-e",
-                "1e-06",
-            ],
-        ),
-        {"text": True},
-    ),
-    (
-        ProblemVerificationCommand(
-            compile="cat LICENSE",
-            command="ls ~",
-            problem="https://judge.yosupo.jp/problem/aplusb",
-            error=1e-6,
-            tle=2,
-        ),
-        (
-            [
-                "oj",
-                "test",
-                "-c",
-                "ls ~",
-                "-d",
-                str(pathlib.Path("/foo/test")),
-                "--print-input",
-                "--tle",
-                "2.0",
-                "--judge-command",
-                str(
-                    pathlib.Path("/bar/baz")
-                    / "library-checker-problems/sample/aplusb/checker"
-                ),
-                "-e",
-                "1e-06",
-            ],
-        ),
-        {"text": True},
-    ),
 ]
 
 
@@ -229,10 +138,72 @@ def test_run_command(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
         obj.run_command(
             DataVerificationParams(
                 default_tle=22,
-                test_directory=pathlib.Path("/foo/test"),
             ),
         )
         patch.assert_called_once_with(*args, **kwargs)
+
+
+run_problem_command_params: list[tuple[ProblemVerificationCommand, dict[str, Any]]] = [
+    (
+        ProblemVerificationCommand(command="ls ~", problem="https://example.com"),
+        {
+            "url": "https://example.com",
+            "command": "ls ~",
+            "tle": 22.0,
+            "error": None,
+        },
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE", command="ls ~", problem="https://example.com"
+        ),
+        {
+            "url": "https://example.com",
+            "command": "ls ~",
+            "tle": 22.0,
+            "error": None,
+        },
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        {
+            "url": "https://example.com",
+            "command": "ls ~",
+            "tle": 2.0,
+            "error": 1e-06,
+        },
+    ),
+    (
+        ProblemVerificationCommand(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+            error=1e-6,
+            tle=2,
+        ),
+        {
+            "url": "https://judge.yosupo.jp/problem/aplusb",
+            "command": "ls ~",
+            "tle": 2.0,
+            "error": 1e-06,
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize("obj, kwargs", run_problem_command_params)
+def test_run_problem_command(obj: ProblemVerificationCommand, kwargs: dict[str, Any]):
+    with mock.patch.object(competitive_verifier.models.command.oj, "test") as patch:
+        obj.run_command(
+            DataVerificationParams(default_tle=22),
+        )
+        patch.assert_called_once_with(**kwargs)
 
 
 run_compile_params = [  # type: ignore
@@ -278,7 +249,6 @@ def test_run_compile(obj: Command, args: Sequence[Any], kwargs: dict[str, Any]):
         obj.run_compile_command(
             DataVerificationParams(
                 default_tle=22,
-                test_directory=pathlib.Path("/foo/test"),
             ),
         )
         if args is None:

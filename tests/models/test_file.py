@@ -3,8 +3,7 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.models.command import DummyCommand
-from competitive_verifier.models.file import VerificationFile
+from competitive_verifier.models import DummyCommand, VerificationFile
 
 parse_VerificationFile_params: list[
     tuple[VerificationFile, dict[str, Any], dict[str, Any]]

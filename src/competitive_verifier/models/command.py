@@ -1,19 +1,13 @@
-import pathlib
 from abc import ABC, abstractmethod
-from subprocess import CompletedProcess
 from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
-import competitive_verifier.oj as oj
-from competitive_verifier.exec import exec_command
-
-_dummy_true: CompletedProcess[str] = CompletedProcess("true", 0)
+from .. import exec, oj
 
 
 class VerificationParams(Protocol):
     default_tle: float
-    test_directory: pathlib.Path
 
 
 class BaseCommand(BaseModel, ABC):
@@ -21,14 +15,14 @@ class BaseCommand(BaseModel, ABC):
     def run_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
+    ) -> bool:
         ...
 
     @abstractmethod
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
+    ) -> bool:
         ...
 
 
@@ -38,14 +32,14 @@ class DummyCommand(BaseCommand):
     def run_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
-        return _dummy_true
+    ) -> bool:
+        return True
 
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
-        return _dummy_true
+    ) -> bool:
+        return True
 
 
 class VerificationCommand(BaseCommand):
@@ -57,16 +51,16 @@ class VerificationCommand(BaseCommand):
     def run_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
-        return exec_command(self.command, text=True)
+    ) -> bool:
+        return exec.exec_command(self.command, text=True).returncode == 0
 
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
+    ) -> bool:
         if self.compile:
-            return exec_command(self.compile, text=True)
-        return _dummy_true
+            return exec.exec_command(self.compile, text=True).returncode == 0
+        return True
 
 
 class ProblemVerificationCommand(BaseCommand):
@@ -86,40 +80,26 @@ class ProblemVerificationCommand(BaseCommand):
     def run_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
+    ) -> bool:
         if not params:
             raise ValueError(
                 "ProblemVerificationCommand.run_command requires VerificationParams"
             )
 
-        command = [
-            "oj",
-            "test",
-            "-c",
-            self.command,
-            "-d",
-            str(params.test_directory),
-            "--print-input",
-            "--tle",
-            str(self.tle or params.default_tle),
-        ]
-        checker_problem = oj.get_checker_problem(self.problem)
-        if checker_problem:
-            command += [
-                "--judge-command",
-                str(checker_problem.download_checker_binary()),
-            ]
-        if self.error:
-            command += ["-e", str(self.error)]
-        return exec_command(command, text=True)
+        return oj.test(
+            url=self.problem,
+            command=self.command,
+            tle=self.tle or params.default_tle,
+            error=self.error,
+        )
 
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> CompletedProcess[str]:
+    ) -> bool:
         if self.compile:
-            return exec_command(self.compile, text=True)
-        return _dummy_true
+            return exec.exec_command(self.compile, text=True).returncode == 0
+        return True
 
 
 Command = Annotated[

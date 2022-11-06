@@ -4,8 +4,8 @@ from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, StrBytes, validator
 
-from competitive_verifier.models._scc import SccGraph
-from competitive_verifier.models.command import Command
+from ._scc import SccGraph
+from .command import Command
 
 
 class VerificationFile(BaseModel):

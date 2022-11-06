@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.models.file import VerificationFile, VerificationInput
+from competitive_verifier.models import VerificationFile, VerificationInput
 
 test_input = VerificationInput(
     files={

@@ -8,15 +8,19 @@ from competitive_verifier import oj
 from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models.command import ProblemVerificationCommand
-from competitive_verifier.models.file import VerificationInput
+from competitive_verifier.models import ProblemVerificationCommand, VerificationInput
 
 logger = getLogger(__name__)
 
 
-def run_impl(input: VerificationInput) -> None:
+def run_impl(input: VerificationInput) -> bool:
+    result = True
     for url in enumerate_urls(input):
-        oj.download(url)
+        if not oj.download(url):
+            result = False
+    if not result:
+        raise VerifierError("Failed to download")
+    return result
 
 
 def enumerate_urls(input: VerificationInput) -> Iterable[str]:
@@ -26,7 +30,7 @@ def enumerate_urls(input: VerificationInput) -> Iterable[str]:
                 yield verification_command.problem
 
 
-def run(args: argparse.Namespace) -> None:
+def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     verification = VerificationInput.parse_file(args.verify_files_json)

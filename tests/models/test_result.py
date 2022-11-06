@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.models.result import VerificationFileResult, ResultStatus
+from competitive_verifier.models import ResultStatus, VerificationFileResult
 
 parse_VerificationFileResult_params = [  # type: ignore
     (

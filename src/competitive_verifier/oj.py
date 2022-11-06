@@ -1,6 +1,8 @@
 import hashlib
 import os
 import pathlib
+import shutil
+import sys
 from logging import getLogger
 from typing import Optional
 
@@ -8,18 +10,26 @@ import onlinejudge._implementation.utils
 import onlinejudge.utils
 import onlinejudge_command.main
 import onlinejudge_command.subcommand.download
+import onlinejudge_command.subcommand.test
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 from onlinejudge.type import NotLoggedInError
 
 import competitive_verifier.config
+import competitive_verifier.exec
 from competitive_verifier import log
 
-oj_cache_dir = (
+_oj_cache_dir = (
     competitive_verifier.config.cache_dir.resolve(strict=False) / "online-judge-tools"
 )
-onlinejudge._implementation.utils.user_cache_dir = oj_cache_dir
+onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
+
+_checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"
+
+
+def get_cache_directory() -> pathlib.Path:
+    return _oj_cache_dir
 
 
 def get_directory(url: str) -> pathlib.Path:
@@ -34,7 +44,16 @@ def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
     return LibraryCheckerProblem.from_url(url)
 
 
-def download(url: str) -> None:
+def get_checker_path(url: str) -> Optional[pathlib.Path]:
+    checker_problem = get_checker_problem(url)
+    if checker_problem:
+        problem_dir = (
+            checker_problem._get_problem_directory_path()
+        )  # pyright: reportPrivateUsage=false
+        return problem_dir / _checker_exe_path
+
+
+def download(url: str) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
@@ -44,9 +63,9 @@ def download(url: str) -> None:
             directory.mkdir(parents=True, exist_ok=True)
             # time.sleep(2)
 
-            arg_list = [
+            arg_list: list[str] = [
                 "--cookie",
-                str(oj_cache_dir / "cookie.txt"),
+                str(get_cache_directory() / "cookie.txt"),
                 "download",
                 "--system",
                 "-d",
@@ -63,10 +82,55 @@ def download(url: str) -> None:
                 parser = onlinejudge_command.main.get_parser()  # type: ignore
                 args = parser.parse_args(arg_list)  # type: ignore
                 onlinejudge_command.subcommand.download.run(args)  # type: ignore
+
+                checker_path = get_checker_path(url)
+                if checker_path:
+                    try:
+                        shutil.copy2(checker_path, directory)
+                    except Exception as e:
+                        logger.error("Failed to copy checker %s", e)
+                        shutil.rmtree(directory)
+                        return False
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
                     logger.error("Requied: $YUKICODER_TOKEN environment variable")
                 else:
                     logger.error(e)
+                return False
     else:
         logger.info("already exists: %s", url)
+    return True
+
+
+def test(
+    *,
+    url: str,
+    command: str,
+    tle: float,
+    error: Optional[float],
+) -> bool:
+    directory = get_directory(url)
+    test_directory = directory / "test"
+
+    arg_list: list[str] = [
+        "--cookie",
+        str(get_cache_directory() / "cookie.txt"),
+        "test",
+        "-c",
+        command,
+        "-d",
+        str(test_directory),
+        "--print-input",
+        "--tle",
+        str(tle),
+    ]
+
+    checker_path = get_checker_path(url)
+    if checker_path:
+        arg_list += ["--judge-command", str(checker_path)]
+    if error:
+        arg_list += ["-e", str(error)]
+
+    parser = onlinejudge_command.main.get_parser()  # type: ignore
+    args = parser.parse_args(arg_list)  # type: ignore
+    return bool(onlinejudge_command.subcommand.test.run(args))  # type: ignore

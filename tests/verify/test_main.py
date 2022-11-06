@@ -32,23 +32,23 @@ def test_get_split_state(
 
 get_split_state_error_params = {
     "No split index": (
-        ["verify.json", "--split", "2"],
+        ["--verify-json", "verify.json", "--split", "2"],
         "--split argument requires --split-index argument.",
     ),
     "No split": (
-        ["verify.json", "--split-index", "2"],
+        ["--verify-json", "verify.json", "--split-index", "2"],
         "--split-index argument requires --split argument.",
     ),
     "split index": (
-        ["verify.json", "--split-index", "5", "--split", "5"],
+        ["--verify-json", "verify.json", "--split-index", "5", "--split", "5"],
         "--split-index must be greater than 0 and less than --split.",
     ),
     "split index negative": (
-        ["verify.json", "--split-index", "-1", "--split", "5"],
+        ["--verify-json", "verify.json", "--split-index", "-1", "--split", "5"],
         "--split-index must be greater than 0 and less than --split.",
     ),
     "split zero": (
-        ["verify.json", "--split-index", "1", "--split", "0"],
+        ["--verify-json", "verify.json", "--split-index", "1", "--split", "0"],
         "--split must be greater than 0.",
     ),
 }
