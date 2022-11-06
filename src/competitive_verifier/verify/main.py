@@ -10,8 +10,7 @@ from competitive_verifier import github
 from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models.file import VerificationInput
-from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.models import VerificationInput, VerificationResult
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)

@@ -2,87 +2,45 @@ import datetime
 import pathlib
 import subprocess
 import time
+from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Iterable, Optional, TypeVar
+from typing import Iterable, Optional, Protocol
 
 from competitive_verifier import github, log
 from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.exec import exec_command
-from competitive_verifier.models.file import VerificationFile, VerificationInput
-from competitive_verifier.models.result import (
-    VerificationFileResult,
+from competitive_verifier.models import (
     ResultStatus,
+    VerificationFile,
+    VerificationFileResult,
+    VerificationInput,
     VerificationResult,
 )
 from competitive_verifier.verify.resource import ulimit_stack
+from competitive_verifier.verify.split_state import SplitState
 
 logger = getLogger(__name__)
-T = TypeVar("T")
 
 
-class SplitState:
-    size: int
-    index: int
-
-    def __init__(
-        self,
-        *,
-        size: int,
-        index: int,
-    ) -> None:
-        self.size = size
-        self.index = index
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SplitState):
-            return NotImplemented
-        return self.size == other.size and self.index == other.index
-
-    def __repr__(self) -> str:
-        return f"SplitState(size={self.size}, index={self.index})"
-
-    def __str__(self) -> str:
-        return f"{self.index}/{self.size}"
-
-    def split(self, lst: list[T]) -> list[T]:
-        """Split list
+class InputContainer(ABC):
+    @property
+    @abstractmethod
+    def input(self) -> VerificationInput:
+        ...
 
 
-        Args:
-            lst (list[T]): Target list
-
-        Returns:
-            list[T]: Splited list
-
-        Example:
-            state = SplitState(size=3, index=0)
-            assert state.split([0, 1, 2, 3, 4]) == [0]
-            state = SplitState(size=3, index=1)
-            assert state.split([0, 1, 2, 3, 4]) == [1, 2]
-            state = SplitState(size=3, index=2)
-            assert state.split([0, 1, 2, 3, 4]) == [3, 4]
-            state = SplitState(size=6, index=4)
-            assert state.split([0, 1, 2, 3, 4]) == [4]
-            state = SplitState(size=6, index=5)
-            assert state.split([0, 1, 2, 3, 4]) == []
+class InputResolver(InputContainer):
+    @cached_property
+    def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
         """
-
-        if len(lst) <= self.size:
-            if len(lst) <= self.index:
-                return []
-            else:
-                return [lst[self.index]]
-
-        from_index = len(lst) * self.index // self.size
-        to_index = len(lst) * (self.index + 1) // self.size
-        return lst[from_index:to_index]
+        List of verification files.
+        """
+        return {p: f for p, f in self.input.files.items() if f.is_verification()}
 
 
-class Verifier:
-    input: VerificationInput
-
+class Verifier(InputResolver):
     use_git_timestamp: bool
     timeout: float
     default_tle: float
@@ -103,7 +61,7 @@ class Verifier:
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
     ) -> None:
-        self.input = input
+        self._input = input
         self.prev_result = prev_result
         self.use_git_timestamp = use_git_timestamp
         self.timeout = timeout
@@ -111,6 +69,10 @@ class Verifier:
         self.split_state = split_state
         self.verification_time = verification_time or datetime.datetime.now()
         self._result = None
+
+    @property
+    def input(self) -> VerificationInput:
+        return self._input
 
     @property
     def force_result(self) -> VerificationResult:
@@ -131,10 +93,11 @@ class Verifier:
         )
 
     def get_current_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        dependicies = self.input.resolve_dependencies(path)
         if self.use_git_timestamp:
-            return github.get_commit_time(dependicies)
+            return github.get_commit_time(self.input.resolve_dependencies(path))
         else:
+            dependicies = self.input.resolve_dependencies(path)
+
             timestamp = max(x.stat().st_mtime for x in dependicies)
             system_local_timezone = (
                 datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
@@ -144,15 +107,6 @@ class Verifier:
             ).replace(
                 microsecond=0
             )  # microsecond=0 is required because it's erased in git commit
-
-    @cached_property
-    def verification_files(self) -> list[VerificationFile]:
-        """
-        List of verification files.
-        """
-        res = [f for f in self.input.files if f.is_verification()]
-        res.sort(key=lambda f: str(f.path))
-        return res
 
     @cached_property
     def remaining_verification_files(self) -> list[VerificationFile]:
