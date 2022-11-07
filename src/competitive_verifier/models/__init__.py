@@ -1,26 +1,26 @@
-from .command import (
-    BaseCommand,
-    Command,
-    DummyCommand,
-    ProblemVerificationCommand,
-    VerificationCommand,
+from .file import VerificationFile, VerificationInput, VerificationInputImpl
+from .result import FileResult, ResultStatus, VerificationResult, VerifyCommandResult
+from .verification import (
+    BaseVerification,
+    CommandVerification,
+    DependencyVerification,
+    ProblemVerification,
+    Verification,
     VerificationParams,
 )
-from .file import VerificationFile, VerificationInput, VerificationInputImpl
-from .result import CommandResult, FileResult, ResultStatus, VerificationResult
 
 __all__ = [
-    "VerificationParams",
-    "BaseCommand",
-    "DummyCommand",
-    "VerificationCommand",
-    "ProblemVerificationCommand",
-    "Command",
     "VerificationFile",
-    "VerificationInputImpl",
     "VerificationInput",
-    "ResultStatus",
+    "VerificationInputImpl",
     "FileResult",
-    "CommandResult",
+    "ResultStatus",
+    "VerifyCommandResult",
+    "BaseVerification",
+    "CommandVerification",
+    "DependencyVerification",
+    "ProblemVerification",
+    "Verification",
     "VerificationResult",
+    "VerificationParams",
 ]

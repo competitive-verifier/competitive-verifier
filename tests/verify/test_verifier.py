@@ -1,17 +1,20 @@
 # pyright: reportPrivateUsage=none
 import datetime
+import pathlib
 from pathlib import Path
 from typing import Any, Optional
 
 import pytest
 
-from competitive_verifier.models.command import DummyCommand, VerificationCommand
-from competitive_verifier.models.file import VerificationFile, VerificationInput
-from competitive_verifier.models.result import (
-    CommandResult,
+from competitive_verifier.models import (
+    CommandVerification,
+    DependencyVerification,
     FileResult,
     ResultStatus,
+    VerificationFile,
+    VerificationInput,
     VerificationResult,
+    VerifyCommandResult,
 )
 from competitive_verifier.verify.verifier import InputContainer, SplitState
 
@@ -21,7 +24,7 @@ class MockInputContainer(InputContainer):
         self,
         obj: Any = None,
         *,
-        prev_result: Optional[VerificationResult] = None,
+        prev_result: Optional[VerifyCommandResult] = None,
         verification_time: Optional[datetime.datetime] = None,
         file_timestamps: dict[Optional[Path], datetime.datetime] = {},
         split_state: Optional[SplitState] = None,
@@ -62,31 +65,76 @@ test_verification_files_params: list[
         MockInputContainer(
             {
                 "files": {
-                    "foo": {"verification": {"type": "dummy"}},
-                    "bar": {"verification": {"type": "dummy"}},
-                    "baz": {"verification": {"type": "dummy"}},
+                    "foo": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
+                    "bar": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
+                    "baz": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                 },
             }
         ),
         {
-            Path("foo"): VerificationFile(verification=[DummyCommand()]),
-            Path("bar"): VerificationFile(verification=[DummyCommand()]),
-            Path("baz"): VerificationFile(verification=[DummyCommand()]),
+            Path("foo"): VerificationFile(
+                verification=[
+                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+                ]
+            ),
+            Path("bar"): VerificationFile(
+                verification=[
+                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+                ]
+            ),
+            Path("baz"): VerificationFile(
+                verification=[
+                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+                ]
+            ),
         },
     ),
     (
         MockInputContainer(
             {
                 "files": {
-                    "foo": {"verification": {"type": "dummy"}},
+                    "foo": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                     "bar": {},
-                    "baz": {"verification": {"type": "dummy"}},
+                    "baz": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                 },
             }
         ),
         {
-            Path("foo"): VerificationFile(verification=[DummyCommand()]),
-            Path("baz"): VerificationFile(verification=[DummyCommand()]),
+            Path("foo"): VerificationFile(
+                verification=[
+                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+                ]
+            ),
+            Path("baz"): VerificationFile(
+                verification=[
+                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+                ]
+            ),
         },
     ),
 ]
@@ -113,7 +161,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -131,7 +179,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -149,7 +197,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -167,7 +215,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SKIPPED,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -185,7 +233,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -203,7 +251,7 @@ test_file_need_verification_params: list[
         Path("foo"),
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -234,9 +282,24 @@ test_remaining_verification_files_params: list[
         MockInputContainer(
             {
                 "files": {
-                    "foo": {"verification": {"type": "dummy"}},
-                    "bar": {"verification": {"type": "dummy"}},
-                    "baz": {"verification": {"type": "dummy"}},
+                    "foo": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
+                    "bar": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
+                    "baz": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                 },
             }
         ),
@@ -247,17 +310,22 @@ test_remaining_verification_files_params: list[
             {
                 "files": {
                     "foo": {"verification": {"type": "command", "command": "true"}},
-                    "bar": {"verification": {"type": "dummy"}},
+                    "bar": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                     "baz": {"verification": {"type": "command", "command": "true"}},
                 },
             }
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("baz"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -266,7 +334,12 @@ test_remaining_verification_files_params: list[
             {
                 "files": {
                     "foo": {"verification": {"type": "command", "command": "true"}},
-                    "bar": {"verification": {"type": "dummy"}},
+                    "bar": {
+                        "verification": {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    },
                     "baz": {"verification": {"type": "command", "command": "true"}},
                 },
             },
@@ -274,11 +347,11 @@ test_remaining_verification_files_params: list[
             file_timestamps={
                 None: datetime.datetime(2018, 5, 22),
             },
-            prev_result=VerificationResult(
+            prev_result=VerifyCommandResult(
                 files={
                     Path("baz"): FileResult(
                         command_results=[
-                            CommandResult(
+                            VerificationResult(
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime.datetime(2018, 7, 22),
                             )
@@ -289,7 +362,7 @@ test_remaining_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -314,13 +387,13 @@ test_current_verification_files_params: list[
         0,
         {
             Path("bar/0.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("bar/1.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("bar/2.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -328,13 +401,13 @@ test_current_verification_files_params: list[
         1,
         {
             Path("bar/3.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("baz/0.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("baz/1.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -342,13 +415,13 @@ test_current_verification_files_params: list[
         2,
         {
             Path("baz/2.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("baz/3.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("foo/0.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -356,13 +429,13 @@ test_current_verification_files_params: list[
         3,
         {
             Path("foo/1.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("foo/2.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
             Path("foo/3.py"): VerificationFile(
-                verification=[VerificationCommand(command="true")],
+                verification=[CommandVerification(command="true")],
             ),
         },
     ),
@@ -404,40 +477,40 @@ def test_current_verification_files(index: int, expected: dict[Path, Verificatio
     )
     remaining_verification_files = {
         Path("foo/0.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("bar/0.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("baz/0.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("foo/1.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("bar/1.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("baz/1.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("foo/2.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("bar/2.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("baz/2.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("foo/3.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("bar/3.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         Path("baz/3.py"): VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
     }
     assert resolver.remaining_verification_files == remaining_verification_files

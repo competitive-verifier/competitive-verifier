@@ -4,14 +4,13 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.models import FileResult, ResultStatus
-from competitive_verifier.models.result import CommandResult
+from competitive_verifier.models import FileResult, ResultStatus, VerificationResult
 
 test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2016, 12, 24, 15, 16, 34),
                 )
@@ -45,7 +44,7 @@ test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
@@ -83,7 +82,7 @@ test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
@@ -141,7 +140,7 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -153,7 +152,7 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -165,7 +164,7 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SKIPPED,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -177,7 +176,7 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2015, 12, 24, 19, 0, 0),
                 )
@@ -189,15 +188,15 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2015, 12, 24, 19, 0, 0),
                 ),
@@ -209,15 +208,15 @@ test_file_result_need_verification_params = [  # type: ignore
     (
         FileResult(
             command_results=[
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
-                CommandResult(
+                VerificationResult(
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
@@ -245,8 +244,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                CommandResult(status=ResultStatus.SUCCESS),
-                CommandResult(status=ResultStatus.SUCCESS),
+                VerificationResult(status=ResultStatus.SUCCESS),
+                VerificationResult(status=ResultStatus.SUCCESS),
             ]
         ),
         True,
@@ -254,8 +253,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                CommandResult(status=ResultStatus.SUCCESS),
-                CommandResult(status=ResultStatus.FAILURE),
+                VerificationResult(status=ResultStatus.SUCCESS),
+                VerificationResult(status=ResultStatus.FAILURE),
             ]
         ),
         False,
@@ -263,8 +262,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                CommandResult(status=ResultStatus.SUCCESS),
-                CommandResult(status=ResultStatus.SKIPPED),
+                VerificationResult(status=ResultStatus.SUCCESS),
+                VerificationResult(status=ResultStatus.SKIPPED),
             ]
         ),
         False,

@@ -1,3 +1,4 @@
+import pathlib
 from abc import ABC, abstractmethod
 from typing import Annotated, Literal, Optional, Protocol, Union
 
@@ -10,7 +11,7 @@ class VerificationParams(Protocol):
     default_tle: float
 
 
-class BaseCommand(BaseModel, ABC):
+class BaseVerification(BaseModel, ABC):
     @abstractmethod
     def run_command(
         self,
@@ -25,9 +26,21 @@ class BaseCommand(BaseModel, ABC):
     ) -> bool:
         ...
 
+    @property
+    def is_skippable(self) -> bool:
+        return False
 
-class DummyCommand(BaseCommand):
-    type: Literal["dummy"] = "dummy"
+
+class DependencyVerification(BaseVerification):
+    type: Literal["dependency"] = "dependency"
+    dependency: pathlib.Path
+
+    class Config:
+        json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
+
+    @property
+    def is_skippable(self) -> bool:
+        return True
 
     def run_command(
         self,
@@ -42,7 +55,7 @@ class DummyCommand(BaseCommand):
         return True
 
 
-class VerificationCommand(BaseCommand):
+class CommandVerification(BaseVerification):
     type: Literal["command"] = "command"
 
     command: str
@@ -63,7 +76,7 @@ class VerificationCommand(BaseCommand):
         return True
 
 
-class ProblemVerificationCommand(BaseCommand):
+class ProblemVerification(BaseVerification):
     type: Literal["problem"] = "problem"
 
     command: str
@@ -83,7 +96,7 @@ class ProblemVerificationCommand(BaseCommand):
     ) -> bool:
         if not params:
             raise ValueError(
-                "ProblemVerificationCommand.run_command requires VerificationParams"
+                "ProblemVerification.run_command requires VerificationParams"
             )
 
         return oj.test(
@@ -102,11 +115,11 @@ class ProblemVerificationCommand(BaseCommand):
         return True
 
 
-Command = Annotated[
+Verification = Annotated[
     Union[
-        DummyCommand,
-        VerificationCommand,
-        ProblemVerificationCommand,
+        DependencyVerification,
+        CommandVerification,
+        ProblemVerification,
     ],
     Field(discriminator="type"),
 ]

@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 
 from competitive_verifier.models import (
-    DummyCommand,
-    VerificationCommand,
+    CommandVerification,
+    DependencyVerification,
     VerificationFile,
 )
 
@@ -58,28 +58,44 @@ test_parse_VerificationFile_params: list[
     ),
     (
         VerificationFile(
-            verification=[DummyCommand()],
+            verification=[
+                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+            ],
         ),
         {
-            "verification": [{"type": "dummy"}],
+            "verification": [
+                {
+                    "type": "dependency",
+                    "dependency": "foo/bar.py",
+                }
+            ],
         },
         {
             "dependencies": [],
             "display_path": None,
-            "verification": [DummyCommand()],
+            "verification": [
+                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+            ],
         },
     ),
     (
         VerificationFile(
-            verification=[DummyCommand()],
+            verification=[
+                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+            ],
         ),
         {
-            "verification": {"type": "dummy"},
+            "verification": {
+                "type": "dependency",
+                "dependency": "foo/bar.py",
+            },
         },
         {
             "dependencies": [],
             "display_path": None,
-            "verification": [DummyCommand()],
+            "verification": [
+                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
+            ],
         },
     ),
 ]
@@ -100,28 +116,34 @@ def test_parse_VerificationFile(
 test_is_verification_params = [
     (
         VerificationFile(
-            verification=[DummyCommand()],
+            verification=[DependencyVerification(dependency=pathlib.Path("."))],
         ),
         True,
         True,
     ),
     (
         VerificationFile(
-            verification=[DummyCommand(), DummyCommand()],
+            verification=[
+                DependencyVerification(dependency=pathlib.Path(".")),
+                DependencyVerification(dependency=pathlib.Path("..")),
+            ],
         ),
         True,
         True,
     ),
     (
         VerificationFile(
-            verification=[VerificationCommand(command="true")],
+            verification=[CommandVerification(command="true")],
         ),
         True,
         False,
     ),
     (
         VerificationFile(
-            verification=[DummyCommand(), VerificationCommand(command="true")],
+            verification=[
+                DependencyVerification(dependency=pathlib.Path(".")),
+                CommandVerification(command="true"),
+            ],
         ),
         True,
         False,
@@ -137,12 +159,12 @@ test_is_verification_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, is_verification, is_dummy_verification", test_is_verification_params
+    "obj, is_verification, is_skippable_verification", test_is_verification_params
 )
 def test_is_verification(
     obj: VerificationFile,
     is_verification: bool,
-    is_dummy_verification: bool,
+    is_skippable_verification: bool,
 ):
     assert obj.is_verification() == is_verification
-    assert obj.is_dummy_verification() == is_dummy_verification
+    assert obj.is_skippable_verification() == is_skippable_verification

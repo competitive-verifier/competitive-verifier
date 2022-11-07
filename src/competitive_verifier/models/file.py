@@ -5,13 +5,13 @@ from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, Field, StrBytes, validator
 
 from ._scc import SccGraph
-from .command import Command, DummyCommand
+from .verification import Verification
 
 
 class VerificationFile(BaseModel):
     display_path: Union[pathlib.Path, Literal[False], None] = None
     dependencies: list[pathlib.Path] = Field(default_factory=list)
-    verification: list[Command] = Field(default_factory=list)
+    verification: list[Verification] = Field(default_factory=list)
 
     class Config:
         json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
@@ -27,10 +27,8 @@ class VerificationFile(BaseModel):
     def is_verification(self) -> bool:
         return bool(self.verification)
 
-    def is_dummy_verification(self) -> bool:
-        return self.is_verification() and all(
-            isinstance(c, DummyCommand) for c in self.verification
-        )
+    def is_skippable_verification(self) -> bool:
+        return self.is_verification() and all(v.is_skippable for v in self.verification)
 
 
 # NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625

@@ -4,15 +4,15 @@ import sys
 from functools import reduce
 from typing import Iterable, Optional
 
-from competitive_verifier.models import VerificationResult
+from competitive_verifier.models import VerifyCommandResult
 
 
-def merge(results: Iterable[VerificationResult]) -> VerificationResult:
+def merge(results: Iterable[VerifyCommandResult]) -> VerifyCommandResult:
     return reduce(lambda a, b: a.merge(b), results)
 
 
-def run_impl(result_json: Iterable[pathlib.Path]) -> VerificationResult:
-    return merge(map(VerificationResult.parse_file, result_json))
+def run_impl(result_json: Iterable[pathlib.Path]) -> VerifyCommandResult:
+    return merge(map(VerifyCommandResult.parse_file, result_json))
 
 
 def run(args: argparse.Namespace) -> bool:

@@ -12,12 +12,12 @@ from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.exec import exec_command
 from competitive_verifier.models import (
-    CommandResult,
     FileResult,
     ResultStatus,
     VerificationFile,
     VerificationInput,
     VerificationResult,
+    VerifyCommandResult,
 )
 from competitive_verifier.verify.resource import ulimit_stack
 from competitive_verifier.verify.split_state import SplitState
@@ -28,7 +28,7 @@ logger = getLogger(__name__)
 class InputContainer(ABC):
     input: VerificationInput
     verification_time: datetime.datetime
-    prev_result: Optional[VerificationResult]
+    prev_result: Optional[VerifyCommandResult]
     split_state: Optional[SplitState]
 
     def __init__(
@@ -36,7 +36,7 @@ class InputContainer(ABC):
         *,
         input: VerificationInput,
         verification_time: datetime.datetime,
-        prev_result: Optional[VerificationResult],
+        prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
     ) -> None:
         self.input = input
@@ -72,7 +72,7 @@ class InputContainer(ABC):
         verification_files = {
             p: f
             for p, f in self.verification_files.items()
-            if not f.is_dummy_verification()
+            if not f.is_skippable_verification()
         }
 
         if self.prev_result is None:
@@ -111,7 +111,7 @@ class Verifier(InputContainer):
     default_tle: float
     split_state: Optional[SplitState]
 
-    _result: Optional[VerificationResult]
+    _result: Optional[VerifyCommandResult]
 
     def __init__(
         self,
@@ -120,7 +120,7 @@ class Verifier(InputContainer):
         use_git_timestamp: bool,
         timeout: float,
         default_tle: float,
-        prev_result: Optional[VerificationResult],
+        prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
     ) -> None:
@@ -137,7 +137,7 @@ class Verifier(InputContainer):
         self._result = None
 
     @property
-    def force_result(self) -> VerificationResult:
+    def force_result(self) -> VerifyCommandResult:
         if self._result is None:
             raise VerifierError("Not verified yet.")
         return self._result
@@ -170,7 +170,7 @@ class Verifier(InputContainer):
         else:
             logger.info("There is no pre_command")
 
-    def verify(self, *, download: bool = True) -> VerificationResult:
+    def verify(self, *, download: bool = True) -> VerifyCommandResult:
         start_time = datetime.datetime.now()
 
         logger.info(
@@ -252,12 +252,12 @@ class Verifier(InputContainer):
                             self.create_command_result(ResultStatus.FAILURE)
                         )
 
-        self._result = VerificationResult(files=file_results)
+        self._result = VerifyCommandResult(files=file_results)
         print(self._result.json())
         return self._result
 
-    def create_command_result(self, status: ResultStatus) -> CommandResult:
-        return CommandResult(
+    def create_command_result(self, status: ResultStatus) -> VerificationResult:
+        return VerificationResult(
             status=status,
             last_execution_time=self.verification_time,
         )

@@ -5,10 +5,10 @@ from typing import Optional
 
 from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.models.result import VerifyCommandResult
 
 
-def run_impl(verification: VerificationResult) -> bool:
+def run_impl(verification: VerifyCommandResult) -> bool:
     raise NotImplementedError()
 
 

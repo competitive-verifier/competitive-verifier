@@ -5,20 +5,20 @@ import pytest
 
 import competitive_verifier.merge_result.main
 from competitive_verifier.models import (
-    CommandResult,
     FileResult,
     ResultStatus,
     VerificationResult,
+    VerifyCommandResult,
 )
 
-test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
+test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] = [
     (
         [
-            VerificationResult(
+            VerifyCommandResult(
                 files={
                     Path("foo"): FileResult(
                         command_results=[
-                            CommandResult(
+                            VerificationResult(
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime(2020, 2, 26, 23, 45),
                             )
@@ -27,11 +27,11 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                 }
             ),
         ],
-        VerificationResult(
+        VerifyCommandResult(
             files={
                 Path("foo"): FileResult(
                     command_results=[
-                        CommandResult(
+                        VerificationResult(
                             status=ResultStatus.SUCCESS,
                             last_execution_time=datetime(2020, 2, 26, 23, 45),
                         )
@@ -42,11 +42,11 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
     ),
     (
         [
-            VerificationResult(
+            VerifyCommandResult(
                 files={
                     Path("foo"): FileResult(
                         command_results=[
-                            CommandResult(
+                            VerificationResult(
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime(2020, 2, 26, 23, 45),
                             )
@@ -54,11 +54,11 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                     )
                 }
             ),
-            VerificationResult(
+            VerifyCommandResult(
                 files={
                     Path("baz"): FileResult(
                         command_results=[
-                            CommandResult(
+                            VerificationResult(
                                 status=ResultStatus.SKIPPED,
                                 last_execution_time=datetime(2021, 2, 27, 23, 45),
                             )
@@ -66,11 +66,11 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                     )
                 }
             ),
-            VerificationResult(
+            VerifyCommandResult(
                 files={
                     Path("bar"): FileResult(
                         command_results=[
-                            CommandResult(
+                            VerificationResult(
                                 status=ResultStatus.FAILURE,
                                 last_execution_time=datetime(2020, 2, 27, 23, 45),
                             )
@@ -79,11 +79,11 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                 }
             ),
         ],
-        VerificationResult(
+        VerifyCommandResult(
             files={
                 Path("foo"): FileResult(
                     command_results=[
-                        CommandResult(
+                        VerificationResult(
                             status=ResultStatus.SUCCESS,
                             last_execution_time=datetime(2020, 2, 26, 23, 45),
                         )
@@ -91,7 +91,7 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                 ),
                 Path("bar"): FileResult(
                     command_results=[
-                        CommandResult(
+                        VerificationResult(
                             status=ResultStatus.FAILURE,
                             last_execution_time=datetime(2020, 2, 27, 23, 45),
                         )
@@ -99,7 +99,7 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
                 ),
                 Path("baz"): FileResult(
                     command_results=[
-                        CommandResult(
+                        VerificationResult(
                             status=ResultStatus.SKIPPED,
                             last_execution_time=datetime(2021, 2, 27, 23, 45),
                         )
@@ -112,5 +112,5 @@ test_merge_params: list[tuple[list[VerificationResult], VerificationResult]] = [
 
 
 @pytest.mark.parametrize("results, expected", test_merge_params)
-def test_merge(results: list[VerificationResult], expected: VerificationResult):
+def test_merge(results: list[VerifyCommandResult], expected: VerifyCommandResult):
     assert competitive_verifier.merge_result.main.merge(results) == expected

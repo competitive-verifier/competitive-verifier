@@ -36,9 +36,7 @@
         "examples/awk/echo.sh": {},
         ".": {
             "display_path": false,
-            "dependencies": [
-                "examples/awk/dummy.awk"
-            ],
+            "dependencies": [],
             "verification": [
                 {
                     "type": "command",
@@ -51,7 +49,8 @@
                 "examples/awk/echo.sh"
             ],
             "verification": {
-                "type": "dummy"
+                "type": "dependency",
+                "dependency": "."
             }
         }
     }

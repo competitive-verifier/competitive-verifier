@@ -15,7 +15,7 @@ class ResultStatus(str, Enum):
     SKIPPED = "SKIPPED"
 
 
-class CommandResult(BaseModel):
+class VerificationResult(BaseModel):
     status: ResultStatus
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
@@ -34,7 +34,7 @@ class CommandResult(BaseModel):
 
 
 class FileResult(BaseModel):
-    command_results: list[CommandResult] = Field(default_factory=list)
+    command_results: list[VerificationResult] = Field(default_factory=list)
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
         return any(r.need_reverifying(base_time) for r in self.command_results)
@@ -43,7 +43,7 @@ class FileResult(BaseModel):
         return all(r.status == ResultStatus.SUCCESS for r in self.command_results)
 
 
-class VerificationResult(BaseModel):
+class VerifyCommandResult(BaseModel):
     files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
 
     def json(self, **kwargs: Any) -> str:
@@ -57,10 +57,10 @@ class VerificationResult(BaseModel):
             files={k.as_posix(): v for k, v in self.files.items()},
         ).json(**kwargs)
 
-    def merge(self, other: "VerificationResult") -> "VerificationResult":
+    def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()
         d.update(other.files)
-        return VerificationResult(files=d)
+        return VerifyCommandResult(files=d)
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())

@@ -10,7 +10,7 @@
                         "type": {
                             "description": "command type",
                             "enum": [
-                                "dummy",
+                                "dependency",
                                 "problem",
                                 "command"
                             ]
@@ -23,12 +23,19 @@
                 {
                     "oneOf": [
                         {
-                            "description": "Dummy definition",
+                            "description": "Dependency definition",
                             "properties": {
                                 "type": {
-                                    "const": "dummy"
+                                    "const": "dependency"
+                                },
+                                "dependency": {
+                                    "type": "string",
+                                    "description": "The file implemented verification"
                                 }
-                            }
+                            },
+                            "required": [
+                                "dependency"
+                            ]
                         },
                         {
                             "description": "Command for unittest",

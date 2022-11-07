@@ -107,7 +107,12 @@ def test_to_json():
                     "path": "foo/baz.py",
                     "display_path": "var/foo/baz.py",
                     "dependencies": ["foo/bar.py"],
-                    "verification": [{"type": "dummy"}],
+                    "verification": [
+                        {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    ],
                 },
             },
         }
@@ -123,7 +128,12 @@ def test_to_json():
             "foo/baz.py": {
                 "display_path": "var/foo/baz.py",
                 "dependencies": ["foo/bar.py"],
-                "verification": [{"type": "dummy"}],
+                "verification": [
+                    {
+                        "type": "dependency",
+                        "dependency": "foo/bar.py",
+                    }
+                ],
             },
         },
     }
@@ -139,15 +149,21 @@ def test_repr():
                     "path": "foo/baz.py",
                     "display_path": "baz.py",
                     "dependencies": ["foo/bar.py"],
-                    "verification": [{"type": "dummy"}],
+                    "verification": [
+                        {
+                            "type": "dependency",
+                            "dependency": "foo/bar.py",
+                        }
+                    ],
                 },
             },
         }
     )
+    print(repr(obj))
     assert repr(obj) == (
         "VerificationInput(pre_command=['ls .'], "
         + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(display_path=None, dependencies=[], verification=[]),"
-        + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[DummyCommand(type='dummy')])"
+        + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[DependencyVerification(type='dependency', dependency={repr(Path('foo/bar.py'))})])"
         + f"}})"
     )
 

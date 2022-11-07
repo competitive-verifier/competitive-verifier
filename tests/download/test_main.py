@@ -3,11 +3,11 @@ from typing import Iterable, Union
 import pytest
 
 from competitive_verifier.download.main import UrlOrVerificationFile, parse_urls
-from competitive_verifier.models import ProblemVerificationCommand, VerificationFile
+from competitive_verifier.models import ProblemVerification, VerificationFile
 
 
-def get_problem_command(url: str) -> ProblemVerificationCommand:
-    return ProblemVerificationCommand(command="true", problem=url)
+def get_problem_command(url: str) -> ProblemVerification:
+    return ProblemVerification(command="true", problem=url)
 
 
 _SomeUrlOrVerificationFile = Union[

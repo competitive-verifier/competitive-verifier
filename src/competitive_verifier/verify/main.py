@@ -10,7 +10,7 @@ from competitive_verifier import github
 from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
-from competitive_verifier.models import VerificationInput, VerificationResult
+from competitive_verifier.models import VerificationInput, VerifyCommandResult
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
@@ -19,7 +19,7 @@ logger = getLogger(__name__)
 def run_impl(
     verification: VerificationInput,
     *,
-    prev_result: Optional[VerificationResult],
+    prev_result: Optional[VerifyCommandResult],
     timeout: float = 1800,
     default_tle: float = math.inf,
     download: bool = True,
@@ -54,7 +54,7 @@ def run(args: argparse.Namespace) -> Verifier:
     if args.prev_result is None:
         prev_result = None
     else:
-        prev_result = VerificationResult.parse_file(args.prev_result)
+        prev_result = VerifyCommandResult.parse_file(args.prev_result)
 
     return run_impl(
         verification,

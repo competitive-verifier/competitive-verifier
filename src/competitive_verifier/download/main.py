@@ -10,7 +10,7 @@ from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import (
-    ProblemVerificationCommand,
+    ProblemVerification,
     VerificationFile,
     VerificationInput,
 )
@@ -35,9 +35,9 @@ def parse_urls(
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
-    for verification_command in file.verification:
-        if isinstance(verification_command, ProblemVerificationCommand):
-            yield verification_command.problem
+    for v in file.verification:
+        if isinstance(v, ProblemVerification):
+            yield v.problem
 
 
 def run_impl(
