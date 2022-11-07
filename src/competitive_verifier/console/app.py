@@ -85,7 +85,7 @@ def main(args: Optional[list[str]] = None):
     args_dict = vars(parsed)
     for k, v in args_dict.items():
         if isinstance(v, pathlib.Path):
-            args_dict[k] = v.resolve(strict=True)
+            args_dict[k] = v.resolve()
     os.chdir(root)
 
     if parsed.subcommand == "download":

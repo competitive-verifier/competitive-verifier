@@ -2,6 +2,7 @@ import datetime
 import os
 import pathlib
 import subprocess
+import uuid
 from contextlib import contextmanager
 from typing import Iterable, Optional, TextIO
 
@@ -12,6 +13,11 @@ def is_in_github_actions() -> bool:
 
 def is_enable_debug() -> bool:
     return "RUNNER_DEBUG" in os.environ
+
+
+def get_output_path() -> Optional[pathlib.Path]:
+    strpath = os.getenv("GITHUB_OUTPUT")
+    return pathlib.Path(strpath) if strpath else None
 
 
 def get_workspace_path() -> Optional[pathlib.Path]:
@@ -145,6 +151,20 @@ def begin_group(title: str, *, stream: Optional[TextIO] = None):
 
 def end_group(*, stream: Optional[TextIO] = None):
     print("::endgroup::", file=stream)
+
+
+def set_output(name: str, value: str) -> bool:
+    path = get_output_path()
+    if path and path.exists():
+        delimiter = "outputdelimiter_" + str(uuid.uuid4())
+        with open(path, mode="a") as fp:
+            fp.write(name)
+            fp.write("<<")
+            fp.write(delimiter + "\n")
+            fp.write(value + "\n")
+            fp.write(delimiter + "\n")
+        return True
+    return False
 
 
 @contextmanager

@@ -25,6 +25,7 @@ def run_impl(
     download: bool = True,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
+    output_path: Optional[pathlib.Path] = None,
 ) -> Verifier:
     split_state = get_split_state(split, split_index)
     verifier = Verifier(
@@ -35,7 +36,14 @@ def run_impl(
         prev_result=prev_result,
         split_state=split_state,
     )
-    verifier.verify(download=download)
+    result = verifier.verify(download=download)
+    result_json = result.json()
+    github.set_output("verify-result", result_json)
+
+    if output_path:
+        with open(output_path, mode="w") as fp:
+            fp.write(result_json)
+
     return verifier
 
 
@@ -56,6 +64,7 @@ def run(args: argparse.Namespace) -> Verifier:
         download=args.download,
         split=args.split,
         split_index=args.split_index,
+        output_path=args.output,
     )
 
 
@@ -78,7 +87,7 @@ def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         "--prev-result",
         type=pathlib.Path,
         required=False,
-        help="Previout result json path",
+        help="Previous result json file",
     )
 
     parser.add_argument(
@@ -86,6 +95,13 @@ def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         action="store_false",
         dest="download",
         help="Suppress `oj download`",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=pathlib.Path,
+        required=False,
+        help="The output file for which verifier saves the result json.",
     )
 
     parser.add_argument_group()
