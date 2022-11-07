@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 import subprocess
-import time
+import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
@@ -12,12 +12,14 @@ from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.exec import exec_command
 from competitive_verifier.models import (
+    Command,
+    CommandResult,
     FileResult,
+    ResultStatus,
     VerificationFile,
     VerificationInput,
     VerificationResult,
 )
-from competitive_verifier.models.result import CommandResult, ResultStatus
 from competitive_verifier.verify.resource import ulimit_stack
 from competitive_verifier.verify.split_state import SplitState
 
@@ -182,80 +184,77 @@ class Verifier(InputContainer):
             logger.warning("failed to increase the stack size[ulimit]")
 
         self.exec_pre_commands()
-        file_results = dict[pathlib.Path, FileResult]()
+
+        if self.prev_result:
+            file_results = self.prev_result.files.copy()
+        else:
+            file_results = dict[pathlib.Path, FileResult]()
+
         for p, f in self.current_verification_files.items():
             logger.info("Start: %s", str(p))
-            with log.group(f"Verify: {str(p)}", use_stderr=True):
+            with log.group(f"Verify: {str(p)}"):
                 logger.debug(repr(f))
-
-                prev_time = datetime.datetime.now()
-                if p not in file_results:
-                    file_results[p] = FileResult()
-
-                results = file_results[p]
-                if (
-                    self.timeout is not None
-                    and (prev_time - start_time).total_seconds() > self.timeout
-                ):
-                    logger.warning("Skip[Timeout]: %s, %s", p, repr(f))
-                    results.command_results.append(
-                        CommandResult(
-                            status=ResultStatus.SKIPPED,
-                            last_execution_time=self.verification_time,
-                        )
-                    )
-                    continue
+                file_results[p] = results = FileResult()
 
                 try:
                     if download:
                         run_download(f, check=True, group_log=False)
-                    results.command_results.append(
-                        CommandResult(
-                            status=ResultStatus.SUCCESS,
-                            last_execution_time=self.verification_time,
-                        )
-                    )
-                except Exception as e:
+                except Exception:
                     results.command_results.append(
                         CommandResult(
                             status=ResultStatus.FAILURE,
                             last_execution_time=self.verification_time,
                         )
                     )
-                    logger.error(e)
-        #     ok = verify_file(f)
-        #     finish_time = datetime.datetime.now()
-        #     if ok:
-        #         success_time = finish_time
-        #     else:
-        #         success_time = None
-        #         github.print_error(
-        #             "Failed to verify",
-        #             file=str(
-        #                 f.path.resolve(strict=True).relative_to(
-        #                     pathlib.Path.cwd().resolve(strict=True)
-        #                 )
-        #             ),
-        #         )
+                    logger.error("Failed to download")
+                    continue
 
-        #     logger.info(
-        #         "Finish verify: total time = %f seconds, %s",
-        #         (finish_time - prev_time).total_seconds(),
-        #         f,
-        #     )
+                for command in f.verification:
+                    logger.debug("command=%s", repr(command))
+                    prev_time = datetime.datetime.now()
+                    if (
+                        self.timeout is not None
+                        and (prev_time - start_time).total_seconds() > self.timeout
+                    ):
+                        logger.warning("Skip[Timeout]: %s, %s", p, repr(command))
+                        results.command_results.append(
+                            CommandResult(
+                                status=ResultStatus.SKIPPED,
+                                last_execution_time=self.verification_time,
+                            )
+                        )
+                        continue
 
-        #     # files.append(
-        #     #     VerificationFileResult(
-        #     #         f.path,
-        #     #         last_success_time=success_time,
-        #     #     )
-        #     # )
+                    try:
+                        self.verify_file(command)
+                        results.command_results.append(
+                            CommandResult(
+                                status=ResultStatus.SUCCESS,
+                                last_execution_time=self.verification_time,
+                            )
+                        )
+                    except Exception as e:
+                        message = (
+                            e.message
+                            if isinstance(e, VerifierError)
+                            else "Failed to verify"
+                        )
+                        logger.error("%s: %s, %s", message, p, repr(command))
+                        traceback.print_exc()
+                        results.command_results.append(
+                            CommandResult(
+                                status=ResultStatus.FAILURE,
+                                last_execution_time=self.verification_time,
+                            )
+                        )
 
-        print(file_results)
         self._result = VerificationResult(files=file_results)
+        print(self._result.json())
         return self._result
 
+    def verify_file(self, command: Command) -> None:
+        if not command.run_compile_command():
+            raise VerifierError("Failed to compile")
 
-def verify_file(file: VerificationFile) -> bool:
-    time.sleep(0.2)
-    return False
+        if not command.run_command(self):
+            raise VerifierError("Failed to test")

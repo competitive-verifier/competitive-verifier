@@ -21,7 +21,7 @@ def test_oj_download(clear_env: Any):
     ), mock.patch.object(pathlib.Path, "mkdir") as mkdir, mock.patch(
         "onlinejudge_command.subcommand.download.run"
     ) as patch:
-        oj.download("http://example.com", group_log=False)
+        oj.download("http://example.com")
         mkdir.assert_called_once()
         patch.assert_called_once()
         args = patch.call_args[0][0]
@@ -45,7 +45,7 @@ def test_oj_download_yukicoder():
     ) as patch:
         try:
             os.environ["YUKICODER_TOKEN"] = "YKTK"
-            oj.download("http://example.com", group_log=False)
+            oj.download("http://example.com")
             mkdir.assert_called_once()
             patch.assert_called_once()
             args = patch.call_args[0][0]

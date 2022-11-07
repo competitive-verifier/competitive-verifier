@@ -39,6 +39,10 @@
                                 "command": {
                                     "type": "string",
                                     "description": "unittest command"
+                                },
+                                "compile": {
+                                    "type": "string",
+                                    "description": "Compile command"
                                 }
                             },
                             "required": [
@@ -54,6 +58,10 @@
                                 "command": {
                                     "type": "string",
                                     "description": "problem solving command"
+                                },
+                                "compile": {
+                                    "type": "string",
+                                    "description": "Compile command"
                                 },
                                 "problem": {
                                     "type": "string",

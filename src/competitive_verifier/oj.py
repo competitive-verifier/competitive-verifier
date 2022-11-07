@@ -54,7 +54,7 @@ def get_checker_path(url: str) -> Optional[pathlib.Path]:
         return problem_dir / _checker_exe_path
 
 
-def download(url: str, *, group_log: bool) -> bool:
+def download(url: str, *, group_log: bool = False) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
@@ -62,7 +62,7 @@ def download(url: str, *, group_log: bool) -> bool:
         logger.info("download: %s", url)
 
         if group_log:
-            cm = log.group(f"download: {url}", use_stderr=True)
+            cm = log.group(f"download: {url}")
         else:
             logger.info("download: %s", url)
             cm = nullcontext()

@@ -20,7 +20,7 @@
             "verification": {
                 "type": "problem",
                 "command": "awk -f examples/awk/aplusb.awk",
-                "problem": "https://judge.yosupo.jp/problem/aplusbbbb"
+                "problem": "https://judge.yosupo.jp/problem/aplusb"
             }
         },
         "examples/awk/aplusb2.awk": {

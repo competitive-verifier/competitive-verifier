@@ -8,6 +8,7 @@ on:
 
 env:
   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+  COMPETITIVE_VERIFY_FILES_PATH: .competitive-verifier/tmp/awk-verify-files.json
 
 jobs:
   setup:
@@ -25,8 +26,7 @@ jobs:
         id: create-json
         run: |
           mkdir -p .competitive-verifier/tmp
-          cp examples/awk/verify_files.json .competitive-verifier/tmp/awk-verify-files.json
-          echo "verify-json=.competitive-verifier/tmp/awk-verify-files.json" > $GITHUB_OUTPUT
+          cp examples/awk/verify_files.json $COMPETITIVE_VERIFY_FILES_PATH
       - name: Create hash
         id: create-hash
         run: |
@@ -39,8 +39,6 @@ jobs:
   download:
     runs-on: ubuntu-latest
     needs: [setup]
-    env:
-      verify_json: ${{ needs.setup.outputs.verify-json  }}
     steps:
       - uses: actions/checkout@v3
 
@@ -69,15 +67,13 @@ jobs:
         run: poetry install
 
       - name: Run download
-        run: poetry run competitive-verifier download "$verify_json"
+        run: poetry run competitive-verifier download
         env:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
   verify:
     runs-on: ubuntu-latest
     needs: [setup, download]
-    env:
-      verify_json: ${{ needs.setup.outputs.verify-json  }}
     steps:
       - uses: actions/checkout@v3
 
@@ -106,4 +102,4 @@ jobs:
         run: poetry install
 
       - name: Run verify
-        run: poetry run competitive-verifier verify "$verify_json" --no-download
+        run: poetry run competitive-verifier verify --no-download
