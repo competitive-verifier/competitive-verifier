@@ -7,11 +7,16 @@ from typing import Iterable, Optional, TextIO
 
 
 def is_in_github_actions() -> bool:
-    return "GITHUB_ACTION" in os.environ
+    return "GITHUB_ACTIONS" in os.environ
 
 
 def is_enable_debug() -> bool:
-    return "ACTIONS_STEP_DEBUG" in os.environ
+    return "RUNNER_DEBUG" in os.environ
+
+
+def get_workspace_path() -> Optional[pathlib.Path]:
+    strpath = os.getenv("GITHUB_WORKSPACE")
+    return pathlib.Path(strpath) if strpath else None
 
 
 def print_debug(

@@ -1,6 +1,15 @@
 import sys
 from contextlib import contextmanager
-from logging import CRITICAL, DEBUG, ERROR, WARNING, Handler, LogRecord, basicConfig
+from logging import (
+    CRITICAL,
+    DEBUG,
+    ERROR,
+    NOTSET,
+    WARNING,
+    Handler,
+    LogRecord,
+    basicConfig,
+)
 from typing import Optional, TextIO
 
 import colorlog
@@ -20,15 +29,15 @@ class GitHubActionsHandler(Handler):
 
     def emit(self, record: LogRecord) -> None:
         message = record.getMessage()
-        file = record.pathname
-        line = record.levelno
+        # file = record.pathname
+        # line = record.levelno
 
         if record.levelno == DEBUG:
-            github.print_debug(message, file=file, line=line, stream=self.stream)
+            github.print_debug(message, stream=self.stream)
         elif record.levelno == WARNING:
-            github.print_warning(message, file=file, line=line, stream=self.stream)
+            github.print_warning(message, stream=self.stream)
         elif record.levelno == ERROR or record.levelno == CRITICAL:
-            github.print_error(message, file=file, line=line, stream=self.stream)
+            github.print_error(message, stream=self.stream)
 
 
 # class ExceptGitHubActionsFilter(Filter):
@@ -47,24 +56,26 @@ def configure_logging(
     default_level: Optional[int] = None,
     in_github_actions: Optional[bool] = None,
 ) -> None:
-    override_stderr()
-    formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
-    )
-
-    colorlog_handler = colorlog.StreamHandler()
-    colorlog_handler.setFormatter(formatter)
-    handlers: list[Handler] = [colorlog_handler]
-
     if in_github_actions is None:
         in_github_actions = github.is_in_github_actions()
+
+    override_stderr()
+
+    colorlog_handler = colorlog.StreamHandler()
+    colorlog_handler.setLevel(default_level or WARNING)
+    colorlog_handler.setFormatter(
+        colorlog.ColoredFormatter(
+            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
+        )
+    )
+    handlers: list[Handler] = [colorlog_handler]
 
     if in_github_actions:
         handlers.append(GitHubActionsHandler())
         # colorlog_handler.addFilter(ExceptGitHubActionsFilter())
 
     basicConfig(
-        level=default_level,
+        level=NOTSET,
         handlers=handlers,
     )
 

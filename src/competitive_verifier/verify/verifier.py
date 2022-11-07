@@ -12,7 +12,6 @@ from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.exec import exec_command
 from competitive_verifier.models import (
-    Command,
     CommandResult,
     FileResult,
     ResultStatus,
@@ -201,10 +200,7 @@ class Verifier(InputContainer):
                         run_download(f, check=True, group_log=False)
                 except Exception:
                     results.command_results.append(
-                        CommandResult(
-                            status=ResultStatus.FAILURE,
-                            last_execution_time=self.verification_time,
-                        )
+                        self.create_command_result(ResultStatus.FAILURE)
                     )
                     logger.error("Failed to download")
                     continue
@@ -218,20 +214,31 @@ class Verifier(InputContainer):
                     ):
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(command))
                         results.command_results.append(
-                            CommandResult(
-                                status=ResultStatus.SKIPPED,
-                                last_execution_time=self.verification_time,
-                            )
+                            self.create_command_result(ResultStatus.SKIPPED)
                         )
                         continue
 
                     try:
-                        self.verify_file(command)
-                        results.command_results.append(
-                            CommandResult(
-                                status=ResultStatus.SUCCESS,
-                                last_execution_time=self.verification_time,
+                        error_message: Optional[str] = None
+                        if not command.run_compile_command():
+                            error_message = "Failed to compile"
+
+                        if not command.run_command(self):
+                            error_message = "Failed to test"
+
+                        if error_message:
+                            logger.error("%s: %s, %s", error_message, p, repr(command))
+                            results.command_results.append(
+                                self.create_command_result(ResultStatus.FAILURE)
                             )
+                            if github.is_in_github_actions():
+                                github.print_error(
+                                    message=f"{error_message} {str(p)}",
+                                    file=str(p.resolve(strict=True)),
+                                )
+                            continue
+                        results.command_results.append(
+                            self.create_command_result(ResultStatus.SUCCESS)
                         )
                     except Exception as e:
                         message = (
@@ -242,19 +249,15 @@ class Verifier(InputContainer):
                         logger.error("%s: %s, %s", message, p, repr(command))
                         traceback.print_exc()
                         results.command_results.append(
-                            CommandResult(
-                                status=ResultStatus.FAILURE,
-                                last_execution_time=self.verification_time,
-                            )
+                            self.create_command_result(ResultStatus.FAILURE)
                         )
 
         self._result = VerificationResult(files=file_results)
         print(self._result.json())
         return self._result
 
-    def verify_file(self, command: Command) -> None:
-        if not command.run_compile_command():
-            raise VerifierError("Failed to compile")
-
-        if not command.run_command(self):
-            raise VerifierError("Failed to test")
+    def create_command_result(self, status: ResultStatus) -> CommandResult:
+        return CommandResult(
+            status=status,
+            last_execution_time=self.verification_time,
+        )
