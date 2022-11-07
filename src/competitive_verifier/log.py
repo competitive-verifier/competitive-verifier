@@ -17,9 +17,15 @@ from colorama import Fore, Style
 
 import competitive_verifier.github as github
 
+_orig_stderr = sys.stderr
+
 
 def override_stderr() -> None:
     sys.stderr = sys.stdout
+
+
+def restore_stderr() -> None:
+    sys.stderr = _orig_stderr
 
 
 class GitHubActionsHandler(Handler):

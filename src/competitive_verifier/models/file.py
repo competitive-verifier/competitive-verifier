@@ -13,6 +13,9 @@ class VerificationFile(BaseModel):
     dependencies: list[pathlib.Path] = Field(default_factory=list)
     verification: list[Command] = Field(default_factory=list)
 
+    class Config:
+        json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
+
     @validator("verification", pre=True)
     def verification_list(cls, v: Any) -> list[Any]:
         if v is None:
@@ -45,6 +48,9 @@ class VerificationInputImpl(BaseModel):
         class WithStrDict(BaseModel):
             pre_command: Optional[list[str]] = None
             files: dict[str, VerificationFile] = Field(default_factory=dict)
+
+            class Config:
+                json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
 
         return WithStrDict(
             pre_command=self.pre_command,

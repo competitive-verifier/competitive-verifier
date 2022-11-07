@@ -50,9 +50,17 @@ class VerificationResult(BaseModel):
         class WithStrDict(BaseModel):
             files: dict[str, FileResult]
 
+            class Config:
+                json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
+
         return WithStrDict(
             files={k.as_posix(): v for k, v in self.files.items()},
         ).json(**kwargs)
+
+    def merge(self, other: "VerificationResult") -> "VerificationResult":
+        d = self.files.copy()
+        d.update(other.files)
+        return VerificationResult(files=d)
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())

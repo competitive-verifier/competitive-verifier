@@ -105,7 +105,7 @@ def test_to_json():
                 "foo/bar.py": {},
                 "foo/baz.py": {
                     "path": "foo/baz.py",
-                    "display_path": "baz.py",
+                    "display_path": "var/foo/baz.py",
                     "dependencies": ["foo/bar.py"],
                     "verification": [{"type": "dummy"}],
                 },
@@ -115,14 +115,14 @@ def test_to_json():
     assert json.loads(obj.json()) == {
         "pre_command": ["ls ."],
         "files": {
-            str(Path("foo/bar.py")): {
+            "foo/bar.py": {
                 "dependencies": [],
                 "display_path": None,
                 "verification": [],
             },
-            str(Path("foo/baz.py")): {
-                "display_path": str(Path("baz.py")),
-                "dependencies": [str(Path("foo/bar.py"))],
+            "foo/baz.py": {
+                "display_path": "var/foo/baz.py",
+                "dependencies": ["foo/bar.py"],
                 "verification": [{"type": "dummy"}],
             },
         },

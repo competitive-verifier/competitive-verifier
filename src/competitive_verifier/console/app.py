@@ -37,6 +37,7 @@ logger = getLogger(__name__)
 def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
+    import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.verify.main as verify
 
     parser = argparse.ArgumentParser()
@@ -49,14 +50,29 @@ def get_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="subcommand")
 
-    subparser = subparsers.add_parser("verify")
+    subparser = subparsers.add_parser(
+        "verify",
+        help="Verify library",
+    )
     verify.argument_verify(subparser)
 
-    subparser = subparsers.add_parser("docs")
+    subparser = subparsers.add_parser(
+        "docs",
+        help="Create documents",
+    )
     docs.argument_docs(subparser)
 
-    subparser = subparsers.add_parser("download")
+    subparser = subparsers.add_parser(
+        "download",
+        help="Download problems",
+    )
     download.argument_download(subparser)
+
+    subparser = subparsers.add_parser(
+        "merge-result",
+        help="Merge result of`verify`",
+    )
+    merge_result.argument_merge_result(subparser)
 
     return parser
 
@@ -64,6 +80,7 @@ def get_parser() -> argparse.ArgumentParser:
 def main(args: Optional[list[str]] = None):
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
+    import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.verify.main as verify
     from competitive_verifier.log import configure_logging
 
@@ -77,6 +94,9 @@ def main(args: Optional[list[str]] = None):
     default_level = INFO
     if parsed.verbose:
         default_level = DEBUG
+    if parsed.subcommand == "merge-result":
+        sys.exit(0 if merge_result.run(parsed) else 1)
+
     configure_logging(default_level=default_level)
 
     logger.info("Project root: %s", str(pathlib.Path.cwd().resolve(strict=True)))
@@ -89,15 +109,12 @@ def main(args: Optional[list[str]] = None):
     os.chdir(root)
 
     if parsed.subcommand == "download":
-        if not download.run(parsed):
-            sys.exit(1)
+        sys.exit(0 if download.run(parsed) else 1)
     elif parsed.subcommand == "verify":
         verifier = verify.run(parsed)
-        if not verifier.force_result.is_success():
-            sys.exit(1)
+        sys.exit(0 if verifier.force_result.is_success() else 1)
     elif parsed.subcommand == "docs":
-        if not docs.run(parsed):
-            sys.exit(1)
+        sys.exit(0 if docs.run(parsed) else 1)
 
 
 if __name__ == "__main__":
