@@ -48,7 +48,7 @@ class VerificationInputImpl(BaseModel):
 
         return WithStrDict(
             pre_command=self.pre_command,
-            files={str(k): v for k, v in self.files.items()},
+            files={k.as_posix(): v for k, v in self.files.items()},
         ).json(**kwargs)
 
 
