@@ -136,7 +136,7 @@ def main(args: Optional[list[str]] = None) -> None:
         configure_logging(logging.INFO)
         parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
         verifier = run(parsed)
-        if not verifier.is_success():
+        if not verifier.force_result.is_success():
             sys.exit(1)
     except (VerifierError) as e:
         sys.stderr.write(e.message)

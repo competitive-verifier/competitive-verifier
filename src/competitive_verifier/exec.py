@@ -40,10 +40,10 @@ def exec_command(
     group_log: bool = False,
 ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
     if group_log:
+        cm = log.group(f"subprocess.run: {command}")
+    else:
         logger.info("subprocess.run: %s", command)
         cm = nullcontext()
-    else:
-        cm = log.group(f"subprocess.run: {command}")
 
     with cm:
         return subprocess.run(

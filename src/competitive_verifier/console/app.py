@@ -92,7 +92,7 @@ def main(args: Optional[list[str]] = None):
         download.run(parsed)
     elif parsed.subcommand == "verify":
         verifier = verify.run(parsed)
-        if not verifier.is_success():
+        if not verifier.force_result.is_success():
             sys.exit(1)
     elif parsed.subcommand == "docs":
         docs.run(parsed)

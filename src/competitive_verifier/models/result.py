@@ -33,7 +33,7 @@ class CommandResult(BaseModel):
 
 
 class FileResult(BaseModel):
-    command_results: list[CommandResult]
+    command_results: list[CommandResult] = Field(default_factory=list)
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
         return any(r.need_reverifying(base_time) for r in self.command_results)
@@ -43,7 +43,7 @@ class FileResult(BaseModel):
 
 
 class VerificationResult(BaseModel):
-    files: dict[pathlib.Path, FileResult]
+    files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())
@@ -51,5 +51,6 @@ class VerificationResult(BaseModel):
     # def show_summary(self) -> None:
     #     counter = Counter(r.command_result for r in self.files)
     #     logger.info(
-    #         " ".join(f"Test result: {s.value}: {counter.get(s)}" for s in ResultStatus)
+    #         " ".join(f"Test result: {s.value}: {counter.get(s)}"
+    #          for s in ResultStatus)
     #     )

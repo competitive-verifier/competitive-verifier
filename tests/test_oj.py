@@ -5,7 +5,6 @@ from typing import Any
 from unittest import mock
 
 import pytest
-from onlinejudge.type import NotLoggedInError
 
 import competitive_verifier.oj as oj
 
