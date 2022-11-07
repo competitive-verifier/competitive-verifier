@@ -20,9 +20,7 @@ import competitive_verifier.config
 import competitive_verifier.exec
 from competitive_verifier import log
 
-_oj_cache_dir = (
-    competitive_verifier.config.cache_dir.resolve(strict=False) / "online-judge-tools"
-)
+_oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
 onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
 

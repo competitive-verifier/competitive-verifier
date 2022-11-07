@@ -94,6 +94,8 @@ def main(args: Optional[list[str]] = None):
     default_level = INFO
     if parsed.verbose:
         default_level = DEBUG
+
+    # Use sys.stdout for result
     if parsed.subcommand == "merge-result":
         sys.exit(0 if merge_result.run(parsed) else 1)
 
@@ -108,6 +110,7 @@ def main(args: Optional[list[str]] = None):
             args_dict[k] = v.resolve()
     os.chdir(root)
 
+    # Use sys.stdout for logging
     if parsed.subcommand == "download":
         sys.exit(0 if download.run(parsed) else 1)
     elif parsed.subcommand == "verify":

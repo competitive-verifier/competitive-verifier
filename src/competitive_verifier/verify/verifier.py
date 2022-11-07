@@ -234,7 +234,7 @@ class Verifier(InputContainer):
                             if github.is_in_github_actions():
                                 github.print_error(
                                     message=f"{error_message} {str(p)}",
-                                    file=str(p.resolve(strict=True)),
+                                    file=str(p.resolve()),
                                 )
                             continue
                         results.command_results.append(
