@@ -348,6 +348,7 @@ test_remaining_verification_files_params: list[
                 None: datetime.datetime(2018, 5, 22),
             },
             prev_result=VerifyCommandResult(
+                total_seconds=1.5,
                 files={
                     Path("baz"): FileResult(
                         command_results=[
@@ -357,7 +358,7 @@ test_remaining_verification_files_params: list[
                             )
                         ]
                     )
-                }
+                },
             ),
         ),
         {

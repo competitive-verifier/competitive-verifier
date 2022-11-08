@@ -44,23 +44,29 @@ class FileResult(BaseModel):
 
 
 class VerifyCommandResult(BaseModel):
+    total_seconds: float
     files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
 
     def json(self, **kwargs: Any) -> str:
         class WithStrDict(BaseModel):
+            total_seconds: float
             files: dict[str, FileResult]
 
             class Config:
                 json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
 
         return WithStrDict(
+            total_seconds=self.total_seconds,
             files={k.as_posix(): v for k, v in self.files.items()},
         ).json(**kwargs)
 
     def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()
         d.update(other.files)
-        return VerifyCommandResult(files=d)
+        return VerifyCommandResult(
+            total_seconds=self.total_seconds + other.total_seconds,
+            files=d,
+        )
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())

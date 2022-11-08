@@ -15,14 +15,23 @@ def is_enable_debug() -> bool:
     return "RUNNER_DEBUG" in os.environ
 
 
+def _optional_path(strpath: Optional[str]) -> Optional[pathlib.Path]:
+    return pathlib.Path(strpath) if strpath else None
+
+
 def get_output_path() -> Optional[pathlib.Path]:
     strpath = os.getenv("GITHUB_OUTPUT")
-    return pathlib.Path(strpath) if strpath else None
+    return _optional_path(strpath)
 
 
 def get_workspace_path() -> Optional[pathlib.Path]:
     strpath = os.getenv("GITHUB_WORKSPACE")
-    return pathlib.Path(strpath) if strpath else None
+    return _optional_path(strpath)
+
+
+def get_step_summary_path() -> Optional[pathlib.Path]:
+    strpath = os.getenv("GITHUB_STEP_SUMMARY")
+    return _optional_path(strpath)
 
 
 def print_debug(
@@ -157,7 +166,7 @@ def set_output(name: str, value: str) -> bool:
     path = get_output_path()
     if path and path.exists():
         delimiter = "outputdelimiter_" + str(uuid.uuid4())
-        with open(path, mode="a") as fp:
+        with open(path, mode="a", encoding="utf-8") as fp:
             fp.write(name)
             fp.write("<<")
             fp.write(delimiter + "\n")

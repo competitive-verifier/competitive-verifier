@@ -102,7 +102,8 @@ test_parse_VerificationFile_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, raw_dict, output_dict", test_parse_VerificationFile_params
+    "obj, raw_dict, output_dict",
+    test_parse_VerificationFile_params,
 )
 def test_parse_VerificationFile(
     obj: VerificationFile,

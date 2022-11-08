@@ -252,8 +252,10 @@ class Verifier(InputContainer):
                             self.create_command_result(ResultStatus.FAILURE)
                         )
 
-        self._result = VerifyCommandResult(files=file_results)
-        print(self._result.json())
+        self._result = VerifyCommandResult(
+            total_seconds=(datetime.datetime.now() - start_time).total_seconds(),
+            files=file_results,
+        )
         return self._result
 
     def create_command_result(self, status: ResultStatus) -> VerificationResult:

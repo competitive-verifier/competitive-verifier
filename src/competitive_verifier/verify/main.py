@@ -11,6 +11,7 @@ from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
+from competitive_verifier.verify import summary
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
@@ -38,10 +39,17 @@ def run_impl(
     )
     result = verifier.verify(download=download)
     result_json = result.json()
+
+    gh_summary_path = github.get_step_summary_path()
+    if gh_summary_path and gh_summary_path.parent.exists():
+        with open(gh_summary_path, "w", encoding="utf-8") as fp:
+            summary.write_summary(fp, result)
+
+    print(result_json)
     github.set_output("verify-result", result_json)
 
     if output_path:
-        with open(output_path, mode="w") as fp:
+        with open(output_path, mode="w", encoding="utf-8") as fp:
             fp.write(result_json)
 
     return verifier

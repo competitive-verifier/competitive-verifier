@@ -15,6 +15,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
     (
         [
             VerifyCommandResult(
+                total_seconds=2.5,
                 files={
                     Path("foo"): FileResult(
                         command_results=[
@@ -24,10 +25,11 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                             )
                         ]
                     )
-                }
+                },
             ),
         ],
         VerifyCommandResult(
+            total_seconds=2.5,
             files={
                 Path("foo"): FileResult(
                     command_results=[
@@ -37,12 +39,13 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                         )
                     ]
                 )
-            }
+            },
         ),
     ),
     (
         [
             VerifyCommandResult(
+                total_seconds=2.5,
                 files={
                     Path("foo"): FileResult(
                         command_results=[
@@ -52,9 +55,10 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                             )
                         ]
                     )
-                }
+                },
             ),
             VerifyCommandResult(
+                total_seconds=4.25,
                 files={
                     Path("baz"): FileResult(
                         command_results=[
@@ -64,9 +68,10 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                             )
                         ]
                     )
-                }
+                },
             ),
             VerifyCommandResult(
+                total_seconds=1,
                 files={
                     Path("bar"): FileResult(
                         command_results=[
@@ -76,10 +81,11 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                             )
                         ]
                     )
-                }
+                },
             ),
         ],
         VerifyCommandResult(
+            total_seconds=7.75,
             files={
                 Path("foo"): FileResult(
                     command_results=[
@@ -105,7 +111,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                         )
                     ]
                 ),
-            }
+            },
         ),
     ),
 ]
