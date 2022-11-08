@@ -6,7 +6,7 @@ from logging import getLogger
 
 import competitive_verifier.github as github
 
-from .. import exec
+from ..exec import exec_command
 
 logger = getLogger(__name__)
 
@@ -81,15 +81,15 @@ def push_documents_to_gh_pages(
 
     # checkout gh-pages
     logger.info("$ git checkout %s", dst_branch)
-    exec.exec_command(["git", "stash", "-u"], check=True)
+    exec_command(["git", "stash", "-u"], check=True)
 
-    if exec.exec_command(["git", "switch", dst_branch], check=False).returncode:
-        exec.exec_command(["git", "switch", "--orphan", dst_branch], check=True)
+    if exec_command(["git", "switch", dst_branch], check=False).returncode:
+        exec_command(["git", "switch", "--orphan", dst_branch], check=True)
 
     # # commit and push
     logger.info("$ git add . && git commit && git push")
 
-    if exec.exec_command(["git", "add", srcdir.as_posix()], check=False).returncode:
+    if exec_command(["git", "add", srcdir.as_posix()], check=False).returncode:
         logger.info("Not found docs")
         return False
 
@@ -105,11 +105,11 @@ def push_documents_to_gh_pages(
         GIT_COMMITTER_EMAIL=mail,
     )
 
-    if exec.exec_command(
+    if exec_command(
         ["git", "commit", "-m", message], check=False, env=git_env
     ).returncode:
         logger.info("Not updated")
         return False
 
-    exec.exec_command(["git", "push", url, "HEAD"], check=True)
+    exec_command(["git", "push", url, "HEAD"], check=True)
     return True

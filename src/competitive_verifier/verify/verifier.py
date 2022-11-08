@@ -6,7 +6,7 @@ from functools import cached_property
 from logging import getLogger
 from typing import Optional
 
-from competitive_verifier import github, log
+from competitive_verifier import git, github, log
 from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
 from competitive_verifier.models import (
@@ -142,7 +142,7 @@ class Verifier(InputContainer):
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         if self.use_git_timestamp:
-            return github.get_commit_time(self.input.transitive_depends_on(path))
+            return git.get_commit_time(self.input.transitive_depends_on(path))
         else:
             dependicies = self.input.transitive_depends_on(path)
 

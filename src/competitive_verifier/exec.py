@@ -51,7 +51,7 @@ def exec_command(
     with cm:
         return subprocess.run(
             command,
-            shell=True,
+            shell=isinstance(command, str),
             text=text,
             check=check,
             env=env,

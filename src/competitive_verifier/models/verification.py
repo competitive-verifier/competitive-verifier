@@ -3,7 +3,8 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
-from .. import exec, oj
+from .. import oj
+from ..exec import exec_command
 from .result_status import ResultStatus
 
 
@@ -62,14 +63,14 @@ class CommandVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
     ) -> bool:
-        return exec.exec_command(self.command, text=True).returncode == 0
+        return exec_command(self.command, text=True).returncode == 0
 
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
     ) -> bool:
         if self.compile:
-            return exec.exec_command(self.compile, text=True).returncode == 0
+            return exec_command(self.compile, text=True).returncode == 0
         return True
 
 
@@ -108,7 +109,7 @@ class ProblemVerification(BaseVerification):
         params: Optional[VerificationParams] = None,
     ) -> bool:
         if self.compile:
-            return exec.exec_command(self.compile, text=True).returncode == 0
+            return exec_command(self.compile, text=True).returncode == 0
         return True
 
 

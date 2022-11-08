@@ -1,11 +1,10 @@
 import argparse
+import importlib.metadata
 import os
 import pathlib
 import sys
 from logging import DEBUG, INFO, getLogger
 from typing import Optional
-
-import pkg_resources
 
 import competitive_verifier.config
 
@@ -88,7 +87,7 @@ def main(args: Optional[list[str]] = None):
     parsed = parser.parse_args(args)
 
     if parsed.version:
-        print(pkg_resources.get_distribution("competitive-verifier"))
+        print(importlib.metadata.version("competitive-verifier"))
         sys.exit(0)
 
     default_level = INFO

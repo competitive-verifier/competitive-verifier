@@ -95,9 +95,7 @@ def test_command_union_json(
 
 
 def mock_exec_command():
-    return mock.patch.object(
-        competitive_verifier.models.verification.exec, "exec_command"
-    )
+    return mock.patch("subprocess.run")
 
 
 def test_const_verification():
@@ -109,11 +107,27 @@ def test_const_verification():
 
 
 test_run_command_params = [  # type: ignore
-    (CommandVerification(command="ls ~"), ("ls ~",), {"text": True}),
+    (
+        CommandVerification(command="ls ~"),
+        ("ls ~",),
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+        },
+    ),
     (
         CommandVerification(compile="cat LICENSE", command="ls ~"),
         ("ls ~",),
-        {"text": True},
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+        },
     ),
 ]
 
@@ -205,7 +219,13 @@ test_run_compile_params = [  # type: ignore
     (
         CommandVerification(compile="cat LICENSE", command="ls ~"),
         ("cat LICENSE",),
-        {"text": True},
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+        },
     ),
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
@@ -217,7 +237,13 @@ test_run_compile_params = [  # type: ignore
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
         ("cat LICENSE",),
-        {"text": True},
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+        },
     ),
     (
         ProblemVerification(
@@ -228,7 +254,13 @@ test_run_compile_params = [  # type: ignore
             tle=2,
         ),
         ("cat LICENSE",),
-        {"text": True},
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+        },
     ),
 ]
 

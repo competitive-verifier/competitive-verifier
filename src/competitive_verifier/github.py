@@ -1,10 +1,8 @@
-import datetime
 import os
 import pathlib
-import subprocess
 import uuid
 from contextlib import contextmanager
-from typing import Iterable, Optional, TextIO
+from typing import Optional, TextIO
 
 
 def _optional_path(strpath: Optional[str]) -> Optional[pathlib.Path]:
@@ -205,13 +203,3 @@ def group(title: str, *, stream: Optional[TextIO] = None):
         yield
     finally:
         end_group(stream=stream)
-
-
-def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
-    code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--"] + list(
-        map(str, files)
-    )
-    timestamp = subprocess.check_output(code).decode().strip()
-    if not timestamp:
-        return datetime.datetime.min
-    return datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S %z")
