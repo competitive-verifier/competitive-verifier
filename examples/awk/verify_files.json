@@ -1,6 +1,5 @@
 {
     "$schema": "../../schema/verify_files.schema.json",
-    "pre_command": "ls .",
     "files": {
         "examples/awk/circle.test.awk": {
             "dependencies": [

@@ -1,6 +1,5 @@
 import datetime
 import pathlib
-import subprocess
 import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
@@ -10,7 +9,6 @@ from typing import Optional
 from competitive_verifier import github, log
 from competitive_verifier.download.main import run_impl as run_download
 from competitive_verifier.error import VerifierError
-from competitive_verifier.exec import exec_command
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
@@ -156,20 +154,6 @@ class Verifier(InputContainer):
                 microsecond=0
             )  # microsecond=0 is required because it's erased in git commit
 
-    def exec_pre_commands(self):
-        pre_commands = self.input.pre_command
-        if pre_commands:
-            logger.info("pre_command size %d", len(pre_commands))
-            for cmd in pre_commands:
-                try:
-                    logger.debug("pre_command: %s", cmd)
-                    exec_command(cmd, check=True, group_log=True)
-                except subprocess.CalledProcessError:
-                    logger.error("Failed to pre_command: %s", cmd)
-                    raise
-        else:
-            logger.info("There is no pre_command")
-
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
         start_time = datetime.datetime.now()
 
@@ -181,8 +165,6 @@ class Verifier(InputContainer):
             ulimit_stack()
         except Exception:
             logger.warning("failed to increase the stack size[ulimit]")
-
-        self.exec_pre_commands()
 
         if self.prev_result:
             file_results = self.prev_result.files.copy()

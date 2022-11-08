@@ -1,7 +1,6 @@
 # flake8: noqa E501
 import json
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -101,7 +100,6 @@ def test_to_json():
 
     obj = VerificationInput.parse_obj(
         {
-            "pre_command": "ls .",
             "files": {
                 "foo/bar.py": {},
                 "foo/baz.py": {
@@ -119,7 +117,6 @@ def test_to_json():
         }
     )
     assert json.loads(obj.json()) == {
-        "pre_command": ["ls ."],
         "files": {
             "foo/bar.py": {
                 "dependencies": [],
@@ -143,7 +140,6 @@ def test_to_json():
 def test_repr():
     obj = VerificationInput.parse_obj(
         {
-            "pre_command": "ls .",
             "files": {
                 "foo/bar.py": {},
                 "foo/baz.py": {
@@ -162,50 +158,8 @@ def test_repr():
     )
     print(repr(obj))
     assert repr(obj) == (
-        "VerificationInput(pre_command=['ls .'], "
+        "VerificationInput("
         + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(display_path=None, dependencies=[], verification=[]),"
         + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[DependencyVerification(type='dependency', dependency={repr(Path('foo/bar.py'))})])"
         + f"}})"
     )
-
-
-test_parse_pre_command_params: list[Any] = [
-    (
-        VerificationInput(pre_command="ls .", files={}),
-        {"pre_command": "ls ."},
-    ),
-    (
-        VerificationInput(pre_command=["ls .", "true"], files={}),
-        {"pre_command": ["ls .", "true"]},
-    ),
-    (
-        VerificationInput(pre_command=None, files={}),
-        {"pre_command": None},
-    ),
-]
-
-
-@pytest.mark.parametrize("obj, raw_obj", test_parse_pre_command_params)
-def test_parse_pre_command(obj: VerificationInput, raw_obj: dict[str, Any]):
-    assert VerificationInput.parse_obj(raw_obj) == obj
-
-
-test_pre_command_params: list[Any] = [
-    (
-        VerificationInput(pre_command="ls .", files={}),
-        ["ls ."],
-    ),
-    (
-        VerificationInput(pre_command=["ls .", "true"], files={}),
-        ["ls .", "true"],
-    ),
-    (
-        VerificationInput(pre_command=None, files={}),
-        None,
-    ),
-]
-
-
-@pytest.mark.parametrize("obj, pre_command", test_pre_command_params)
-def test_pre_command(obj: VerificationInput, pre_command: Any):
-    assert obj.pre_command == pre_command

@@ -33,25 +33,16 @@ class VerificationFile(BaseModel):
 
 # NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625
 class VerificationInputImpl(BaseModel):
-    pre_command: Optional[list[str]] = None
     files: dict[pathlib.Path, VerificationFile] = Field(default_factory=dict)
-
-    @validator("pre_command", pre=True)
-    def pre_command_list(cls, v: Any) -> list[Any]:
-        if v is None or isinstance(v, list):
-            return v  # type: ignore
-        return [v]
 
     def json(self, **kwargs: Any) -> str:
         class WithStrDict(BaseModel):
-            pre_command: Optional[list[str]] = None
             files: dict[str, VerificationFile] = Field(default_factory=dict)
 
             class Config:
                 json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
 
         return WithStrDict(
-            pre_command=self.pre_command,
             files={k.as_posix(): v for k, v in self.files.items()},
         ).json(**kwargs)
 
@@ -63,19 +54,13 @@ class VerificationInput:
         self,
         impl: Optional[VerificationInputImpl] = None,
         *,
-        pre_command: Union[str, list[str], None] = None,
         files: Optional[dict[pathlib.Path, VerificationFile]] = None,
     ) -> None:
         if not impl:
             impl = VerificationInputImpl(
-                pre_command=pre_command,  # type: ignore
                 files=files,  # type: ignore
             )
         self.impl = impl
-
-    @property
-    def pre_command(self) -> Optional[list[str]]:
-        return self.impl.pre_command
 
     @property
     def files(self) -> dict[pathlib.Path, VerificationFile]:
