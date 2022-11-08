@@ -18,7 +18,7 @@ logger = getLogger(__name__)
 
 
 def run_impl(
-    verification: VerificationInput,
+    input: VerificationInput,
     *,
     prev_result: Optional[VerifyCommandResult],
     timeout: float = 1800,
@@ -30,8 +30,8 @@ def run_impl(
 ) -> Verifier:
     split_state = get_split_state(split, split_index)
     verifier = Verifier(
-        verification,
-        use_git_timestamp=github.is_in_github_actions(),
+        input,
+        use_git_timestamp=github.env.is_in_github_actions(),
         timeout=timeout,
         default_tle=default_tle,
         prev_result=prev_result,
@@ -40,7 +40,7 @@ def run_impl(
     result = verifier.verify(download=download)
     result_json = result.json()
 
-    gh_summary_path = github.get_step_summary_path()
+    gh_summary_path = github.env.get_step_summary_path()
     if gh_summary_path and gh_summary_path.parent.exists():
         with open(gh_summary_path, "w", encoding="utf-8") as fp:
             summary.write_summary(fp, result)
@@ -58,14 +58,14 @@ def run_impl(
 def run(args: argparse.Namespace) -> Verifier:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
-    verification = VerificationInput.parse_file(args.verify_files_json)
+    input = VerificationInput.parse_file(args.verify_files_json)
     if args.prev_result is None:
         prev_result = None
     else:
         prev_result = VerifyCommandResult.parse_file(args.prev_result)
 
     return run_impl(
-        verification,
+        input,
         timeout=args.timeout,
         default_tle=args.default_tle,
         prev_result=prev_result,

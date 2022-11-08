@@ -218,7 +218,7 @@ class Verifier(InputContainer):
                                     ResultStatus.FAILURE, prev_time
                                 )
                             )
-                            if github.is_in_github_actions():
+                            if github.env.is_in_github_actions():
                                 github.print_error(
                                     message=f"{error_message} {str(p)}",
                                     file=str(p.resolve()),

@@ -63,7 +63,7 @@ def configure_logging(
     in_github_actions: Optional[bool] = None,
 ) -> None:
     if in_github_actions is None:
-        in_github_actions = github.is_in_github_actions()
+        in_github_actions = github.env.is_in_github_actions()
 
     override_stderr()
 
@@ -99,7 +99,7 @@ def _console_group(category: str, *, title: str, file: Optional[TextIO]):
 
 @contextmanager
 def group(title: str, *, stream: Optional[TextIO] = None):
-    if github.is_in_github_actions():
+    if github.env.is_in_github_actions():
         try:
             github.begin_group(title, stream=stream)
             yield
