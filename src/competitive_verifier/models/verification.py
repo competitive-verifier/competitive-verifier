@@ -1,10 +1,10 @@
-import pathlib
 from abc import ABC, abstractmethod
 from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
 from .. import exec, oj
+from .result_status import ResultStatus
 
 
 class VerificationParams(Protocol):
@@ -31,12 +31,9 @@ class BaseVerification(BaseModel, ABC):
         return False
 
 
-class DependencyVerification(BaseVerification):
-    type: Literal["dependency"] = "dependency"
-    dependency: pathlib.Path
-
-    class Config:
-        json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
+class ConstVerification(BaseVerification):
+    type: Literal["const"] = "const"
+    status: ResultStatus
 
     @property
     def is_skippable(self) -> bool:
@@ -46,7 +43,7 @@ class DependencyVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
     ) -> bool:
-        return True
+        return self.status == ResultStatus.SUCCESS
 
     def run_compile_command(
         self,
@@ -117,7 +114,7 @@ class ProblemVerification(BaseVerification):
 
 Verification = Annotated[
     Union[
-        DependencyVerification,
+        ConstVerification,
         CommandVerification,
         ProblemVerification,
     ],

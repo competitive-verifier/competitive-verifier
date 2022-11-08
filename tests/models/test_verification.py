@@ -10,8 +10,9 @@ from pydantic import BaseModel
 import competitive_verifier.models
 from competitive_verifier.models import (
     CommandVerification,
-    DependencyVerification,
+    ConstVerification,
     ProblemVerification,
+    ResultStatus,
     Verification,
 )
 
@@ -23,9 +24,24 @@ class DataVerificationParams:
 
 test_command_union_json_params = [  # type: ignore
     (
-        DependencyVerification(dependency=pathlib.Path("foo/bar.py")),
-        '{"type": "dependency","dependency":"foo/bar.py"}',
-        '{"type": "dependency", "dependency": "foo/bar.py"}',
+        ConstVerification(status=ResultStatus.SUCCESS),
+        '{"type": "const","status":"success"}',
+        '{"type": "const", "status": "success"}',
+    ),
+    (
+        ConstVerification(status=ResultStatus.FAILURE),
+        '{"type": "const","status":"failure"}',
+        '{"type": "const", "status": "failure"}',
+    ),
+    (
+        ConstVerification(status=ResultStatus.SKIPPED),
+        '{"type": "const","status":"skipped"}',
+        '{"type": "const", "status": "skipped"}',
+    ),
+    (
+        ConstVerification(status=ResultStatus.SUCCESS),
+        '{"type": "const","status":"success"}',
+        '{"type": "const", "status": "success"}',
     ),
     (
         CommandVerification(command="ls ~"),
@@ -84,8 +100,8 @@ def mock_exec_command():
     )
 
 
-def test_dendency_verification():
-    obj = DependencyVerification(dependency=pathlib.Path("."))
+def test_const_verification():
+    obj = ConstVerification(status=ResultStatus.SUCCESS)
     with mock_exec_command() as patch:
         obj.run_command()
         obj.run_compile_command()
@@ -232,7 +248,7 @@ def test_run_compile(obj: Verification, args: Sequence[Any], kwargs: dict[str, A
 
 
 test_params_run_command_params = [  # type: ignore
-    (DependencyVerification(dependency=pathlib.Path("foo/bar.py")), None),
+    (ConstVerification(status=ResultStatus.SUCCESS), None),
     (CommandVerification(command="true"), None),
     (
         ProblemVerification(command="true", problem="http://example.com"),

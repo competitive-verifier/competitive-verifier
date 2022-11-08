@@ -1,6 +1,5 @@
 # pyright: reportPrivateUsage=none
 import datetime
-import pathlib
 from pathlib import Path
 from typing import Any, Optional
 
@@ -8,7 +7,7 @@ import pytest
 
 from competitive_verifier.models import (
     CommandVerification,
-    DependencyVerification,
+    ConstVerification,
     FileResult,
     ResultStatus,
     VerificationFile,
@@ -17,6 +16,8 @@ from competitive_verifier.models import (
     VerifyCommandResult,
 )
 from competitive_verifier.verify.verifier import InputContainer, SplitState
+
+SUCCESS = ResultStatus.SUCCESS
 
 
 class MockInputContainer(InputContainer):
@@ -67,20 +68,20 @@ test_verification_files_params: list[
                 "files": {
                     "foo": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "bar": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "baz": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                 },
@@ -88,19 +89,13 @@ test_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[
-                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-                ]
+                verification=[ConstVerification(status=SUCCESS)]
             ),
             Path("bar"): VerificationFile(
-                verification=[
-                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-                ]
+                verification=[ConstVerification(status=SUCCESS)]
             ),
             Path("baz"): VerificationFile(
-                verification=[
-                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-                ]
+                verification=[ConstVerification(status=SUCCESS)]
             ),
         },
     ),
@@ -110,15 +105,15 @@ test_verification_files_params: list[
                 "files": {
                     "foo": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "bar": {},
                     "baz": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                 },
@@ -126,14 +121,10 @@ test_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[
-                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-                ]
+                verification=[ConstVerification(status=SUCCESS)]
             ),
             Path("baz"): VerificationFile(
-                verification=[
-                    DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-                ]
+                verification=[ConstVerification(status=SUCCESS)]
             ),
         },
     ),
@@ -290,20 +281,20 @@ test_remaining_verification_files_params: list[
                 "files": {
                     "foo": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "bar": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "baz": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                 },
@@ -318,8 +309,8 @@ test_remaining_verification_files_params: list[
                     "foo": {"verification": {"type": "command", "command": "true"}},
                     "bar": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "baz": {"verification": {"type": "command", "command": "true"}},
@@ -342,8 +333,8 @@ test_remaining_verification_files_params: list[
                     "foo": {"verification": {"type": "command", "command": "true"}},
                     "bar": {
                         "verification": {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     },
                     "baz": {"verification": {"type": "command", "command": "true"}},

@@ -1,9 +1,10 @@
 from .file import VerificationFile, VerificationInput, VerificationInputImpl
-from .result import FileResult, ResultStatus, VerificationResult, VerifyCommandResult
+from .result import FileResult, VerificationResult, VerifyCommandResult
+from .result_status import ResultStatus
 from .verification import (
     BaseVerification,
     CommandVerification,
-    DependencyVerification,
+    ConstVerification,
     ProblemVerification,
     Verification,
     VerificationParams,
@@ -18,7 +19,7 @@ __all__ = [
     "VerifyCommandResult",
     "BaseVerification",
     "CommandVerification",
-    "DependencyVerification",
+    "ConstVerification",
     "ProblemVerification",
     "Verification",
     "VerificationResult",

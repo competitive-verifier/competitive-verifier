@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "definitions": {
+        "result_status": {
+            "type": "string",
+            "description": "Verification result status",
+            "enum": [
+                "success",
+                "failure",
+                "skipped"
+            ]
+        }
+    }
+}

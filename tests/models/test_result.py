@@ -26,7 +26,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34",
                 }
@@ -35,7 +35,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": datetime(2016, 12, 24, 15, 16, 34),
                 }
@@ -44,7 +44,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34",
                 }
@@ -66,7 +66,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "Success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34Z",
                 }
@@ -75,7 +75,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
@@ -86,7 +86,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+00:00",
                 }
@@ -118,7 +118,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "elapsed": 1.5,
-                    "status": "SUCCESS",
+                    "status": "success",
                     "last_execution_time": datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
                     ),
@@ -128,7 +128,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
-                    "status": "SUCCESS",
+                    "status": "success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+09:00",
                 }

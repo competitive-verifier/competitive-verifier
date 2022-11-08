@@ -5,7 +5,8 @@ import pytest
 
 from competitive_verifier.models import (
     CommandVerification,
-    DependencyVerification,
+    ConstVerification,
+    ResultStatus,
     VerificationFile,
 )
 
@@ -58,44 +59,36 @@ test_parse_VerificationFile_params: list[
     ),
     (
         VerificationFile(
-            verification=[
-                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-            ],
+            verification=[ConstVerification(status=ResultStatus.SUCCESS)],
         ),
         {
             "verification": [
                 {
-                    "type": "dependency",
-                    "dependency": "foo/bar.py",
+                    "type": "const",
+                    "status": "success",
                 }
             ],
         },
         {
             "dependencies": [],
             "display_path": None,
-            "verification": [
-                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-            ],
+            "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
         },
     ),
     (
         VerificationFile(
-            verification=[
-                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-            ],
+            verification=[ConstVerification(status=ResultStatus.SUCCESS)],
         ),
         {
             "verification": {
-                "type": "dependency",
-                "dependency": "foo/bar.py",
+                "type": "const",
+                "status": "success",
             },
         },
         {
             "dependencies": [],
             "display_path": None,
-            "verification": [
-                DependencyVerification(dependency=pathlib.Path("foo/bar.py"))
-            ],
+            "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
         },
     ),
 ]
@@ -117,7 +110,7 @@ def test_parse_VerificationFile(
 test_is_verification_params = [
     (
         VerificationFile(
-            verification=[DependencyVerification(dependency=pathlib.Path("."))],
+            verification=[ConstVerification(status=ResultStatus.SUCCESS)],
         ),
         True,
         True,
@@ -125,8 +118,8 @@ test_is_verification_params = [
     (
         VerificationFile(
             verification=[
-                DependencyVerification(dependency=pathlib.Path(".")),
-                DependencyVerification(dependency=pathlib.Path("..")),
+                ConstVerification(status=ResultStatus.SUCCESS),
+                ConstVerification(status=ResultStatus.FAILURE),
             ],
         ),
         True,
@@ -142,7 +135,7 @@ test_is_verification_params = [
     (
         VerificationFile(
             verification=[
-                DependencyVerification(dependency=pathlib.Path(".")),
+                ConstVerification(status=ResultStatus.SUCCESS),
                 CommandVerification(command="true"),
             ],
         ),

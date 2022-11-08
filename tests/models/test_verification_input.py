@@ -108,8 +108,8 @@ def test_to_json():
                     "dependencies": ["foo/bar.py"],
                     "verification": [
                         {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     ],
                 },
@@ -128,8 +128,8 @@ def test_to_json():
                 "dependencies": ["foo/bar.py"],
                 "verification": [
                     {
-                        "type": "dependency",
-                        "dependency": "foo/bar.py",
+                        "type": "const",
+                        "status": "success",
                     }
                 ],
             },
@@ -148,8 +148,8 @@ def test_repr():
                     "dependencies": ["foo/bar.py"],
                     "verification": [
                         {
-                            "type": "dependency",
-                            "dependency": "foo/bar.py",
+                            "type": "const",
+                            "status": "success",
                         }
                     ],
                 },
@@ -160,6 +160,6 @@ def test_repr():
     assert repr(obj) == (
         "VerificationInput("
         + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(display_path=None, dependencies=[], verification=[]),"
-        + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[DependencyVerification(type='dependency', dependency={repr(Path('foo/bar.py'))})])"
+        + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)])"
         + f"}})"
     )

@@ -1,18 +1,13 @@
 import datetime
 import pathlib
-from enum import Enum
 from logging import getLogger
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+
+from .result_status import ResultStatus
 
 logger = getLogger(__name__)
-
-
-class ResultStatus(str, Enum):
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
-    SKIPPED = "SKIPPED"
 
 
 class VerificationResult(BaseModel):
@@ -26,8 +21,11 @@ class VerificationResult(BaseModel):
         default_factory=datetime.datetime.now
     )
 
-    class Config:
-        use_enum_values = True
+    @validator("status", pre=True)
+    def verification_list(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
     def need_reverifying(self, base_time: datetime.datetime) -> bool:
         if self.status != ResultStatus.SUCCESS:

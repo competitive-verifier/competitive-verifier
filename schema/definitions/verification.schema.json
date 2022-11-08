@@ -1,16 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
-        "verification_command": {
+        "verification_types": {
             "type": "object",
-            "description": "Verification command definition",
+            "description": "Verification definition",
             "allOf": [
                 {
                     "properties": {
                         "type": {
                             "description": "command type",
                             "enum": [
-                                "dependency",
+                                "const",
                                 "problem",
                                 "command"
                             ]
@@ -23,18 +23,17 @@
                 {
                     "oneOf": [
                         {
-                            "description": "Dependency definition",
+                            "description": "Constant result",
                             "properties": {
                                 "type": {
-                                    "const": "dependency"
+                                    "const": "const"
                                 },
-                                "dependency": {
-                                    "type": "string",
-                                    "description": "The file implemented verification"
+                                "status": {
+                                    "$ref": "result_status.schema.json#/definitions/result_status"
                                 }
                             },
                             "required": [
-                                "dependency"
+                                "status"
                             ]
                         },
                         {

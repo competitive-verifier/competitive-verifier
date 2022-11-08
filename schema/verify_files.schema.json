@@ -34,12 +34,12 @@
                         "verification": {
                             "oneOf": [
                                 {
-                                    "$ref": "definitions/command.schema.json#/definitions/verification_command"
+                                    "$ref": "definitions/verification.schema.json#/definitions/verification_types"
                                 },
                                 {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "definitions/command.schema.json#/definitions/verification_command"
+                                        "$ref": "definitions/verification.schema.json#/definitions/verification_types"
                                     }
                                 }
                             ]

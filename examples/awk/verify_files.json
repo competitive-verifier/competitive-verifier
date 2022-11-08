@@ -48,8 +48,8 @@
                 "examples/awk/echo.sh"
             ],
             "verification": {
-                "type": "dependency",
-                "dependency": "."
+                "type": "const",
+                "status": "success"
             }
         }
     }
