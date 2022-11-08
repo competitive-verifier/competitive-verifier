@@ -2,12 +2,16 @@
 # https://github.com/Tyrrrz/GitHubActionsTestLogger/blob/04fe7796a047dbd0e3cd6a46339b2a50f5125317/GitHubActionsTestLogger/TestSummary.cs
 
 import os
+import pathlib
 from collections import Counter
 from itertools import chain
 from typing import TextIO
 
-from competitive_verifier.models import VerifyCommandResult
-from competitive_verifier.models.result import ResultStatus
+from competitive_verifier.models import FileResult, ResultStatus, VerifyCommandResult
+
+SUCCESS = ResultStatus.SUCCESS
+FAILURE = ResultStatus.FAILURE
+SKIPPED = ResultStatus.SKIPPED
 
 
 def to_human_str(total_seconds: float) -> str:
@@ -30,23 +34,46 @@ def to_human_str(total_seconds: float) -> str:
 
 
 def write_summary(fp: TextIO, result: VerifyCommandResult):
+    def with_icon(icon: str, text: str) -> str:
+        return icon + "&nbsp;&nbsp;" + text
+
+    def write_table_line(cells: list[str]) -> None:
+        for c in cells:
+            fp.write("|")
+            fp.write(c)
+        fp.write("|\n")
+
+    def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
+        for p, fr in results:
+            counter = Counter(r.status for r in fr.command_results)
+            if counter.get(FAILURE):
+                circle_status = "🔴"
+            elif counter.get(SKIPPED):
+                circle_status = "🟡"
+            else:
+                circle_status = "🟢"
+            write_table_line(
+                [
+                    with_icon(circle_status, p.as_posix()),
+                    str(counter.get(SUCCESS, "-")),
+                    str(counter.get(FAILURE, "-")),
+                    str(counter.get(SKIPPED, "-")),
+                    str(sum(counter.values())),
+                    to_human_str(sum(r.elapsed for r in fr.command_results)),
+                ]
+            )
+
     counter = Counter(
         r.status
         for r in chain.from_iterable(f.command_results for f in result.files.values())
     )
 
-    def counter_str(s: ResultStatus, default: str = "—") -> str:
-        v = counter.get(s, 0)
-        if v > 0:
-            return str(v)
-        return default
-
     fp.write("<details>")
     fp.write("<summary>")
 
-    if counter.get(ResultStatus.FAILURE):
+    if counter.get(FAILURE):
         circle_status = "🔴"
-    elif counter.get(ResultStatus.SKIPPED):
+    elif counter.get(SKIPPED):
         circle_status = "🟡"
     else:
         circle_status = "🟢"
@@ -57,40 +84,49 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     fp.write(os.getenv("COMPETITIVE_VERIFY_SUMMARY_TITLE", "Verification result"))
     fp.write("</b>")
     fp.write("</summary>")
-    fp.write("<br/>")
-
-    def table_header(icon: str, text: str) -> None:
-        fp.write('<th width="99999">')
-        fp.write(icon)
-        fp.write("&nbsp;&nbsp;")
-        fp.write(text)
-        fp.write("</th>")
-
-    fp.write("<table>")
-    table_header("✓", "Passed")
-    table_header("✘", "Failed")
-    table_header("↷", "Skipped")
-    table_header("∑", "Total")
-    table_header("⧗", "Elapsed")
-    fp.write("<tr>")
-    fp.write('<td align="center">')
-    fp.write(counter_str(ResultStatus.SUCCESS, "-"))
-    fp.write("</td>")
-    fp.write('<td align="center">')
-    fp.write(counter_str(ResultStatus.FAILURE, "-"))
-
-    fp.write("</td>")
-    fp.write('<td align="center">')
-    fp.write(counter_str(ResultStatus.SKIPPED, "-"))
-    fp.write("</td>")
-    fp.write('<td align="center">')
-    fp.write(str(sum(counter.values())))
-    fp.write("</td>")
-    fp.write('<td align="center">')
-    fp.write(to_human_str(result.total_seconds))
-    fp.write("</td>")
-    fp.write("</tr>")
-    fp.write("</table>")
     fp.write("\n\n")
 
-    fp.write("</details>\n")
+    file_results: dict[bool, list[tuple[pathlib.Path, FileResult]]] = {
+        False: [],
+        True: [],
+    }
+    for p, fr in result.files.items():
+        file_results[fr.newest].append((p, fr))
+
+    file_results[True].sort(key=lambda t: t[0])
+    file_results[False].sort(key=lambda t: t[0])
+
+    header = [
+        with_icon("📝", "File"),
+        with_icon("✓", "Passed"),
+        with_icon("✘", "Failed"),
+        with_icon("↷", "Skipped"),
+        with_icon("∑", "Total"),
+        with_icon("⧗", "Elapsed"),
+    ]
+    alignment = [":---"] + [":---:"] * (len(header) - 1)
+
+    if file_results[True]:
+        fp.write("### Results\n")
+        write_table_line(header)
+        write_table_line(alignment)
+        write_table_line(
+            [
+                "_**Sum**_",
+                str(counter.get(SUCCESS, "-")),
+                str(counter.get(FAILURE, "-")),
+                str(counter.get(SKIPPED, "-")),
+                str(sum(counter.values())),
+                to_human_str(result.total_seconds),
+            ]
+        )
+        write_table_line([""] * len(header))
+
+        write_table_file_result(file_results[True])
+
+    if file_results[False]:
+        fp.write("### Past results\n")
+        write_table_line(header)
+        write_table_line(alignment)
+        write_table_file_result(file_results[False])
+        fp.write("</details>\n")

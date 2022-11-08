@@ -21,7 +21,7 @@ test_parse_FileResult_params = [  # type: ignore
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2016, 12, 24, 15, 16, 34),
                 )
-            ]
+            ],
         ),
         {
             "command_results": [
@@ -30,7 +30,8 @@ test_parse_FileResult_params = [  # type: ignore
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34",
                 }
-            ]
+            ],
+            "newest": True,
         },
         {
             "command_results": [
@@ -39,7 +40,8 @@ test_parse_FileResult_params = [  # type: ignore
                     "elapsed": 1.5,
                     "last_execution_time": datetime(2016, 12, 24, 15, 16, 34),
                 }
-            ]
+            ],
+            "newest": True,
         },
         {
             "command_results": [
@@ -48,11 +50,13 @@ test_parse_FileResult_params = [  # type: ignore
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34",
                 }
-            ]
+            ],
+            "newest": True,
         },
     ),
     (
         FileResult(
+            newest=False,
             command_results=[
                 VerificationResult(
                     elapsed=1.5,
@@ -61,16 +65,17 @@ test_parse_FileResult_params = [  # type: ignore
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
                     ),
                 )
-            ]
+            ],
         ),
         {
+            "newest": False,
             "command_results": [
                 {
                     "status": "Success",
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34Z",
                 }
-            ]
+            ],
         },
         {
             "command_results": [
@@ -81,7 +86,8 @@ test_parse_FileResult_params = [  # type: ignore
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
                     ),
                 }
-            ]
+            ],
+            "newest": False,
         },
         {
             "command_results": [
@@ -90,11 +96,13 @@ test_parse_FileResult_params = [  # type: ignore
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+00:00",
                 }
-            ]
+            ],
+            "newest": False,
         },
     ),
     (
         FileResult(
+            newest=True,
             command_results=[
                 VerificationResult(
                     elapsed=1.5,
@@ -103,7 +111,7 @@ test_parse_FileResult_params = [  # type: ignore
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
                     ),
                 )
-            ]
+            ],
         ),
         {
             "command_results": [
@@ -123,7 +131,8 @@ test_parse_FileResult_params = [  # type: ignore
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
                     ),
                 }
-            ]
+            ],
+            "newest": True,
         },
         {
             "command_results": [
@@ -132,7 +141,8 @@ test_parse_FileResult_params = [  # type: ignore
                     "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+09:00",
                 }
-            ]
+            ],
+            "newest": True,
         },
     ),
 ]

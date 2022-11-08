@@ -33,7 +33,7 @@
             }
         },
         "examples/awk/echo.sh": {},
-        ".": {
+        "examples/awk/verify_files.json": {
             "display_path": false,
             "dependencies": [],
             "verification": [

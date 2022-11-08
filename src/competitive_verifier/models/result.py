@@ -38,6 +38,7 @@ class VerificationResult(BaseModel):
 
 class FileResult(BaseModel):
     command_results: list[VerificationResult] = Field(default_factory=list)
+    newest: bool = True
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
         return any(r.need_reverifying(base_time) for r in self.command_results)

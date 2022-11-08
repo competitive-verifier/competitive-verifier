@@ -168,6 +168,8 @@ class Verifier(InputContainer):
 
         if self.prev_result:
             file_results = self.prev_result.files.copy()
+            for file_result in file_results.values():
+                file_result.newest = False
         else:
             file_results = dict[pathlib.Path, FileResult]()
 
