@@ -17,6 +17,11 @@ class ResultStatus(str, Enum):
 
 class VerificationResult(BaseModel):
     status: ResultStatus
+    elapsed: float
+    """
+    Elapsed seconds
+    """
+
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
     )

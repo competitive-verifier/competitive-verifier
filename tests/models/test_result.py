@@ -1,16 +1,23 @@
+import pathlib
 from datetime import datetime, timedelta, timezone
 from json import dumps as json_dumps
 from typing import Any
 
 import pytest
 
-from competitive_verifier.models import FileResult, ResultStatus, VerificationResult
+from competitive_verifier.models import (
+    FileResult,
+    ResultStatus,
+    VerificationResult,
+    VerifyCommandResult,
+)
 
 test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2016, 12, 24, 15, 16, 34),
                 )
@@ -20,6 +27,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34",
                 }
             ]
@@ -28,6 +36,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": datetime(2016, 12, 24, 15, 16, 34),
                 }
             ]
@@ -36,6 +45,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34",
                 }
             ]
@@ -45,6 +55,7 @@ test_parse_FileResult_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
@@ -56,6 +67,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": "2016-12-24 15:16:34Z",
                 }
             ]
@@ -64,6 +76,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone.utc
                     ),
@@ -74,6 +87,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+00:00",
                 }
             ]
@@ -83,6 +97,7 @@ test_parse_FileResult_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
@@ -93,6 +108,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
+                    "elapsed": 1.5,
                     "status": "SUCCESS",
                     "last_execution_time": "2016-12-24 15:16:34+09:00",
                 }
@@ -101,6 +117,7 @@ test_parse_FileResult_params = [  # type: ignore
         {
             "command_results": [
                 {
+                    "elapsed": 1.5,
                     "status": "SUCCESS",
                     "last_execution_time": datetime(
                         2016, 12, 24, 15, 16, 34, tzinfo=timezone(timedelta(hours=9))
@@ -112,6 +129,7 @@ test_parse_FileResult_params = [  # type: ignore
             "command_results": [
                 {
                     "status": "SUCCESS",
+                    "elapsed": 1.5,
                     "last_execution_time": "2016-12-24T15:16:34+09:00",
                 }
             ]
@@ -141,6 +159,7 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -153,6 +172,7 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -165,6 +185,7 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SKIPPED,
                     last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
                 )
@@ -177,6 +198,7 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2015, 12, 24, 19, 0, 0),
                 )
@@ -189,14 +211,17 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2015, 12, 24, 19, 0, 0),
                 ),
@@ -209,14 +234,17 @@ test_file_result_need_verification_params = [  # type: ignore
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime(2018, 12, 24, 19, 0, 0),
                 ),
@@ -244,8 +272,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                VerificationResult(status=ResultStatus.SUCCESS),
-                VerificationResult(status=ResultStatus.SUCCESS),
+                VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
             ]
         ),
         True,
@@ -253,8 +281,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                VerificationResult(status=ResultStatus.SUCCESS),
-                VerificationResult(status=ResultStatus.FAILURE),
+                VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                VerificationResult(elapsed=1, status=ResultStatus.FAILURE),
             ]
         ),
         False,
@@ -262,8 +290,8 @@ test_is_success_params = [
     (
         FileResult(
             command_results=[
-                VerificationResult(status=ResultStatus.SUCCESS),
-                VerificationResult(status=ResultStatus.SKIPPED),
+                VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
             ]
         ),
         False,
@@ -280,3 +308,23 @@ def test_is_success(
     expected: bool,
 ):
     assert obj.is_success() == expected
+
+
+def test_verify_command_result_json():
+    obj = VerifyCommandResult(
+        total_seconds=3.75,
+        files={
+            pathlib.Path("foo/bar.py"): FileResult(
+                command_results=[
+                    VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                    VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
+                ]
+            ),
+            pathlib.Path("foo/baz.py"): FileResult(
+                command_results=[
+                    VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                ]
+            ),
+        },
+    )
+    assert VerifyCommandResult.parse_raw(obj.json()) == obj

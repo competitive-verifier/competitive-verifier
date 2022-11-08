@@ -97,6 +97,7 @@ def test_to_dict():
 
 def test_to_json():
     assert test_input.json() == test_input.impl.json()
+    assert VerificationInput.parse_raw(test_input.json()) == test_input
 
     obj = VerificationInput.parse_obj(
         {

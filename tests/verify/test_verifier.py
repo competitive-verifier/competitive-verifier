@@ -162,6 +162,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -180,6 +181,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -198,6 +200,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.FAILURE,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -216,6 +219,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SKIPPED,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -234,6 +238,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -252,6 +257,7 @@ test_file_need_verification_params: list[
         FileResult(
             command_results=[
                 VerificationResult(
+                    elapsed=1.5,
                     status=ResultStatus.SUCCESS,
                     last_execution_time=datetime.datetime(2016, 12, 24),
                 ),
@@ -353,6 +359,7 @@ test_remaining_verification_files_params: list[
                     Path("baz"): FileResult(
                         command_results=[
                             VerificationResult(
+                                elapsed=1.5,
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime.datetime(2018, 7, 22),
                             )

@@ -195,12 +195,13 @@ class Verifier(InputContainer):
                 logger.debug(repr(f))
                 file_results[p] = results = FileResult()
 
+                prev_time = datetime.datetime.now()
                 try:
                     if download:
                         run_download(f, check=True, group_log=False)
                 except Exception:
                     results.command_results.append(
-                        self.create_command_result(ResultStatus.FAILURE)
+                        self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
                     logger.error("Failed to download")
                     continue
@@ -214,7 +215,7 @@ class Verifier(InputContainer):
                     ):
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(command))
                         results.command_results.append(
-                            self.create_command_result(ResultStatus.SKIPPED)
+                            self.create_command_result(ResultStatus.SKIPPED, prev_time)
                         )
                         continue
 
@@ -229,7 +230,9 @@ class Verifier(InputContainer):
                         if error_message:
                             logger.error("%s: %s, %s", error_message, p, repr(command))
                             results.command_results.append(
-                                self.create_command_result(ResultStatus.FAILURE)
+                                self.create_command_result(
+                                    ResultStatus.FAILURE, prev_time
+                                )
                             )
                             if github.is_in_github_actions():
                                 github.print_error(
@@ -238,7 +241,7 @@ class Verifier(InputContainer):
                                 )
                             continue
                         results.command_results.append(
-                            self.create_command_result(ResultStatus.SUCCESS)
+                            self.create_command_result(ResultStatus.SUCCESS, prev_time)
                         )
                     except Exception as e:
                         message = (
@@ -249,7 +252,7 @@ class Verifier(InputContainer):
                         logger.error("%s: %s, %s", message, p, repr(command))
                         traceback.print_exc()
                         results.command_results.append(
-                            self.create_command_result(ResultStatus.FAILURE)
+                            self.create_command_result(ResultStatus.FAILURE, prev_time)
                         )
 
         self._result = VerifyCommandResult(
@@ -258,8 +261,14 @@ class Verifier(InputContainer):
         )
         return self._result
 
-    def create_command_result(self, status: ResultStatus) -> VerificationResult:
+    def create_command_result(
+        self,
+        status: ResultStatus,
+        prev_time: datetime.datetime,
+    ) -> VerificationResult:
+        elapsed = (datetime.datetime.now() - prev_time).total_seconds()
         return VerificationResult(
             status=status,
+            elapsed=elapsed,
             last_execution_time=self.verification_time,
         )

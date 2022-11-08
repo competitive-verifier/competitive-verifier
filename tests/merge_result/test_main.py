@@ -20,6 +20,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                     Path("foo"): FileResult(
                         command_results=[
                             VerificationResult(
+                                elapsed=1,
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime(2020, 2, 26, 23, 45),
                             )
@@ -34,6 +35,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                 Path("foo"): FileResult(
                     command_results=[
                         VerificationResult(
+                            elapsed=1,
                             status=ResultStatus.SUCCESS,
                             last_execution_time=datetime(2020, 2, 26, 23, 45),
                         )
@@ -50,6 +52,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                     Path("foo"): FileResult(
                         command_results=[
                             VerificationResult(
+                                elapsed=1,
                                 status=ResultStatus.SUCCESS,
                                 last_execution_time=datetime(2020, 2, 26, 23, 45),
                             )
@@ -63,6 +66,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                     Path("baz"): FileResult(
                         command_results=[
                             VerificationResult(
+                                elapsed=1,
                                 status=ResultStatus.SKIPPED,
                                 last_execution_time=datetime(2021, 2, 27, 23, 45),
                             )
@@ -76,6 +80,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                     Path("bar"): FileResult(
                         command_results=[
                             VerificationResult(
+                                elapsed=1,
                                 status=ResultStatus.FAILURE,
                                 last_execution_time=datetime(2020, 2, 27, 23, 45),
                             )
@@ -90,6 +95,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                 Path("foo"): FileResult(
                     command_results=[
                         VerificationResult(
+                            elapsed=1,
                             status=ResultStatus.SUCCESS,
                             last_execution_time=datetime(2020, 2, 26, 23, 45),
                         )
@@ -98,6 +104,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                 Path("bar"): FileResult(
                     command_results=[
                         VerificationResult(
+                            elapsed=1,
                             status=ResultStatus.FAILURE,
                             last_execution_time=datetime(2020, 2, 27, 23, 45),
                         )
@@ -106,6 +113,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
                 Path("baz"): FileResult(
                     command_results=[
                         VerificationResult(
+                            elapsed=1,
                             status=ResultStatus.SKIPPED,
                             last_execution_time=datetime(2021, 2, 27, 23, 45),
                         )

@@ -22,4 +22,4 @@ test_to_human_str_params: list[tuple[timedelta, str]] = [
     test_to_human_str_params,
 )
 def test_to_human_str(td: timedelta, expected: str):
-    assert to_human_str(td) == expected
+    assert to_human_str(td.total_seconds()) == expected
