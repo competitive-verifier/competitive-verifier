@@ -4,7 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from competitive_verifier.models import VerificationFile, VerificationInput
+from competitive_verifier.models import (
+    ConstVerification,
+    VerificationFile,
+    VerificationInput,
+)
 
 test_input = VerificationInput(
     files={
@@ -44,50 +48,14 @@ test_input = VerificationInput(
                 Path("hoge/piyo.py"),
             ],
         ),
+        Path("test/test.py"): VerificationFile(
+            verification=[ConstVerification(status="success")],  # type:ignore
+            dependencies=[
+                Path("hoge/piyopiyo.py"),
+            ],
+        ),
     }
 )
-
-
-test_resolve_dependencies_params: list[tuple[str, list[str]]] = [
-    ("foo/bar1.py", ["foo/bar1.py"]),
-    ("foo/bar2.py", ["foo/bar1.py", "foo/bar2.py"]),
-    ("foo/baz.py", ["foo/baz.py"]),
-    ("foo/barbaz.py", ["foo/barbaz.py", "foo/baz.py", "foo/bar1.py", "foo/bar2.py"]),
-    ("hoge/1.py", ["hoge/1.py"]),
-    (
-        "hoge/hoge.py",
-        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
-    ),
-    (
-        "hoge/piyo.py",
-        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
-    ),
-    (
-        "hoge/fuga.py",
-        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
-    ),
-    (
-        "hoge/piyopiyo.py",
-        [
-            "hoge/piyopiyo.py",
-            "hoge/hoge.py",
-            "hoge/piyo.py",
-            "hoge/fuga.py",
-            "hoge/1.py",
-        ],
-    ),
-]
-
-
-@pytest.mark.parametrize(
-    "path, expected",
-    test_resolve_dependencies_params,
-    ids=[tup[0] for tup in test_resolve_dependencies_params],
-)
-def test_resolve_dependencies(path: str, expected: list[str]):
-    expected_paths = set(Path(p) for p in expected)
-    assert expected_paths == test_input.resolve_dependencies(Path(path))
-    assert expected_paths == test_input.resolve_dependencies(Path(path))
 
 
 def test_to_dict():
@@ -163,3 +131,137 @@ def test_repr():
         + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)])"
         + f"}})"
     )
+
+
+test_transitive_depends_on_params: list[tuple[str, list[str]]] = [
+    ("foo/bar1.py", ["foo/bar1.py"]),
+    ("foo/bar2.py", ["foo/bar1.py", "foo/bar2.py"]),
+    ("foo/baz.py", ["foo/baz.py"]),
+    ("foo/barbaz.py", ["foo/barbaz.py", "foo/baz.py", "foo/bar1.py", "foo/bar2.py"]),
+    ("hoge/1.py", ["hoge/1.py"]),
+    (
+        "hoge/hoge.py",
+        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
+    ),
+    (
+        "hoge/piyo.py",
+        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
+    ),
+    (
+        "hoge/fuga.py",
+        ["hoge/hoge.py", "hoge/piyo.py", "hoge/fuga.py", "hoge/1.py"],
+    ),
+    (
+        "hoge/piyopiyo.py",
+        [
+            "hoge/piyopiyo.py",
+            "hoge/hoge.py",
+            "hoge/piyo.py",
+            "hoge/fuga.py",
+            "hoge/1.py",
+        ],
+    ),
+    (
+        "test/test.py",
+        [
+            "hoge/1.py",
+            "hoge/fuga.py",
+            "hoge/hoge.py",
+            "hoge/piyo.py",
+            "hoge/piyopiyo.py",
+            "test/test.py",
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    test_transitive_depends_on_params,
+    ids=[tup[0] for tup in test_transitive_depends_on_params],
+)
+def test_transitive_depends_on(path: str, expected: list[str]):
+    expected_paths = set(Path(p) for p in expected)
+    assert test_input.transitive_depends_on(Path(path)) == expected_paths
+    assert test_input.transitive_depends_on(Path(path)) == expected_paths
+
+
+test_depends_on_params: list[tuple[str, list[str]]] = [
+    ("foo/bar1.py", []),
+    ("foo/bar2.py", [("foo/bar1.py")]),
+    ("foo/baz.py", []),
+    ("foo/barbaz.py", ["foo/bar2.py", "foo/baz.py"]),
+    ("hoge/1.py", []),
+    ("hoge/hoge.py", ["hoge/fuga.py", "hoge/1.py"]),
+    ("hoge/piyo.py", ["hoge/fuga.py", "hoge/hoge.py"]),
+    ("hoge/fuga.py", ["hoge/piyo.py"]),
+    ("hoge/piyopiyo.py", ["hoge/piyo.py"]),
+    ("test/test.py", ["hoge/piyopiyo.py"]),
+]
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    test_depends_on_params,
+    ids=[tup[0] for tup in test_depends_on_params],
+)
+def test_depends_on(path: str, expected: list[str]):
+    expected_paths = set(Path(p) for p in expected)
+    assert test_input.depends_on(Path(path)) == expected_paths
+    assert test_input.depends_on(Path(path)) == expected_paths
+
+
+test_required_by_params: list[tuple[str, list[str]]] = [
+    ("foo/bar1.py", ["foo/bar2.py"]),
+    ("foo/bar2.py", ["foo/barbaz.py"]),
+    ("foo/baz.py", ["foo/barbaz.py"]),
+    ("foo/barbaz.py", []),
+    ("hoge/1.py", ["hoge/hoge.py"]),
+    ("hoge/hoge.py", ["hoge/piyo.py"]),
+    (
+        "hoge/piyo.py",
+        ["hoge/fuga.py", "hoge/piyopiyo.py"],
+    ),
+    (
+        "hoge/fuga.py",
+        ["hoge/piyo.py", "hoge/hoge.py"],
+    ),
+    ("hoge/piyopiyo.py", []),
+    ("test/test.py", []),
+]
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    test_required_by_params,
+    ids=[tup[0] for tup in test_required_by_params],
+)
+def test_required_by(path: str, expected: list[str]):
+    expected_paths = set(Path(p) for p in expected)
+    assert test_input.required_by(Path(path)) == expected_paths
+    assert test_input.required_by(Path(path)) == expected_paths
+
+
+test_verified_with_params: list[tuple[str, list[str]]] = [
+    ("foo/bar1.py", []),
+    ("foo/bar2.py", []),
+    ("foo/baz.py", []),
+    ("foo/barbaz.py", []),
+    ("hoge/1.py", []),
+    ("hoge/hoge.py", []),
+    ("hoge/piyo.py", []),
+    ("hoge/fuga.py", []),
+    ("hoge/piyopiyo.py", ["test/test.py"]),
+    ("test/test.py", []),
+]
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    test_verified_with_params,
+    ids=[tup[0] for tup in test_verified_with_params],
+)
+def test_verified_with(path: str, expected: list[str]):
+    expected_paths = set(Path(p) for p in expected)
+    assert test_input.verified_with(Path(path)) == expected_paths
+    assert test_input.verified_with(Path(path)) == expected_paths

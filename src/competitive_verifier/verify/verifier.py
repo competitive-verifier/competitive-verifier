@@ -142,9 +142,9 @@ class Verifier(InputContainer):
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         if self.use_git_timestamp:
-            return github.get_commit_time(self.input.resolve_dependencies(path))
+            return github.get_commit_time(self.input.transitive_depends_on(path))
         else:
-            dependicies = self.input.resolve_dependencies(path)
+            dependicies = self.input.transitive_depends_on(path)
 
             timestamp = max(x.stat().st_mtime for x in dependicies)
             system_local_timezone = datetime.datetime.now().astimezone().tzinfo
