@@ -47,14 +47,14 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         for p, fr in results:
             counter = Counter(r.status for r in fr.command_results)
             if counter.get(FAILURE):
-                circle_status = "🔴"
+                emoji_status = "❌"
             elif counter.get(SKIPPED):
-                circle_status = "🟡"
+                emoji_status = "⚠"
             else:
-                circle_status = "🟢"
+                emoji_status = "✔"
             write_table_line(
                 [
-                    with_icon(circle_status, p.as_posix()),
+                    with_icon(emoji_status, p.as_posix()),
                     str(counter.get(SUCCESS, "-")),
                     str(counter.get(FAILURE, "-")),
                     str(counter.get(SKIPPED, "-")),
@@ -72,19 +72,29 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     fp.write("<summary>")
 
     if counter.get(FAILURE):
-        circle_status = "🔴"
+        emoji_status = "❌"
     elif counter.get(SKIPPED):
-        circle_status = "🟡"
+        emoji_status = "⚠"
     else:
-        circle_status = "🟢"
+        emoji_status = "✔"
 
-    fp.write(circle_status)
+    fp.write(emoji_status)
     fp.write(" ")
     fp.write("<b>")
     fp.write(os.getenv("COMPETITIVE_VERIFY_SUMMARY_TITLE", "Verification result"))
     fp.write("</b>")
     fp.write("</summary>")
     fp.write("\n\n")
+
+    fp.write("- ")
+    fp.write(with_icon("✔", "All test case results are `success`"))
+    fp.write("\n")
+    fp.write("- ")
+    fp.write(with_icon("❌", "Test case results containts `failure`"))
+    fp.write("\n")
+    fp.write("- ")
+    fp.write(with_icon("⚠", "Test case results containts `skipped`"))
+    fp.write("\n\n\n")
 
     file_results: dict[bool, list[tuple[pathlib.Path, FileResult]]] = {
         False: [],
