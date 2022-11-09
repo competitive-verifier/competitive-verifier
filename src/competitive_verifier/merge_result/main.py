@@ -4,6 +4,7 @@ import sys
 from functools import reduce
 from typing import Iterable, Optional
 
+from competitive_verifier.arg import add_result_json_argument
 from competitive_verifier.models import VerifyCommandResult
 
 
@@ -22,12 +23,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument_merge_result(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument(
-        "result_json",
-        nargs="+",
-        help="Json files which is result of `verify`",
-        type=pathlib.Path,
-    )
+    add_result_json_argument(parser)
     return parser
 
 

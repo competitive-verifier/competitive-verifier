@@ -114,8 +114,7 @@ def main(args: Optional[list[str]] = None):
     if parsed.subcommand == "download":
         sys.exit(0 if download.run(parsed) else 1)
     elif parsed.subcommand == "verify":
-        verifier = verify.run(parsed)
-        sys.exit(0 if verifier.force_result.is_success() else 1)
+        sys.exit(0 if verify.run(parsed) else 1)
     elif parsed.subcommand == "docs":
         sys.exit(0 if docs.run(parsed) else 1)
 

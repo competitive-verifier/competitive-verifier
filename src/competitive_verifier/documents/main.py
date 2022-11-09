@@ -5,7 +5,11 @@ from logging import getLogger
 from typing import Optional
 
 import competitive_verifier.merge_result.main as merge_result
-from competitive_verifier.arg import add_verify_files_json_argument
+from competitive_verifier.arg import (
+    add_ignore_error_argument,
+    add_result_json_argument,
+    add_verify_files_json_argument,
+)
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
@@ -17,12 +21,12 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     result: VerifyCommandResult,
-    check: bool,
+    ignore_error: bool,
 ) -> bool:
     logger.debug("input=%s", input.json())
     logger.debug("result=%s", result.json())
     builder = DocumentBuilder(input, result)
-    return builder.build() or not check
+    return builder.build() or ignore_error
 
 
 def run(args: argparse.Namespace) -> bool:
@@ -32,17 +36,13 @@ def run(args: argparse.Namespace) -> bool:
 
     input = VerificationInput.parse_file(args.verify_files_json)
     result = merge_result.run_impl(args.result_json)
-    return run_impl(input, result, args.check)
+    return run_impl(input, result, args.ignore_error)
 
 
 def argument_docs(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
-    merge_result.argument_merge_result(parser)
-    parser.add_argument(
-        "--check",
-        help="exit 1 when failed to documents",
-        action="store_true",
-    )
+    add_result_json_argument(parser)
+    add_ignore_error_argument(parser)
     return parser
 
 

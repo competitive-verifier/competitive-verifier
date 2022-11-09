@@ -22,8 +22,9 @@ class DocumentBuilder:
         result = self.impl()
         logger.info("generated.")
 
-        if False and github.env.is_in_github_actions():
-            self.push_documents_to_gh_pages(src_dir=_src_dir)
+        if github.env.is_in_github_actions():
+            if not self.push_documents_to_gh_pages(src_dir=_src_dir):
+                result = False
         else:
             logger.info(
                 "\n".join(
@@ -44,5 +45,7 @@ class DocumentBuilder:
     def impl(self) -> bool:
         return True
 
-    def push_documents_to_gh_pages(self, src_dir: pathlib.Path) -> None:
-        pass
+    def push_documents_to_gh_pages(self, src_dir: pathlib.Path) -> bool:
+        logger.info("upload documents...")
+
+        return True

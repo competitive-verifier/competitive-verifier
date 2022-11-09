@@ -7,7 +7,10 @@ from logging import getLogger
 from typing import Optional
 
 from competitive_verifier import github
-from competitive_verifier.arg import add_verify_files_json_argument
+from competitive_verifier.arg import (
+    add_ignore_error_argument,
+    add_verify_files_json_argument,
+)
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
@@ -27,7 +30,8 @@ def run_impl(
     split: Optional[int] = None,
     split_index: Optional[int] = None,
     output_path: Optional[pathlib.Path] = None,
-) -> Verifier:
+    ignore_error: bool = False,
+) -> bool:
     split_state = get_split_state(split, split_index)
     verifier = Verifier(
         input,
@@ -52,10 +56,10 @@ def run_impl(
         with open(output_path, mode="w", encoding="utf-8") as fp:
             fp.write(result_json)
 
-    return verifier
+    return result.is_success() or ignore_error
 
 
-def run(args: argparse.Namespace) -> Verifier:
+def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     input = VerificationInput.parse_file(args.verify_files_json)
@@ -73,11 +77,13 @@ def run(args: argparse.Namespace) -> Verifier:
         split=args.split,
         split_index=args.split_index,
         output_path=args.output,
+        ignore_error=args.ignore_error,
     )
 
 
 def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
+    add_ignore_error_argument(parser)
     parser.add_argument(
         "--timeout",
         type=float,
@@ -159,8 +165,7 @@ def main(args: Optional[list[str]] = None) -> None:
     try:
         configure_logging(logging.INFO)
         parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
-        verifier = run(parsed)
-        if not verifier.force_result.is_success():
+        if not run(parsed):
             sys.exit(1)
     except Exception as e:
         sys.stderr.write(str(e))
