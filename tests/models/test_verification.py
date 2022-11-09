@@ -101,12 +101,12 @@ def mock_exec_command():
 def test_const_verification():
     obj = ConstVerification(status=ResultStatus.SUCCESS)
     with mock_exec_command() as patch:
-        obj.run_command()
-        obj.run_compile_command()
+        assert obj.run() == ResultStatus.SUCCESS
+        assert obj.run_compile_command()
         patch.assert_not_called()
 
 
-test_run_command_params = [  # type: ignore
+test_run_params = [  # type: ignore
     (
         CommandVerification(command="ls ~"),
         ("ls ~",),
@@ -132,12 +132,12 @@ test_run_command_params = [  # type: ignore
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", test_run_command_params)
-def test_run_command(obj: Verification, args: Sequence[Any], kwargs: dict[str, Any]):
+@pytest.mark.parametrize("obj, args, kwargs", test_run_params)
+def test_run(obj: Verification, args: Sequence[Any], kwargs: dict[str, Any]):
     with mock.patch(
         "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
     ), mock_exec_command() as patch:
-        obj.run_command(
+        obj.run(
             DataVerificationParams(
                 default_tle=22,
             ),
@@ -204,7 +204,7 @@ def test_run_problem_command(obj: ProblemVerification, kwargs: dict[str, Any]):
     with mock.patch.object(
         competitive_verifier.models.verification.oj, "test"
     ) as patch:
-        obj.run_command(
+        obj.run(
             DataVerificationParams(default_tle=22),
         )
         patch.assert_called_once_with(**kwargs)
@@ -279,22 +279,22 @@ def test_run_compile(obj: Verification, args: Sequence[Any], kwargs: dict[str, A
             patch.assert_called_once_with(*args, **kwargs)
 
 
-test_params_run_command_params = [  # type: ignore
+test_params_run_params = [  # type: ignore
     (ConstVerification(status=ResultStatus.SUCCESS), None),
     (CommandVerification(command="true"), None),
     (
         ProblemVerification(command="true", problem="http://example.com"),
-        "ProblemVerification.run_command requires VerificationParams",
+        "ProblemVerification.run requires VerificationParams",
     ),
 ]
 
 
-@pytest.mark.parametrize("obj, error_message", test_params_run_command_params)
-def test_params_run_command(obj: Verification, error_message: str):
+@pytest.mark.parametrize("obj, error_message", test_params_run_params)
+def test_params_run(obj: Verification, error_message: str):
     with mock_exec_command():
         if error_message:
             with pytest.raises(ValueError) as e:
-                obj.run_command()
+                obj.run()
             assert e.value.args == (error_message,)
         else:
-            obj.run_command()
+            obj.run()

@@ -31,6 +31,9 @@ class VerificationFile(BaseModel):
         return bool(self.verification)
 
     def is_skippable_verification(self) -> bool:
+        """
+        If verification cost is small, it is skippable.
+        """
         return self.is_verification() and all(v.is_skippable for v in self.verification)
 
 

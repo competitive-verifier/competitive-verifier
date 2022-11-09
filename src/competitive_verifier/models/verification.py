@@ -14,10 +14,10 @@ class VerificationParams(Protocol):
 
 class BaseVerification(BaseModel, ABC):
     @abstractmethod
-    def run_command(
+    def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
+    ) -> ResultStatus:
         ...
 
     @abstractmethod
@@ -29,6 +29,9 @@ class BaseVerification(BaseModel, ABC):
 
     @property
     def is_skippable(self) -> bool:
+        """
+        If verification cost is small, it is skippable.
+        """
         return False
 
 
@@ -40,11 +43,11 @@ class ConstVerification(BaseVerification):
     def is_skippable(self) -> bool:
         return True
 
-    def run_command(
+    def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
-        return self.status == ResultStatus.SUCCESS
+    ) -> ResultStatus:
+        return self.status
 
     def run_compile_command(
         self,
@@ -59,11 +62,13 @@ class CommandVerification(BaseVerification):
     command: str
     compile: Optional[str] = None
 
-    def run_command(
+    def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
-        return exec_command(self.command, text=True).returncode == 0
+    ) -> ResultStatus:
+        if exec_command(self.command, text=True).returncode == 0:
+            return ResultStatus.SUCCESS
+        return ResultStatus.FAILURE
 
     def run_compile_command(
         self,
@@ -88,21 +93,21 @@ class ProblemVerification(BaseVerification):
     error: Optional[float] = None
     tle: Optional[float] = None
 
-    def run_command(
+    def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
+    ) -> ResultStatus:
         if not params:
-            raise ValueError(
-                "ProblemVerification.run_command requires VerificationParams"
-            )
+            raise ValueError("ProblemVerification.run requires VerificationParams")
 
-        return oj.test(
+        if oj.test(
             url=self.problem,
             command=self.command,
             tle=self.tle or params.default_tle,
             error=self.error,
-        )
+        ):
+            return ResultStatus.SUCCESS
+        return ResultStatus.FAILURE
 
     def run_compile_command(
         self,

@@ -63,6 +63,14 @@ class InputContainer(ABC):
         return {p: f for p, f in self.input.files.items() if f.is_verification()}
 
     @cached_property
+    def skippable_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
+        return {
+            p: f
+            for p, f in self.verification_files.items()
+            if f.is_skippable_verification()
+        }
+
+    @cached_property
     def remaining_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
         """
         List of verification files that have not yet been verified.
@@ -70,7 +78,7 @@ class InputContainer(ABC):
         verification_files = {
             p: f
             for p, f in self.verification_files.items()
-            if not f.is_skippable_verification()
+            if p not in self.skippable_verification_files
         }
 
         if self.prev_result is None:
@@ -96,11 +104,15 @@ class InputContainer(ABC):
         else ``split_state.split(remaining_verification_files)``.
         """
         if self.split_state is None:
-            return self.remaining_verification_files
+            return self.remaining_verification_files | self.skippable_verification_files
 
         lst = [(p, f) for p, f in self.remaining_verification_files.items()]
         lst.sort(key=lambda tup: tup[0])
-        return {p: f for p, f in self.split_state.split(lst)}
+
+        d = {p: f for p, f in self.split_state.split(lst)}
+        if self.split_state.index == 0:
+            d.update(self.skippable_verification_files)
+        return d
 
 
 class Verifier(InputContainer):
@@ -208,24 +220,19 @@ class Verifier(InputContainer):
                         if not command.run_compile_command():
                             error_message = "Failed to compile"
 
-                        if not command.run_command(self):
+                        rs = command.run(self)
+                        if rs != ResultStatus.SUCCESS:
                             error_message = "Failed to test"
 
                         if error_message:
                             logger.error("%s: %s, %s", error_message, p, repr(command))
-                            results.command_results.append(
-                                self.create_command_result(
-                                    ResultStatus.FAILURE, prev_time
-                                )
-                            )
                             if github.env.is_in_github_actions():
                                 github.print_error(
                                     message=f"{error_message} {str(p)}",
                                     file=str(p.resolve()),
                                 )
-                            continue
                         results.command_results.append(
-                            self.create_command_result(ResultStatus.SUCCESS, prev_time)
+                            self.create_command_result(rs, prev_time)
                         )
                     except Exception as e:
                         message = (
