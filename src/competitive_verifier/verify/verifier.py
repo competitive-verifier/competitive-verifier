@@ -104,15 +104,12 @@ class InputContainer(ABC):
         else ``split_state.split(remaining_verification_files)``.
         """
         if self.split_state is None:
-            return self.remaining_verification_files | self.skippable_verification_files
+            return self.remaining_verification_files
 
         lst = [(p, f) for p, f in self.remaining_verification_files.items()]
         lst.sort(key=lambda tup: tup[0])
 
-        d = {p: f for p, f in self.split_state.split(lst)}
-        if self.split_state.index == 0:
-            d.update(self.skippable_verification_files)
-        return d
+        return {p: f for p, f in self.split_state.split(lst)}
 
 
 class Verifier(InputContainer):
@@ -152,6 +149,12 @@ class Verifier(InputContainer):
             raise VerifierError("Not verified yet.")
         return self._result
 
+    @property
+    def is_first(self) -> bool:
+        if not self.split_state:
+            return True
+        return self.split_state.index == 0
+
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         if self.use_git_timestamp:
             return git.get_commit_time(self.input.transitive_depends_on(path))
@@ -171,7 +174,7 @@ class Verifier(InputContainer):
 
         logger.info(
             "current_verification_files: %s",
-            " ".join(str(p) for p in self.current_verification_files.keys()),
+            " ".join(p.as_posix() for p in self.current_verification_files.keys()),
         )
         try:
             ulimit_stack()
@@ -186,8 +189,8 @@ class Verifier(InputContainer):
             file_results = dict[pathlib.Path, FileResult]()
 
         for p, f in self.current_verification_files.items():
-            logger.info("Start: %s", str(p))
-            with log.group(f"Verify: {str(p)}"):
+            logger.info("Start: %s", p.as_posix())
+            with log.group(f"Verify: {p.as_posix()}"):
                 logger.debug(repr(f))
                 file_results[p] = results = FileResult()
 
@@ -228,7 +231,7 @@ class Verifier(InputContainer):
                             logger.error("%s: %s, %s", error_message, p, repr(command))
                             if github.env.is_in_github_actions():
                                 github.print_error(
-                                    message=f"{error_message} {str(p)}",
+                                    message=f"{error_message} {p.as_posix()}",
                                     file=str(p.resolve()),
                                 )
                         results.command_results.append(
@@ -245,6 +248,21 @@ class Verifier(InputContainer):
                         results.command_results.append(
                             self.create_command_result(ResultStatus.FAILURE, prev_time)
                         )
+
+        # Run skippable
+        if self.is_first:
+            for p, f in self.skippable_verification_files.items():
+                logger.info("Start skippable: %s", p.as_posix())
+                file_results[p] = results = FileResult(newest=False)
+                prev_time = datetime.datetime.now()
+
+                for command in f.verification:
+                    command.run_compile_command()
+                    rs = command.run(self)
+
+                    results.command_results.append(
+                        self.create_command_result(rs, prev_time)
+                    )
 
         self._result = VerifyCommandResult(
             total_seconds=(datetime.datetime.now() - start_time).total_seconds(),
