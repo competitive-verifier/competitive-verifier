@@ -1,7 +1,7 @@
 import subprocess
 from contextlib import nullcontext
 from logging import getLogger
-from typing import Literal, Union, overload
+from typing import Literal, Optional, Union, overload
 
 from competitive_verifier import log
 
@@ -16,6 +16,7 @@ def exec_command(
     text: Literal[False] = False,
     check: bool = False,
     capture_output: bool = False,
+    env: Optional[dict[str, str]] = None,
     group_log: bool = False,
 ) -> subprocess.CompletedProcess[bytes]:
     ...
@@ -27,6 +28,7 @@ def exec_command(
     text: Literal[True],
     check: bool = False,
     capture_output: bool = False,
+    env: Optional[dict[str, str]] = None,
     group_log: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     ...
@@ -37,6 +39,7 @@ def exec_command(
     text: bool = False,
     check: bool = False,
     capture_output: bool = False,
+    env: Optional[dict[str, str]] = None,
     group_log: bool = False,
 ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
     if group_log:
@@ -51,5 +54,6 @@ def exec_command(
             shell=True,
             text=text,
             check=check,
+            env=env,
             capture_output=capture_output,
         )

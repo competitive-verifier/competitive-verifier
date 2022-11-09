@@ -93,14 +93,14 @@ def download(url: str, *, group_log: bool = False) -> bool:
                     try:
                         shutil.copy2(checker_path, directory)
                     except Exception as e:
-                        logger.error("Failed to copy checker %s", e)
+                        logger.exception("Failed to copy checker %s", e)
                         shutil.rmtree(directory)
                         return False
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
                     logger.error("Requied: $YUKICODER_TOKEN environment variable")
                 else:
-                    logger.error(e)
+                    logger.exception("Failed to download", e)
                 return False
     else:
         logger.info("already exists: %s", url)

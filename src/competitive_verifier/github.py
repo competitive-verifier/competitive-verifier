@@ -21,6 +21,26 @@ class env:
         return "RUNNER_DEBUG" in os.environ
 
     @classmethod
+    def get_branch_or_tag(cls) -> Optional[str]:
+        return os.getenv("GITHUB_REF")
+
+    @classmethod
+    def get_api_token(cls) -> Optional[str]:
+        return os.getenv("GITHUB_TOKEN")
+
+    @classmethod
+    def get_event_name(cls) -> Optional[str]:
+        return os.getenv("GITHUB_EVENT_NAME")
+
+    @classmethod
+    def get_api_url(cls) -> Optional[str]:
+        return os.getenv("GITHUB_API_URL")
+
+    @classmethod
+    def get_reository(cls) -> Optional[str]:
+        return os.getenv("GITHUB_REPOSITORY")
+
+    @classmethod
     def get_output_path(cls) -> Optional[pathlib.Path]:
         strpath = os.getenv("GITHUB_OUTPUT")
         return _optional_path(strpath)

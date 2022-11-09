@@ -4,6 +4,8 @@ from logging import getLogger
 import competitive_verifier.github as github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
+from .page import check_pushed_to_github_head_branch, push_documents_to_gh_pages
+
 logger = getLogger(__name__)
 
 _src_dir = pathlib.Path(".competitive-verifier/markdown")
@@ -23,8 +25,10 @@ class DocumentBuilder:
         logger.info("generated.")
 
         if github.env.is_in_github_actions():
-            if not self.push_documents_to_gh_pages(src_dir=_src_dir):
-                result = False
+            if check_pushed_to_github_head_branch():
+                # Push gh-pages when in GitHub head branch
+                if not push_documents_to_gh_pages(srcdir=_src_dir):
+                    result = False
         else:
             logger.info(
                 "\n".join(
@@ -43,9 +47,4 @@ class DocumentBuilder:
         return result
 
     def impl(self) -> bool:
-        return True
-
-    def push_documents_to_gh_pages(self, src_dir: pathlib.Path) -> bool:
-        logger.info("upload documents...")
-
         return True
