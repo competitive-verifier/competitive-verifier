@@ -9,13 +9,20 @@ from competitive_verifier.arg import add_verify_files_json_argument
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
+from .builder import DocumentBuilder
+
 logger = getLogger(__name__)
 
 
-def run_impl(input: VerificationInput, result: VerifyCommandResult) -> bool:
+def run_impl(
+    input: VerificationInput,
+    result: VerifyCommandResult,
+    check: bool,
+) -> bool:
     logger.debug("input=%s", input.json())
     logger.debug("result=%s", result.json())
-    return True
+    builder = DocumentBuilder(input, result)
+    return builder.build() or not check
 
 
 def run(args: argparse.Namespace) -> bool:
@@ -25,12 +32,17 @@ def run(args: argparse.Namespace) -> bool:
 
     input = VerificationInput.parse_file(args.verify_files_json)
     result = merge_result.run_impl(args.result_json)
-    return run_impl(input, result)
+    return run_impl(input, result, args.check)
 
 
 def argument_docs(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     merge_result.argument_merge_result(parser)
+    parser.add_argument(
+        "--check",
+        help="exit 1 when failed to documents",
+        action="store_true",
+    )
     return parser
 
 

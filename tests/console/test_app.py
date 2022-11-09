@@ -35,19 +35,41 @@ def test_parse_args_default(setenv: Any):
     assert parsed.split is None
     assert parsed.split_index is None
 
-    parsed = parse_args(["docs"])
+    parsed = parse_args(
+        [
+            "docs",
+            ".cr/res0.json",
+            ".cr/res1.json",
+        ]
+    )
 
     assert parsed.verify_files_json == pathlib.Path(
         ".competitive-verifier/verify_files.json"
     )
+    assert parsed.result_json == [
+        pathlib.Path(".cr/res0.json"),
+        pathlib.Path(".cr/res1.json"),
+    ]
 
 
 def test_parse_args_json_path(setenv: Any):
     parsed = parse_args(["verify", "--verify-json", ".cv/f.json"])
     assert parsed.verify_files_json == pathlib.Path(".cv/f.json")
 
-    parsed = parse_args(["docs", "--verify-json", ".cv/d.json"])
+    parsed = parse_args(
+        [
+            "docs",
+            "--verify-json",
+            ".cv/d.json",
+            ".cr/res0.json",
+            ".cr/res1.json",
+        ]
+    )
     assert parsed.verify_files_json == pathlib.Path(".cv/d.json")
+    assert parsed.result_json == [
+        pathlib.Path(".cr/res0.json"),
+        pathlib.Path(".cr/res1.json"),
+    ]
 
 
 def test_parse_args_time(setenv: Any):
