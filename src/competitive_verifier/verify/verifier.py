@@ -12,6 +12,7 @@ from competitive_verifier.error import VerifierError
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
+    Verification,
     VerificationFile,
     VerificationInput,
     VerificationResult,
@@ -112,8 +113,7 @@ class InputContainer(ABC):
         return {p: f for p, f in self.split_state.split(lst)}
 
 
-class Verifier(InputContainer):
-    use_git_timestamp: bool
+class BaseVerifier(InputContainer):
     timeout: float
     default_tle: float
     split_state: Optional[SplitState]
@@ -124,7 +124,6 @@ class Verifier(InputContainer):
         self,
         input: VerificationInput,
         *,
-        use_git_timestamp: bool,
         timeout: float,
         default_tle: float,
         prev_result: Optional[VerifyCommandResult],
@@ -133,12 +132,11 @@ class Verifier(InputContainer):
     ) -> None:
         super().__init__(
             input=input,
-            verification_time=verification_time or datetime.datetime.now().astimezone(),
+            verification_time=verification_time or self.now().astimezone(),
             prev_result=prev_result,
             split_state=split_state,
         )
         self._input = input
-        self.use_git_timestamp = use_git_timestamp
         self.timeout = timeout
         self.default_tle = default_tle
         self._result = None
@@ -155,22 +153,11 @@ class Verifier(InputContainer):
             return True
         return self.split_state.index == 0
 
-    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        if self.use_git_timestamp:
-            return git.get_commit_time(self.input.transitive_depends_on(path))
-        else:
-            dependicies = self.input.transitive_depends_on(path)
-
-            timestamp = max(x.stat().st_mtime for x in dependicies)
-            system_local_timezone = datetime.datetime.now().astimezone().tzinfo
-            return datetime.datetime.fromtimestamp(
-                timestamp, tz=system_local_timezone
-            ).replace(
-                microsecond=0
-            )  # microsecond=0 is required because it's erased in git commit
+    def now(self) -> datetime.datetime:
+        return datetime.datetime.now()
 
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
-        start_time = datetime.datetime.now()
+        start_time = self.now()
 
         logger.info(
             "current_verification_files: %s",
@@ -192,92 +179,145 @@ class Verifier(InputContainer):
             logger.info("Start: %s", p.as_posix())
             with log.group(f"Verify: {p.as_posix()}"):
                 logger.debug(repr(f))
-                file_results[p] = results = FileResult()
-
-                prev_time = datetime.datetime.now()
+                prev_time = self.now()
+                verifications = list[VerificationResult]()
                 try:
                     if download:
                         run_download(f, check=True, group_log=False)
                 except Exception:
-                    results.command_results.append(
+                    verifications.append(
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
                     logger.error("Failed to download")
                     continue
 
-                for command in f.verification:
-                    logger.debug("command=%s", repr(command))
-                    prev_time = datetime.datetime.now()
+                for ve in f.verification:
+                    logger.debug("command=%s", repr(ve))
+                    prev_time = self.now()
                     if (
                         self.timeout is not None
                         and (prev_time - start_time).total_seconds() > self.timeout
                     ):
-                        logger.warning("Skip[Timeout]: %s, %s", p, repr(command))
-                        results.command_results.append(
+                        logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
+                        verifications.append(
                             self.create_command_result(ResultStatus.SKIPPED, prev_time)
                         )
                         continue
 
                     try:
-                        error_message: Optional[str] = None
-                        if not command.run_compile_command():
-                            error_message = "Failed to compile"
-
-                        rs = command.run(self)
-                        if rs != ResultStatus.SUCCESS:
-                            error_message = "Failed to test"
-
+                        rs, error_message = self.run_verification(ve)
                         if error_message:
-                            logger.error("%s: %s, %s", error_message, p, repr(command))
+                            logger.error("%s: %s, %s", error_message, p, repr(ve))
                             if github.env.is_in_github_actions():
                                 github.print_error(
                                     message=f"{error_message} {p.as_posix()}",
                                     file=str(p.resolve()),
                                 )
-                        results.command_results.append(
-                            self.create_command_result(rs, prev_time)
-                        )
+                        verifications.append(self.create_command_result(rs, prev_time))
                     except Exception as e:
                         message = (
                             e.message
                             if isinstance(e, VerifierError)
                             else "Failed to verify"
                         )
-                        logger.error("%s: %s, %s", message, p, repr(command))
+                        logger.error("%s: %s, %s", message, p, repr(ve))
                         traceback.print_exc()
-                        results.command_results.append(
+                        verifications.append(
                             self.create_command_result(ResultStatus.FAILURE, prev_time)
                         )
+                file_results[p] = FileResult(verifications=verifications)
 
-        # Run skippable
+        sippable_file_results = self.skippable_results()
+        self._result = VerifyCommandResult(
+            total_seconds=(self.now() - start_time).total_seconds(),
+            files=file_results | sippable_file_results,
+        )
+        return self._result
+
+    def run_verification(
+        self, verification: Verification
+    ) -> tuple[ResultStatus, Optional[str]]:
+        """Run verification
+
+        Returns:
+            tuple[ResultStatus, Optional[str]]: (Result, error_message)
+        """
+        error_message: Optional[str] = None
+        if not verification.run_compile_command():
+            error_message = "Failed to compile"
+
+        rs = verification.run(self)
+        if rs != ResultStatus.SUCCESS:
+            error_message = "Failed to test"
+        return (rs, error_message)
+
+    def skippable_results(self) -> dict[pathlib.Path, FileResult]:
+        """
+        Run skippable verification
+        """
+        results = dict[pathlib.Path, FileResult]()
         if self.is_first:
             for p, f in self.skippable_verification_files.items():
                 logger.info("Start skippable: %s", p.as_posix())
-                file_results[p] = results = FileResult(newest=False)
-                prev_time = datetime.datetime.now()
+                verifications = list[VerificationResult]()
+                prev_time = self.now()
 
-                for command in f.verification:
-                    command.run_compile_command()
-                    rs = command.run(self)
-
-                    results.command_results.append(
-                        self.create_command_result(rs, prev_time)
-                    )
-
-        self._result = VerifyCommandResult(
-            total_seconds=(datetime.datetime.now() - start_time).total_seconds(),
-            files=file_results,
-        )
-        return self._result
+                for v in f.verification:
+                    rs = self.run_verification(v)[0]
+                    verifications.append(self.create_command_result(rs, prev_time))
+                results[p] = FileResult(
+                    verifications=verifications,
+                    newest=False,
+                )
+        return results
 
     def create_command_result(
         self,
         status: ResultStatus,
         prev_time: datetime.datetime,
     ) -> VerificationResult:
-        elapsed = (datetime.datetime.now() - prev_time).total_seconds()
+        elapsed = (self.now() - prev_time).total_seconds()
         return VerificationResult(
             status=status,
             elapsed=elapsed,
             last_execution_time=self.verification_time,
         )
+
+
+class Verifier(BaseVerifier):
+    use_git_timestamp: bool
+
+    def __init__(
+        self,
+        input: VerificationInput,
+        *,
+        timeout: float,
+        default_tle: float,
+        prev_result: Optional[VerifyCommandResult],
+        split_state: Optional[SplitState],
+        verification_time: Optional[datetime.datetime] = None,
+        use_git_timestamp: bool,
+    ) -> None:
+        super().__init__(
+            input=input,
+            verification_time=verification_time or self.now().astimezone(),
+            prev_result=prev_result,
+            split_state=split_state,
+            timeout=timeout,
+            default_tle=default_tle,
+        )
+        self.use_git_timestamp = use_git_timestamp
+
+    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
+        if self.use_git_timestamp:
+            return git.get_commit_time(self.input.transitive_depends_on(path))
+        else:
+            dependicies = self.input.transitive_depends_on(path)
+
+            timestamp = max(x.stat().st_mtime for x in dependicies)
+            system_local_timezone = self.now().astimezone().tzinfo
+            return datetime.datetime.fromtimestamp(
+                timestamp, tz=system_local_timezone
+            ).replace(
+                microsecond=0
+            )  # microsecond=0 is required because it's erased in git commit

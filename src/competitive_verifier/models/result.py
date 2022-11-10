@@ -37,14 +37,14 @@ class VerificationResult(BaseModel):
 
 
 class FileResult(BaseModel):
-    command_results: list[VerificationResult] = Field(default_factory=list)
+    verifications: list[VerificationResult] = Field(default_factory=list)
     newest: bool = True
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
-        return any(r.need_reverifying(base_time) for r in self.command_results)
+        return any(r.need_reverifying(base_time) for r in self.verifications)
 
     def is_success(self) -> bool:
-        return all(r.status == ResultStatus.SUCCESS for r in self.command_results)
+        return all(r.status == ResultStatus.SUCCESS for r in self.verifications)
 
 
 class VerifyCommandResult(BaseModel):

@@ -151,7 +151,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -170,7 +170,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -189,7 +189,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.FAILURE,
@@ -208,7 +208,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SKIPPED,
@@ -227,7 +227,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -246,7 +246,7 @@ test_file_need_verification_params: list[
         ),
         Path("foo"),
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -348,7 +348,7 @@ test_remaining_verification_files_params: list[
                 total_seconds=1.5,
                 files={
                     Path("baz"): FileResult(
-                        command_results=[
+                        verifications=[
                             VerificationResult(
                                 elapsed=1.5,
                                 status=ResultStatus.SUCCESS,

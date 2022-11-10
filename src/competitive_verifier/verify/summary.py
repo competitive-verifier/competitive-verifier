@@ -45,7 +45,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
         for p, fr in results:
-            counter = Counter(r.status for r in fr.command_results)
+            counter = Counter(r.status for r in fr.verifications)
             if counter.get(FAILURE):
                 emoji_status = "❌"
             elif counter.get(SKIPPED):
@@ -59,13 +59,13 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
                     str(counter.get(FAILURE, "-")),
                     str(counter.get(SKIPPED, "-")),
                     str(sum(counter.values())),
-                    to_human_str(sum(r.elapsed for r in fr.command_results)),
+                    to_human_str(sum(r.elapsed for r in fr.verifications)),
                 ]
             )
 
     counter = Counter(
         r.status
-        for r in chain.from_iterable(f.command_results for f in result.files.values())
+        for r in chain.from_iterable(f.verifications for f in result.files.values())
     )
 
     fp.write("<details>")

@@ -15,7 +15,7 @@ from competitive_verifier.models import (
 test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -24,7 +24,7 @@ test_parse_FileResult_params = [  # type: ignore
             ],
         ),
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -34,7 +34,7 @@ test_parse_FileResult_params = [  # type: ignore
             "newest": True,
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -44,7 +44,7 @@ test_parse_FileResult_params = [  # type: ignore
             "newest": True,
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -57,7 +57,7 @@ test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             newest=False,
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -69,7 +69,7 @@ test_parse_FileResult_params = [  # type: ignore
         ),
         {
             "newest": False,
-            "command_results": [
+            "verifications": [
                 {
                     "status": "Success",
                     "elapsed": 1.5,
@@ -78,7 +78,7 @@ test_parse_FileResult_params = [  # type: ignore
             ],
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -90,7 +90,7 @@ test_parse_FileResult_params = [  # type: ignore
             "newest": False,
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -103,7 +103,7 @@ test_parse_FileResult_params = [  # type: ignore
     (
         FileResult(
             newest=True,
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -114,7 +114,7 @@ test_parse_FileResult_params = [  # type: ignore
             ],
         ),
         {
-            "command_results": [
+            "verifications": [
                 {
                     "elapsed": 1.5,
                     "status": "SUCCESS",
@@ -123,7 +123,7 @@ test_parse_FileResult_params = [  # type: ignore
             ]
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "elapsed": 1.5,
                     "status": "success",
@@ -135,7 +135,7 @@ test_parse_FileResult_params = [  # type: ignore
             "newest": True,
         },
         {
-            "command_results": [
+            "verifications": [
                 {
                     "status": "success",
                     "elapsed": 1.5,
@@ -164,10 +164,10 @@ def test_parse_FileResult(
 
 
 test_file_result_need_verification_params = [  # type: ignore
-    (FileResult(command_results=[]), datetime(2016, 12, 24, 19, 0, 0), False),
+    (FileResult(verifications=[]), datetime(2016, 12, 24, 19, 0, 0), False),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -180,7 +180,7 @@ test_file_result_need_verification_params = [  # type: ignore
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.FAILURE,
@@ -193,7 +193,7 @@ test_file_result_need_verification_params = [  # type: ignore
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SKIPPED,
@@ -206,7 +206,7 @@ test_file_result_need_verification_params = [  # type: ignore
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -219,7 +219,7 @@ test_file_result_need_verification_params = [  # type: ignore
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -242,7 +242,7 @@ test_file_result_need_verification_params = [  # type: ignore
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(
                     elapsed=1.5,
                     status=ResultStatus.SUCCESS,
@@ -281,7 +281,7 @@ def test_file_result_need_verification(
 test_is_success_params = [
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
                 VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
             ]
@@ -290,7 +290,7 @@ test_is_success_params = [
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
                 VerificationResult(elapsed=1, status=ResultStatus.FAILURE),
             ]
@@ -299,7 +299,7 @@ test_is_success_params = [
     ),
     (
         FileResult(
-            command_results=[
+            verifications=[
                 VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
                 VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
             ]
@@ -325,13 +325,13 @@ def test_verify_command_result_json():
         total_seconds=3.75,
         files={
             pathlib.Path("foo/bar.py"): FileResult(
-                command_results=[
+                verifications=[
                     VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
                     VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
                 ]
             ),
             pathlib.Path("foo/baz.py"): FileResult(
-                command_results=[
+                verifications=[
                     VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
                 ]
             ),
