@@ -1,3 +1,4 @@
+from .dependency import DependencyResolver
 from .file import VerificationFile, VerificationInput, VerificationInputImpl
 from .result import FileResult, VerificationResult, VerifyCommandResult
 from .result_status import ResultStatus
@@ -18,6 +19,7 @@ __all__ = [
     "ResultStatus",
     "VerifyCommandResult",
     "BaseVerification",
+    "DependencyResolver",
     "CommandVerification",
     "ConstVerification",
     "ProblemVerification",

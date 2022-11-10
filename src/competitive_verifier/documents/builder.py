@@ -7,7 +7,11 @@ import yaml
 
 import competitive_verifier_resources
 from competitive_verifier import git, github
-from competitive_verifier.models import VerificationInput, VerifyCommandResult
+from competitive_verifier.models import (
+    DependencyResolver,
+    VerificationInput,
+    VerifyCommandResult,
+)
 
 from .. import config as conf
 from .page import check_pushed_to_github_head_branch, push_documents_to_gh_pages
@@ -79,16 +83,16 @@ class DocumentBuilder:
         markdown_paths = set(
             p
             for p in git.ls_files()
-            if p.suffix == ".md"
-            and not p.name.startswith(".")
-            and p not in excluded_files
+            if p.suffix == ".md" and not p.name.startswith(".")
         )
+        markdown_paths -= excluded_files
         logger.debug(
             "markdown_paths=%s",
             " ".join(p.as_posix() for p in markdown_paths),
         )
 
         logger.info("list rendering jobs...")
+        DependencyResolver(self.input, excluded_files)
         import sys
 
         sys.exit()
