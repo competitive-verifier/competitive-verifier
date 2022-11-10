@@ -10,6 +10,8 @@ from .verification import Verification
 
 logger = getLogger(__name__)
 
+_DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
+
 
 class VerificationFile(BaseModel):
     display_path: Union[pathlib.Path, Literal[False], None] = None
@@ -114,8 +116,8 @@ class VerificationInput:
         return [set(paths[ix] for ix in ls) for ls in reversed(g.scc())]
 
     @cached_property
-    def _all_dependencies(self) -> "dict[pathlib.Path, set[pathlib.Path]]":
-        d = dict[pathlib.Path, set[pathlib.Path]]()
+    def transitive_depends_on(self) -> _DependencyEdges:
+        d: _DependencyEdges = {}
         g = self._scc()
         for group in g:
             result = group.copy()
@@ -130,22 +132,15 @@ class VerificationInput:
 
         return d
 
-    def transitive_depends_on(self, path: pathlib.Path) -> set[pathlib.Path]:
-        return self._all_dependencies[path]
-
     def _build_dependency_graph(
         self,
-    ) -> """tuple[
-        dict[pathlib.Path, set[pathlib.Path]],
-        dict[pathlib.Path, set[pathlib.Path]],
-        dict[pathlib.Path, set[pathlib.Path]],
-    ]""":
+    ) -> tuple[_DependencyEdges, _DependencyEdges, _DependencyEdges]:
         """
         :returns: graphs from absolute paths to relative paths
         """
-        depends_on: dict[pathlib.Path, set[pathlib.Path]] = {}
-        required_by: dict[pathlib.Path, set[pathlib.Path]] = {}
-        verified_with: dict[pathlib.Path, set[pathlib.Path]] = {}
+        depends_on: _DependencyEdges = {}
+        required_by: _DependencyEdges = {}
+        verified_with: _DependencyEdges = {}
 
         # initialize
         for path in self.files.keys():
@@ -181,26 +176,29 @@ class VerificationInput:
             self._verified_with,
         ) = self._build_dependency_graph()
 
-    def depends_on(self, path: pathlib.Path) -> set[pathlib.Path]:
+    @property
+    def depends_on(self) -> _DependencyEdges:
         try:
             d = self._depends_on
         except AttributeError:
             self._init_dependency_graph()
             d = self._depends_on
-        return d[path]
+        return d
 
-    def required_by(self, path: pathlib.Path) -> set[pathlib.Path]:
+    @property
+    def required_by(self) -> _DependencyEdges:
         try:
             d = self._required_by
         except AttributeError:
             self._init_dependency_graph()
             d = self._required_by
-        return d[path]
+        return d
 
-    def verified_with(self, path: pathlib.Path) -> set[pathlib.Path]:
+    @property
+    def verified_with(self) -> _DependencyEdges:
         try:
             d = self._verified_with
         except AttributeError:
             self._init_dependency_graph()
             d = self._verified_with
-        return d[path]
+        return d
