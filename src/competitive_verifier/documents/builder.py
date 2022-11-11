@@ -4,11 +4,12 @@ from itertools import chain
 from logging import getLogger
 from typing import Any, Iterable
 
+import yaml
+
 from competitive_verifier import git, github
 from competitive_verifier.models import (
     SourceCodeStat,
     VerificationInput,
-    VerificationStatus,
     VerifyCommandResult,
     resolve_dependency,
 )
@@ -24,6 +25,22 @@ logger = getLogger(__name__)
 
 _RESOURCE_PACKAGE = "competitive_verifier_resources"
 _DOC_USAGE_PATH = "doc_usage.txt"
+_COPIED_STATIC_FILE_PATHS: list[str] = [
+    "_layouts/page.html",
+    "_layouts/document.html",
+    "_layouts/toppage.html",
+    "_includes/mathjax.html",
+    "_includes/theme_fix.html",
+    "_includes/highlight.html",
+    "_includes/document_header.html",
+    "_includes/document_body.html",
+    "_includes/document_footer.html",
+    "_includes/toppage_header.html",
+    "_includes/toppage_body.html",
+    "assets/css/copy-button.css",
+    "assets/js/copy-button.js",
+    "Gemfile",
+]
 
 
 class DocumentBuilder:
@@ -38,7 +55,6 @@ class DocumentBuilder:
         logger.info("Generate documents...")
         result = self.impl()
         logger.info("Generated.")
-
         if github.env.is_in_github_actions():
             workspace = github.env.get_workspace_path()
             assert workspace is not None
@@ -54,9 +70,9 @@ class DocumentBuilder:
                     result = False
         else:
             logger.info(
-                importlib.resources.read_text(
-                    _RESOURCE_PACKAGE, _DOC_USAGE_PATH
-                ).replace("{{{{{markdown_dir_path}}}}}", markdown_dir.as_posix())
+                (importlib.resources.files(_RESOURCE_PACKAGE) / _DOC_USAGE_PATH)
+                .read_text(encoding="utf-8")
+                .replace("{{{{{markdown_dir_path}}}}}", markdown_dir.as_posix())
             )
 
         return result
@@ -89,13 +105,9 @@ class DocumentBuilder:
             render_jobs=render_jobs,
             site_render_config=config,
         )
-        import sys
-
-        sys.exit()
-        return True
 
         logger.info("list static files...")
-        static_files = build.load_static_files(site_render_config=config)
+        static_files = load_static_files(config=config)
 
         # make install
         logger.info("writing %s files...", len(rendered_pages))
@@ -103,11 +115,13 @@ class DocumentBuilder:
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "wb") as fh:
                 fh.write(content)
+
         logger.info("writing %s static files...", len(static_files))
         for path, content in static_files.items():
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "wb") as fh:
                 fh.write(content)
+        return True
 
     def render_pages(
         self,
@@ -199,7 +213,7 @@ def _build_page_title_dict(
         assert job.path.suffix == ".md"
         title = job.front_matter.title or job.path.with_suffix("").as_posix()
         page_title_dict[job.path] = title
-        page_title_dict[job.path.parent / job.path.stem] = title
+        page_title_dict[job.path.with_suffix("")] = title
     return page_title_dict
 
 
@@ -243,24 +257,22 @@ def _render_source_code_stats_for_top_page(
     }
 
 
-def _render_source_code_stat(
-    stat: SourceCodeStat, *, basedir: pathlib.Path
-) -> dict[str, Any]:
-    with open(basedir / stat.path, "rb") as fh:
+def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
+    with stat.path.open("rb") as fh:
         code = fh.read().decode()
-    
+
     bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
     return {
-        "path": str(stat.path),
+        "path": stat.path.as_posix(),
         "code": code,
         "bundledCode": bundled_code,
         "isVerificationFile": stat.is_verification,
         "verificationStatus": stat.verification_status.value,
         "timestamp": str(stat.timestamp),
-        "dependsOn": [str(path) for path in stat.depends_on],
-        "requiredBy": [str(path) for path in stat.required_by],
-        "verifiedWith": [str(path) for path in stat.verified_with],
-        "attributes": stat.attributes,
+        "dependsOn": [path.as_posix() for path in stat.depends_on],
+        "requiredBy": [path.as_posix() for path in stat.required_by],
+        "verifiedWith": [path.as_posix() for path in stat.verified_with],
+        "attributes": stat.file_input.document_attributes,
     }
 
 
@@ -270,29 +282,47 @@ def _render_source_code_stat_for_page(
     stats: dict[pathlib.Path, SourceCodeStat],
     page_title_dict: dict[pathlib.Path, str],
 ) -> dict[str, Any]:
-    relative_path = (basedir / path).resolve().relative_to(basedir)
-    stat = stats[relative_path]
-    data = _render_source_code_stat(stat, basedir=basedir)
+    stat = stats[path]
+    data = _render_source_code_stat(stat)
     data["_pathExtension"] = path.suffix.lstrip(".")
     data["_verificationStatusIcon"] = stat.verification_status.icon
     data["_isVerificationFailed"] = stat.verification_status.is_failed
 
-    def ext(relative_path: pathlib.Path) -> dict[str, Any]:
-        stat = stats[relative_path]
+    def ext(path: pathlib.Path) -> dict[str, Any]:
         return {
-            "path": str(relative_path),
-            "title": page_title_dict[relative_path],
-            "icon": _get_verification_status_icon(stat.verification_status),
+            "path": path.as_posix(),
+            "title": page_title_dict[path],
+            "icon": stats[path].verification_status.icon,
         }
 
-    data["_extendedDependsOn"] = [
-        ext(path) for path in sorted(stat.depends_on, key=str)
-    ]
-    data["_extendedRequiredBy"] = [
-        ext(path) for path in sorted(stat.required_by, key=str)
-    ]
-    data["_extendedVerifiedWith"] = [
-        ext(path) for path in sorted(stat.verified_with, key=str)
-    ]
+    def path_list(paths: Iterable[pathlib.Path]) -> list[dict[str, Any]]:
+        return [ext(path) for path in sorted(paths, key=str)]
+
+    data["_extendedDependsOn"] = path_list(stat.depends_on)
+    data["_extendedRequiredBy"] = path_list(stat.required_by)
+    data["_extendedVerifiedWith"] = path_list(stat.verified_with)
 
     return data
+
+
+def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
+    files: dict[pathlib.Path, bytes] = {}
+
+    # write merged config.yml
+    files[config.destination_dir / "_config.yml"] = yaml.safe_dump(
+        config.config_yml
+    ).encode()
+
+    # load files in onlinejudge_verify_resources/
+    for path in _COPIED_STATIC_FILE_PATHS:
+        files[config.destination_dir / path] = (
+            importlib.resources.files(_RESOURCE_PACKAGE) / path
+        ).read_bytes()
+
+    # overwrite with docs/static
+    for src in config.static_dir.glob("**/*"):
+        if src.is_file():
+            dst = config.destination_dir / src.relative_to(config.static_dir)
+            with open(src, "rb") as fh:
+                files[dst] = fh.read()
+    return files

@@ -29,7 +29,9 @@ window.addEventListener('load', function(){
     $('pre > code').each(function(index, element) {
         $(element).parent().wrap('<div style="position: relative;"></div>');
         $(element).parent().parent().append('<button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button>');
-        $(element).parent().parent().append('<button type="button" class="code-btn code-bundle-btn" title="Bundled!">Bundle</button>');
+
+        // TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
+        // $(element).parent().parent().append('<button type="button" class="code-btn code-bundle-btn" title="Bundled!">Bundle</button>');
     });
 
     $('.code-copy-btn').on('click',function(){

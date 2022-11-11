@@ -21,7 +21,7 @@ markdown_dir = conf.config_dir / "markdown"
 def load_render_config() -> SiteRenderConfig:
     # load default _config.yml
     default_config_yml = yaml.safe_load(
-        importlib.resources.read_binary(_RESOURCE_PACKAGE, _CONFIG_YML_PATH)
+        (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
     )
     assert default_config_yml is not None
     config_yml = default_config_yml

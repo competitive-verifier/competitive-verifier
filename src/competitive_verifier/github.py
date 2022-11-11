@@ -12,11 +12,11 @@ def _optional_path(strpath: Optional[str]) -> Optional[pathlib.Path]:
 class env:
     @classmethod
     def is_in_github_actions(cls) -> bool:
-        return "GITHUB_ACTIONS" in os.environ
+        return os.getenv("GITHUB_ACTIONS") == "true"
 
     @classmethod
     def is_enable_debug(cls) -> bool:
-        return "RUNNER_DEBUG" in os.environ
+        return os.getenv("GITHUB_ACTIONS") == "1"
 
     @classmethod
     def get_branch_or_tag(cls) -> Optional[str]:

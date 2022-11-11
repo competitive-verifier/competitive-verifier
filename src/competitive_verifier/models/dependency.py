@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from competitive_verifier import git
 
-from .file import VerificationInput
+from .file import VerificationFile, VerificationInput
 from .result import ResultStatus, VerifyCommandResult
 
 
@@ -95,6 +95,7 @@ class _VerificationStatusFlag(enum.Flag):
 
 class SourceCodeStat(BaseModel):
     path: pathlib.Path
+    file_input: VerificationFile
     is_verification: bool
     verification_status: VerificationStatus
     timestamp: datetime.datetime
@@ -160,6 +161,7 @@ def resolve_dependency(
             timestamp = git.get_commit_time(input.transitive_depends_on[path])
             d[path] = SourceCodeStat(
                 path=path,
+                file_input=input.files[path],
                 is_verification=not bool(
                     _VerificationStatusFlag.IS_LIBRARY & group_status
                 ),

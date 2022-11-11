@@ -61,7 +61,9 @@ def build_markdown_job(path: pathlib.Path) -> Optional[PageRenderJob]:
             pathlib.Path.cwd()
         )
         fm.documentation_of = documentation_of_relative_path.as_posix()
-        path = documentation_of_relative_path.with_suffix(".md")
+        path = documentation_of_relative_path.with_suffix(
+            documentation_of_relative_path.suffix + ".md"
+        )
 
     return PageRenderJob(
         path=path,
@@ -73,7 +75,7 @@ def build_markdown_job(path: pathlib.Path) -> Optional[PageRenderJob]:
 def build_source_job(
     path: pathlib.Path, file: VerificationFile
 ) -> Optional[PageRenderJob]:
-    mdpath = path.with_suffix(".md")
+    mdpath = path.with_suffix(path.suffix + ".md")
 
     # add redirects from old URLs
     old_directory = "/verify" if file.is_verification() else "/library"
@@ -86,13 +88,22 @@ def build_source_job(
     front_matter = FrontMatter(
         documentation_of=path.as_posix(),
         redirect_from=redirect_from,
-        title=file.document_attributes.get('document_title', path.as_posix()),
+        title=file.document_attributes.get("document_title", path.as_posix()),
     )
     # treat @docs path/to.md directives
+    content = b""
+    # if '_deprecated_at_docs' in stat.attributes:
+    #     at_docs_path = pathlib.Path(stat.attributes['_deprecated_at_docs'])
+    #     try:
+    #         with open(at_docs_path, 'rb') as fh:
+    #             content = fh.read()
+    #     except FileNotFoundError as e:
+    #         logger.exception('failed to read markdown file specified by @docs in %s: %s', str(stat.path), e)
+
     return PageRenderJob(
         path=mdpath,
         front_matter=front_matter,
-        content=b"",
+        content=content,
     )
 
 

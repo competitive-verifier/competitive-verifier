@@ -16,7 +16,7 @@ _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
 class VerificationFile(BaseModel):
     dependencies: list[pathlib.Path] = Field(default_factory=list)
     verification: list[Verification] = Field(default_factory=list)
-    document_attributes: dict[str,Any] = Field(default_factory=dict)
+    document_attributes: dict[str, Any] = Field(default_factory=dict)
     """Attributes for documentation
     """
 
