@@ -6,30 +6,6 @@ import sys
 from logging import DEBUG, INFO, getLogger
 from typing import Optional
 
-import competitive_verifier.config
-
-_config_directory_name = competitive_verifier.config.config_dir.name
-
-
-def find_project_root_directory() -> Optional[pathlib.Path]:
-    dir = pathlib.Path.cwd()
-    if (dir / _config_directory_name).exists():
-        return dir
-    for dir in dir.parents:
-        if (dir / _config_directory_name).exists():
-            return dir
-    return None
-
-
-# Move to directory which contains .competitive-verifier/
-orig_directory = pathlib.Path.cwd()
-root = find_project_root_directory()
-if root is None:
-    root = orig_directory
-else:
-    os.chdir(root)
-
-
 logger = getLogger(__name__)
 
 
@@ -101,13 +77,6 @@ def main(args: Optional[list[str]] = None):
     configure_logging(default_level=default_level)
 
     logger.info("Project root: %s", str(pathlib.Path.cwd().resolve(strict=True)))
-
-    os.chdir(orig_directory)
-    args_dict = vars(parsed)
-    for k, v in args_dict.items():
-        if isinstance(v, pathlib.Path):
-            args_dict[k] = v.resolve()
-    os.chdir(root)
 
     # Use sys.stdout for logging
     if parsed.subcommand == "download":
