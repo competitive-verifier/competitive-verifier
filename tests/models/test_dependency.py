@@ -48,6 +48,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -57,6 +58,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b1.py": {
                 "path": "c1/b1.py",
+                "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -66,6 +68,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -75,6 +78,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/a.py": {
                 "path": "c1/a.py",
+                "file_input": {},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -112,6 +116,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -121,6 +126,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b1.py": {
                 "path": "c1/b1.py",
+                "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -130,6 +136,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -139,6 +146,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/a.py": {
                 "path": "c1/a.py",
+                "file_input": {},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -186,6 +194,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -195,6 +204,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/test2.py": {
                 "path": "c1/test2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WAITING_JUDGE,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -204,6 +214,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b1.py": {
                 "path": "c1/b1.py",
+                "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -213,6 +224,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -222,6 +234,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/a.py": {
                 "path": "c1/a.py",
+                "file_input": {},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -269,6 +282,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -278,6 +292,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/test2.py": {
                 "path": "c1/test2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -287,6 +302,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b1.py": {
                 "path": "c1/b1.py",
+                "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -296,6 +312,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -305,6 +322,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/a.py": {
                 "path": "c1/a.py",
+                "file_input": {},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -341,6 +359,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/b1.py": {
                 "path": "c1/b1.py",
+                "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -350,6 +369,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
+                "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -359,6 +379,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/a.py": {
                 "path": "c1/a.py",
+                "file_input": {},
                 "is_verification": False,
                 "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
