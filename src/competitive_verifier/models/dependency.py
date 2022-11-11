@@ -16,7 +16,7 @@ class VerificationStatus(str, enum.Enum):
 
     @property
     def is_failed(self) -> bool:
-        return self.is_success
+        return not self.is_success
 
     def __new__(
         cls, title: str, icon: str = "", is_success: bool = False

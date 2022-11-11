@@ -23,7 +23,9 @@
             }
         },
         "examples/awk/aplusb2.awk": {
-            "document_title": "const \"A + B\"",
+            "document_attributes": {
+                "title": "const \"A + B\""
+            },
             "dependencies": [],
             "verification": {
                 "type": "problem",

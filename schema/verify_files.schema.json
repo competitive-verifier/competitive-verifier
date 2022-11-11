@@ -29,9 +29,9 @@
                                 }
                             ]
                         },
-                        "document_title": {
-                            "type": "string",
-                            "description": "Document title"
+                        "document_attributes": {
+                            "type": "object",
+                            "description": "Attributes for documentation"
                         }
                     }
                 }

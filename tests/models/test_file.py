@@ -18,7 +18,7 @@ test_parse_VerificationFile_params: list[
         {},
         {
             "dependencies": [],
-            "document_title": None,
+            "document_attributes": {},
             "verification": [],
         },
     ),
@@ -40,20 +40,26 @@ test_parse_VerificationFile_params: list[
                 pathlib.Path("bar1"),
                 pathlib.Path("bar2"),
             ],
-            "document_title": None,
+            "document_attributes": {},
             "verification": [],
         },
     ),
     (
         VerificationFile(
-            document_title="Bar bar",
+            document_attributes={
+                "title": "Bar bar",
+            },
         ),
         {
-            "document_title": "Bar bar",
+            "document_attributes": {
+                "title": "Bar bar",
+            },
         },
         {
             "dependencies": [],
-            "document_title": "Bar bar",
+            "document_attributes": {
+                "title": "Bar bar",
+            },
             "verification": [],
         },
     ),
@@ -71,7 +77,7 @@ test_parse_VerificationFile_params: list[
         },
         {
             "dependencies": [],
-            "document_title": None,
+            "document_attributes": {},
             "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
         },
     ),
@@ -87,7 +93,7 @@ test_parse_VerificationFile_params: list[
         },
         {
             "dependencies": [],
-            "document_title": None,
+            "document_attributes": {},
             "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
         },
     ),

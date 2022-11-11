@@ -86,7 +86,7 @@ def build_source_job(
     front_matter = FrontMatter(
         documentation_of=path.as_posix(),
         redirect_from=redirect_from,
-        title=file.document_title or path.as_posix(),
+        title=file.document_attributes.get('document_title', path.as_posix()),
     )
     # treat @docs path/to.md directives
     return PageRenderJob(

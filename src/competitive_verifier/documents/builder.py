@@ -2,9 +2,16 @@ import importlib.resources
 import pathlib
 from itertools import chain
 from logging import getLogger
+from typing import Any, Iterable
 
 from competitive_verifier import git, github
-from competitive_verifier.models import VerificationInput, VerifyCommandResult
+from competitive_verifier.models import (
+    SourceCodeStat,
+    VerificationInput,
+    VerificationStatus,
+    VerifyCommandResult,
+    resolve_dependency,
+)
 
 from .front_matter import merge_front_matter
 from .ghpage import check_pushed_to_github_head_branch, push_documents_to_gh_pages
@@ -72,19 +79,40 @@ class DocumentBuilder:
         render_jobs = self.enumerate_rendering_jobs(config.index_md, excluded_files)
 
         logger.info("render %s files...", len(render_jobs))
-        resolver = ResultDependencyResolver(
-            input=self.input, excluded_files=excluded_files
+        stats = resolve_dependency(
+            input=self.input,
+            result=self.result,
+            excluded_files=excluded_files,
         )
-        self.render_pages(render_jobs=render_jobs, site_render_config=config)
-        # resolver = DependencyResolver(self.input, excluded_files)
+        rendered_pages = self.render_pages(
+            stats=stats,
+            render_jobs=render_jobs,
+            site_render_config=config,
+        )
         import sys
 
         sys.exit()
-        return False
+        return True
+
+        logger.info("list static files...")
+        static_files = build.load_static_files(site_render_config=config)
+
+        # make install
+        logger.info("writing %s files...", len(rendered_pages))
+        for path, content in rendered_pages.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "wb") as fh:
+                fh.write(content)
+        logger.info("writing %s static files...", len(static_files))
+        for path, content in static_files.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "wb") as fh:
+                fh.write(content)
 
     def render_pages(
         self,
         *,
+        stats: dict[pathlib.Path, SourceCodeStat],
         render_jobs: list[PageRenderJob],
         site_render_config: SiteRenderConfig,
     ) -> dict[pathlib.Path, bytes]:
@@ -101,9 +129,8 @@ class DocumentBuilder:
             front_matter = job.front_matter.copy(deep=True)
             if front_matter.layout == "toppage":
                 data = _render_source_code_stats_for_top_page(
-                    source_code_stats=source_code_stats,
+                    stats_iter=stats.values(),
                     page_title_dict=page_title_dict,
-                    basedir=site_render_config.basedir,
                 )
                 front_matter.data = data
 
@@ -112,9 +139,8 @@ class DocumentBuilder:
                     front_matter.layout = "document"
                 data = _render_source_code_stat_for_page(
                     pathlib.Path(documentation_of),
-                    source_code_stats_dict=source_code_stats_dict,
+                    stats=stats,
                     page_title_dict=page_title_dict,
-                    basedir=site_render_config.basedir,
                 )
                 if not front_matter.data:
                     front_matter.data = data
@@ -175,3 +201,98 @@ def _build_page_title_dict(
         page_title_dict[job.path] = title
         page_title_dict[job.path.parent / job.path.stem] = title
     return page_title_dict
+
+
+def _render_source_code_stats_for_top_page(
+    *,
+    stats_iter: Iterable[SourceCodeStat],
+    page_title_dict: dict[pathlib.Path, str],
+) -> dict[str, Any]:
+    library_categories: dict[str, list[dict[str, str]]] = {}
+    verification_categories: dict[str, list[dict[str, str]]] = {}
+    for stat in stats_iter:
+        if stat.is_verification:
+            categories = verification_categories
+        else:
+            categories = library_categories
+        category = stat.path.parent.as_posix()
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(
+            {
+                "path": stat.path.as_posix(),
+                "title": page_title_dict[stat.path],
+                "icon": stat.verification_status.icon,
+            }
+        )
+
+    def _build_categories_list(
+        categories: dict[str, list[dict[str, str]]]
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "name": category,
+                "pages": pages,
+            }
+            for category, pages in categories.items()
+        ]
+
+    return {
+        "libraryCategories": _build_categories_list(library_categories),
+        "verificationCategories": _build_categories_list(verification_categories),
+    }
+
+
+def _render_source_code_stat(
+    stat: SourceCodeStat, *, basedir: pathlib.Path
+) -> dict[str, Any]:
+    with open(basedir / stat.path, "rb") as fh:
+        code = fh.read().decode()
+    
+    bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
+    return {
+        "path": str(stat.path),
+        "code": code,
+        "bundledCode": bundled_code,
+        "isVerificationFile": stat.is_verification,
+        "verificationStatus": stat.verification_status.value,
+        "timestamp": str(stat.timestamp),
+        "dependsOn": [str(path) for path in stat.depends_on],
+        "requiredBy": [str(path) for path in stat.required_by],
+        "verifiedWith": [str(path) for path in stat.verified_with],
+        "attributes": stat.attributes,
+    }
+
+
+def _render_source_code_stat_for_page(
+    path: pathlib.Path,
+    *,
+    stats: dict[pathlib.Path, SourceCodeStat],
+    page_title_dict: dict[pathlib.Path, str],
+) -> dict[str, Any]:
+    relative_path = (basedir / path).resolve().relative_to(basedir)
+    stat = stats[relative_path]
+    data = _render_source_code_stat(stat, basedir=basedir)
+    data["_pathExtension"] = path.suffix.lstrip(".")
+    data["_verificationStatusIcon"] = stat.verification_status.icon
+    data["_isVerificationFailed"] = stat.verification_status.is_failed
+
+    def ext(relative_path: pathlib.Path) -> dict[str, Any]:
+        stat = stats[relative_path]
+        return {
+            "path": str(relative_path),
+            "title": page_title_dict[relative_path],
+            "icon": _get_verification_status_icon(stat.verification_status),
+        }
+
+    data["_extendedDependsOn"] = [
+        ext(path) for path in sorted(stat.depends_on, key=str)
+    ]
+    data["_extendedRequiredBy"] = [
+        ext(path) for path in sorted(stat.required_by, key=str)
+    ]
+    data["_extendedVerifiedWith"] = [
+        ext(path) for path in sorted(stat.verified_with, key=str)
+    ]
+
+    return data
