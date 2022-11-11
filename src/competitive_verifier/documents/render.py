@@ -1,7 +1,10 @@
 import importlib.resources
 from logging import getLogger
+from typing import Any
 
 import yaml
+
+from competitive_verifier import github
 
 from .. import config as conf
 from .type import SiteRenderConfig
@@ -24,7 +27,7 @@ def load_render_config() -> SiteRenderConfig:
         (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
     )
     assert default_config_yml is not None
-    config_yml = default_config_yml
+    config_yml: dict[str, Any] = default_config_yml
 
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
@@ -39,6 +42,7 @@ def load_render_config() -> SiteRenderConfig:
         else:
             config_yml.update(user_config_yml)
 
+    config_yml.setdefault("action_name", github.env.get_workflow_name() or "verify")
     return SiteRenderConfig(
         config_yml=config_yml,
         static_dir=static_dir.resolve(),

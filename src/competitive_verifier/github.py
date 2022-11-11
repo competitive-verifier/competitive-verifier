@@ -39,6 +39,10 @@ class env:
         return os.getenv("GITHUB_REPOSITORY")
 
     @classmethod
+    def get_workflow_name(cls) -> Optional[str]:
+        return os.getenv("GITHUB_WORKFLOW")
+
+    @classmethod
     def get_output_path(cls) -> Optional[pathlib.Path]:
         strpath = os.getenv("GITHUB_OUTPUT")
         return _optional_path(strpath)
