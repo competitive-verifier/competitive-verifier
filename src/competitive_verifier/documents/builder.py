@@ -8,6 +8,7 @@ import yaml
 
 from competitive_verifier import git, github
 from competitive_verifier.models import (
+    ProblemVerification,
     SourceCodeStat,
     VerificationInput,
     VerifyCommandResult,
@@ -261,6 +262,18 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     with stat.path.open("rb") as fh:
         code = fh.read().decode()
 
+    attributes = stat.file_input.document_attributes.copy()
+    problem = next(
+        (
+            v.problem
+            for v in stat.file_input.verification
+            if isinstance(v, ProblemVerification)
+        ),
+        None,
+    )
+    if problem:
+        attributes.setdefault("PROBLEM", problem)
+
     bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
     return {
         "path": stat.path.as_posix(),
@@ -272,7 +285,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
         "dependsOn": [path.as_posix() for path in stat.depends_on],
         "requiredBy": [path.as_posix() for path in stat.required_by],
         "verifiedWith": [path.as_posix() for path in stat.verified_with],
-        "attributes": stat.file_input.document_attributes,
+        "attributes": attributes,
     }
 
 
