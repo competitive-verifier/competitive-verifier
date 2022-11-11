@@ -53,19 +53,19 @@ class DocumentBuilder:
         self.result = result
 
     def build(self) -> bool:
+        if not _working_directory_is_in_git_root():
+            logger.warning(
+                "Working directory should be git root. " "Working directory: %s",
+                pathlib.Path.cwd().as_posix(),
+            )
+            return False
+
         logger.info("Generate documents...")
         result = self.impl()
         logger.info("Generated.")
         if github.env.is_in_github_actions():
-            workspace = github.env.get_workspace_path()
-            assert workspace is not None
-            if pathlib.Path.cwd().resolve() != workspace.resolve():
-                logger.warning(
-                    "Working directory should be git root. " "Working directory: %s",
-                    pathlib.Path.cwd().as_posix(),
-                )
-                result = False
-            elif check_pushed_to_github_head_branch():
+            if check_pushed_to_github_head_branch():
+                logger.info("Push documents to gh-pages")
                 # Push gh-pages when in GitHub head branch
                 if not push_documents_to_gh_pages(srcdir=markdown_dir):
                     result = False
@@ -204,6 +204,16 @@ class DocumentBuilder:
         return list(
             ({index_job.path: index_job} | source_jobs | markdown_jobs).values()
         )
+
+
+def _working_directory_is_in_git_root() -> bool:
+    working_directory = pathlib.Path.cwd()
+    if github.env.is_in_github_actions():
+        workspace = github.env.get_workspace_path()
+        assert workspace is not None
+        return working_directory.resolve() == workspace.resolve()
+    else:
+        return working_directory.resolve() == git.get_root_directory().resolve()
 
 
 def _build_page_title_dict(

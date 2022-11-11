@@ -19,3 +19,10 @@ def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
 def ls_files() -> set[pathlib.Path]:
     stdout = exec_command(["git", "ls-files"], text=True, capture_output=True).stdout
     return set(pathlib.Path(f) for f in stdout.splitlines(False) if f)
+
+
+def get_root_directory() -> pathlib.Path:
+    stdout = exec_command(
+        ["git", "rev-parse", "--show-toplevel"], text=True, capture_output=True
+    ).stdout
+    return pathlib.Path(stdout.strip())
