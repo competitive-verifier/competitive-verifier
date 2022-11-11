@@ -1,7 +1,5 @@
 import argparse
 import importlib.metadata
-import os
-import pathlib
 import sys
 from logging import DEBUG, INFO, getLogger
 from typing import Optional
@@ -76,8 +74,6 @@ def main(args: Optional[list[str]] = None):
 
     configure_logging(default_level=default_level)
 
-    logger.info("Project root: %s", str(pathlib.Path.cwd().resolve(strict=True)))
-
     # Use sys.stdout for logging
     if parsed.subcommand == "download":
         sys.exit(0 if download.run(parsed) else 1)
@@ -85,6 +81,8 @@ def main(args: Optional[list[str]] = None):
         sys.exit(0 if verify.run(parsed) else 1)
     elif parsed.subcommand == "docs":
         sys.exit(0 if docs.run(parsed) else 1)
+
+    parser.print_help()
 
 
 if __name__ == "__main__":
