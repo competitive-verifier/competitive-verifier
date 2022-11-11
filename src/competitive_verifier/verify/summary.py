@@ -63,9 +63,18 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
                 ]
             )
 
+    file_results: dict[bool, list[tuple[pathlib.Path, FileResult]]] = {
+        False: [],
+        True: [],
+    }
+    for p, fr in result.files.items():
+        file_results[fr.newest].append((p, fr))
+
+    file_results[True].sort(key=lambda t: t[0])
+    file_results[False].sort(key=lambda t: t[0])
     counter = Counter(
         r.status
-        for r in chain.from_iterable(f.verifications for f in result.files.values())
+        for r in chain.from_iterable(f[1].verifications for f in file_results[True])
     )
 
     fp.write("<details>")
@@ -96,16 +105,6 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     fp.write(with_icon("⚠", "Test case results containts `skipped`"))
     fp.write("\n\n\n")
 
-    file_results: dict[bool, list[tuple[pathlib.Path, FileResult]]] = {
-        False: [],
-        True: [],
-    }
-    for p, fr in result.files.items():
-        file_results[fr.newest].append((p, fr))
-
-    file_results[True].sort(key=lambda t: t[0])
-    file_results[False].sort(key=lambda t: t[0])
-
     header = [
         with_icon("📝", "File"),
         with_icon("✓", "Passed"),
@@ -117,6 +116,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     alignment = [":---"] + [":---:"] * (len(header) - 1)
 
     if file_results[True]:
+
         fp.write("### Results\n")
         write_table_line(header)
         write_table_line(alignment)
