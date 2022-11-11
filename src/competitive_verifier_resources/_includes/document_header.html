@@ -24,9 +24,7 @@
         const anchor = document.getElementById('include-directive-anchor');
         const code = document.getElementById('include-directive-code');
         anchor.addEventListener('click', function() {
-            window.getSelection().selectAllChildren(code);
-            document.execCommand("copy");
-            window.getSelection().removeAllRanges();
+            navigator.clipboard.writeText(code.textContent)
 
             const textContent = code.textContent;
             code.textContent = "Copied!";

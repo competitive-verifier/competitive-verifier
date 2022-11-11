@@ -37,10 +37,8 @@ window.addEventListener('load', function(){
     $('.code-copy-btn').on('click',function(){
         // テキスト要素を選択＆クリップボードにコピー
         var textElem = $(this).siblings(':first');
-        window.getSelection().selectAllChildren(textElem[0]);
-        document.execCommand("copy");
-        window.getSelection().removeAllRanges();
-        
+        navigator.clipboard.writeText(textElem[0].textContent)
+
         // コピー完了した後の処理
         // トースト通知とかすると親切かも...
         $(this).showBalloon();
