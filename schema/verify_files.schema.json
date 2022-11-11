@@ -9,21 +9,6 @@
                 ".*": {
                     "type": "object",
                     "properties": {
-                        "display_path": {
-                            "oneOf": [
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "const": false
-                                }
-                            ],
-                            "examples": [
-                                "other_name.ext",
-                                false
-                            ],
-                            "description": "file path for document"
-                        },
                         "dependencies": {
                             "type": "array",
                             "items": {
@@ -43,6 +28,10 @@
                                     }
                                 }
                             ]
+                        },
+                        "document_title": {
+                            "type": "string",
+                            "description": "Document title"
                         }
                     }
                 }

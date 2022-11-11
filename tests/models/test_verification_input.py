@@ -2,56 +2,40 @@
 import json
 from pathlib import Path
 
-from competitive_verifier.models import (
-    ConstVerification,
-    VerificationFile,
-    VerificationInput,
-)
+from competitive_verifier.models import VerificationInput
 
-test_input = VerificationInput(
-    files={
-        Path("foo/bar1.py"): VerificationFile(dependencies=[]),
-        Path("foo/bar2.py"): VerificationFile(
-            dependencies=[Path("foo/bar1.py")],
-        ),
-        Path("foo/baz.py"): VerificationFile(dependencies=[]),
-        Path("foo/barbaz.py"): VerificationFile(
-            dependencies=[
-                Path("foo/bar2.py"),
-                Path("foo/baz.py"),
-            ],
-        ),
-        Path("hoge/1.py"): VerificationFile(
-            dependencies=[],
-        ),
-        Path("hoge/hoge.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/fuga.py"),
-                Path("hoge/1.py"),
-            ],
-        ),
-        Path("hoge/piyo.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/fuga.py"),
-                Path("hoge/hoge.py"),
-            ],
-        ),
-        Path("hoge/fuga.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/piyo.py"),
-            ],
-        ),
-        Path("hoge/piyopiyo.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/piyo.py"),
-            ],
-        ),
-        Path("test/test.py"): VerificationFile(
-            verification=[ConstVerification(status="success")],  # type:ignore
-            dependencies=[
-                Path("hoge/piyopiyo.py"),
-            ],
-        ),
+test_input = VerificationInput.parse_obj(
+    {
+        "files": {
+            "foo/bar1.py": {},
+            "foo/bar2.py": {"dependencies": ["foo/bar1.py"]},
+            "foo/baz.py": {},
+            "foo/barbaz.py": {
+                "dependencies": [
+                    "foo/bar2.py",
+                    "foo/baz.py",
+                ],
+            },
+            "hoge/1.py": {},
+            "hoge/hoge.py": {
+                "dependencies": [
+                    "hoge/fuga.py",
+                    "hoge/1.py",
+                ],
+            },
+            "hoge/piyo.py": {
+                "dependencies": [
+                    "hoge/fuga.py",
+                    "hoge/hoge.py",
+                ],
+            },
+            "hoge/fuga.py": {"dependencies": ["hoge/piyo.py"]},
+            "hoge/piyopiyo.py": {"dependencies": ["hoge/piyo.py"]},
+            "test/test.py": {
+                "verification": [{"status": "success", "type": "const"}],
+                "dependencies": ["hoge/piyopiyo.py"],
+            },
+        }
     }
 )
 
@@ -70,7 +54,7 @@ def test_to_json():
                 "foo/bar.py": {},
                 "foo/baz.py": {
                     "path": "foo/baz.py",
-                    "display_path": "var/foo/baz.py",
+                    "document_title": "foo-baz",
                     "dependencies": ["foo/bar.py"],
                     "verification": [
                         {
@@ -86,11 +70,11 @@ def test_to_json():
         "files": {
             "foo/bar.py": {
                 "dependencies": [],
-                "display_path": None,
+                "document_title": None,
                 "verification": [],
             },
             "foo/baz.py": {
-                "display_path": "var/foo/baz.py",
+                "document_title": "foo-baz",
                 "dependencies": ["foo/bar.py"],
                 "verification": [
                     {
@@ -110,7 +94,7 @@ def test_repr():
                 "foo/bar.py": {},
                 "foo/baz.py": {
                     "path": "foo/baz.py",
-                    "display_path": "baz.py",
+                    "document_title": "foo-baz",
                     "dependencies": ["foo/bar.py"],
                     "verification": [
                         {
@@ -125,8 +109,8 @@ def test_repr():
     print(repr(obj))
     assert repr(obj) == (
         "VerificationInput("
-        + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(display_path=None, dependencies=[], verification=[]),"
-        + f" {repr(Path('foo/baz.py'))}: VerificationFile(display_path={repr(Path('baz.py'))}, dependencies=[{repr(Path('foo/bar.py'))}], verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)])"
+        + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(dependencies=[], verification=[], document_title=None),"
+        + f" {repr(Path('foo/baz.py'))}: VerificationFile(dependencies=[{repr(Path('foo/bar.py'))}], verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_title={repr('foo-baz')})"
         + f"}})"
     )
 

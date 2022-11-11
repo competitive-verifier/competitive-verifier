@@ -1,7 +1,7 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, StrBytes, validator
 
@@ -14,9 +14,11 @@ _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
 
 
 class VerificationFile(BaseModel):
-    display_path: Union[pathlib.Path, Literal[False], None] = None
     dependencies: list[pathlib.Path] = Field(default_factory=list)
     verification: list[Verification] = Field(default_factory=list)
+    document_title: Optional[str] = None
+    """Document title
+    """
 
     class Config:
         json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
@@ -104,7 +106,15 @@ class VerificationInput:
     def parse_obj(obj: Any) -> "VerificationInput":
         return VerificationInput(VerificationInputImpl.parse_obj(obj))
 
-    def _scc(self) -> list[set[pathlib.Path]]:
+    def scc(self, *, reversed: bool = False) -> list[set[pathlib.Path]]:
+        """Strongly Connected Component
+
+        Args:
+            reversed bool: if True, libraries are ahead. otherwise, tests are ahead.
+
+        Returns:
+            list[set[pathlib.Path]]: Strongly Connected Component result
+        """
         paths = list(p for p in self.files.keys())
         vers_rev = {v: i for i, v in enumerate(paths)}
         g = SccGraph(len(paths))
@@ -112,13 +122,16 @@ class VerificationInput:
             for e in file.dependencies:
                 t = vers_rev.get(e, -1)
                 if 0 <= t:
-                    g.add_edge(vers_rev[p], t)
-        return [set(paths[ix] for ix in ls) for ls in reversed(g.scc())]
+                    if reversed:
+                        g.add_edge(t, vers_rev[p])
+                    else:
+                        g.add_edge(vers_rev[p], t)
+        return [set(paths[ix] for ix in ls) for ls in g.scc()]
 
     @cached_property
     def transitive_depends_on(self) -> _DependencyEdges:
         d: _DependencyEdges = {}
-        g = self._scc()
+        g = self.scc(reversed=True)
         for group in g:
             result = group.copy()
             for p in group:
@@ -136,7 +149,7 @@ class VerificationInput:
         self,
     ) -> tuple[_DependencyEdges, _DependencyEdges, _DependencyEdges]:
         """
-        :returns: graphs from absolute paths to relative paths
+        Returns: Dependency graphs
         """
         depends_on: _DependencyEdges = {}
         required_by: _DependencyEdges = {}

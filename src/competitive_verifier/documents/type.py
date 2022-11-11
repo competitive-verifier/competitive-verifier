@@ -1,19 +1,25 @@
-import enum
 import pathlib
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
 
-class FileStatus(enum.Enum):
-    LIBRARY_ALL_AC = enum.auto()
-    LIBRARY_PARTIAL_AC = enum.auto()
-    LIBRARY_SOME_WA = enum.auto()
-    LIBRARY_ALL_WA = enum.auto()
-    LIBRARY_NO_TESTS = enum.auto()
-    TEST_ACCEPTED = enum.auto()
-    TEST_WRONG_ANSWER = enum.auto()
-    TEST_WAITING_JUDGE = enum.auto()
+class FrontMatter(BaseModel):
+    title: Optional[str] = None
+    layout: Optional[str] = None
+    documentation_of: Optional[str] = None
+    data: Optional[dict[str, Any]] = None
+    redirect_from: Optional[list[str]] = None
+    """for jekyll-redirect-from plugin
+    """
+
+
+class PageRenderJob(BaseModel):
+    path: pathlib.Path
+    """a relative path from basedir
+    """
+    front_matter: FrontMatter
+    content: bytes
 
 
 class SiteRenderConfig(BaseModel):

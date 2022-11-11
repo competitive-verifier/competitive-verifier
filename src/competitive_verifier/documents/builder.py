@@ -3,30 +3,19 @@ import pathlib
 from itertools import chain
 from logging import getLogger
 
-import yaml
-
-import competitive_verifier_resources
 from competitive_verifier import git, github
-from competitive_verifier.models import (
-    DependencyResolver,
-    VerificationInput,
-    VerifyCommandResult,
-)
+from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
-from .. import config as conf
-from .page import check_pushed_to_github_head_branch, push_documents_to_gh_pages
-from .type import SiteRenderConfig
+from .front_matter import merge_front_matter
+from .ghpage import check_pushed_to_github_head_branch, push_documents_to_gh_pages
+from .job import build_index_job, build_markdown_job, build_source_job
+from .render import load_render_config, markdown_dir
+from .type import PageRenderJob, SiteRenderConfig
 
 logger = getLogger(__name__)
 
-docs_dir = conf.config_dir / "docs"
-static_dir = docs_dir / "static"
-index_md_path = docs_dir / "index.md"
-markdown_dir = conf.config_dir / "markdown"
 
-
-_RESOURCE_PACKAGE = competitive_verifier_resources
-_CONFIG_YML_PATH = "_config.yml"
+_RESOURCE_PACKAGE = "competitive_verifier_resources"
 _DOC_USAGE_PATH = "doc_usage.txt"
 
 
@@ -80,6 +69,67 @@ class DocumentBuilder:
             " ".join(p.as_posix() for p in excluded_files),
         )
 
+        render_jobs = self.enumerate_rendering_jobs(config.index_md, excluded_files)
+
+        logger.info("render %s files...", len(render_jobs))
+        resolver = ResultDependencyResolver(
+            input=self.input, excluded_files=excluded_files
+        )
+        self.render_pages(render_jobs=render_jobs, site_render_config=config)
+        # resolver = DependencyResolver(self.input, excluded_files)
+        import sys
+
+        sys.exit()
+        return False
+
+    def render_pages(
+        self,
+        *,
+        render_jobs: list[PageRenderJob],
+        site_render_config: SiteRenderConfig,
+    ) -> dict[pathlib.Path, bytes]:
+        """
+        :returns: mapping from absolute paths to file contents
+        """
+
+        page_title_dict = _build_page_title_dict(render_jobs=render_jobs)
+
+        rendered_pages: dict[pathlib.Path, bytes] = {}
+        for job in render_jobs:
+            documentation_of = job.front_matter.documentation_of
+
+            front_matter = job.front_matter.copy(deep=True)
+            if front_matter.layout == "toppage":
+                data = _render_source_code_stats_for_top_page(
+                    source_code_stats=source_code_stats,
+                    page_title_dict=page_title_dict,
+                    basedir=site_render_config.basedir,
+                )
+                front_matter.data = data
+
+            elif documentation_of is not None:
+                if not front_matter.layout:
+                    front_matter.layout = "document"
+                data = _render_source_code_stat_for_page(
+                    pathlib.Path(documentation_of),
+                    source_code_stats_dict=source_code_stats_dict,
+                    page_title_dict=page_title_dict,
+                    basedir=site_render_config.basedir,
+                )
+                if not front_matter.data:
+                    front_matter.data = data
+
+            path = site_render_config.destination_dir / job.path
+            content = merge_front_matter(front_matter, job.content)
+            rendered_pages[path] = content
+
+        return rendered_pages
+
+    def enumerate_rendering_jobs(
+        self,
+        index_md: pathlib.Path,
+        excluded_files: set[pathlib.Path],
+    ) -> list[PageRenderJob]:
         markdown_paths = set(
             p
             for p in git.ls_files()
@@ -92,41 +142,36 @@ class DocumentBuilder:
         )
 
         logger.info("list rendering jobs...")
-        DependencyResolver(self.input, excluded_files)
-        import sys
 
-        sys.exit()
-        return False
+        source_jobs = {
+            job.path: job
+            for job in (build_source_job(p, f) for p, f in self.input.files.items())
+            if job is not None
+        }
+        logger.debug("source_jobs=%s", source_jobs.values())
 
+        markdown_jobs = {
+            job.path: job
+            for job in map(build_markdown_job, markdown_paths)
+            if job is not None
+        }
+        logger.debug("markdown_jobs=%s", markdown_jobs.values())
 
-def load_render_config() -> SiteRenderConfig:
-    # load default _config.yml
-    default_config_yml = yaml.safe_load(
-        importlib.resources.read_binary(_RESOURCE_PACKAGE, _CONFIG_YML_PATH)
-    )
-    assert default_config_yml is not None
-    config_yml = default_config_yml
+        index_job = build_index_job(index_md)
+        logger.debug("index_job=%s", index_job)
 
-    user_config_yml_path = docs_dir / _CONFIG_YML_PATH
-    if user_config_yml_path.exists():
-        try:
-            with open(user_config_yml_path, "rb") as fh:
-                user_config_yml = yaml.safe_load(fh.read())
-            assert user_config_yml is not None
-        except Exception as e:
-            logger.exception(
-                "failed to parse %s: %s", user_config_yml_path.as_posix(), e
-            )
-        else:
-            config_yml.update(user_config_yml)
-
-    return SiteRenderConfig(
-        config_yml=config_yml,
-        static_dir=static_dir.resolve(),
-        index_md=index_md_path.resolve(),
-        destination_dir=markdown_dir.resolve(),
-    )
+        return list(
+            ({index_job.path: index_job} | source_jobs | markdown_jobs).values()
+        )
 
 
-def get_markdown_paths(*, basedir: pathlib.Path) -> list[pathlib.Path]:
-    return [p for p in basedir.glob("**/*.md") if not p.name.startswith(".")]
+def _build_page_title_dict(
+    *, render_jobs: list[PageRenderJob]
+) -> dict[pathlib.Path, str]:
+    page_title_dict: dict[pathlib.Path, str] = {}
+    for job in render_jobs:
+        assert job.path.suffix == ".md"
+        title = job.front_matter.title or job.path.with_suffix("").as_posix()
+        page_title_dict[job.path] = title
+        page_title_dict[job.path.parent / job.path.stem] = title
+    return page_title_dict

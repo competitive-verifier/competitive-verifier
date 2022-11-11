@@ -1,127 +1,399 @@
+import datetime
 from pathlib import Path
+from typing import Any
+from unittest import mock
+
+import pytest
+from pydantic import BaseModel
 
 from competitive_verifier.models import (
-    ConstVerification,
-    DependencyResolver,
-    VerificationFile,
+    SourceCodeStat,
     VerificationInput,
-)
-
-test_input = VerificationInput(
-    files={
-        Path("foo/bar1.py"): VerificationFile(dependencies=[]),
-        Path("foo/bar2.py"): VerificationFile(
-            dependencies=[Path("foo/bar1.py")],
-        ),
-        Path("foo/baz.py"): VerificationFile(dependencies=[]),
-        Path("foo/barbaz.py"): VerificationFile(
-            dependencies=[
-                Path("foo/bar2.py"),
-                Path("foo/baz.py"),
-            ],
-        ),
-        Path("hoge/1.py"): VerificationFile(
-            dependencies=[],
-        ),
-        Path("hoge/hoge.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/fuga.py"),
-                Path("hoge/1.py"),
-            ],
-        ),
-        Path("hoge/piyo.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/fuga.py"),
-                Path("hoge/hoge.py"),
-            ],
-        ),
-        Path("hoge/fuga.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/piyo.py"),
-            ],
-        ),
-        Path("hoge/piyopiyo.py"): VerificationFile(
-            dependencies=[
-                Path("hoge/piyo.py"),
-            ],
-        ),
-        Path("test/test.py"): VerificationFile(
-            verification=[ConstVerification(status="success")],  # type:ignore
-            dependencies=[
-                Path("hoge/piyopiyo.py"),
-            ],
-        ),
-    }
+    VerificationStatus,
+    VerifyCommandResult,
+    resolve_dependency,
 )
 
 
-def test_depends_on():
-    simple = {
-        "foo/bar1.py": [],
-        "foo/bar2.py": [("foo/bar1.py")],
-        "foo/baz.py": [],
-        "foo/barbaz.py": ["foo/bar2.py", "foo/baz.py"],
-        "hoge/1.py": [],
-        "hoge/piyo.py": ["hoge/fuga.py"],
-        "hoge/fuga.py": ["hoge/piyo.py"],
-        "hoge/piyopiyo.py": ["hoge/piyo.py"],
-        "test/test.py": ["hoge/piyopiyo.py"],
-    }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
-
-    resolver = DependencyResolver(test_input, excluded_files={Path("hoge/hoge.py")})
-    assert resolver.depends_on == expected
+class Parser(BaseModel):
+    __root__: dict[Path, SourceCodeStat]
 
 
-def test_required_by():
-    simple = {
-        "foo/bar1.py": ["foo/bar2.py"],
-        "foo/bar2.py": ["foo/barbaz.py"],
-        "foo/baz.py": ["foo/barbaz.py"],
-        "foo/barbaz.py": [],
-        "hoge/1.py": [],
-        "hoge/piyo.py": ["hoge/fuga.py", "hoge/piyopiyo.py"],
-        "hoge/fuga.py": ["hoge/piyo.py"],
-        "hoge/piyopiyo.py": [],
-        "test/test.py": [],
-    }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
+test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
+    (
+        "AC",
+        {
+            "files": {
+                "c1/a.py": {},
+                "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
+                "c1/b2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/test.py": {
+                    "verifications": [
+                        {
+                            "status": "success",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.py"],
+        {
+            "c1/test.py": {
+                "path": "c1/test.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/b1.py": {
+                "path": "c1/b1.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b2.py", "c1/a.py"},
+                "required_by": {"c1/b2.py", "c1/test.py"},
+                "verified_with": set(),
+            },
+            "c1/b2.py": {
+                "path": "c1/b2.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+            "c1/a.py": {
+                "path": "c1/a.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": set(),
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+    (
+        "WA",
+        {
+            "files": {
+                "c1/a.py": {},
+                "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
+                "c1/b2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/test.py": {
+                    "verifications": [
+                        {
+                            "status": "failure",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.py"],
+        {
+            "c1/test.py": {
+                "path": "c1/test.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/b1.py": {
+                "path": "c1/b1.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b2.py", "c1/a.py"},
+                "required_by": {"c1/b2.py", "c1/test.py"},
+                "verified_with": set(),
+            },
+            "c1/b2.py": {
+                "path": "c1/b2.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+            "c1/a.py": {
+                "path": "c1/a.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": set(),
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+    (
+        "AC & skip",
+        {
+            "files": {
+                "c1/a.py": {},
+                "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
+                "c1/b2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test2.py": {"dependencies": ["c1/b1.py"]},
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/test.py": {
+                    "verifications": [
+                        {
+                            "status": "success",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+                "c1/test2.py": {
+                    "verifications": [
+                        {
+                            "status": "skipped",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.py"],
+        {
+            "c1/test.py": {
+                "path": "c1/test.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/test2.py": {
+                "path": "c1/test2.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_WAITING_JUDGE,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/b1.py": {
+                "path": "c1/b1.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b2.py", "c1/a.py"},
+                "required_by": {"c1/b2.py", "c1/test.py", "c1/test2.py"},
+                "verified_with": set(),
+            },
+            "c1/b2.py": {
+                "path": "c1/b2.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+            "c1/a.py": {
+                "path": "c1/a.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": set(),
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+    (
+        "AC & WA",
+        {
+            "files": {
+                "c1/a.py": {},
+                "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
+                "c1/b2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test2.py": {"dependencies": ["c1/b1.py"]},
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/test.py": {
+                    "verifications": [
+                        {
+                            "status": "success",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+                "c1/test2.py": {
+                    "verifications": [
+                        {
+                            "status": "failure",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.py"],
+        {
+            "c1/test.py": {
+                "path": "c1/test.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/test2.py": {
+                "path": "c1/test2.py",
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": set(),
+                "verified_with": set(),
+            },
+            "c1/b1.py": {
+                "path": "c1/b1.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b2.py", "c1/a.py"},
+                "required_by": {"c1/b2.py", "c1/test.py", "c1/test2.py"},
+                "verified_with": set(),
+            },
+            "c1/b2.py": {
+                "path": "c1/b2.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+            "c1/a.py": {
+                "path": "c1/a.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": set(),
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+    (
+        "no tests",
+        {
+            "files": {
+                "c1/a.py": {},
+                "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
+                "c1/b2.py": {"dependencies": ["c1/b1.py"]},
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/test.py": {
+                    "verifications": [
+                        {
+                            "status": "failure",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.py"],
+        {
+            "c1/b1.py": {
+                "path": "c1/b1.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b2.py", "c1/a.py"},
+                "required_by": {"c1/b2.py"},
+                "verified_with": set(),
+            },
+            "c1/b2.py": {
+                "path": "c1/b2.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/b1.py"},
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+            "c1/a.py": {
+                "path": "c1/a.py",
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": set(),
+                "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+]
 
-    resolver = DependencyResolver(test_input, excluded_files={Path("hoge/hoge.py")})
-    assert resolver.required_by == expected
 
+@pytest.mark.parametrize(
+    "name, dep_input_obj, dep_result_obj, excluded_files_str, expected_obj",
+    test_resolve_dependency_params,
+    ids=[tup[0] for tup in test_resolve_dependency_params],
+)
+def test_resolve_dependency(
+    name: str,
+    dep_input_obj: Any,
+    dep_result_obj: Any,
+    excluded_files_str: list[str],
+    expected_obj: Any,
+):
+    with mock.patch(
+        "competitive_verifier.models.dependency.git.get_commit_time",
+        return_value=datetime.datetime(2010, 2, 15),
+    ):
+        dep_input = VerificationInput.parse_obj(dep_input_obj)
+        dep_result = VerifyCommandResult.parse_obj(dep_result_obj)
 
-def test_verified_with():
-    simple = {
-        "foo/bar1.py": [],
-        "foo/bar2.py": [],
-        "foo/baz.py": [],
-        "foo/barbaz.py": [],
-        "hoge/1.py": [],
-        "hoge/piyo.py": [],
-        "hoge/fuga.py": [],
-        "hoge/piyopiyo.py": ["test/test.py"],
-        "test/test.py": [],
-    }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
-
-    resolver = DependencyResolver(test_input, excluded_files={Path("hoge/hoge.py")})
-    assert resolver.verified_with == expected
-
-
-def test_verified_with2():
-    simple: dict[str, list[str]] = {
-        "foo/bar1.py": [],
-        "foo/bar2.py": [],
-        "foo/baz.py": [],
-        "foo/barbaz.py": [],
-        "hoge/1.py": [],
-        "hoge/hoge.py": [],
-        "hoge/piyo.py": [],
-        "hoge/fuga.py": [],
-        "hoge/piyopiyo.py": [],
-    }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
-
-    resolver = DependencyResolver(test_input, excluded_files={Path("test/test.py")})
-    assert resolver.verified_with == expected
+        resolved = resolve_dependency(
+            input=dep_input,
+            result=dep_result,
+            excluded_files=set(Path(s) for s in excluded_files_str),
+        )
+        expected = Parser.parse_obj(expected_obj).__root__
+        assert resolved == expected

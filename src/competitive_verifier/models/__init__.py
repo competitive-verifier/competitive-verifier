@@ -1,4 +1,4 @@
-from .dependency import DependencyResolver
+from .dependency import SourceCodeStat, VerificationStatus, resolve_dependency
 from .file import VerificationFile, VerificationInput, VerificationInputImpl
 from .result import FileResult, VerificationResult, VerifyCommandResult
 from .result_status import ResultStatus
@@ -12,6 +12,9 @@ from .verification import (
 )
 
 __all__ = [
+    "SourceCodeStat",
+    "VerificationStatus",
+    "resolve_dependency",
     "VerificationFile",
     "VerificationInput",
     "VerificationInputImpl",
@@ -19,7 +22,6 @@ __all__ = [
     "ResultStatus",
     "VerifyCommandResult",
     "BaseVerification",
-    "DependencyResolver",
     "CommandVerification",
     "ConstVerification",
     "ProblemVerification",
