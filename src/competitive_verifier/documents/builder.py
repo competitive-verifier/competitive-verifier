@@ -192,9 +192,13 @@ class DocumentBuilder:
         }
         logger.debug("source_jobs=%s", source_jobs.values())
 
+        source_paths = set(self.input.files.keys())
         markdown_jobs = {
             job.path: job
-            for job in map(build_markdown_job, markdown_paths)
+            for job in map(
+                lambda p: build_markdown_job(p, source_paths=source_paths),
+                markdown_paths,
+            )
             if job is not None
         }
         logger.debug("markdown_jobs=%s", markdown_jobs.values())

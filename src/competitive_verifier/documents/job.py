@@ -39,7 +39,11 @@ def _resolve_documentation_of(
     return None
 
 
-def build_markdown_job(path: pathlib.Path) -> Optional[PageRenderJob]:
+def build_markdown_job(
+    path: pathlib.Path,
+    *,
+    source_paths: set[pathlib.Path],
+) -> Optional[PageRenderJob]:
     with open(path, "rb") as fh:
         content = fh.read()
 
@@ -53,6 +57,13 @@ def build_markdown_job(path: pathlib.Path) -> Optional[PageRenderJob]:
         if documentation_of_path is None:
             logger.warning(
                 "the `documentation_of` path of %s is not found: %s",
+                path.as_posix(),
+                documentation_of,
+            )
+            return None
+        if documentation_of_path not in source_paths:
+            logger.warning(
+                "the `documentation_of` path of %s is not target: %s",
                 path.as_posix(),
                 documentation_of,
             )
