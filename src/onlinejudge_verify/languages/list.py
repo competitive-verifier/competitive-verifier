@@ -1,10 +1,9 @@
 import pathlib
 from logging import getLogger
-from typing import Iterator, Optional
+from typing import Optional
 
 from onlinejudge_verify.config import get_config
 from onlinejudge_verify.languages.models import Language
-from onlinejudge_verify.utils import glob_with_predicate
 
 logger = getLogger(__name__)
 
@@ -74,7 +73,3 @@ def is_verification_file(path: pathlib.Path) -> bool:
     basedir = pathlib.Path.cwd()
     language = onlinejudge_verify.languages.list.get(path)
     return language is not None and language.is_verification_file(path, basedir=basedir)
-
-
-def iterate_verification_files() -> Iterator[pathlib.Path]:
-    return glob_with_predicate(is_verification_file)

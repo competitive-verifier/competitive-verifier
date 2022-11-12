@@ -9,7 +9,6 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
-from onlinejudge_verify.languages.list import iterate_verification_files
 from onlinejudge_verify.languages.models import LanguageEnvironment
 
 
@@ -22,13 +21,16 @@ class OjResolver:
         basedir = pathlib.Path.cwd()
 
         lib_tasks = set[pathlib.Path]()
-        for path in iterate_verification_files():
+        for path in git.ls_files("*.test.*"):
             language = onlinejudge_verify.languages.list.get(path)
             if language is None or not language.is_verification_file(
                 path, basedir=basedir
             ):
                 continue
-            deps = language.list_dependencies(path, basedir=basedir)
+
+            deps = list(
+                git.ls_files(*language.list_dependencies(path, basedir=basedir))
+            )
             attr = language.list_attributes(path, basedir=basedir)
 
             def env_to_verification(env: LanguageEnvironment) -> Verification:
@@ -65,15 +67,13 @@ class OjResolver:
             path = lib_tasks.pop()
             assert path not in files
 
-            if not git.ls_files(path):
+            language = onlinejudge_verify.languages.list.get(path)
+            if language is None:
                 continue
 
-            language = onlinejudge_verify.languages.list.get(path)
-            if language is None or not language.is_verification_file(
-                path, basedir=basedir
-            ):
-                continue
-            deps = language.list_dependencies(path, basedir=basedir)
+            deps = list(
+                git.ls_files(*language.list_dependencies(path, basedir=basedir))
+            )
             attr = language.list_attributes(path, basedir=basedir)
 
             files[path] = VerificationFile(

@@ -4,7 +4,7 @@
     "properties": {
         "files": {
             "type": "object",
-            "description": "File path key",
+            "description": "File path key which relative to git root",
             "patternProperties": {
                 ".*": {
                     "type": "object",
@@ -13,7 +13,7 @@
                             "type": "array",
                             "items": {
                                 "type": "string",
-                                "description": "dependent file path"
+                                "description": "dependent file path which relative to git root"
                             }
                         },
                         "verification": {
