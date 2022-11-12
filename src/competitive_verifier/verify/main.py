@@ -87,7 +87,7 @@ def run(args: argparse.Namespace) -> bool:
     )
 
 
-def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
@@ -170,7 +170,7 @@ def get_split_state(
 def main(args: Optional[list[str]] = None) -> None:
     try:
         configure_logging(logging.INFO)
-        parsed = argument_verify(argparse.ArgumentParser()).parse_args(args)
+        parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)
     except Exception as e:

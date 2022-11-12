@@ -4,7 +4,8 @@ from typing import Optional
 import pytest
 
 from competitive_verifier.error import VerifierError
-from competitive_verifier.verify.main import argument_verify, get_split_state
+from competitive_verifier.verify.main import argument as argument_verify
+from competitive_verifier.verify.main import get_split_state
 from competitive_verifier.verify.verifier import SplitState
 
 test_get_split_state_params = [

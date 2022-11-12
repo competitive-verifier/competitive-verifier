@@ -21,8 +21,7 @@ def merge(results: Iterable[VerifyCommandResult]) -> VerifyCommandResult:
 
 
 def run_impl(
-    result_json: Iterable[pathlib.Path],
-    *,
+    *result_json: pathlib.Path,
     write_summary: bool = False,
 ) -> VerifyCommandResult:
     configure_stderr_logging()
@@ -38,12 +37,12 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
-    merged = run_impl(args.result_json, write_summary=args.write_summary)
+    merged = run_impl(*args.result_json, write_summary=args.write_summary)
     print(merged.json())
     return True
 
 
-def argument_merge_result(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_result_json_argument(parser)
     add_write_summary_argument(parser)
     return parser
@@ -51,7 +50,7 @@ def argument_merge_result(parser: argparse.ArgumentParser) -> argparse.ArgumentP
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        parsed = argument_merge_result(argparse.ArgumentParser()).parse_args(args)
+        parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)
     except Exception as e:

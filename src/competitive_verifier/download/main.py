@@ -63,7 +63,7 @@ def run(args: argparse.Namespace) -> bool:
     return run_impl(verification.files.values(), group_log=True)
 
 
-def argument_download(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     return parser
 
@@ -71,7 +71,7 @@ def argument_download(parser: argparse.ArgumentParser) -> argparse.ArgumentParse
 def main(args: Optional[list[str]] = None) -> None:
     try:
         configure_logging(logging.INFO)
-        parsed = argument_download(argparse.ArgumentParser()).parse_args(args)
+        parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)
     except Exception as e:

@@ -28,31 +28,31 @@ def get_parser() -> argparse.ArgumentParser:
         "verify",
         help="Verify library",
     )
-    verify.argument_verify(subparser)
+    verify.argument(subparser)
 
     subparser = subparsers.add_parser(
         "docs",
         help="Create documents",
     )
-    docs.argument_docs(subparser)
+    docs.argument(subparser)
 
     subparser = subparsers.add_parser(
         "download",
         help="Download problems",
     )
-    download.argument_download(subparser)
+    download.argument(subparser)
 
     subparser = subparsers.add_parser(
         "merge-result",
         help="Merge result of `verify`",
     )
-    merge_result.argument_merge_result(subparser)
+    merge_result.argument(subparser)
 
     subparser = subparsers.add_parser(
         "oj-resolve",
         help="Create verify_files json using `oj-verify`",
     )
-    oj_resolve.argument_oj_resolve(subparser)
+    oj_resolve.argument(subparser)
 
     return parser
 

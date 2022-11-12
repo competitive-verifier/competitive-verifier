@@ -37,13 +37,13 @@ def run(args: argparse.Namespace) -> bool:
 
     input = VerificationInput.parse_file(args.verify_files_json)
     result = merge_result.run_impl(
-        args.result_json,
+        *args.result_json,
         write_summary=args.write_summary,
     )
     return run_impl(input, result, args.ignore_error)
 
 
-def argument_docs(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
@@ -54,7 +54,7 @@ def argument_docs(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 def main(args: Optional[list[str]] = None) -> None:
     try:
         configure_logging(logging.INFO)
-        parsed = argument_docs(argparse.ArgumentParser()).parse_args(args)
+        parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)
     except Exception as e:

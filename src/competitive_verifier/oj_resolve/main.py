@@ -17,14 +17,14 @@ def run(args: argparse.Namespace) -> bool:
     return run_impl()
 
 
-def argument_oj_resolve(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_ignore_error_argument(parser)
     return parser
 
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        parsed = argument_oj_resolve(argparse.ArgumentParser()).parse_args(args)
+        parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)
     except Exception as e:
