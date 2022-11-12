@@ -1,4 +1,4 @@
-name: example
+name: example awk
 
 on:
   push:
@@ -56,19 +56,15 @@ jobs:
           restore-keys: |
             verifier-${{ runner.os }}
 
-      - name: Set up poetry
-        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: "poetry"
-
-      - name: Install dependencies
-        run: poetry install
+      - name: Install competitive-verifier
+        run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
       - name: Run download
-        run: poetry run competitive-verifier download
+        run: competitive-verifier download
         env:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
@@ -91,16 +87,12 @@ jobs:
           restore-keys: |
             verifier-${{ runner.os }}
 
-      - name: Set up poetry
-        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: "poetry"
-
-      - name: Install dependencies
-        run: poetry install
+      - name: Install competitive-verifier
+        run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
       - name: Run verify
-        run: poetry run competitive-verifier verify --no-download
+        run: competitive-verifier verify --no-download

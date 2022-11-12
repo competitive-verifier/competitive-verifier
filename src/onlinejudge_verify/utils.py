@@ -1,7 +1,7 @@
 # Python Version: 3.x
 import glob
 import pathlib
-from typing import *
+from typing import Callable, Iterator
 
 
 def glob_with_predicate(pred: Callable[[pathlib.Path], bool]) -> Iterator[pathlib.Path]:

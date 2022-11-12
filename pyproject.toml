@@ -22,6 +22,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 competitive-verifier = "competitive_verifier.console.app:main"
+oj-verify-python-compile = "onlinejudge_verify.python_compile:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
@@ -73,13 +74,12 @@ known_local_folder = ['config']
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "src/onlinejudge_verify,"
+exclude = "src/onlinejudge_verify,examples,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
-exclude = ["src/onlinejudge_verify"]
 reportMissingImports = true
 reportMissingTypeStubs = false

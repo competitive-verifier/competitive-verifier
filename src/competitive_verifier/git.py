@@ -1,6 +1,6 @@
 import datetime
 import pathlib
-from typing import Iterable
+from typing import Iterable, Union
 
 from .exec import exec_command
 
@@ -16,8 +16,12 @@ def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
     return datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S %z")
 
 
-def ls_files() -> set[pathlib.Path]:
-    stdout = exec_command(["git", "ls-files"], text=True, capture_output=True).stdout
+def ls_files(*args: Union[pathlib.Path, str]) -> set[pathlib.Path]:
+    stdout = exec_command(
+        ["git", "ls-files"] + list(str(p) for p in (args or [])),
+        text=True,
+        capture_output=True,
+    ).stdout
     return set(pathlib.Path(f) for f in stdout.splitlines(False) if f)
 
 

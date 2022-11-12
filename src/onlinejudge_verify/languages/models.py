@@ -1,14 +1,16 @@
 # Python Version: 3.x
 import abc
 import pathlib
-from typing import *
+from typing import Any, Sequence
 
 import onlinejudge_verify.languages.special_comments as special_comments
 
 
 class LanguageEnvironment:
     @abc.abstractmethod
-    def compile(self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path) -> None:
+    def get_compile_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> str:
         """
         :throws Exception:
         """
@@ -16,23 +18,29 @@ class LanguageEnvironment:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_execute_command(self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path) -> List[str]:
+    def get_execute_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> str:
         raise NotImplementedError
 
 
 class Language:
-    def list_attributes(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Dict[str, Any]:
+    def list_attributes(
+        self, path: pathlib.Path, *, basedir: pathlib.Path
+    ) -> dict[str, Any]:
         """
         :throws Exception:
         """
 
-        attributes: Dict[str, Any] = special_comments.list_special_comments(path)
-        attributes.setdefault('links', [])
-        attributes['links'].extend(special_comments.list_embedded_urls(path))
+        attributes: dict[str, Any] = special_comments.list_special_comments(path)
+        attributes.setdefault("links", [])
+        attributes["links"].extend(special_comments.list_embedded_urls(path))
         return attributes
 
     @abc.abstractmethod
-    def list_dependencies(self, path: pathlib.Path, *, basedir: pathlib.Path) -> List[pathlib.Path]:
+    def list_dependencies(
+        self, path: pathlib.Path, *, basedir: pathlib.Path
+    ) -> list[pathlib.Path]:
         """
         :throws Exception:
         """
@@ -40,7 +48,9 @@ class Language:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path, options: Dict[str, Any]) -> bytes:
+    def bundle(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
+    ) -> bytes:
         """
         :throws Exception:
         :throws NotImplementedError:
@@ -48,9 +58,13 @@ class Language:
 
         raise NotImplementedError
 
-    def is_verification_file(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bool:
-        return '.test.' in path.name
+    def is_verification_file(
+        self, path: pathlib.Path, *, basedir: pathlib.Path
+    ) -> bool:
+        return ".test." in path.name
 
     @abc.abstractmethod
-    def list_environments(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Sequence[LanguageEnvironment]:
+    def list_environments(
+        self, path: pathlib.Path, *, basedir: pathlib.Path
+    ) -> Sequence[LanguageEnvironment]:
         raise NotImplementedError

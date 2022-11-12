@@ -15,6 +15,9 @@
         },
         "examples/awk/circle.awk": {},
         "examples/awk/aplusb.awk": {
+            "document_attributes": {
+                "document_title": "Calculate \"A + B\""
+            },
             "dependencies": [],
             "verification": {
                 "type": "problem",
@@ -24,7 +27,7 @@
         },
         "examples/awk/aplusb2.awk": {
             "document_attributes": {
-                "title": "const \"A + B\""
+                "document_title": "const \"A + B\""
             },
             "dependencies": [],
             "verification": {
