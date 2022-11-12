@@ -8,6 +8,7 @@ logger = getLogger(__name__)
 
 
 def get_parser() -> argparse.ArgumentParser:
+    import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
     import competitive_verifier.merge_result.main as merge_result
@@ -49,6 +50,12 @@ def get_parser() -> argparse.ArgumentParser:
     merge_result.argument(subparser)
 
     subparser = subparsers.add_parser(
+        "check",
+        help="Check result of `verify`",
+    )
+    check.argument(subparser)
+
+    subparser = subparsers.add_parser(
         "oj-resolve",
         help="Create verify_files json using `oj-verify`",
     )
@@ -58,6 +65,7 @@ def get_parser() -> argparse.ArgumentParser:
 
 
 def main(args: Optional[list[str]] = None):
+    import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
     import competitive_verifier.merge_result.main as merge_result
@@ -81,6 +89,8 @@ def main(args: Optional[list[str]] = None):
         sys.exit(0 if merge_result.run(parsed) else 1)
     if parsed.subcommand == "oj-resolve":
         sys.exit(0 if oj_resolve.run(parsed) else 1)
+    if parsed.subcommand == "check":
+        sys.exit(0 if check.run(parsed) else 1)
 
     configure_logging(default_level=default_level)
 
