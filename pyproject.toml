@@ -12,6 +12,7 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
+    { include="onlinejudge_verify", from = "src" }
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -19,6 +20,8 @@ include = [{ path = "tests", format = "sdist" }]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.scripts]
+competitive-verifier = "competitive_verifier.console.app:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
@@ -27,11 +30,11 @@ online-judge-tools = "=11.5.1"
 colorama = "^0.4.6"
 pydantic = "^1.10.2"
 pyyaml = "^6.0"
+importlab = "^0.8"
 
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
-
 
 [tool.poetry.group.dev.dependencies]
 flake8 = { version = "^5.0.4", extras = ["lint"] }
@@ -40,9 +43,6 @@ isort = { version = "^5.10.1", extras = ["lint"] }
 pyright = { version = "^1.1.277", extras = ["lint"] }
 pyproject-flake8 = { version = "^5.0.4.post1", extras = ["lint"] }
 poethepoet = "^0.16.4"
-
-[tool.poetry.scripts]
-competitive-verifier = "competitive_verifier.console.app:main"
 
 [tool.poe.tasks]
 flake8 = "pflake8 src tests"
@@ -73,11 +73,13 @@ known_local_folder = ['config']
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
+exclude = "src/onlinejudge_verify,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
+exclude = ["src/onlinejudge_verify"]
 reportMissingImports = true
 reportMissingTypeStubs = false
