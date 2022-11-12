@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
@@ -74,7 +74,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
@@ -111,7 +111,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
@@ -125,17 +125,25 @@ jobs:
           path: ${{env.COMPETITIVE_VERIFY_RESULT_PATH}}
           retention-days: 1
 
-  merge-result:
+  docs:
     runs-on: ubuntu-latest
-    needs: [verify]
+    needs: [setup, verify]
     steps:
       - uses: actions/checkout@v3
+
+      - name: verify-files.json
+        run: |
+          mkdir $(dirname $COMPETITIVE_VERIFY_FILES_PATH)
+          delimiter=$(uuidgen)
+          cat - <<$delimiter > $COMPETITIVE_VERIFY_FILES_PATH
+          ${{ needs.setup.outputs.verify-json }}
+          $delimiter
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
@@ -148,5 +156,5 @@ jobs:
           name: result*
           failOnError: false
 
-      - name: Merge result
-        run: competitive-verifier merge-result ${COMPETITIVE_VERIFY_RESULT_PATH}/*/result.json --write-summary
+      - name: docs
+        run: competitive-verifier docs ${COMPETITIVE_VERIFY_RESULT_PATH}/*/result.json --write-summary

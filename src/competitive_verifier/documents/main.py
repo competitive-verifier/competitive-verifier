@@ -9,6 +9,7 @@ from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_result_json_argument,
     add_verify_files_json_argument,
+    add_write_summary_argument,
 )
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
@@ -35,7 +36,10 @@ def run(args: argparse.Namespace) -> bool:
     logger.info("result_json=%s", [str(p) for p in args.result_json])
 
     input = VerificationInput.parse_file(args.verify_files_json)
-    result = merge_result.run_impl(args.result_json)
+    result = merge_result.run_impl(
+        args.result_json,
+        write_summary=args.write_summary,
+    )
     return run_impl(input, result, args.ignore_error)
 
 
@@ -43,6 +47,7 @@ def argument_docs(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
+    add_write_summary_argument(parser)
     return parser
 
 
