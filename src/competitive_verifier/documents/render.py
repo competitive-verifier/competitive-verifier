@@ -60,7 +60,7 @@ def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
             )
 
 
-def load_render_config() -> SiteRenderConfig:
+def load_render_config(*, destination_dir: pathlib.Path) -> SiteRenderConfig:
     # load default _config.yml
     default_config_yml = yaml.safe_load(
         (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
@@ -82,5 +82,5 @@ def load_render_config() -> SiteRenderConfig:
         config_yml=config_yml,
         static_dir=static_dir.resolve(),
         index_md=index_md_path.resolve(),
-        destination_dir=conf.markdown_dir.resolve(),
+        destination_dir=destination_dir.resolve(),
     )

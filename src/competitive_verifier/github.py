@@ -35,7 +35,7 @@ class env:
         return os.getenv("GITHUB_API_URL")
 
     @classmethod
-    def get_reository(cls) -> Optional[str]:
+    def get_repository(cls) -> Optional[str]:
         return os.getenv("GITHUB_REPOSITORY")
 
     @classmethod

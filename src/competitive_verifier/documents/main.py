@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pathlib
 import sys
 from logging import getLogger
 from typing import Optional
@@ -22,11 +23,12 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     result: VerifyCommandResult,
+    destination_dir: pathlib.Path,
     ignore_error: bool,
 ) -> bool:
     logger.debug("input=%s", input.json())
     logger.debug("result=%s", result.json())
-    builder = DocumentBuilder(input, result)
+    builder = DocumentBuilder(input, result, destination_dir)
     return builder.build() or ignore_error
 
 
@@ -40,7 +42,7 @@ def run(args: argparse.Namespace) -> bool:
         *args.result_json,
         write_summary=args.write_summary,
     )
-    return run_impl(input, result, args.ignore_error)
+    return run_impl(input, result, args.destination, args.ignore_error)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -48,6 +50,12 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
+    parser.add_argument(
+        "--destination",
+        type=pathlib.Path,
+        default=pathlib.Path("_jekyll"),
+        help="Output directory for markdown document. default: ./_jekyll",
+    )
     return parser
 
 

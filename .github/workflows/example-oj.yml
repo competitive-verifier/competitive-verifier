@@ -6,6 +6,17 @@ on:
       - master
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 env:
   COMPETITIVE_VERIFY_FILES_PATH: .competitive-verifier/tmp/py-verify-files.json
   COMPETITIVE_VERIFY_RESULT_PATH: .competitive-verifier/tmp/result
@@ -158,3 +169,23 @@ jobs:
 
       - name: docs
         run: competitive-verifier docs ${COMPETITIVE_VERIFY_RESULT_PATH}/*/result.json --write-summary
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./_jekyll
+          destination: ./_site
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: docs
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

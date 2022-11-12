@@ -15,9 +15,7 @@ from competitive_verifier.models import (
     resolve_dependency,
 )
 
-from .. import config as conf
 from .front_matter import merge_front_matter
-from .ghpage import check_pushed_to_github_head_branch, push_documents_to_gh_pages
 from .job import build_index_job, build_markdown_job, build_source_job
 from .render import load_render_config
 from .type import PageRenderJob, SiteRenderConfig
@@ -48,10 +46,17 @@ _COPIED_STATIC_FILE_PATHS: list[str] = [
 class DocumentBuilder:
     input: VerificationInput
     result: VerifyCommandResult
+    destination_dir: pathlib.Path
 
-    def __init__(self, input: VerificationInput, result: VerifyCommandResult) -> None:
+    def __init__(
+        self,
+        input: VerificationInput,
+        result: VerifyCommandResult,
+        destination_dir: pathlib.Path,
+    ) -> None:
         self.input = input
         self.result = result
+        self.destination_dir = destination_dir
 
     def build(self) -> bool:
         if not _working_directory_is_in_git_root():
@@ -64,23 +69,21 @@ class DocumentBuilder:
         logger.info("Generate documents...")
         result = self.impl()
         logger.info("Generated.")
-        if github.env.is_in_github_actions():
-            if check_pushed_to_github_head_branch():
-                logger.info("Push documents to gh-pages")
-                # Push gh-pages when in GitHub head branch
-                if not push_documents_to_gh_pages(srcdir=conf.markdown_dir):
-                    result = False
-        else:
-            logger.info(
-                (importlib.resources.files(_RESOURCE_PACKAGE) / _DOC_USAGE_PATH)
-                .read_text(encoding="utf-8")
-                .replace("{{{{{markdown_dir_path}}}}}", conf.markdown_dir.as_posix())
+        logger.info(
+            (importlib.resources.files(_RESOURCE_PACKAGE) / _DOC_USAGE_PATH)
+            .read_text(encoding="utf-8")
+            .replace("{{{{{markdown_dir_path}}}}}", self.destination_dir.as_posix())
+            .replace(
+                "{{{{{repository}}}}}",
+                github.env.get_repository()
+                or "competitive-verifier/competitive-verifier",
             )
+        )
 
         return result
 
     def impl(self) -> bool:
-        config = load_render_config()
+        config = load_render_config(destination_dir=self.destination_dir)
         logger.debug("lender config=%s", config)
 
         excluded_files = set(
