@@ -65,7 +65,9 @@ def load_render_config() -> SiteRenderConfig:
     if user_config_yml:
         config_yml.update(user_config_yml)
 
-    config_yml.setdefault("action_name", github.env.get_workflow_name() or "verify")
+    config_yml.setdefault("action_name", github.env.get_workflow_name())
+    config_yml.setdefault("branch_name", github.env.get_ref_name())
+
     return SiteRenderConfig(
         config_yml=config_yml,
         static_dir=static_dir.resolve(),

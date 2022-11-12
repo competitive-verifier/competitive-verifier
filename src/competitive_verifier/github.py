@@ -19,8 +19,8 @@ class env:
         return os.getenv("GITHUB_ACTIONS") == "1"
 
     @classmethod
-    def get_branch_or_tag(cls) -> Optional[str]:
-        return os.getenv("GITHUB_REF")
+    def get_ref_name(cls) -> Optional[str]:
+        return os.getenv("GITHUB_REF_NAME")
 
     @classmethod
     def get_api_token(cls) -> Optional[str]:

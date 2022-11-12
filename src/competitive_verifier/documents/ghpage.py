@@ -46,11 +46,11 @@ def check_pushed_to_github_head_branch() -> bool:
         logger.exception("Failed to get the default branch: %s", e)
         logger.info("Updating GitHub Pages is skipped.")
         return False
-    if github.env.get_branch_or_tag() != f"refs/heads/{default_branch}":
+    if github.env.get_ref_name() != default_branch:
         logger.info(
-            'This execution is not on the default branch (the default is "refs/heads/%s" but the actual is "%s"). Updating GitHub Pages is skipped.',
+            'This execution is not on the default branch (the default is "%s" but the actual is "%s"). Updating GitHub Pages is skipped.',
             default_branch,
-            github.env.get_branch_or_tag(),
+            github.env.get_ref_name(),
         )
         return False
     return True
