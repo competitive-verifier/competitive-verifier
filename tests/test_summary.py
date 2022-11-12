@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from competitive_verifier.verify.summary import to_human_str
+from competitive_verifier.summary import to_human_str
 
 test_to_human_str_params: list[tuple[timedelta, str]] = [
     (timedelta(hours=2, minutes=8, seconds=6, milliseconds=13), "2h 8m"),

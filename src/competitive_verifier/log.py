@@ -86,6 +86,22 @@ def configure_logging(
     )
 
 
+def configure_stderr_logging(default_level: Optional[int] = None) -> None:
+    colorlog_handler = colorlog.StreamHandler(sys.stderr)
+    colorlog_handler.setLevel(default_level or WARNING)
+    colorlog_handler.setFormatter(
+        colorlog.ColoredFormatter(
+            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
+        )
+    )
+    handlers: list[Handler] = [colorlog_handler]
+
+    basicConfig(
+        level=NOTSET,
+        handlers=handlers,
+    )
+
+
 def _console_group(category: str, *, title: str, file: Optional[TextIO]):
     print(
         (

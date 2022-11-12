@@ -2,28 +2,50 @@ import argparse
 import pathlib
 import sys
 from functools import reduce
+from logging import getLogger
 from typing import Iterable, Optional
 
-from competitive_verifier.arg import add_result_json_argument
+from competitive_verifier import github, summary
+from competitive_verifier.arg import (
+    add_result_json_argument,
+    add_write_summary_argument,
+)
+from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerifyCommandResult
+
+logger = getLogger(__name__)
 
 
 def merge(results: Iterable[VerifyCommandResult]) -> VerifyCommandResult:
     return reduce(lambda a, b: a.merge(b), results)
 
 
-def run_impl(result_json: Iterable[pathlib.Path]) -> VerifyCommandResult:
-    return merge(map(VerifyCommandResult.parse_file, result_json))
+def run_impl(
+    result_json: Iterable[pathlib.Path],
+    *,
+    write_summary: bool = False,
+) -> VerifyCommandResult:
+    configure_stderr_logging()
+    result = merge(map(VerifyCommandResult.parse_file, result_json))
+    if write_summary:
+        gh_summary_path = github.env.get_step_summary_path()
+        if gh_summary_path and gh_summary_path.parent.exists():
+            with open(gh_summary_path, "w", encoding="utf-8") as fp:
+                summary.write_summary(fp, result)
+        else:
+            logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
+    return result
 
 
 def run(args: argparse.Namespace) -> bool:
-    merged = run_impl(args.result_json)
+    merged = run_impl(args.result_json, write_summary=args.write_summary)
     print(merged.json())
     return True
 
 
 def argument_merge_result(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_result_json_argument(parser)
+    add_write_summary_argument(parser)
     return parser
 
 

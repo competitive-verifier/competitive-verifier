@@ -28,7 +28,16 @@ def add_result_json_argument(parser: argparse.ArgumentParser) -> argparse.Action
 
 def add_ignore_error_argument(parser: argparse.ArgumentParser) -> argparse.Action:
     return parser.add_argument(
-        "--ignore-error",
+        "--check-error",
         help="exit 0 even if command failed",
+        dest="ignore_error",
+        action="store_false",
+    )
+
+
+def add_write_summary_argument(parser: argparse.ArgumentParser) -> argparse.Action:
+    return parser.add_argument(
+        "--write-summary",
         action="store_true",
+        help="Write GitHub Actions summary",
     )

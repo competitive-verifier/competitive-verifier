@@ -2,6 +2,7 @@ import argparse
 import sys
 from typing import Optional
 
+from ..arg import add_ignore_error_argument
 from .resolver import OjResolver
 
 
@@ -17,6 +18,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument_oj_resolve(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_ignore_error_argument(parser)
     return parser
 
 

@@ -8,6 +8,8 @@ on:
 
 env:
   COMPETITIVE_VERIFY_FILES_PATH: .competitive-verifier/tmp/py-verify-files.json
+  COMPETITIVE_VERIFY_RESULT_PATH: .competitive-verifier/tmp/result
+  PARALLEL_SIZE: 20
 
 jobs:
   setup:
@@ -15,8 +17,9 @@ jobs:
     env:
       artifact-path: .competitive-verifier/tmp/
     outputs:
-      verify-json: ${{ steps.create-json.outputs.verify-json  }}
-      hash: ${{ steps.create-hash.outputs.hash  }}
+      verify-json: ${{ steps.create-json.outputs.verify-json }}
+      hash: ${{ steps.create-hash.outputs.hash }}
+      seq: ${{ steps.seq.outputs.value }}
     steps:
       - uses: actions/checkout@v3
 
@@ -38,6 +41,13 @@ jobs:
         id: create-hash
         run: |
           echo "hash=${{ hashFiles('**/*verify-files.json') }}" >> $GITHUB_OUTPUT
+
+      - name: Parallel seq
+        id: seq
+        run: |
+          echo "value<<EOF" >> $GITHUB_OUTPUT
+          jq -nc '$ARGS.positional' --args $(seq -w 0 $((PARALLEL_SIZE-1))) >>$GITHUB_OUTPUT
+          echo EOF >> $GITHUB_OUTPUT
 
   download:
     runs-on: ubuntu-latest
@@ -68,18 +78,15 @@ jobs:
 
       - name: Run download
         run: competitive-verifier download
-        env:
-          YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
   verify:
     runs-on: ubuntu-latest
     needs: [setup, download]
     strategy:
       matrix:
-        index:
-          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        index: ${{fromJson(needs.setup.outputs.seq)}}
     outputs:
-      verify-json: ${{ steps.verify.outputs.verify-result  }}
+      verify-json: ${{ steps.verify.outputs.verify-result }}
     steps:
       - uses: actions/checkout@v3
       - name: verify-files.json
@@ -108,5 +115,34 @@ jobs:
       - name: Run verify
         id: verify
         run: |
-          RESULT_PATH=$(dirname $COMPETITIVE_VERIFY_FILES_PATH)/result${{ matrix.index }}.json
-          competitive-verifier verify --split 20 --split-index ${{ matrix.index }}
+          competitive-verifier verify --split 20 --split-index ${{ matrix.index }} --output ${COMPETITIVE_VERIFY_RESULT_PATH}/result.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: result${{ matrix.index }}
+          path: ${{env.COMPETITIVE_VERIFY_RESULT_PATH}}
+          retention-days: 1
+
+  merge-result:
+    runs-on: ubuntu-latest
+    needs: [verify]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install competitive-verifier
+        run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: ${{env.COMPETITIVE_VERIFY_RESULT_PATH}}
+      - name: Delete Artifact
+        uses: GeekyEggo/delete-artifact@v2.0.0
+        with:
+          name: result*
+          failOnError: false
+
+      - name: Merge result
+        run: competitive-verifier merge-result ${COMPETITIVE_VERIFY_RESULT_PATH}/*/result.json --write-summary

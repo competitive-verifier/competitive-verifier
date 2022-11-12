@@ -95,4 +95,4 @@ jobs:
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
       - name: Run verify
-        run: competitive-verifier verify --no-download
+        run: competitive-verifier verify --no-download --check-error --write-summary

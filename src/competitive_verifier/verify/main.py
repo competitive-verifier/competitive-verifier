@@ -6,15 +6,15 @@ import sys
 from logging import getLogger
 from typing import Optional
 
-from competitive_verifier import github
+from competitive_verifier import github, summary
 from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_verify_files_json_argument,
+    add_write_summary_argument,
 )
 from competitive_verifier.error import VerifierError
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
-from competitive_verifier.verify import summary
 from competitive_verifier.verify.verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
@@ -30,6 +30,7 @@ def run_impl(
     split: Optional[int] = None,
     split_index: Optional[int] = None,
     output_path: Optional[pathlib.Path] = None,
+    write_summary: bool = False,
     ignore_error: bool = False,
 ) -> bool:
     split_state = get_split_state(split, split_index)
@@ -44,15 +45,19 @@ def run_impl(
     result = verifier.verify(download=download)
     result_json = result.json()
 
-    gh_summary_path = github.env.get_step_summary_path()
-    if gh_summary_path and gh_summary_path.parent.exists():
-        with open(gh_summary_path, "w", encoding="utf-8") as fp:
-            summary.write_summary(fp, result)
+    if write_summary:
+        gh_summary_path = github.env.get_step_summary_path()
+        if gh_summary_path and gh_summary_path.parent.exists():
+            with open(gh_summary_path, "w", encoding="utf-8") as fp:
+                summary.write_summary(fp, result)
+        else:
+            logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
 
     print(result_json)
     github.set_output("verify-result", result_json)
 
     if output_path:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, mode="w", encoding="utf-8") as fp:
             fp.write(result_json)
 
@@ -77,6 +82,7 @@ def run(args: argparse.Namespace) -> bool:
         split=args.split,
         split_index=args.split_index,
         output_path=args.output,
+        write_summary=args.write_summary,
         ignore_error=args.ignore_error,
     )
 
@@ -84,6 +90,7 @@ def run(args: argparse.Namespace) -> bool:
 def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_verify_files_json_argument(parser)
     add_ignore_error_argument(parser)
+    add_write_summary_argument(parser)
     parser.add_argument(
         "--timeout",
         type=float,
@@ -117,7 +124,6 @@ def argument_verify(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         required=False,
         help="The output file for which verifier saves the result json.",
     )
-
     parser.add_argument_group()
     parallel_group = parser.add_argument_group("parallel")
     parallel_group.add_argument(

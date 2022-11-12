@@ -77,8 +77,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         for r in chain.from_iterable(f[1].verifications for f in file_results[True])
     )
 
-    fp.write("<details>")
-    fp.write("<summary>")
+    fp.write("# ")
 
     if counter.get(FAILURE):
         emoji_status = "❌"
@@ -89,10 +88,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     fp.write(emoji_status)
     fp.write(" ")
-    fp.write("<b>")
     fp.write(os.getenv("COMPETITIVE_VERIFY_SUMMARY_TITLE", "Verification result"))
-    fp.write("</b>")
-    fp.write("</summary>")
     fp.write("\n\n")
 
     fp.write("- ")
@@ -117,7 +113,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     if file_results[True]:
 
-        fp.write("### Results\n")
+        fp.write("## Results\n")
         write_table_line(header)
         write_table_line(alignment)
         write_table_line(
@@ -135,8 +131,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         write_table_file_result(file_results[True])
 
     if file_results[False]:
-        fp.write("### Past results\n")
+        fp.write("## Past results\n")
         write_table_line(header)
         write_table_line(alignment)
         write_table_file_result(file_results[False])
-        fp.write("</details>\n")
