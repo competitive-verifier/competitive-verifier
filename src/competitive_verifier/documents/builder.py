@@ -15,10 +15,11 @@ from competitive_verifier.models import (
     resolve_dependency,
 )
 
+from .. import config as conf
 from .front_matter import merge_front_matter
 from .ghpage import check_pushed_to_github_head_branch, push_documents_to_gh_pages
 from .job import build_index_job, build_markdown_job, build_source_job
-from .render import load_render_config, markdown_dir
+from .render import load_render_config
 from .type import PageRenderJob, SiteRenderConfig
 
 logger = getLogger(__name__)
@@ -67,13 +68,13 @@ class DocumentBuilder:
             if check_pushed_to_github_head_branch():
                 logger.info("Push documents to gh-pages")
                 # Push gh-pages when in GitHub head branch
-                if not push_documents_to_gh_pages(srcdir=markdown_dir):
+                if not push_documents_to_gh_pages(srcdir=conf.markdown_dir):
                     result = False
         else:
             logger.info(
                 (importlib.resources.files(_RESOURCE_PACKAGE) / _DOC_USAGE_PATH)
                 .read_text(encoding="utf-8")
-                .replace("{{{{{markdown_dir_path}}}}}", markdown_dir.as_posix())
+                .replace("{{{{{markdown_dir_path}}}}}", conf.markdown_dir.as_posix())
             )
 
         return result

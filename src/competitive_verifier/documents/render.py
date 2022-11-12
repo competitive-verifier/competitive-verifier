@@ -1,5 +1,7 @@
 import importlib.resources
 import os
+import pathlib
+from functools import lru_cache
 from logging import getLogger
 from typing import Any, Optional
 
@@ -17,10 +19,13 @@ COMPETITIVE_VERIFY_DOCS_CONFIG_YML = "COMPETITIVE_VERIFY_DOCS_CONFIG_YML"
 
 logger = getLogger(__name__)
 
-docs_dir = conf.config_dir / "docs"
-static_dir = docs_dir / "static"
-index_md_path = docs_dir / "index.md"
-markdown_dir = conf.config_dir / "markdown"
+
+@lru_cache(maxsize=1)
+def get_docs_dir() -> pathlib.Path:
+    if not conf.config_dir.exists() and conf.oj_verify_config_dir.exists():
+        config_dir = conf.oj_verify_config_dir
+    config_dir = conf.config_dir
+    return config_dir / "docs"
 
 
 def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
@@ -39,6 +44,7 @@ def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
                 e,
             )
 
+    docs_dir = get_docs_dir()
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
         try:
@@ -60,6 +66,7 @@ def load_render_config() -> SiteRenderConfig:
         (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
     )
     assert default_config_yml is not None
+
     config_yml: dict[str, Any] = default_config_yml
     user_config_yml = _load_user_render_config_yml()
     if user_config_yml:
@@ -68,9 +75,12 @@ def load_render_config() -> SiteRenderConfig:
     config_yml.setdefault("action_name", github.env.get_workflow_name())
     config_yml.setdefault("branch_name", github.env.get_ref_name())
 
+    docs_dir = get_docs_dir()
+    static_dir = docs_dir / "static"
+    index_md_path = docs_dir / "index.md"
     return SiteRenderConfig(
         config_yml=config_yml,
         static_dir=static_dir.resolve(),
         index_md=index_md_path.resolve(),
-        destination_dir=markdown_dir.resolve(),
+        destination_dir=conf.markdown_dir.resolve(),
     )
