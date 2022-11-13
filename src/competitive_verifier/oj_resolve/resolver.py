@@ -3,14 +3,14 @@ from itertools import chain
 
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
-import onlinejudge_verify.languages.list
+import oj_verify_clone.languages.list
 from competitive_verifier.models import (
     ProblemVerification,
     Verification,
     VerificationFile,
     VerificationInput,
 )
-from onlinejudge_verify.languages.models import LanguageEnvironment
+from oj_verify_clone.languages.models import LanguageEnvironment
 
 
 class OjResolver:
@@ -43,7 +43,7 @@ class OjResolver:
             if path in exclude_paths:
                 continue
 
-            language = onlinejudge_verify.languages.list.get(path)
+            language = oj_verify_clone.languages.list.get(path)
             if language is None:
                 continue
 

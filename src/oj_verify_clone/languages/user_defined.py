@@ -4,10 +4,10 @@ import subprocess
 from logging import getLogger
 from typing import Any, Sequence
 
-import onlinejudge_verify.shlex2 as shlex
-import onlinejudge_verify.utils as utils
-from onlinejudge_verify.languages.models import Language, LanguageEnvironment
-from onlinejudge_verify.languages.special_comments import list_special_comments
+import oj_verify_clone.shlex2 as shlex
+import oj_verify_clone.utils as utils
+from oj_verify_clone.languages.models import Language, LanguageEnvironment
+from oj_verify_clone.languages.special_comments import list_special_comments
 
 logger = getLogger(__name__)
 

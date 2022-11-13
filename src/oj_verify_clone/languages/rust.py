@@ -12,10 +12,10 @@ from logging import getLogger
 from subprocess import PIPE
 from typing import Any, Optional, Sequence
 
-import onlinejudge_verify.shlex2 as shlex
-from onlinejudge_verify.config import get_config
-from onlinejudge_verify.languages import special_comments
-from onlinejudge_verify.languages.models import Language, LanguageEnvironment
+import oj_verify_clone.shlex2 as shlex
+from oj_verify_clone.config import get_config
+from oj_verify_clone.languages import special_comments
+from oj_verify_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 _metadata_by_manifest_path: dict[pathlib.Path, dict[str, Any]] = {}

@@ -344,7 +344,7 @@ def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
         config.config_yml
     ).encode()
 
-    # load files in onlinejudge_verify_resources/
+    # load files in resource/*
     for path in _COPIED_STATIC_FILE_PATHS:
         files[config.destination_dir / path] = (
             importlib.resources.files(_RESOURCE_PACKAGE) / path

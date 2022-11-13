@@ -12,8 +12,8 @@ import importlab.environment
 import importlab.fs
 import importlab.graph
 
-import onlinejudge_verify.shlex2 as shlex
-from onlinejudge_verify.languages.models import Language, LanguageEnvironment
+import oj_verify_clone.shlex2 as shlex
+from oj_verify_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 

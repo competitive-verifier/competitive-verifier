@@ -2,8 +2,8 @@ import pathlib
 from logging import getLogger
 from typing import Optional
 
-from onlinejudge_verify.config import get_config
-from onlinejudge_verify.languages.models import Language
+from oj_verify_clone.config import get_config
+from oj_verify_clone.languages.models import Language
 
 logger = getLogger(__name__)
 
@@ -11,15 +11,15 @@ _dict: Optional[dict[str, Language]] = None
 
 
 def _get_dict() -> dict[str, Language]:
-    from onlinejudge_verify.languages.cplusplus import CPlusPlusLanguage
-    from onlinejudge_verify.languages.go import GoLanguage
-    from onlinejudge_verify.languages.haskell import HaskellLanguage
-    from onlinejudge_verify.languages.java import JavaLanguage
-    from onlinejudge_verify.languages.nim import NimLanguage
-    from onlinejudge_verify.languages.python import PythonLanguage
-    from onlinejudge_verify.languages.ruby import RubyLanguage
-    from onlinejudge_verify.languages.rust import RustLanguage
-    from onlinejudge_verify.languages.user_defined import UserDefinedLanguage
+    from oj_verify_clone.languages.cplusplus import CPlusPlusLanguage
+    from oj_verify_clone.languages.go import GoLanguage
+    from oj_verify_clone.languages.haskell import HaskellLanguage
+    from oj_verify_clone.languages.java import JavaLanguage
+    from oj_verify_clone.languages.nim import NimLanguage
+    from oj_verify_clone.languages.python import PythonLanguage
+    from oj_verify_clone.languages.ruby import RubyLanguage
+    from oj_verify_clone.languages.rust import RustLanguage
+    from oj_verify_clone.languages.user_defined import UserDefinedLanguage
 
     global _dict  # pylint: disable=invalid-name
     if _dict is None:
@@ -68,8 +68,8 @@ def get(path: pathlib.Path) -> Optional[Language]:
 def is_verification_file(path: pathlib.Path) -> bool:
     """`is_verification_file` is a thin wrapper for `Languge.is_verification_file`.  This function automatically get the language."""
 
-    import onlinejudge_verify.languages.list
+    import oj_verify_clone.languages.list
 
     basedir = pathlib.Path.cwd()
-    language = onlinejudge_verify.languages.list.get(path)
+    language = oj_verify_clone.languages.list.get(path)
     return language is not None and language.is_verification_file(path, basedir=basedir)

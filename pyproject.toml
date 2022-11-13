@@ -12,7 +12,7 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include="onlinejudge_verify", from = "src" }
+    { include="oj_verify_clone", from = "src" }
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -22,7 +22,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 competitive-verifier = "competitive_verifier.console.app:main"
-oj-verify-python-compile = "onlinejudge_verify.python_compile:main"
+oj-verify-python-compile = "oj_verify_clone.python_compile:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
@@ -74,7 +74,7 @@ known_local_folder = ['config']
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "src/onlinejudge_verify,examples,"
+exclude = "src/oj_verify_clone,examples,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]

@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from onlinejudge_verify.config import get_config
-from onlinejudge_verify.languages.user_defined import UserDefinedLanguage
+from oj_verify_clone.config import get_config
+from oj_verify_clone.languages.user_defined import UserDefinedLanguage
 
 
 class GoLanguage(UserDefinedLanguage):

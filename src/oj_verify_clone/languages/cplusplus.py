@@ -9,11 +9,11 @@ import sys
 from logging import getLogger
 from typing import Any, Optional
 
-import onlinejudge_verify.languages.special_comments as special_comments
-import onlinejudge_verify.shlex2 as shlex
-from onlinejudge_verify.config import get_config
-from onlinejudge_verify.languages.cplusplus_bundle import Bundler
-from onlinejudge_verify.languages.models import Language, LanguageEnvironment
+import oj_verify_clone.languages.special_comments as special_comments
+import oj_verify_clone.shlex2 as shlex
+from oj_verify_clone.config import get_config
+from oj_verify_clone.languages.cplusplus_bundle import Bundler
+from oj_verify_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 

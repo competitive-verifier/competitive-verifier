@@ -3,7 +3,7 @@ import abc
 import pathlib
 from typing import Any, Sequence
 
-import onlinejudge_verify.languages.special_comments as special_comments
+import oj_verify_clone.languages.special_comments as special_comments
 
 
 class LanguageEnvironment:
