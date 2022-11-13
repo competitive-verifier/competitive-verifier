@@ -47,9 +47,7 @@ class OjResolver:
             if language is None:
                 continue
 
-            deps = list(
-                git.ls_files(*language.list_dependencies(path, basedir=basedir))
-            )
+            deps = set(git.ls_files(*language.list_dependencies(path, basedir=basedir)))
             attr = language.list_attributes(path, basedir=basedir)
 
             def env_to_verification(env: LanguageEnvironment) -> Verification:

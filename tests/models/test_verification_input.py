@@ -111,8 +111,8 @@ def test_repr():
     print(repr(obj))
     assert repr(obj) == (
         "VerificationInput("
-        + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(dependencies=[], verification=[], document_attributes={{}}),"
-        + f" {repr(Path('foo/baz.py'))}: VerificationFile(dependencies=[{repr(Path('foo/bar.py'))}], verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}})"
+        + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(dependencies=set(), verification=[], document_attributes={{}}),"
+        + f" {repr(Path('foo/baz.py'))}: VerificationFile(dependencies={{{repr(Path('foo/bar.py'))}}}, verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}})"
         + f"}})"
     )
 
