@@ -1,4 +1,4 @@
-name: example oj python
+name: example oj-verify
 
 on:
   push:
@@ -47,7 +47,7 @@ jobs:
         run: |
           delimiter=$(uuidgen)
           echo "verify-json<<$delimiter" >> $GITHUB_OUTPUT
-          competitive-verifier oj-resolve >> $GITHUB_OUTPUT
+          competitive-verifier oj-resolve --include examples >> $GITHUB_OUTPUT
           echo "$delimiter" >> $GITHUB_OUTPUT
       - name: Create hash
         id: create-hash

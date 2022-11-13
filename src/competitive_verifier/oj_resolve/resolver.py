@@ -1,4 +1,5 @@
 import pathlib
+from itertools import chain
 
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
@@ -13,19 +14,37 @@ from onlinejudge_verify.languages.models import LanguageEnvironment
 
 
 class OjResolver:
-    def __init__(self) -> None:
-        pass
+    include: list[pathlib.Path]
+    exclude: list[pathlib.Path]
+
+    def __init__(
+        self,
+        *,
+        include: list[pathlib.Path],
+        exclude: list[pathlib.Path],
+    ) -> None:
+        self.include = include
+        self.exclude = exclude
 
     def resolve(self) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
         basedir = pathlib.Path.cwd()
 
-        lib_tasks = set[pathlib.Path]()
-        for path in git.ls_files("*.test.*"):
+        def to_relative(path: pathlib.Path) -> pathlib.Path:
+            if path.is_absolute():
+                return path.relative_to(basedir)
+            return path
+
+        exclude_paths = set(
+            chain.from_iterable(p.glob("**/*") for p in map(to_relative, self.exclude))
+        )
+
+        for path in git.ls_files(*self.include):
+            if path in exclude_paths:
+                continue
+
             language = onlinejudge_verify.languages.list.get(path)
-            if language is None or not language.is_verification_file(
-                path, basedir=basedir
-            ):
+            if language is None:
                 continue
 
             deps = list(
@@ -49,37 +68,17 @@ class OjResolver:
                     error=error,
                 )
 
-            verifications = list(
-                map(
-                    env_to_verification,
-                    language.list_environments(path, basedir=basedir),
+            verifications = []
+            if language.is_verification_file(path, basedir=basedir):
+                verifications = list(
+                    map(
+                        env_to_verification,
+                        language.list_environments(path, basedir=basedir),
+                    )
                 )
-            )
             files[path] = VerificationFile(
                 dependencies=deps,
                 verification=verifications,
                 document_attributes=attr,
             )
-            lib_tasks.update(deps)
-
-        lib_tasks -= files.keys()
-        while lib_tasks:
-            path = lib_tasks.pop()
-            assert path not in files
-
-            language = onlinejudge_verify.languages.list.get(path)
-            if language is None:
-                continue
-
-            deps = list(
-                git.ls_files(*language.list_dependencies(path, basedir=basedir))
-            )
-            attr = language.list_attributes(path, basedir=basedir)
-
-            files[path] = VerificationFile(
-                dependencies=deps,
-                document_attributes=attr,
-            )
-            lib_tasks.update(deps)
-            lib_tasks -= files.keys()
         return VerificationInput(files=files)

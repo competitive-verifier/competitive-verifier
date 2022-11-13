@@ -1,24 +1,47 @@
 import argparse
+import pathlib
 import sys
 from typing import Optional
 
-from ..arg import add_ignore_error_argument
 from .resolver import OjResolver
 
 
-def run_impl() -> bool:
-    resolver = OjResolver()
+def run_impl(
+    include: list[pathlib.Path],
+    exclude: list[pathlib.Path],
+) -> bool:
+    resolver = OjResolver(
+        include=include,
+        exclude=exclude,
+    )
     resolved = resolver.resolve()
     print(resolved.json())
     return True
 
 
 def run(args: argparse.Namespace) -> bool:
-    return run_impl()
+    return run_impl(
+        include=args.include,
+        exclude=args.exclude,
+    )
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    add_ignore_error_argument(parser)
+    parser.add_argument(
+        "--include",
+        nargs="*",
+        help="Included file",
+        default=[],
+        type=pathlib.Path,
+    )
+    parser.add_argument(
+        "--exclude",
+        nargs="*",
+        help="Excluded file",
+        default=[],
+        type=pathlib.Path,
+    )
+
     return parser
 
 
