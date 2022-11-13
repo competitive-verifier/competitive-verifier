@@ -17,8 +17,8 @@ jobs:
       artifact-path: .competitive-verifier/tmp/
     outputs:
       artifact-path: ${{ env.artifact-path }}
-      verify-json: ${{ steps.create-json.outputs.verify-json  }}
-      hash: ${{ steps.create-hash.outputs.hash  }}
+      verify-json: ${{ steps.create-json.outputs.verify-json }}
+      hash: ${{ steps.create-hash.outputs.hash }}
     steps:
       - uses: actions/checkout@v3
 
