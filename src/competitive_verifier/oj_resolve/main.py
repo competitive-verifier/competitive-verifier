@@ -15,7 +15,7 @@ def run_impl(
         exclude=exclude,
     )
     resolved = resolver.resolve()
-    print(resolved.json())
+    print(resolved.impl.json(exclude_none=True))
     return True
 
 
