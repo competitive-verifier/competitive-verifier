@@ -4,7 +4,6 @@ from onlinejudge_verify.config import get_config
 from onlinejudge_verify.languages.user_defined import UserDefinedLanguage
 
 
-# TODO: stop using UserDefinedLanguage
 class RubyLanguage(UserDefinedLanguage):
     config: dict[str, Any]
 

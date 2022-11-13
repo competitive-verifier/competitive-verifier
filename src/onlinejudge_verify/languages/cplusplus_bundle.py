@@ -484,8 +484,8 @@ class Bundler:
                         self._resolve(pathlib.Path(included), included_from=path)
                     )
                     self._line(i + 2, path)
-                    # TODO: #include "iostream" みたいに書いたときの挙動をはっきりさせる
-                    # TODO: #include <iostream> /* とかをやられた場合を落とす
+                    # #include "iostream" みたいに書いたときの挙動をはっきりさせる
+                    # #include <iostream> /* とかをやられた場合を落とす
                     continue
 
                 # otherwise

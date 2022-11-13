@@ -24,7 +24,6 @@ class JavaLanguageEnvironment(LanguageEnvironment):
         return shlex.join(["java", class_path])
 
 
-# TODO: stop using UserDefinedLanguage
 class JavaLanguage(UserDefinedLanguage):
     config: dict[str, Any]
 

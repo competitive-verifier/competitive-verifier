@@ -107,5 +107,4 @@ class PythonLanguage(Language):
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[PythonLanguageEnvironment]:
-        # TODO add another environment (e.g. pypy)
         return [PythonLanguageEnvironment()]
