@@ -29,7 +29,7 @@ def add_result_json_argument(parser: argparse.ArgumentParser) -> argparse.Action
 def add_ignore_error_argument(parser: argparse.ArgumentParser) -> argparse.Action:
     return parser.add_argument(
         "--check-error",
-        help="exit 0 even if command failed",
+        help="Exit not zero if failed verification exists",
         dest="ignore_error",
         action="store_false",
     )
