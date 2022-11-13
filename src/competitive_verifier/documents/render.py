@@ -22,8 +22,9 @@ logger = getLogger(__name__)
 
 @lru_cache(maxsize=1)
 def get_docs_dir() -> pathlib.Path:
-    if not conf.config_dir.exists() and conf.oj_verify_config_dir.exists():
-        config_dir = conf.oj_verify_config_dir
+    oj_verify_config_dir = pathlib.Path(".verify-helper")
+    if not conf.config_dir.exists() and oj_verify_config_dir.exists():
+        config_dir = oj_verify_config_dir
     config_dir = conf.config_dir
     return config_dir / "docs"
 
