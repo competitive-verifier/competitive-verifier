@@ -12,6 +12,7 @@ from competitive_verifier.arg import (
     add_verify_files_json_argument,
     add_write_summary_argument,
 )
+from competitive_verifier.config import config_dir
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
@@ -50,11 +51,12 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
+    destination = config_dir / "_jekyll"
     parser.add_argument(
         "--destination",
         type=pathlib.Path,
-        default=pathlib.Path("_jekyll"),
-        help="Output directory for markdown document. default: ./_jekyll",
+        default=destination,
+        help=f"Output directory for markdown document. default: {destination.as_posix()}",
     )
     return parser
 
