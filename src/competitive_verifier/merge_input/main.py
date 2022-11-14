@@ -25,7 +25,7 @@ def run_impl(
 
 def run(args: argparse.Namespace) -> bool:
     merged = run_impl(*args.verify_files_json)
-    print(merged.json())
+    print(merged.json(exclude_none=True))
     return True
 
 

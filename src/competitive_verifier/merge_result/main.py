@@ -38,7 +38,7 @@ def run_impl(
 
 def run(args: argparse.Namespace) -> bool:
     merged = run_impl(*args.result_json, write_summary=args.write_summary)
-    print(merged.json())
+    print(merged.json(exclude_none=True))
     return True
 
 
