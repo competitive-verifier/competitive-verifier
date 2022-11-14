@@ -27,7 +27,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "c1/a.py": {},
                 "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "c1/b2.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
             }
         },
         {
@@ -48,7 +56,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -63,8 +79,8 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "verification_status": VerificationStatus.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
-                "required_by": {"c1/b2.py", "c1/test.py"},
-                "verified_with": set(),
+                "required_by": {"c1/b2.py"},
+                "verified_with": {"c1/test.py"},
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
@@ -95,7 +111,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "c1/a.py": {},
                 "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "c1/b2.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "failure",
+                        }
+                    ],
+                },
             }
         },
         {
@@ -116,7 +140,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "failure",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -131,8 +163,8 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "verification_status": VerificationStatus.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
-                "required_by": {"c1/b2.py", "c1/test.py"},
-                "verified_with": set(),
+                "required_by": {"c1/b2.py"},
+                "verified_with": {"c1/test.py"},
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
@@ -163,8 +195,24 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "c1/a.py": {},
                 "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "c1/b2.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
+                "c1/test2.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "skipped",
+                        }
+                    ],
+                },
             }
         },
         {
@@ -194,7 +242,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -204,7 +260,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/test2.py": {
                 "path": "c1/test2.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "skipped",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WAITING_JUDGE,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -219,8 +283,8 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
-                "required_by": {"c1/b2.py", "c1/test.py", "c1/test2.py"},
-                "verified_with": set(),
+                "required_by": {"c1/b2.py"},
+                "verified_with": {"c1/test.py", "c1/test2.py"},
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
@@ -251,8 +315,24 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "c1/a.py": {},
                 "c1/b1.py": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "c1/b2.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test.py": {"dependencies": ["c1/b1.py"]},
-                "c1/test2.py": {"dependencies": ["c1/b1.py"]},
+                "c1/test.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
+                "c1/test2.py": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "failure",
+                        }
+                    ],
+                },
             }
         },
         {
@@ -282,7 +362,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
         {
             "c1/test.py": {
                 "path": "c1/test.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -292,7 +380,15 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
             },
             "c1/test2.py": {
                 "path": "c1/test2.py",
-                "file_input": {"dependencies": ["c1/b1.py"]},
+                "file_input": {
+                    "dependencies": ["c1/b1.py"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "failure",
+                        }
+                    ],
+                },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
@@ -307,8 +403,8 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "verification_status": VerificationStatus.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
-                "required_by": {"c1/b2.py", "c1/test.py", "c1/test2.py"},
-                "verified_with": set(),
+                "required_by": {"c1/b2.py"},
+                "verified_with": {"c1/test.py", "c1/test2.py"},
             },
             "c1/b2.py": {
                 "path": "c1/b2.py",
@@ -385,6 +481,70 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
+                "verified_with": set(),
+            },
+        },
+    ),
+    (
+        "Test depends on lib",
+        {
+            "files": {
+                "c1/hello.java": {
+                    "dependencies": ["c1/hello.java", "c1/hello_test.java"]
+                },
+                "c1/hello_test.java": {
+                    "dependencies": ["c1/hello.java", "c1/hello_test.java"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
+            }
+        },
+        {
+            "total_seconds": 10,
+            "files": {
+                "c1/hello_test.java": {
+                    "verifications": [
+                        {
+                            "status": "success",
+                            "elapsed": 1,
+                            "last_execution_time": datetime.datetime(2020, 2, 15),
+                        },
+                    ]
+                },
+            },
+        },
+        ["otherpath.java"],
+        {
+            "c1/hello.java": {
+                "path": "c1/hello.java",
+                "file_input": {"dependencies": ["c1/hello.java", "c1/hello_test.java"]},
+                "is_verification": False,
+                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/hello_test.java"},
+                "required_by": set(),
+                "verified_with": {"c1/hello_test.java"},
+            },
+            "c1/hello_test.java": {
+                "path": "c1/hello_test.java",
+                "file_input": {
+                    "dependencies": ["c1/hello.java", "c1/hello_test.java"],
+                    "verification": [
+                        {
+                            "type": "const",
+                            "status": "success",
+                        }
+                    ],
+                },
+                "is_verification": True,
+                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
+                "depends_on": {"c1/hello.java"},
+                "required_by": {"c1/hello.java"},
                 "verified_with": set(),
             },
         },

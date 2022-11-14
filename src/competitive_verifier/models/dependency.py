@@ -123,7 +123,7 @@ def resolve_dependency(
 ) -> dict[pathlib.Path, SourceCodeStat]:
     d: dict[pathlib.Path, SourceCodeStat] = {}
     statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
-        p: _VerificationStatusFlag.IS_LIBRARY for p in input.files.keys()
+        p: _VerificationStatusFlag.TEST_NOTHING for p in input.files.keys()
     }
 
     for p, r in result.files.items():
@@ -159,16 +159,21 @@ def resolve_dependency(
                 statuses[dep] |= group_status
 
             timestamp = git.get_commit_time(input.transitive_depends_on[path])
+            file_input = input.files[path]
+            is_verification = file_input.is_verification()
+
+            flag_status = group_status
+            if not is_verification:
+                flag_status |= _VerificationStatusFlag.IS_LIBRARY
+
             d[path] = SourceCodeStat(
                 path=path,
-                file_input=input.files[path],
-                is_verification=not bool(
-                    _VerificationStatusFlag.IS_LIBRARY & group_status
-                ),
+                file_input=file_input,
+                is_verification=is_verification,
                 depends_on=depends_on,
                 required_by=required_by,
                 verified_with=verified_with,
                 timestamp=timestamp,
-                verification_status=group_status.to_status(),
+                verification_status=flag_status.to_status(),
             )
     return d
