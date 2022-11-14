@@ -72,6 +72,9 @@ class VerificationInput:
             )
         self.impl = impl
 
+    def merge(self, other: "VerificationInput") -> "VerificationInput":
+        return VerificationInput(files=self.files | other.files)
+
     @property
     def files(self) -> dict[pathlib.Path, VerificationFile]:
         return self.impl.files

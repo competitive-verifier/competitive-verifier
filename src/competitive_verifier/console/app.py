@@ -11,6 +11,7 @@ def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
+    import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
@@ -44,6 +45,12 @@ def get_parser() -> argparse.ArgumentParser:
     download.argument(subparser)
 
     subparser = subparsers.add_parser(
+        "merge-input",
+        help="Merge verify_files.json",
+    )
+    merge_input.argument(subparser)
+
+    subparser = subparsers.add_parser(
         "merge-result",
         help="Merge result of `verify`",
     )
@@ -68,6 +75,7 @@ def main(args: Optional[list[str]] = None):
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
+    import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
@@ -87,6 +95,8 @@ def main(args: Optional[list[str]] = None):
     # Use sys.stdout for result
     if parsed.subcommand == "merge-result":
         sys.exit(0 if merge_result.run(parsed) else 1)
+    if parsed.subcommand == "merge-input":
+        sys.exit(0 if merge_input.run(parsed) else 1)
     if parsed.subcommand == "oj-resolve":
         sys.exit(0 if oj_resolve.run(parsed) else 1)
     if parsed.subcommand == "check":
