@@ -36,7 +36,7 @@ def _get_dict() -> dict[str, Language]:
         _dict[".java"] = JavaLanguage()
         _dict[".rs"] = RustLanguage()
 
-        for ext, config in get_config().get("languages", {}).items():
+        for ext, config in get_config()["languages"].items():
             if "." + ext in _dict:
                 if not isinstance(_dict["." + ext], UserDefinedLanguage):
                     for key in (
@@ -68,8 +68,6 @@ def get(path: pathlib.Path) -> Optional[Language]:
 def is_verification_file(path: pathlib.Path) -> bool:
     """`is_verification_file` is a thin wrapper for `Languge.is_verification_file`.  This function automatically get the language."""
 
-    import oj_verify_clone.languages.list
-
     basedir = pathlib.Path.cwd()
-    language = oj_verify_clone.languages.list.get(path)
+    language = get(path)
     return language is not None and language.is_verification_file(path, basedir=basedir)

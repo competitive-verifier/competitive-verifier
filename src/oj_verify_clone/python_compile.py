@@ -34,7 +34,7 @@ def main(args: Optional[list[str]] = None) -> None:
             # run {str(path)}
             env = dict(os.environ)
             if "PYTHONPATH" in env:
-                env["PYTHONPATH"] = basedir + os.pathsep + env["PYTHONPATH"] 
+                env["PYTHONPATH"] = basedir + os.pathsep + env["PYTHONPATH"]
             else:
                 env["PYTHONPATH"] = basedir  # set `PYTHONPATH` to import files relative to the root directory
             os.execve(sys.executable, [sys.executable, path], env=env)  # use `os.execve` to avoid making an unnecessary parent process

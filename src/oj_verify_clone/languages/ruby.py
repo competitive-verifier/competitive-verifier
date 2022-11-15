@@ -9,7 +9,7 @@ class RubyLanguage(UserDefinedLanguage):
 
     def __init__(self, *, config: Optional[dict[str, Any]] = None):
         if config is None:
-            config = get_config().get("languages", {}).get("ruby", {})
+            config = get_config()["languages"].get("ruby", {})
         assert config is not None
         config.setdefault("compile", "echo")
         config.setdefault("execute", "ruby {basedir}/{path}")

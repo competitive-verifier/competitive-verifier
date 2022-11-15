@@ -74,7 +74,7 @@ known_local_folder = ['config']
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "src/oj_verify_clone,examples,"
+exclude = "src/oj_verify_clone/languages,examples,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]

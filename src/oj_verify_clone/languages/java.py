@@ -29,7 +29,7 @@ class JavaLanguage(UserDefinedLanguage):
 
     def __init__(self, *, config: Optional[dict[str, Any]] = None):
         if config is None:
-            config = get_config().get("languages", {}).get("java", {})
+            config = get_config()["languages"].get("java", {})
         assert config is not None
         if "compile" in config:
             raise RuntimeError('You cannot overwrite "compile" for Java language')

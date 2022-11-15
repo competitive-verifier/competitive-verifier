@@ -77,7 +77,7 @@ class UserDefinedLanguage(Language):
             )
 
         command = self.config["list_dependencies"].format(
-            path=str(path), basedir=str(basedir)
+            path=path.as_posix(), basedir=basedir.as_posix()
         )
         text = subprocess.check_output(shlex.split(command))
         dependencies = [path]

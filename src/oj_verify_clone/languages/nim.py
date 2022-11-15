@@ -78,7 +78,7 @@ class NimLanguage(Language):
 
     def __init__(self, *, config: Optional[dict[str, Any]] = None):
         if config is None:
-            self.config = get_config().get("languages", {}).get("nim", {})
+            self.config = get_config()["languages"].get("nim", {})
         else:
             self.config = config
 

@@ -115,7 +115,7 @@ class CPlusPlusLanguage(Language):
 
     def __init__(self, *, config: Optional[dict[str, Any]] = None):
         if config is None:
-            self.config = get_config().get("languages", {}).get("cpp", {})
+            self.config = get_config()["languages"].get("cpp", {})
         else:
             self.config = config
 

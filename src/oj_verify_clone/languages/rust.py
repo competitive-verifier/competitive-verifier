@@ -374,7 +374,7 @@ class RustLanguage(Language):
 
     def __init__(self, *, config: Optional[dict[str, Any]] = None):
         if config is None:
-            config = get_config().get("languages", {}).get("rust", {})
+            config = get_config()["languages"].get("rust", {})
 
         assert config is not None
         # Parses `languages.rust.list_dependencies_backend`.
