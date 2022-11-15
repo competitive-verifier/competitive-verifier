@@ -157,6 +157,7 @@ class DocumentBuilder:
                 if not front_matter.layout:
                     front_matter.layout = "document"
                 data = _render_source_code_stat_for_page(
+                    job,
                     pathlib.Path(documentation_of),
                     stats=stats,
                     page_title_dict=page_title_dict,
@@ -308,6 +309,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
 
 
 def _render_source_code_stat_for_page(
+    job: PageRenderJob,
     path: pathlib.Path,
     *,
     stats: dict[pathlib.Path, SourceCodeStat],
@@ -318,6 +320,8 @@ def _render_source_code_stat_for_page(
     data["_pathExtension"] = path.suffix.lstrip(".")
     data["_verificationStatusIcon"] = stat.verification_status.icon
     data["_isVerificationFailed"] = stat.verification_status.is_failed
+    if job.document_path:
+        data["_document_path"] = job.document_path.as_posix()
 
     def ext(path: pathlib.Path) -> dict[str, Any]:
         return {

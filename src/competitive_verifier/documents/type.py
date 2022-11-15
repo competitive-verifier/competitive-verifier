@@ -16,8 +16,16 @@ class FrontMatter(BaseModel):
 
 class PageRenderJob(BaseModel):
     path: pathlib.Path
-    """a relative path from basedir
+    """jekyll markdown path
+
+    relative path from basedir
     """
+    document_path: Optional[pathlib.Path]
+    """original markdown path
+
+    relative path from basedir
+    """
+
     front_matter: FrontMatter
     content: bytes
 

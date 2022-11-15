@@ -50,34 +50,42 @@ def build_markdown_job(
     fm, content = front_matter.split_front_matter(content)
     # move the location if documentation_of field exists
     documentation_of = fm.documentation_of
-    if documentation_of is not None:
-        documentation_of_path = _resolve_documentation_of(
-            documentation_of, markdown_path=path
-        )
-        if documentation_of_path is None:
-            logger.warning(
-                "the `documentation_of` path of %s is not found: %s",
-                path.as_posix(),
-                documentation_of,
-            )
-            return None
-        if documentation_of_path not in source_paths:
-            logger.warning(
-                "the `documentation_of` path of %s is not target: %s",
-                path.as_posix(),
-                documentation_of,
-            )
-            return None
-        documentation_of_relative_path = documentation_of_path.resolve().relative_to(
-            pathlib.Path.cwd()
-        )
-        fm.documentation_of = documentation_of_relative_path.as_posix()
-        path = documentation_of_relative_path.with_suffix(
-            documentation_of_relative_path.suffix + ".md"
+    if documentation_of is None:
+        return PageRenderJob(
+            path=path,
+            document_path=None,
+            front_matter=fm,
+            content=content,
         )
 
+    documentation_of_path = _resolve_documentation_of(
+        documentation_of, markdown_path=path
+    )
+    if documentation_of_path is None:
+        logger.warning(
+            "the `documentation_of` path of %s is not found: %s",
+            path.as_posix(),
+            documentation_of,
+        )
+        return None
+    if documentation_of_path not in source_paths:
+        logger.warning(
+            "the `documentation_of` path of %s is not target: %s",
+            path.as_posix(),
+            documentation_of,
+        )
+        return None
+    documentation_of_relative_path = documentation_of_path.resolve().relative_to(
+        pathlib.Path.cwd()
+    )
+    fm.documentation_of = documentation_of_relative_path.as_posix()
+    mdpath = documentation_of_relative_path.with_suffix(
+        documentation_of_relative_path.suffix + ".md"
+    )
+
     return PageRenderJob(
-        path=path,
+        path=mdpath,
+        document_path=path,
         front_matter=fm,
         content=content,
     )
@@ -113,6 +121,7 @@ def build_source_job(
 
     return PageRenderJob(
         path=mdpath,
+        document_path=None,
         front_matter=front_matter,
         content=content,
     )
@@ -125,6 +134,7 @@ def build_index_job(index_md_path: pathlib.Path) -> PageRenderJob:
             content = fh.read()
     return PageRenderJob(
         path=pathlib.Path("index.md"),
+        document_path=None,
         front_matter=FrontMatter(layout="toppage"),
         content=content,
     )
