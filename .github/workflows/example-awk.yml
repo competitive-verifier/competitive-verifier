@@ -1,9 +1,6 @@
 name: example awk
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
