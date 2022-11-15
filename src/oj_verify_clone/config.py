@@ -7,7 +7,7 @@ import toml
 
 logger = getLogger(__name__)
 
-default_config_path_cv = pathlib.Path(".competitive-verifier/config.toml")
+default_config_path_cv = pathlib.Path(".competitive-verifier/resolve-config.toml")
 default_config_path = pathlib.Path(".verify-helper/config.toml")
 
 _loaded_config: Optional[dict[str, Any]] = None

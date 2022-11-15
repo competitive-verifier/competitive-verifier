@@ -3,13 +3,19 @@ import pathlib
 import sys
 from typing import Optional
 
+import oj_verify_clone.config
+
 from .resolver import OjResolver
 
 
 def run_impl(
     include: list[pathlib.Path],
     exclude: list[pathlib.Path],
+    config_path: Optional[pathlib.Path],
 ) -> bool:
+    if config_path:
+        oj_verify_clone.config.set_config_path(config_path)
+
     resolver = OjResolver(
         include=include,
         exclude=exclude,
@@ -23,6 +29,7 @@ def run(args: argparse.Namespace) -> bool:
     return run_impl(
         include=args.include,
         exclude=args.exclude,
+        config_path=args.config,
     )
 
 
@@ -39,6 +46,11 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         nargs="*",
         help="Excluded file",
         default=[],
+        type=pathlib.Path,
+    )
+    parser.add_argument(
+        "--config",
+        help="config.toml",
         type=pathlib.Path,
     )
 
