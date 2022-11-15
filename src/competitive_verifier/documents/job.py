@@ -97,7 +97,7 @@ def build_source_job(
     mdpath = path.with_suffix(path.suffix + ".md")
 
     # add redirects from old URLs
-    old_directory = "/verify" if file.is_verification() else "/library"
+    old_directory = "/verify/" if file.is_verification() else "/library/"
     redirect_from = [
         old_directory + path.as_posix(),
         old_directory + path.with_suffix(".html").as_posix(),
