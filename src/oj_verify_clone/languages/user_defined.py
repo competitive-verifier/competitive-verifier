@@ -94,14 +94,6 @@ class UserDefinedLanguage(Language):
         logger.info("$ %s", command)
         return subprocess.check_output(shlex.split(command))
 
-    def is_verification_file(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bool:
-        suffix = self.config.get("verification_file_suffix")
-        if suffix is not None:
-            return path.name.endswith(suffix)
-        return super().is_verification_file(path, basedir=basedir)
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[LanguageEnvironment]:

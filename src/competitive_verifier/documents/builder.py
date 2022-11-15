@@ -230,7 +230,7 @@ def _build_page_title_dict(
     page_title_dict: dict[pathlib.Path, str] = {}
     for job in render_jobs:
         assert job.path.suffix == ".md"
-        title = job.front_matter.title or job.path.with_suffix("").as_posix()
+        title = job.front_matter.title or job.path.stem
         page_title_dict[job.path] = title
         page_title_dict[job.path.with_suffix("")] = title
     return page_title_dict

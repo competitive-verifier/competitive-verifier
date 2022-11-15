@@ -99,11 +99,6 @@ class PythonLanguage(Language):
         """
         raise NotImplementedError
 
-    def is_verification_file(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bool:
-        return ".test.py" in path.name
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[PythonLanguageEnvironment]:

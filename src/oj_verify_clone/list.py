@@ -63,11 +63,3 @@ def _get_dict() -> dict[str, Language]:
 
 def get(path: pathlib.Path) -> Optional[Language]:
     return _get_dict().get(path.suffix)
-
-
-def is_verification_file(path: pathlib.Path) -> bool:
-    """`is_verification_file` is a thin wrapper for `Languge.is_verification_file`.  This function automatically get the language."""
-
-    basedir = pathlib.Path.cwd()
-    language = get(path)
-    return language is not None and language.is_verification_file(path, basedir=basedir)

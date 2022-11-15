@@ -103,11 +103,6 @@ class NimLanguage(Language):
     ) -> bytes:
         raise NotImplementedError
 
-    def is_verification_file(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bool:
-        return path.name.endswith("_test.nim")
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[NimLanguageEnvironment]:

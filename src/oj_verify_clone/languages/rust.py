@@ -14,7 +14,6 @@ from typing import Any, Optional, Sequence
 
 import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.config import get_config
-from oj_verify_clone.languages import special_comments
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
@@ -426,19 +425,6 @@ class RustLanguage(Language):
     ) -> bytes:
         raise NotImplementedError
 
-    def is_verification_file(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bool:
-        path = basedir / path
-        metadata = _cargo_metadata(cwd=path.parent)
-        package_and_target = _find_target(metadata, path)
-        if not package_and_target:
-            return False
-        _, target = package_and_target
-        return _is_bin_or_example_bin(
-            target
-        ) and "PROBLEM" in special_comments.list_special_comments(path)
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[RustLanguageEnvironment]:
@@ -560,10 +546,6 @@ def _is_bin(target: dict[str, Any]) -> bool:
 
 def _is_example(target: dict[str, Any]) -> bool:
     return target["kind"] == ["example"]
-
-
-def _is_bin_or_example_bin(target: dict[str, Any]) -> bool:
-    return _is_bin(target) or _is_example(target) and target["crate_types"] == ["bin"]
 
 
 def _need_dev_deps(target: dict[str, Any]) -> bool:

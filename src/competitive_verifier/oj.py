@@ -1,8 +1,10 @@
+import datetime
 import hashlib
 import os
 import pathlib
 import shutil
 import sys
+import uuid
 from contextlib import nullcontext
 from logging import getLogger
 from typing import Optional
@@ -21,6 +23,7 @@ import competitive_verifier.exec
 from competitive_verifier import log
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
+_random_cache_dir = competitive_verifier.config.cache_dir / "random"
 onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
 
@@ -33,6 +36,11 @@ def get_cache_directory() -> pathlib.Path:
 
 def get_directory(url: str) -> pathlib.Path:
     return competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
+
+
+def get_random_cache_directory() -> pathlib.Path:
+    d = datetime.datetime.now().astimezone().strftime("%Y%m%d%H%M%S")
+    return _random_cache_dir / f"{d}{uuid.uuid4().hex}"
 
 
 def is_yukicoder(url: str) -> bool:

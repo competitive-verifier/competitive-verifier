@@ -1,10 +1,12 @@
 import pathlib
 from itertools import chain
+from typing import Generator
 
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
 import oj_verify_clone.list
 from competitive_verifier.models import (
+    CommandVerification,
     ProblemVerification,
     Verification,
     VerificationFile,
@@ -50,30 +52,43 @@ class OjResolver:
             deps = set(git.ls_files(*language.list_dependencies(path, basedir=basedir)))
             attr = language.list_attributes(path, basedir=basedir)
 
-            def env_to_verification(env: LanguageEnvironment) -> Verification:
+            def env_to_verifications(
+                env: LanguageEnvironment,
+            ) -> Generator[Verification, None, None]:
                 error_str = attr.get("ERROR")
                 error = float(error_str) if error_str else None
-                url: str = attr["PROBLEM"]
-                tempdir = oj.get_directory(url)
-                return ProblemVerification(
-                    command=env.get_execute_command(
-                        path, basedir=basedir, tempdir=tempdir
-                    ),
-                    compile=env.get_compile_command(
-                        path, basedir=basedir, tempdir=tempdir
-                    ),
-                    problem=url,
-                    error=error,
-                )
+                url = attr.get("PROBLEM")
 
-            verifications = []
-            if language.is_verification_file(path, basedir=basedir):
-                verifications = list(
-                    map(
-                        env_to_verification,
-                        language.list_environments(path, basedir=basedir),
+                if url:
+                    tempdir = oj.get_directory(url)
+                    yield ProblemVerification(
+                        command=env.get_execute_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
+                        compile=env.get_compile_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
+                        problem=url,
+                        error=error,
                     )
+
+                if "UNITTEST" in attr:
+                    tempdir = oj.get_random_cache_directory()
+                    yield CommandVerification(
+                        command=env.get_execute_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
+                        compile=env.get_compile_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
+                    )
+
+            verifications = list(
+                chain.from_iterable(
+                    env_to_verifications(vs)
+                    for vs in language.list_environments(path, basedir=basedir)
                 )
+            )
             files[path] = VerificationFile(
                 dependencies=deps,
                 verification=verifications,
