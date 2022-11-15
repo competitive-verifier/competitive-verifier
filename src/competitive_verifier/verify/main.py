@@ -24,8 +24,8 @@ def run_impl(
     input: VerificationInput,
     *,
     prev_result: Optional[VerifyCommandResult],
-    timeout: float = 1800,
-    default_tle: float = math.inf,
+    timeout: float = math.inf,
+    default_tle: float = 60,
     download: bool = True,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
@@ -34,6 +34,10 @@ def run_impl(
     ignore_error: bool = False,
 ) -> bool:
     split_state = get_split_state(split, split_index)
+
+    if timeout == 0:
+        timeout = math.inf
+
     verifier = Verifier(
         input,
         use_git_timestamp=github.env.is_in_github_actions(),
@@ -95,7 +99,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         "--timeout",
         type=float,
         default=math.inf,
-        help="Timeout",
+        help="Timeout seconds. if value is zero, it is same to math.inf.",
     )
     parser.add_argument(
         "--tle",

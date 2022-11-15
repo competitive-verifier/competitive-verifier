@@ -56,13 +56,13 @@ def download(url: str, *, group_log: bool = False) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
+    logger.info("download[Start]: %s", url)
     if not (test_directory).exists() or list((test_directory).iterdir()) == []:
-        logger.info("download: %s", url)
+        logger.info("download[Run]: %s", url)
 
         if group_log:
-            cm = log.group(f"download: {url}")
+            cm = log.group(f"download[Run]: {url}")
         else:
-            logger.info("download: %s", url)
             cm = nullcontext()
         with cm:
             directory.mkdir(parents=True, exist_ok=True)
@@ -98,12 +98,12 @@ def download(url: str, *, group_log: bool = False) -> bool:
                         return False
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
-                    logger.error("Requied: $YUKICODER_TOKEN environment variable")
+                    logger.error("Required: $YUKICODER_TOKEN environment variable")
                 else:
                     logger.exception("Failed to download", e)
                 return False
     else:
-        logger.info("already exists: %s", url)
+        logger.info("download:already exists: %s", url)
     return True
 
 

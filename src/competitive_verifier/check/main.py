@@ -25,9 +25,12 @@ def run_impl(*result_json: pathlib.Path) -> bool:
     counter = Counter(
         r.status for fr in result.files.values() for r in fr.verifications
     )
-    failure_count = counter.get(ResultStatus.FAILURE, 0)
-    if failure_count > 0:
-        logger.error("Failure test count: %d", failure_count)
+
+    for st in ResultStatus:
+        print(f"{st.value}: {counter.get(st, 0)}")
+
+    if counter[ResultStatus.FAILURE] > 0:
+        logger.error("Failure test count: %d", counter[ResultStatus.FAILURE])
         return False
     return True
 
