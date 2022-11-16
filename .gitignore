@@ -135,9 +135,8 @@ dmypy.json
 _jekyll/
 _site/
 
-src/competitive_verifier_resources/jekyll/
+src/competitive_verifier_resources/jekyll/*
 !src/competitive_verifier_resources/jekyll/Gemfile
-!src/competitive_verifier_resources/jekyll/__init__.py
 !src/competitive_verifier_resources/jekyll/_includes/
 !src/competitive_verifier_resources/jekyll/_layouts/
 !src/competitive_verifier_resources/jekyll/assets/
