@@ -22,4 +22,4 @@ def test_load_static_files():
         print(f.as_posix())
 
     expected = {"foo" / f for f in files}
-    assert d.keys() == expected
+    assert set(d.keys()) == expected

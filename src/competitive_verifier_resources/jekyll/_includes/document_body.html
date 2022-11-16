@@ -33,22 +33,19 @@
     </ul>
 {% endif %}
 
-
 <h2>Code</h2>
 
-<script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/jquery-balloon-js@1.1.2/jquery.balloon.min.js" integrity="sha256-ZEYs9VrgAeNuPvs15E39OsyOJaIkXEEt10fzxJ20+2I=" crossorigin="anonymous"></script>
-<script defer type="text/javascript" src="{{ "/assets/js/copy-button.js" | absolute_url }}"></script>
-<link rel="stylesheet" href="{{ "/assets/css/copy-button.css" | absolute_url }}">
-
+<div class="code">
 {% if false %}
 TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
-{% include highlight.html extension=page.data._pathExtension content=page.data.code %}
+<span><a id="unbundled"></a></span>
+{% include code.html extension=page.data._pathExtension content=page.data.code %}
 
 <span><a id="bundled"></a></span>
-{% include highlight.html extension=page.data._pathExtension content=page.data.bundledCode %}
+{% include code.html extension=page.data._pathExtension content=page.data.bundledCode %}
 
 {% endif %}
 
 <span><a id="unbundled"></a></span>
-{% include highlight.html extension=page.data._pathExtension content=page.data.code %}
+{% include code.html extension=page.data._pathExtension content=page.data.code %}
+</div>

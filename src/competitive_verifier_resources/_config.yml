@@ -5,3 +5,4 @@ plugins:
 theme: jekyll-theme-minimal
 sass:
   style: compressed
+mathjax: 3
