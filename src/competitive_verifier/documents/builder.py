@@ -25,7 +25,7 @@ logger = getLogger(__name__)
 
 _RESOURCE_PACKAGE = "competitive_verifier_resources"
 _DOC_USAGE_PATH = "doc_usage.txt"
-_COPIED_STATIC_FILE_PATHS: list[str] = [
+_RESOURCE_STATIC_FILE_PATHS: list[str] = [
     "_layouts/page.html",
     "_layouts/document.html",
     "_layouts/toppage.html",
@@ -349,9 +349,9 @@ def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
     ).encode()
 
     # load files in resource/*
-    for path in _COPIED_STATIC_FILE_PATHS:
+    for path in _RESOURCE_STATIC_FILE_PATHS:
         files[config.destination_dir / path] = (
-            importlib.resources.files(_RESOURCE_PACKAGE) / path
+            importlib.resources.files(_RESOURCE_PACKAGE) / "jekyll" / path
         ).read_bytes()
 
     # overwrite with docs/static
