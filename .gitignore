@@ -130,3 +130,7 @@ dmypy.json
 
 # vscode
 *.code-workspace
+
+# Page
+_jekyll/
+_site/
