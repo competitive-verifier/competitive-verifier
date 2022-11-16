@@ -12,11 +12,14 @@ def test_load_static_files():
         static_dir=Path(__file__),
     )
     d = load_static_files(config=config)
-
-    expected = {
-        ("foo" / p.relative_to("src/competitive_verifier_resources/jekyll"))
+    files = {
+        p.relative_to("src/competitive_verifier_resources/jekyll")
         for p in git.ls_files("src/competitive_verifier_resources/jekyll")
     }
-    expected.add(Path("foo/_config.yml"))
+    files.add(Path("_config.yml"))
 
+    for f in files:
+        print(f.as_posix())
+
+    expected = {"foo" / f for f in files}
     assert d.keys() == expected
