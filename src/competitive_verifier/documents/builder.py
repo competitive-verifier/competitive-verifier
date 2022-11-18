@@ -299,10 +299,11 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     if problem:
         attributes.setdefault("PROBLEM", problem)
 
-    bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
+    # TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
+    embedded = [{"name": "default", "code": code}]
     return {
         "path": stat.path.as_posix(),
-        "embedded": [{"name": "default", "code": code}],
+        "embedded": embedded,
         "isVerificationFile": stat.is_verification,
         "verificationStatus": stat.verification_status.value,
         "timestamp": str(stat.timestamp),

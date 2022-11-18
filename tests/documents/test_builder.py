@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from competitive_verifier import git
 from competitive_verifier.documents.builder import load_static_files
 from competitive_verifier.documents.type import SiteRenderConfig
