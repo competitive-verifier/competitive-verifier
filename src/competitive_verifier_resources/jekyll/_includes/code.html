@@ -1,6 +1,28 @@
+
+
+{% if include.embedded.size == null == include.embedded.size < 1 %}
+<div style="height: 5em;">:x: <b>There is no code.</b></div>
+{% elsif include.embedded.size < 2 %}
+{%- assign codeBody = include.embedded[0].code -%}
 <div class="code">
-    <pre class="pre-code"><code class="language-{{include.extension}}">{{ include.content }}</code></pre>
+    <pre class="pre-code enabled"><code class="language-{{include.extension}}">{{ codeBody }}</code></pre>
     <div class="btn-area">
-        <button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button>
+        <div><button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button></div>
     </div>
 </div>
+{% else %}
+<div class="code">
+{%- for source in include.embedded -%}
+    {%- assign codeBody = source.code -%}
+    <pre class="pre-code {% if forloop.first %}enabled{% endif %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody }}</code></pre>
+{%- endfor -%}
+    <div class="btn-area">
+        <div class="btn-group">
+        {%- for source in include.embedded -%}
+            <button type="button" class="code-btn code-toggle-btn {% if forloop.first %}selected{% endif %}" data-target="code-body-{{forloop.index}}">{{source.name}}</button>
+        {%- endfor -%}
+        </div>
+        <div class="btn-group"><button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button></div>
+    </div>
+</div>
+{% endif %}

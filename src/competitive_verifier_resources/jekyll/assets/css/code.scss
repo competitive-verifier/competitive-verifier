@@ -3,33 +3,61 @@
 
 .code {
     position: relative;
-}
+    width: 100%;
+    div {
+        display: flex;
+    }
 
-.code .btn-area {
-    display: flex;
-    position: absolute;
-    top: 0;
-    right: 0;
+    .btn-area {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
 }
 
 .pre-code {
     padding: 0;
+    display: none;
+
+    &.enabled {
+        display: block;
+    }
+}
+
+.btn-group {
+    :first-child {
+        border-bottom-left-radius: 6px;
+    }
+
+    :last-child {
+        border-bottom-right-radius: 6px;
+    }
+
+    :not(:last-child) {
+        border-right: 0;
+    }
+
+    :last-child & {
+        border-bottom-right-radius: 0;
+    }
 }
 
 .code-btn {
     border: 1px solid #ccc;
-    background-color: #fff;
-    width: 6em;
+    min-width: 5em;
     line-height: 1.2em;
-    font-size: 0.8em;
     cursor: pointer;
+
+    color: #000;
+    background-color: #FFF;
+
+    &:hover {
+        background-color: #eef;
+    }
 }
 
-.code-btn:hover {
-    color: #fff;
-    background-color: #267cb9;
-}
-
-.code-btn:first-child {
-    border-radius: 0 0 0 6px;
+.code-toggle-btn {
+    &.selected {
+        background-color: #cce;
+    }
 }

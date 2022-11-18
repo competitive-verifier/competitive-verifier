@@ -302,8 +302,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
     return {
         "path": stat.path.as_posix(),
-        "code": code,
-        "bundledCode": bundled_code,
+        "embedded": [{"name": "default", "code": code}],
         "isVerificationFile": stat.is_verification,
         "verificationStatus": stat.verification_status.value,
         "timestamp": str(stat.timestamp),

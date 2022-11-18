@@ -1,6 +1,6 @@
 hljs.highlightAll()
 $('.code-copy-btn').on('click', async function () {
-    var preText = $(this).closest(".code").find(".pre-code code").text()
+    var preText = $(this).closest(".code").find(".pre-code.enabled code").text()
     navigator.clipboard.writeText(preText)
 
     $(this).showBalloon()
@@ -8,39 +8,11 @@ $('.code-copy-btn').on('click', async function () {
     $(this).hideBalloon()
 });
 
-(function () {
-    const unbundle = function () {
-        $('#unbundled').each(function (index, element) {
-            $(element).parent().next().show();
-        });
-        $('#bundled').each(function (index, element) {
-            $(element).parent().next().hide();
-        });
-        $('.code-bundle-btn').each(function (index, element) {
-            $(element).text("Bundle");
-        });
-    };
-    const bundle = function () {
-        $('#unbundled').each(function (index, element) {
-            $(element).parent().next().hide();
-        });
-        $('#bundled').each(function (index, element) {
-            $(element).parent().next().show();
-        });
-        $('.code-bundle-btn').each(function (index, element) {
-            $(element).text("Unbundle");
-        });
-    };
-    // bundle されたコードは最初は非表示に
-    let is_bundled = false;
-    unbundle();
-    $('.code-bundle-btn').on('click', function () {
-        // bundle / unbundle の切り替え
-        if (is_bundled) {
-            unbundle();
-        } else {
-            bundle();
-        }
-        is_bundled = !is_bundled;
-    });
-})()
+$('.code-toggle-btn').on('click', function () {
+    $('.code-toggle-btn').removeClass('selected')
+    $(this).addClass('selected')
+
+    targetId = $(this).data('target')
+    $('.pre-code').removeClass('enabled')
+    $(`#${targetId}`).addClass('enabled')
+});
