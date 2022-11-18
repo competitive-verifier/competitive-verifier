@@ -1,16 +1,14 @@
 from pathlib import Path
-import shutil
-
-import pytest
 
 from competitive_verifier import git
 from competitive_verifier.documents.builder import load_static_files
 from competitive_verifier.documents.type import SiteRenderConfig
 
+STATIC_FILES_PATH = "src/competitive_verifier_resources/jekyll"
+# For windows test
+static_files = git.ls_files(STATIC_FILES_PATH)
 
-@pytest.mark.skipif(
-    shutil.which("git") is None, reason="docs subcommand requires git command"
-)
+
 def test_load_static_files():
     config = SiteRenderConfig(
         config_yml={"foo": 1},
@@ -19,10 +17,7 @@ def test_load_static_files():
         static_dir=Path(__file__),
     )
     d = load_static_files(config=config)
-    files = {
-        p.relative_to("src/competitive_verifier_resources/jekyll")
-        for p in git.ls_files("src/competitive_verifier_resources/jekyll")
-    }
+    files = {p.relative_to(STATIC_FILES_PATH) for p in static_files}
     files.add(Path("_config.yml"))
 
     for f in files:
