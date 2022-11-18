@@ -1,12 +1,22 @@
 ---
 ---
 
-.code pre {
+.code {
+    position: relative;
+}
+
+.code .btn-area {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.pre-code {
     padding: 0;
 }
 
 .code-btn {
-    position: absolute;
     border: 1px solid #ccc;
     background-color: #fff;
     width: 6em;
@@ -20,13 +30,6 @@
     background-color: #267cb9;
 }
 
-.code-copy-btn {
-    top: 0px;
-    right: 0px;
-}
-
-.code-bundle-btn {
-    top: 0px;
-    right: 6em;
+.code-btn:first-child {
     border-radius: 0 0 0 6px;
 }

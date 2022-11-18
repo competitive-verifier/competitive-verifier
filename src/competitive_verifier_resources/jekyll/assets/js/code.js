@@ -1,6 +1,14 @@
-(function () {
-    hljs.highlightAll();
+hljs.highlightAll()
+$('.code-copy-btn').on('click', async function () {
+    var preText = $(this).closest(".code").find(".pre-code code").text()
+    navigator.clipboard.writeText(preText)
 
+    $(this).showBalloon()
+    await new Promise(r => setTimeout(r, 300))
+    $(this).hideBalloon()
+});
+
+(function () {
     const unbundle = function () {
         $('#unbundled').each(function (index, element) {
             $(element).parent().next().show();
@@ -26,30 +34,6 @@
     // bundle されたコードは最初は非表示に
     let is_bundled = false;
     unbundle();
-
-    // ボタンを実装
-    $('pre > code').each(function (index, element) {
-        $(element).parent().wrap('<div style="position: relative;"></div>');
-        $(element).parent().parent().append('<button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button>');
-
-        // TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
-        // $(element).parent().parent().append('<button type="button" class="code-btn code-bundle-btn" title="Bundled!">Bundle</button>');
-    });
-
-    $('.code-copy-btn').on('click', function () {
-        // テキスト要素を選択＆クリップボードにコピー
-        var textElem = $(this).siblings(':first');
-        navigator.clipboard.writeText(textElem[0].textContent)
-
-        // コピー完了した後の処理
-        // トースト通知とかすると親切かも...
-        $(this).showBalloon();
-        const this_ = this;
-        setTimeout(function () {
-            $(this_).hideBalloon();
-        }, 300);
-    });
-
     $('.code-bundle-btn').on('click', function () {
         // bundle / unbundle の切り替え
         if (is_bundled) {
