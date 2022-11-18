@@ -3,3 +3,7 @@ plugins:
   - jemoji
   - jekyll-redirect-from
 theme: jekyll-theme-minimal
+sass:
+  style: compressed
+mathjax: 3
+highlightjs-style: default

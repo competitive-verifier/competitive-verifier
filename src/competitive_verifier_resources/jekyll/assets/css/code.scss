@@ -1,0 +1,63 @@
+---
+---
+
+.code {
+    position: relative;
+    width: 100%;
+    div {
+        display: flex;
+    }
+
+    .btn-area {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+}
+
+.pre-code {
+    padding: 0;
+    display: none;
+
+    &.enabled {
+        display: block;
+    }
+}
+
+.btn-group {
+    :first-child {
+        border-bottom-left-radius: 6px;
+    }
+
+    :last-child {
+        border-bottom-right-radius: 6px;
+    }
+
+    :not(:last-child) {
+        border-right: 0;
+    }
+
+    :last-child & {
+        border-bottom-right-radius: 0;
+    }
+}
+
+.code-btn {
+    border: 1px solid #ccc;
+    min-width: 5em;
+    line-height: 1.2em;
+    cursor: pointer;
+
+    color: #000;
+    background-color: #FFF;
+
+    &:hover {
+        background-color: #eef;
+    }
+}
+
+.code-toggle-btn {
+    &.selected {
+        background-color: #cce;
+    }
+}

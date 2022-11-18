@@ -53,10 +53,6 @@ def _get_dict() -> dict[str, Language]:
                                 )
                             )
             else:
-                logger.warning(
-                    "config.toml: languages.%s: Adding new languages using `config.toml` is supported but not recommended. Please consider making pull requests for your languages, see https://github.com/kmyk/online-judge-verify-helper/issues/116",
-                    ext,
-                )
                 _dict["." + ext] = UserDefinedLanguage(extension=ext, config=config)
     return _dict
 

@@ -25,20 +25,26 @@ logger = getLogger(__name__)
 
 _RESOURCE_PACKAGE = "competitive_verifier_resources"
 _DOC_USAGE_PATH = "doc_usage.txt"
-_COPIED_STATIC_FILE_PATHS: list[str] = [
+_RESOURCE_STATIC_FILE_PATHS: list[str] = [
     "_layouts/page.html",
     "_layouts/document.html",
     "_layouts/toppage.html",
-    "_includes/mathjax.html",
+    "_includes/head-custom.html",
+    "_includes/head-custom2.html",
+    "_includes/mathjax/mathjax.html",
+    "_includes/mathjax/mathjax2.html",
+    "_includes/mathjax/mathjax3.html",
     "_includes/theme_fix.html",
-    "_includes/highlight.html",
+    "_includes/code.html",
+    "_includes/highlight_additional.html",
+    "_includes/highlight/highlight_header.html",
     "_includes/document_header.html",
     "_includes/document_body.html",
     "_includes/document_footer.html",
     "_includes/toppage_header.html",
     "_includes/toppage_body.html",
-    "assets/css/copy-button.css",
-    "assets/js/copy-button.js",
+    "assets/css/code.scss",
+    "assets/js/code.js",
     "Gemfile",
 ]
 
@@ -293,11 +299,11 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     if problem:
         attributes.setdefault("PROBLEM", problem)
 
-    bundled_code = "TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4"
+    # TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
+    embedded = [{"name": "default", "code": code}]
     return {
         "path": stat.path.as_posix(),
-        "code": code,
-        "bundledCode": bundled_code,
+        "embedded": embedded,
         "isVerificationFile": stat.is_verification,
         "verificationStatus": stat.verification_status.value,
         "timestamp": str(stat.timestamp),
@@ -349,9 +355,9 @@ def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
     ).encode()
 
     # load files in resource/*
-    for path in _COPIED_STATIC_FILE_PATHS:
+    for path in _RESOURCE_STATIC_FILE_PATHS:
         files[config.destination_dir / path] = (
-            importlib.resources.files(_RESOURCE_PACKAGE) / path
+            importlib.resources.files(_RESOURCE_PACKAGE) / "jekyll" / path
         ).read_bytes()
 
     # overwrite with docs/static

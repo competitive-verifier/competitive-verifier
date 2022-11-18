@@ -1,22 +1,22 @@
 <h1>{{ page.data._verificationStatusIcon }} {{ page.title }}
-    {% if page.title != page.data.path %}<br><small>({{ page.data.path }})</small>{% endif %}
+    {% if page.title != page.data.path %}<br><small>({{ page.data.path }})</small>{%- endif -%}
 </h1>
 
 <ul>
     <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ page.data.path }}">View this file on GitHub</a></li>
     {% if page.data._document_path %}
     <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ page.data._document_path }}">View document part on GitHub</a></li>
-    {% endif %}
+    {%- endif -%}
     <li>Last update: {{ page.data.timestamp }}</li>
     {% if page.data.attributes.PROBLEM %}
     <li>Problem: <a href="{{ page.data.attributes.PROBLEM }}">{{ page.data.attributes.PROBLEM }}</a></li>
-    {% endif %}
-    {% if page.data._pathExtension == "hpp" %}<li><a id="include-directive-anchor">Include: <code id="include-directive-code">#include "{{ page.data.path }}"</code></a></li>{% endif %}
-    {% if page.data._isVerificationFailed %}<li>Link: <a href="{{ site.github.repository_url }}/actions">{{ page.data._verificationStatusIcon }} View error logs on GitHub Actions</a></li>{% endif %}
+    {%- endif -%}
+    {% if page.data._pathExtension == "hpp" %}<li><a id="include-directive-anchor">Include: <code id="include-directive-code">#include "{{ page.data.path }}"</code></a></li>{%- endif -%}
+    {% if page.data._isVerificationFailed %}<li>Link: <a href="{{ site.github.repository_url }}/actions">{{ page.data._verificationStatusIcon }} View error logs on GitHub Actions</a></li>{%- endif -%}
     {% for link in page.data.attributes.links %}
     {% if link != page.data.attributes.PROBLEM %}
     <li>Link: <a href="{{ link }}">{{ link }}</a></li>
-    {% endif %}
+    {%- endif -%}
     {% endfor %}
 </ul>
 
@@ -37,4 +37,4 @@
         });
     })();
 </script>
-{% endif %}
+{%- endif -%}

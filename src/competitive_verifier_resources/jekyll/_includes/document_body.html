@@ -1,0 +1,38 @@
+{%- if page.data.dependsOn.size != 0 -%}
+    <h2>Depends on</h2>
+    <ul>
+    {%- for item in page.data._extendedDependsOn -%}
+        <li><a href="{{ item.path | absolute_url }}">{{ item.icon }} {{ item.title }}
+            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+        </a></li>
+    {%- endfor -%}
+    </ul>
+{%- endif -%}
+
+
+{%- if page.data.requiredBy.size != 0 -%}
+    <h2>Required by</h2>
+    <ul>
+    {%- for item in page.data._extendedRequiredBy -%}
+        <li><a href="{{ item.path | absolute_url }}">{{ item.icon }} {{ item.title }}
+            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+        </a></li>
+    {%- endfor -%}
+    </ul>
+{%- endif -%}
+
+
+{%- if page.data.verifiedWith.size != 0 -%}
+    <h2>Verified with</h2>
+    <ul>
+    {%- for item in page.data._extendedVerifiedWith -%}
+        <li><a href="{{ item.path | absolute_url }}">{{ item.icon }} {{ item.title }}
+            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+        </a></li>
+    {%- endfor -%}
+    </ul>
+{%- endif -%}
+
+<h2>Code</h2>
+
+{%- include code.html extension=page.data._pathExtension embedded=page.data.embedded -%}

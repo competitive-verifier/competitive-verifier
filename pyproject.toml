@@ -69,17 +69,17 @@ line-length = 88
 line_length = 88
 multi_line_output = 3
 include_trailing_comma = true
-known_local_folder = ['config']
 
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "src/oj_verify_clone/languages,examples,"
+exclude = "examples,src/oj_verify_clone/languages,src/competitive_verifier_resources/jekyll,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
+exclude = ["src/competitive_verifier_resources/jekyll"]
 reportMissingImports = true
 reportMissingTypeStubs = false
