@@ -17,7 +17,7 @@ class AddtionalSource(BaseModel):
     name: str
     """Source type
     """
-    path: str
+    path: pathlib.Path
     """Source file path
     """
 
