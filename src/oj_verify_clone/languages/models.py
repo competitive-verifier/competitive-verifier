@@ -49,7 +49,7 @@ class Language:
 
     @abc.abstractmethod
     def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
+        self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> bytes:
         """
         :throws Exception:

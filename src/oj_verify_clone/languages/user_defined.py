@@ -2,7 +2,7 @@
 import pathlib
 import subprocess
 from logging import getLogger
-from typing import Any, Sequence
+from typing import Sequence
 
 import oj_verify_clone.shlex2 as shlex
 import oj_verify_clone.utils as utils
@@ -86,7 +86,7 @@ class UserDefinedLanguage(Language):
         return dependencies
 
     def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
+        self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> bytes:
         if "bundle" not in self.config:
             raise RuntimeError("bundler is not specified: {}".format(str(path)))

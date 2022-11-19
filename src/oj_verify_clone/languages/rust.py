@@ -420,11 +420,6 @@ class RustLanguage(Language):
     ) -> list[pathlib.Path]:
         return self._list_dependencies_backend.list_dependencies(path, basedir=basedir)
 
-    def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
-    ) -> bytes:
-        raise NotImplementedError
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[RustLanguageEnvironment]:

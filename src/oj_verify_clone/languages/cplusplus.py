@@ -248,9 +248,8 @@ class CPlusPlusLanguage(Language):
         path: pathlib.Path,
         *,
         basedir: pathlib.Path = pathlib.Path.cwd(),
-        options: dict[str, Any],
     ) -> bytes:
-        include_paths: list[pathlib.Path] = options["include_paths"]
+        include_paths: list[pathlib.Path] = [basedir]
         assert isinstance(include_paths, list)
         bundler = Bundler(iquotes=include_paths)
         bundler.update(path)
