@@ -1,6 +1,13 @@
 ---
 ---
 
+// For hint.css https://github.com/chinchang/hint.css#get-started
+.hint--always.hint--disable {
+    &::before, &::after{
+        opacity: 0;
+    }
+}
+
 .code {
     position: relative;
     width: 100%;

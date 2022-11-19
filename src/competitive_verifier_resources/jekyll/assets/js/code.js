@@ -1,18 +1,26 @@
 hljs.highlightAll()
-$('.code-copy-btn').on('click', async function () {
-    var preText = $(this).closest(".code").find(".pre-code.enabled code").text()
-    navigator.clipboard.writeText(preText)
+for (const btn of document.getElementsByClassName('code-copy-btn')) {
+    btn.addEventListener('click', async function () {
+        const preText = this.closest('.code').querySelector('.pre-code.enabled code').textContent
+        navigator.clipboard.writeText(preText)
 
-    $(this).showBalloon()
-    await new Promise(r => setTimeout(r, 300))
-    $(this).hideBalloon()
-});
+        this.classList.remove("hint--disable")
+        await new Promise(r => setTimeout(r, 700))
+        this.classList.add("hint--disable")
+    })
+}
 
-$('.code-toggle-btn').on('click', function () {
-    $('.code-toggle-btn').removeClass('selected')
-    $(this).addClass('selected')
+for (const btn of document.getElementsByClassName('code-toggle-btn')) {
+    btn.addEventListener('click', function () {
+        for (const btn of document.getElementsByClassName('code-toggle-btn')) {
+            btn.classList.remove('selected')
+        }
+        this.classList.add('selected')
 
-    targetId = $(this).data('target')
-    $('.pre-code').removeClass('enabled')
-    $(`#${targetId}`).addClass('enabled')
-});
+        const targetId = this.dataset.target
+        for (const pre of document.getElementsByClassName('pre-code')) {
+            pre.classList.remove('enabled')
+        }
+        document.getElementById(targetId).classList.add('enabled')
+    })
+}

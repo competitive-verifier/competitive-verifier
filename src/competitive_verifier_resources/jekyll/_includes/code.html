@@ -22,7 +22,7 @@
             <button type="button" class="code-btn code-toggle-btn {% if forloop.first %}selected{% endif %}" data-target="code-body-{{forloop.index}}">{{source.name}}</button>
         {%- endfor -%}
         </div>
-        <div class="btn-group"><button type="button" class="code-btn code-copy-btn" title="Copied!">Copy</button></div>
+        <div class="btn-group"><button type="button" class="code-btn code-copy-btn hint--top hint--always hint--disable" aria-label="Copied!">Copy</button></div>
     </div>
 </div>
 {% endif %}
