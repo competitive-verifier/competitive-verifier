@@ -299,8 +299,9 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     if problem:
         attributes.setdefault("PROBLEM", problem)
 
-    # TODO: bundled https://github.com/competitive-verifier/competitive-verifier/issues/4
     embedded = [{"name": "default", "code": code}]
+    for s in stat.file_input.additonal_sources:
+        embedded.append({"name": s.name, "code": s.path.read_text(encoding='utf-8')})
     return {
         "path": stat.path.as_posix(),
         "embedded": embedded,
