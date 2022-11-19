@@ -5,11 +5,10 @@ import itertools
 import json
 import pathlib
 import shutil
-import subprocess
+from .. import subprocess2 as subprocess
 from collections import defaultdict
 from enum import Enum
 from logging import getLogger
-from subprocess import PIPE
 from typing import Any, Optional, Sequence
 
 import oj_verify_clone.shlex2 as shlex
@@ -127,23 +126,23 @@ def _list_dependencies_by_crate(
         }
         if not shutil.which("cargo-udeps"):
             raise RuntimeError("`cargo-udeps` not in $PATH")
+        args: list[str] = [
+            "rustup",
+            "run",
+            cargo_udeps_toolchain,
+            "cargo",
+            "udeps",
+            "--output",
+            "json",
+            "--manifest-path",
+            main_package["manifest_path"],
+            *_target_option(main_target),
+        ]
         unused_deps = json.loads(
             subprocess.run(
-                [
-                    "rustup",
-                    "run",
-                    cargo_udeps_toolchain,
-                    "cargo",
-                    "udeps",
-                    "--output",
-                    "json",
-                    "--manifest-path",
-                    main_package["manifest_path"],
-                    *_target_option(main_target),
-                ],
+                args,
                 cwd=metadata["workspace_root"],
                 check=False,
-                stdout=PIPE,
             ).stdout.decode()
         )["unused_deps"].values()
         unused_dep = next(
@@ -495,7 +494,6 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
                 "--manifest-path",
                 str(manifest_path),
             ],
-            stdout=PIPE,
             cwd=manifest_path.parent,
             check=True,
         ).stdout.decode()

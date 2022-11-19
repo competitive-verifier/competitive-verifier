@@ -5,7 +5,7 @@ import os
 import pathlib
 import re
 import shutil
-import subprocess
+from .. import subprocess2 as subprocess
 from logging import getLogger
 from typing import Any, Optional
 
@@ -166,7 +166,7 @@ TR1_LIBS = {
 @functools.lru_cache(maxsize=None)
 def _check_compiler(compiler: str) -> str:
     # Executables named "g++" are not always g++, due to the fake g++ of macOS
-    version = subprocess.check_output([compiler, "--version"]).decode()
+    version = subprocess.run([compiler, "--version"], text=False).stdout.decode()
     if "clang" in version.lower() or "Apple LLVM".lower() in version.lower():
         return "clang"
     if "g++" in version.lower():
@@ -200,7 +200,7 @@ def _get_uncommented_code(
         "-E",
         str(path),
     ]
-    return subprocess.check_output(command)
+    return subprocess.run(command, text=False).stdout
 
 
 def get_uncommented_code(

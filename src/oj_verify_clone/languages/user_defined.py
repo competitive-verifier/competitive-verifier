@@ -1,10 +1,9 @@
 # Python Version: 3.x
 import pathlib
-import subprocess
+from .. import subprocess2 as subprocess
 from logging import getLogger
 from typing import Sequence
 
-import oj_verify_clone.shlex2 as shlex
 import oj_verify_clone.utils as utils
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
 from oj_verify_clone.languages.special_comments import list_special_comments
@@ -55,7 +54,7 @@ class UserDefinedLanguage(Language):
         command = self.config["list_attributes"].format(
             path=str(path), basedir=str(basedir)
         )
-        text = subprocess.check_output(shlex.split(command))
+        text = subprocess.run(command, text=False).stdout
         attributes: dict[str, str] = {}
         for line in text.splitlines():
             key, _, value = line.decode().partition(" ")
@@ -79,20 +78,18 @@ class UserDefinedLanguage(Language):
         command = self.config["list_dependencies"].format(
             path=path.as_posix(), basedir=basedir.as_posix()
         )
-        text = subprocess.check_output(shlex.split(command))
+        text = subprocess.run(command, text=False).stdout
         dependencies = [path]
         for line in text.splitlines():
             dependencies.append(pathlib.Path(line.decode()))
         return dependencies
 
-    def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bytes:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes:
         if "bundle" not in self.config:
             raise RuntimeError("bundler is not specified: {}".format(str(path)))
         command = self.config["bundle"].format(path=str(path), basedir=str(basedir))
         logger.info("$ %s", command)
-        return subprocess.check_output(shlex.split(command))
+        return subprocess.run(command, text=False).stdout
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

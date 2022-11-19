@@ -4,7 +4,7 @@ import os
 import pathlib
 import platform
 import shutil
-import subprocess
+from .. import subprocess2 as subprocess
 import sys
 from logging import getLogger
 from typing import Any, Optional
@@ -60,8 +60,8 @@ def _cplusplus_list_depending_files(
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
     try:
-        data = subprocess.check_output(command)
-    except subprocess.CalledProcessError:
+        data = subprocess.run(command, text=False).stdout
+    except Exception:
         logger.error(
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies. The paths must exist, must not contain '\\', and must be case-sensitive.)",
             CXX,
@@ -85,7 +85,7 @@ def _cplusplus_list_defined_macros(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> dict[str, str]:
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-dM", "-E", str(path)]
-    data = subprocess.check_output(command)
+    data = subprocess.run(command, text=False).stdout
     define: dict[str, str] = {}
     for line in data.decode().splitlines():
         assert line.startswith("#define ")
