@@ -1,4 +1,4 @@
-class UnionFindTree:
+class UnionFind:
     def __init__(self, n):
         self.par = list(range(n))  # parent
         self.rank = [0] * n  # depth of tree

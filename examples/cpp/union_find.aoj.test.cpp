@@ -1,16 +1,16 @@
 #define PROBLEM "https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/all/DSL_1_A"
 #include <iostream>
-#include "examples/union_find_tree.hpp"
-#include "examples/union_find_tree.hpp"
-#include "examples/union_find_tree.hpp"
-#include "examples/union_find_tree.hpp"
-#include "examples/union_find_tree.hpp"
+#include "examples/union_find.hpp"
+#include "examples/union_find.hpp"
+#include "examples/union_find.hpp"
+#include "examples/union_find.hpp"
+#include "examples/union_find.hpp"
 #include "examples/macros.hpp"
 using namespace std;
 
 int main() {
     int n, q; cin >> n >> q;
-    union_find_tree uft(n);
+    union_find uft(n);
     REP (i, q) {
         int com, x, y; cin >> com >> x >> y;
         if (com == 0) {

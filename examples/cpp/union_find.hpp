@@ -1,5 +1,5 @@
-#ifndef EXAMPLES_UNION_FIND_TREE_HPP
-#define EXAMPLES_UNION_FIND_TREE_HPP
+#ifndef EXAMPLES_UNION_FIND_HPP
+#define EXAMPLES_UNION_FIND_HPP
 #include <algorithm>
 #include <vector>
 
@@ -8,10 +8,10 @@
  * @note most operations in $O(\alpha(n))$ where $\alpha(n)$ is the inverse of Ackermann function
  * @note implemented with union-by-size + path-compression
  */
-struct union_find_tree {
+struct union_find {
     std::vector<int> data;
-    union_find_tree() = default;
-    explicit union_find_tree(int n) : data(n, -1) {}
+    union_find() = default;
+    explicit union_find(int n) : data(n, -1) {}
     bool is_root(int i) { return data[i] < 0; }
     int find_root(int i) { return is_root(i) ? i : (data[i] = find_root(data[i])); }
     int tree_size(int i) { return - data[find_root(i)]; }
