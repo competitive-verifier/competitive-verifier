@@ -53,6 +53,13 @@ jobs:
         uses: competitive-verifier/upload-verify-artifact@v1
         with:
           file: verify_files.json
+
+      - name: Upload bunbled
+        uses: actions/upload-artifact@v3
+        with:
+          name: Budled-${{ runner.os }}
+          path: .competitive-verifier/bundled
+          retention-days: 1
   verify:
     runs-on: ubuntu-latest
     needs: [setup]
@@ -90,7 +97,7 @@ jobs:
         env:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
-      - name: Upload artifact
+      - name: Upload result artifact
         uses: actions/upload-artifact@v3
         with:
           name: Result-${{ runner.os }}-${{ matrix.index }}
@@ -109,6 +116,12 @@ jobs:
         with:
           download-all: true
           artifact-root: .artifacts/
+
+      - name: Extract bunbled
+        shell: bash
+        run: |
+          rm -rf .competitive-verifier/bundled
+          mv ".artifacts/Budled-${{ runner.os }}" .competitive-verifier/bundled
 
       - name: Set up competitive-verifier
         uses: competitive-verifier/setup-competitive-verifier@v1

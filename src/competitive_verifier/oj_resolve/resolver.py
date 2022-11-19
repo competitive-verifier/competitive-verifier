@@ -4,15 +4,25 @@ from typing import Generator
 
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
+import competitive_verifier.config as config
 import oj_verify_clone.list
 from competitive_verifier.models import (
     CommandVerification,
     ProblemVerification,
     Verification,
+    AddtionalSource,
     VerificationFile,
     VerificationInput,
 )
 from oj_verify_clone.languages.models import LanguageEnvironment
+
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+
+def get_bundled_dir() -> pathlib.Path:
+    return config.config_dir / "bundled"
 
 
 class OjResolver:
@@ -28,7 +38,7 @@ class OjResolver:
         self.include = include
         self.exclude = exclude
 
-    def resolve(self) -> VerificationInput:
+    def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
         basedir = pathlib.Path.cwd()
 
@@ -83,6 +93,22 @@ class OjResolver:
                         ),
                     )
 
+            additonal_sources: list[AddtionalSource] = []
+            if bundle:
+                try:
+                    bundled_code = language.bundle(path, basedir=basedir)
+                    if bundled_code:
+                        dest_dir = get_bundled_dir()
+                        dest_path = dest_dir / path
+                        dest_path.parent.mkdir(parents=True, exist_ok=True)
+                        logger.info("bundle_path=%s", dest_path.as_posix())
+                        dest_path.write_bytes(bundled_code)
+                        additonal_sources.append(
+                            AddtionalSource(name="bundled", path=dest_path)
+                        )
+                except Exception:
+                    pass
+
             verifications = list(
                 chain.from_iterable(
                     env_to_verifications(vs)
@@ -93,5 +119,6 @@ class OjResolver:
                 dependencies=deps,
                 verification=verifications,
                 document_attributes=attr,
+                additonal_sources=additonal_sources,
             )
         return VerificationInput(files=files)

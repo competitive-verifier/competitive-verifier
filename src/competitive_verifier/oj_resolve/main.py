@@ -12,6 +12,7 @@ def run_impl(
     include: list[pathlib.Path],
     exclude: list[pathlib.Path],
     config_path: Optional[pathlib.Path],
+    enable_bundle: bool,
 ) -> bool:
     if config_path:
         oj_verify_clone.config.set_config_path(config_path)
@@ -20,7 +21,7 @@ def run_impl(
         include=include,
         exclude=exclude,
     )
-    resolved = resolver.resolve()
+    resolved = resolver.resolve(bundle=enable_bundle)
     print(resolved.impl.json(exclude_none=True))
     return True
 
@@ -30,6 +31,7 @@ def run(args: argparse.Namespace) -> bool:
         include=args.include,
         exclude=args.exclude,
         config_path=args.config,
+        enable_bundle=args.bundle,
     )
 
 
@@ -47,6 +49,12 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         help="Excluded file",
         default=[],
         type=pathlib.Path,
+    )
+    parser.add_argument(
+        "--no-bundle",
+        dest="bundle",
+        action="store_false",
+        help="Disable bundle",
     )
     parser.add_argument(
         "--config",
