@@ -3,8 +3,8 @@
 #include <iostream>
 #include <tuple>
 #include <utility>
-#include "examples/segment_tree.hpp"
-#include "examples/macros.hpp"
+#include "examples/cpp/segment_tree.hpp"
+#include "examples/cpp/macros.hpp"
 using namespace std;
 
 template <int32_t MOD>
