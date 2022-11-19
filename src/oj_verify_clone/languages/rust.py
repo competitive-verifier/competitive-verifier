@@ -5,7 +5,6 @@ import itertools
 import json
 import pathlib
 import shutil
-from .. import subprocess2 as subprocess
 from collections import defaultdict
 from enum import Enum
 from logging import getLogger
@@ -14,6 +13,8 @@ from typing import Any, Optional, Sequence
 import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.config import get_config
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 _metadata_by_manifest_path: dict[pathlib.Path, dict[str, Any]] = {}

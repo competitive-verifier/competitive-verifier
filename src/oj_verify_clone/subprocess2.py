@@ -2,7 +2,6 @@ import pathlib
 import subprocess
 from typing import Literal, Optional, Union, overload
 
-
 _StrOrListStr = Union[str, list[str]]
 _StrBytesPath = Union[str, bytes, pathlib.Path]
 

@@ -5,9 +5,10 @@ import os
 import pathlib
 import re
 import shutil
-from .. import subprocess2 as subprocess
 from logging import getLogger
 from typing import Any, Optional
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 

@@ -4,7 +4,6 @@ import os
 import pathlib
 import platform
 import shutil
-from .. import subprocess2 as subprocess
 from logging import getLogger
 from typing import Any, Optional
 
@@ -13,6 +12,8 @@ import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.config import get_config
 from oj_verify_clone.languages.cplusplus_bundle import Bundler
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 

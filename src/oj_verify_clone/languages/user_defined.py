@@ -1,12 +1,13 @@
 # Python Version: 3.x
 import pathlib
-from .. import subprocess2 as subprocess
 from logging import getLogger
 from typing import Sequence
 
 import oj_verify_clone.utils as utils
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
 from oj_verify_clone.languages.special_comments import list_special_comments
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 

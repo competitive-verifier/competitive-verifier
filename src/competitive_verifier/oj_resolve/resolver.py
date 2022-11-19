@@ -1,22 +1,21 @@
 import pathlib
 from itertools import chain
+from logging import getLogger
 from typing import Generator
 
+import competitive_verifier.config as config
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
-import competitive_verifier.config as config
 import oj_verify_clone.list
 from competitive_verifier.models import (
+    AddtionalSource,
     CommandVerification,
     ProblemVerification,
     Verification,
-    AddtionalSource,
     VerificationFile,
     VerificationInput,
 )
 from oj_verify_clone.languages.models import LanguageEnvironment
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 
