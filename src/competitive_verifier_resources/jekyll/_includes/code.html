@@ -14,7 +14,7 @@
 <div class="code">
 {%- for source in include.embedded -%}
     {%- assign codeBody = source.code -%}
-    <pre class="pre-code {% if forloop.first %}enabled{% endif %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody }}</code></pre>
+    <pre class="pre-code {% if forloop.first %}enabled{% endif %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody |xml_escape }}</code></pre>
 {%- endfor -%}
     <div class="btn-area">
         <div class="btn-group">
