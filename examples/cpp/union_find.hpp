@@ -4,7 +4,7 @@
 #include <vector>
 
 /**
- * @brief a Union-Find Tree
+ * @brief a Union-Find
  * @note most operations in $O(\alpha(n))$ where $\alpha(n)$ is the inverse of Ackermann function
  * @note implemented with union-by-size + path-compression
  */

@@ -10,13 +10,13 @@ using namespace std;
 
 int main() {
     int n, q; cin >> n >> q;
-    union_find uft(n);
+    union_find uf(n);
     REP (i, q) {
         int com, x, y; cin >> com >> x >> y;
         if (com == 0) {
-            uft.unite_trees(x, y);
+            uf.unite_trees(x, y);
         } else if (com == 1) {
-            cout << uft.is_same(x, y) << endl;
+            cout << uf.is_same(x, y) << endl;
         }
     }
     return 0;

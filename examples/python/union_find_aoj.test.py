@@ -7,13 +7,13 @@ from examples.python.union_find import UnionFind
 
 def main() -> None:
     N, Q = map(int, input().split())
-    uft = UnionFind(N)
+    uf = UnionFind(N)
     for _ in range(Q):
         t, u, v = map(int, input().split())
         if t == 0:
-            uft.unite(u, v)
+            uf.unite(u, v)
         else:
-            print(int(uft.is_same(u, v)))
+            print(int(uf.is_same(u, v)))
 
 
 if __name__ == "__main__":

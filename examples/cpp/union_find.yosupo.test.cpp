@@ -6,13 +6,13 @@ using namespace std;
 
 int main() {
     int n, q; cin >> n >> q;
-    union_find uft(n);
+    union_find uf(n);
     REP (i, q) {
         int t, u, v; cin >> t >> u >> v;
         if (t == 0) {
-            uft.unite_trees(u, v);
+            uf.unite_trees(u, v);
         } else if (t == 1) {
-            cout << uft.is_same(u, v) << endl;
+            cout << uf.is_same(u, v) << endl;
         }
     }
     return 0;
