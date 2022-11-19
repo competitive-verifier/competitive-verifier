@@ -30,6 +30,7 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
+          ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
 
       - name: oj-resolve
         uses: competitive-verifier/oj-resolve-action@v1
@@ -82,6 +83,8 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
+          ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
+
 
       - uses: actions/setup-java@v3
         with:
@@ -128,6 +131,8 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
+          ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
+
 
       - name: Docs
         uses: competitive-verifier/docs-action@v1
