@@ -302,12 +302,10 @@ class Bundler:
             raise BundleErrorAt(path, -1, "cycle found in inclusion relations")
         self.path_stack.add(path)
         try:
-
-            with open(str(path), "rb") as fh:
-                code = fh.read()
-                if not code.endswith(b"\n"):
-                    # ファイルの末尾に改行がなかったら足す
-                    code += b"\n"
+            code = path.read_bytes()
+            if not code.endswith(b"\n"):
+                # ファイルの末尾に改行がなかったら足す
+                code += b"\n"
 
             # include guard のまわりの変数
             # NOTE: include guard に使われたマクロがそれ以外の用途にも使われたり #undef されたりすると壊れるけど、無視します

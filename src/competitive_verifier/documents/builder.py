@@ -124,14 +124,12 @@ class DocumentBuilder:
         logger.info("writing %s files...", len(rendered_pages))
         for path, content in rendered_pages.items():
             path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "wb") as fh:
-                fh.write(content)
+            path.write_bytes(content)
 
         logger.info("writing %s static files...", len(static_files))
         for path, content in static_files.items():
             path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "wb") as fh:
-                fh.write(content)
+            path.write_bytes(content)
         return True
 
     def render_pages(
@@ -301,7 +299,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
 
     embedded = [{"name": "default", "code": code}]
     for s in stat.file_input.additonal_sources:
-        embedded.append({"name": s.name, "code": s.path.read_text(encoding='utf-8')})
+        embedded.append({"name": s.name, "code": s.path.read_text(encoding="utf-8")})
     return {
         "path": stat.path.as_posix(),
         "embedded": embedded,
@@ -365,6 +363,5 @@ def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
     for src in config.static_dir.glob("**/*"):
         if src.is_file():
             dst = config.destination_dir / src.relative_to(config.static_dir)
-            with open(src, "rb") as fh:
-                files[dst] = fh.read()
+            files[dst] = src.read_bytes()
     return files

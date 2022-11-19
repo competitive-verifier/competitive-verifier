@@ -278,8 +278,7 @@ def _related_source_files(
         for dep_info_path in sorted(
             dep_info_paths, key=lambda p: p.stat().st_mtime_ns, reverse=True
         ):
-            with open(dep_info_path) as file:
-                dep_info = file.read()
+            dep_info = dep_info_path.read_text()
             for line in dep_info.splitlines():
                 ss = line.split(": ")
                 if (
