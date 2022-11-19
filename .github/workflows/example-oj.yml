@@ -55,10 +55,15 @@ jobs:
         with:
           file: verify_files.json
 
-      - name: Upload bunbled
+      - name: Chech bundled
+        id: test-bundled
+        run: |
+          echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
+      - name: Upload bundled
         uses: actions/upload-artifact@v3
+        if: steps.test-bundled.outputs.count > 0
         with:
-          name: Budled-${{ runner.os }}
+          name: Bundled-${{ runner.os }}
           path: .competitive-verifier/bundled
           retention-days: 1
   verify:
@@ -84,7 +89,6 @@ jobs:
           python-version: "3.9"
           cache-pip: true
           ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
-
 
       - uses: actions/setup-java@v3
         with:
@@ -120,11 +124,17 @@ jobs:
           download-all: true
           artifact-root: .artifacts/
 
-      - name: Extract bunbled
+      - name: Extract bundled
         shell: bash
         run: |
           rm -rf .competitive-verifier/bundled
-          mv ".artifacts/Budled-${{ runner.os }}" .competitive-verifier/bundled
+          if test -d "$SRCDIR"; then
+            mv "$SRCDIR" .competitive-verifier/bundled
+          else
+            echo "$SRCDIR is not exists."
+          fi
+        env:
+          SRCDIR: .artifacts/Bundled-${{ runner.os }}
 
       - name: Set up competitive-verifier
         uses: competitive-verifier/setup-competitive-verifier@v1
@@ -132,7 +142,6 @@ jobs:
           python-version: "3.9"
           cache-pip: true
           ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
-
 
       - name: Docs
         uses: competitive-verifier/docs-action@v1
