@@ -1,6 +1,6 @@
 ---
 title: Segment Tree (generalized with monoids)
-documentation_of: examples/segment_tree.hpp
+documentation_of: //examples/segment_tree.hpp
 ---
 
 ## Operations

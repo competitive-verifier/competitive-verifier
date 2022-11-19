@@ -39,6 +39,7 @@ jobs:
             src
             tests
           output-path: resolved.json
+          config: examples/awk-config.toml
 
       - name: Merge json
         uses: competitive-verifier/merge-verify-files@v1
