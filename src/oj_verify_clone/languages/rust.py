@@ -5,16 +5,16 @@ import itertools
 import json
 import pathlib
 import shutil
-import subprocess
 from collections import defaultdict
 from enum import Enum
 from logging import getLogger
-from subprocess import PIPE
 from typing import Any, Optional, Sequence
 
 import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.config import get_config
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 _metadata_by_manifest_path: dict[pathlib.Path, dict[str, Any]] = {}
@@ -127,23 +127,23 @@ def _list_dependencies_by_crate(
         }
         if not shutil.which("cargo-udeps"):
             raise RuntimeError("`cargo-udeps` not in $PATH")
+        args: list[str] = [
+            "rustup",
+            "run",
+            cargo_udeps_toolchain,
+            "cargo",
+            "udeps",
+            "--output",
+            "json",
+            "--manifest-path",
+            main_package["manifest_path"],
+            *_target_option(main_target),
+        ]
         unused_deps = json.loads(
             subprocess.run(
-                [
-                    "rustup",
-                    "run",
-                    cargo_udeps_toolchain,
-                    "cargo",
-                    "udeps",
-                    "--output",
-                    "json",
-                    "--manifest-path",
-                    main_package["manifest_path"],
-                    *_target_option(main_target),
-                ],
+                args,
                 cwd=metadata["workspace_root"],
                 check=False,
-                stdout=PIPE,
             ).stdout.decode()
         )["unused_deps"].values()
         unused_dep = next(
@@ -279,8 +279,7 @@ def _related_source_files(
         for dep_info_path in sorted(
             dep_info_paths, key=lambda p: p.stat().st_mtime_ns, reverse=True
         ):
-            with open(dep_info_path) as file:
-                dep_info = file.read()
+            dep_info = dep_info_path.read_text()
             for line in dep_info.splitlines():
                 ss = line.split(": ")
                 if (
@@ -420,11 +419,6 @@ class RustLanguage(Language):
     ) -> list[pathlib.Path]:
         return self._list_dependencies_backend.list_dependencies(path, basedir=basedir)
 
-    def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
-    ) -> bytes:
-        raise NotImplementedError
-
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[RustLanguageEnvironment]:
@@ -500,7 +494,6 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
                 "--manifest-path",
                 str(manifest_path),
             ],
-            stdout=PIPE,
             cwd=manifest_path.parent,
             check=True,
         ).stdout.decode()

@@ -4,8 +4,6 @@ import os
 import pathlib
 import platform
 import shutil
-import subprocess
-import sys
 from logging import getLogger
 from typing import Any, Optional
 
@@ -14,6 +12,8 @@ import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.config import get_config
 from oj_verify_clone.languages.cplusplus_bundle import Bundler
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
+
+from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 
@@ -60,16 +60,12 @@ def _cplusplus_list_depending_files(
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
     try:
-        data = subprocess.check_output(command)
-    except subprocess.CalledProcessError:
+        data = subprocess.run(command, text=False).stdout
+    except Exception:
         logger.error(
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies. The paths must exist, must not contain '\\', and must be case-sensitive.)",
             CXX,
             str(path),
-        )
-        print(
-            f"::warning file={str(path)}::failed to analyze dependencies",
-            file=sys.stderr,
         )
         raise
     logger.debug("dependencies of %s: %s", str(path), repr(data))
@@ -85,7 +81,7 @@ def _cplusplus_list_defined_macros(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> dict[str, str]:
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-dM", "-E", str(path)]
-    data = subprocess.check_output(command)
+    data = subprocess.run(command, text=False).stdout
     define: dict[str, str] = {}
     for line in data.decode().splitlines():
         assert line.startswith("#define ")
@@ -135,9 +131,6 @@ class CPlusPlusLanguage(Language):
             logger.warning(
                 "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
             )
-            print(
-                "::warning::Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
-            )
             default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])
 
         envs: list[CPlusPlusLanguageEnvironment] = []
@@ -160,9 +153,6 @@ class CPlusPlusLanguage(Language):
             # old-style: 以前は $CXX を使ってたけど設定ファイルに移行したい
             logger.warning(
                 "Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon"
-            )
-            print(
-                "::warning::Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon"
             )
             envs.append(
                 CPlusPlusLanguageEnvironment(
@@ -248,9 +238,8 @@ class CPlusPlusLanguage(Language):
         path: pathlib.Path,
         *,
         basedir: pathlib.Path = pathlib.Path.cwd(),
-        options: dict[str, Any],
     ) -> bytes:
-        include_paths: list[pathlib.Path] = options["include_paths"]
+        include_paths: list[pathlib.Path] = [basedir]
         assert isinstance(include_paths, list)
         bundler = Bundler(iquotes=include_paths)
         bundler.update(path)

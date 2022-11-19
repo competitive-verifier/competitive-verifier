@@ -9,6 +9,23 @@
                 ".*": {
                     "type": "object",
                     "properties": {
+                        "additonal_sources": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "description": "Addtional source codes",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Source type"
+                                    },
+                                    "path": {
+                                        "type": "string",
+                                        "description": "Source file path"
+                                    }
+                                }
+                            }
+                        },
                         "dependencies": {
                             "type": "array",
                             "items": {

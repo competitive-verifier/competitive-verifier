@@ -13,11 +13,23 @@ logger = getLogger(__name__)
 _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
 
 
+class AddtionalSource(BaseModel):
+    name: str
+    """Source type
+    """
+    path: pathlib.Path
+    """Source file path
+    """
+
+
 class VerificationFile(BaseModel):
     dependencies: set[pathlib.Path] = Field(default_factory=set)
     verification: list[Verification] = Field(default_factory=list)
     document_attributes: dict[str, Any] = Field(default_factory=dict)
     """Attributes for documentation
+    """
+    additonal_sources: list[AddtionalSource] = Field(default_factory=list)
+    """Addtional source paths
     """
 
     class Config:

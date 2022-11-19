@@ -40,8 +40,7 @@ def main(args: Optional[list[str]] = None) -> None:
             os.execve(sys.executable, [sys.executable, path], env=env)  # use `os.execve` to avoid making an unnecessary parent process
         """
         )
-        with open(output, "wb") as fh:
-            fh.write(code.encode())
+        output.write_text(code, encoding="utf-8")
     except Exception as e:
         sys.stderr.write(str(e))
         sys.exit(2)

@@ -44,8 +44,7 @@ def build_markdown_job(
     *,
     source_paths: set[pathlib.Path],
 ) -> Optional[PageRenderJob]:
-    with open(path, "rb") as fh:
-        content = fh.read()
+    content = path.read_bytes()
 
     fm, content = front_matter.split_front_matter(content)
     # move the location if documentation_of field exists

@@ -6,7 +6,7 @@ import pathlib
 import platform
 import sys
 from logging import getLogger
-from typing import Any, Sequence
+from typing import Sequence
 
 import importlab.environment
 import importlab.fs
@@ -90,14 +90,6 @@ class PythonLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
         return _python_list_depending_files(path.resolve(), basedir)
-
-    def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
-    ) -> bytes:
-        """
-        :throws NotImplementedError:
-        """
-        raise NotImplementedError
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

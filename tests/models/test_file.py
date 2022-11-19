@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 
 from competitive_verifier.models import (
+    AddtionalSource,
     CommandVerification,
     ConstVerification,
     ResultStatus,
@@ -20,6 +21,7 @@ test_parse_VerificationFile_params: list[
             "dependencies": set(),
             "document_attributes": {},
             "verification": [],
+            "additonal_sources": [],
         },
     ),
     (
@@ -46,6 +48,7 @@ test_parse_VerificationFile_params: list[
             ),
             "document_attributes": {},
             "verification": [],
+            "additonal_sources": [],
         },
     ),
     (
@@ -65,6 +68,7 @@ test_parse_VerificationFile_params: list[
                 "title": "Bar bar",
             },
             "verification": [],
+            "additonal_sources": [],
         },
     ),
     (
@@ -83,6 +87,7 @@ test_parse_VerificationFile_params: list[
             "dependencies": set(),
             "document_attributes": {},
             "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
+            "additonal_sources": [],
         },
     ),
     (
@@ -99,6 +104,25 @@ test_parse_VerificationFile_params: list[
             "dependencies": set(),
             "document_attributes": {},
             "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
+            "additonal_sources": [],
+        },
+    ),
+    (
+        VerificationFile(
+            additonal_sources=[
+                AddtionalSource(name="dummy", path=pathlib.Path("tmp/dummy.sh"))
+            ]
+        ),
+        {
+            "additonal_sources": [{"name": "dummy", "path": "tmp/dummy.sh"}],
+        },
+        {
+            "dependencies": set(),
+            "document_attributes": {},
+            "verification": [],
+            "additonal_sources": [
+                {"name": "dummy", "path": pathlib.Path("tmp/dummy.sh")}
+            ],
         },
     ),
 ]

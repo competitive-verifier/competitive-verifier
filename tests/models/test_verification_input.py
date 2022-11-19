@@ -62,6 +62,7 @@ def test_to_json():
                             "status": "success",
                         }
                     ],
+                    "additonal_sources": [{"name": "dummy", "path": "tmp/dumm.py"}],
                 },
             },
         }
@@ -72,6 +73,7 @@ def test_to_json():
                 "dependencies": [],
                 "document_attributes": {},
                 "verification": [],
+                "additonal_sources": [],
             },
             "foo/baz.py": {
                 "document_attributes": {"title": "foo-baz"},
@@ -82,6 +84,7 @@ def test_to_json():
                         "status": "success",
                     }
                 ],
+                "additonal_sources": [{"name": "dummy", "path": "tmp/dumm.py"}],
             },
         },
     }
@@ -104,6 +107,7 @@ def test_repr():
                             "status": "success",
                         }
                     ],
+                    "additonal_sources": [{"name": "dummy", "path": "tmp/dumm.py"}],
                 },
             },
         }
@@ -111,9 +115,11 @@ def test_repr():
     print(repr(obj))
     assert repr(obj) == (
         "VerificationInput("
-        + f"files={{{repr(Path('foo/bar.py'))}: VerificationFile(dependencies=set(), verification=[], document_attributes={{}}),"
-        + f" {repr(Path('foo/baz.py'))}: VerificationFile(dependencies={{{repr(Path('foo/bar.py'))}}}, verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}})"
-        + f"}})"
+        f"files={{{repr(Path('foo/bar.py'))}: "
+        f"VerificationFile(dependencies=set(), verification=[], document_attributes={{}}, additonal_sources=[]),"
+        f" {repr(Path('foo/baz.py'))}: "
+        f"VerificationFile(dependencies={{{repr(Path('foo/bar.py'))}}}, verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}}, additonal_sources=[AddtionalSource(name='dummy', path={repr(Path('tmp/dumm.py'))})])"
+        f"}})"
     )
 
 

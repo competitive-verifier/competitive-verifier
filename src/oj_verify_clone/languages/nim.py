@@ -45,21 +45,20 @@ def _list_direct_dependencies(
     path: pathlib.Path, *, basedir: pathlib.Path
 ) -> list[pathlib.Path]:
     items: list[str] = []
-    with open(basedir / path, "rb") as fh:
-        for line in fh.read().decode().splitlines():
-            line = line.strip()
-            if line.startswith("include"):
-                items += line[7:].strip().split(",")
-            elif line.startswith("import"):
-                line = line[6:]
-                i = line.find(" except ")
-                if i >= 0:
-                    line = line[:i]
-                items += line.split(",")
-            elif line.startswith("from"):
-                i = line.find(" import ")
-                if i >= 0:
-                    items += line[4 : i - 1]
+    for line in (basedir / path).read_text().splitlines():
+        line = line.strip()
+        if line.startswith("include"):
+            items += line[7:].strip().split(",")
+        elif line.startswith("import"):
+            line = line[6:]
+            i = line.find(" except ")
+            if i >= 0:
+                line = line[:i]
+            items += line.split(",")
+        elif line.startswith("from"):
+            i = line.find(" import ")
+            if i >= 0:
+                items += line[4 : i - 1]
     dependencies = [path.resolve()]
     for item in items:
         item = item.strip()
@@ -97,11 +96,6 @@ class NimLanguage(Language):
                 dependencies.append(child)
                 stk.append(child)
         return list(set(dependencies))
-
-    def bundle(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, options: dict[str, Any]
-    ) -> bytes:
-        raise NotImplementedError
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

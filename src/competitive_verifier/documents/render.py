@@ -49,8 +49,7 @@ def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
         try:
-            with open(user_config_yml_path, "rb") as fh:
-                user_config_yml = yaml.safe_load(fh.read())
+            user_config_yml = yaml.safe_load(user_config_yml_path.read_bytes())
             if isinstance(user_config_yml, dict):
                 return user_config_yml  # type:ignore
             else:
