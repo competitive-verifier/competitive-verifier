@@ -5,7 +5,6 @@ import pathlib
 import platform
 import shutil
 from .. import subprocess2 as subprocess
-import sys
 from logging import getLogger
 from typing import Any, Optional
 
@@ -66,10 +65,6 @@ def _cplusplus_list_depending_files(
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies. The paths must exist, must not contain '\\', and must be case-sensitive.)",
             CXX,
             str(path),
-        )
-        print(
-            f"::warning file={str(path)}::failed to analyze dependencies",
-            file=sys.stderr,
         )
         raise
     logger.debug("dependencies of %s: %s", str(path), repr(data))
@@ -135,9 +130,6 @@ class CPlusPlusLanguage(Language):
             logger.warning(
                 "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
             )
-            print(
-                "::warning::Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
-            )
             default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])
 
         envs: list[CPlusPlusLanguageEnvironment] = []
@@ -160,9 +152,6 @@ class CPlusPlusLanguage(Language):
             # old-style: 以前は $CXX を使ってたけど設定ファイルに移行したい
             logger.warning(
                 "Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon"
-            )
-            print(
-                "::warning::Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon"
             )
             envs.append(
                 CPlusPlusLanguageEnvironment(
