@@ -117,18 +117,20 @@ class DocumentBuilder:
             site_render_config=config,
         )
 
-        logger.info("list static files...")
-        static_files = load_static_files(config=config)
-
         # make install
         logger.info("writing %s files...", len(rendered_pages))
         for path, content in rendered_pages.items():
             path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
             path.write_bytes(content)
+
+        logger.info("list static files...")
+        static_files = load_static_files(config=config)
 
         logger.info("writing %s static files...", len(static_files))
         for path, content in static_files.items():
             path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
             path.write_bytes(content)
         return True
 
