@@ -26,14 +26,13 @@
     (function() {
         const anchor = document.getElementById('include-directive-anchor');
         const code = document.getElementById('include-directive-code');
-        anchor.addEventListener('click', function() {
-            navigator.clipboard.writeText(code.textContent)
-
+        anchor.addEventListener('click', async function() {
             const textContent = code.textContent;
+            navigator.clipboard.writeText(textContent)
+
             code.textContent = "Copied!";
-            setTimeout(function() {
-                code.textContent = textContent;
-            }, 300);
+            await new Promise(r => setTimeout(r, 300))
+            code.textContent = textContent;
         });
     })();
 </script>

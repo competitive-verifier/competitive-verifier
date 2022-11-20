@@ -1,7 +1,7 @@
 hljs.highlightAll()
 for (const btn of document.getElementsByClassName('code-copy-btn')) {
     btn.addEventListener('click', async function () {
-        const preText = this.closest('.code').querySelector('.pre-code.enabled code').textContent
+        const preText = this.closest('.code').querySelector('.pre-code:not(.disable) code').innerText
         navigator.clipboard.writeText(preText)
 
         this.classList.remove("hint--disable")
@@ -19,8 +19,8 @@ for (const btn of document.getElementsByClassName('code-toggle-btn')) {
 
         const targetId = this.dataset.target
         for (const pre of document.getElementsByClassName('pre-code')) {
-            pre.classList.remove('enabled')
+            pre.classList.add('disable')
         }
-        document.getElementById(targetId).classList.add('enabled')
+        document.getElementById(targetId).classList.remove('disable')
     })
 }

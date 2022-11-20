@@ -24,10 +24,10 @@
 
 .pre-code {
     padding: 0;
-    display: none;
-
-    &.enabled {
-        display: block;
+    display: block;
+    
+    &.disable {
+        display: none;
     }
 }
 
