@@ -1,0 +1,56 @@
+<script defer src="{{ '/installer.js' | absolute_url }}"></script>
+<style>
+    .template-data dd>input,
+    .template-data dd>textarea {
+        width: 40rem;
+    }
+
+    #action-yml {
+        overflow-y: auto;
+        max-height: 25em;
+    }
+
+    #action-yml.extended {
+        max-height: none;
+    }
+</style>
+<dl class="template-data">
+    <dt><label for="input-repo">Repository: </label></dt>
+    <dd><input id="input-repo" placeholder="{{ site.github.repository_url }}" type="text"
+            value="{{ site.github.repository_url }}"></dd>
+    <dt><label for="input-branch">Branch name: </label></dt>
+    <dd><input id="input-branch" placeholder="master" type="text" value="main">
+    </dd>
+    <dt><label>Languages: </label></dt>
+    <dd>
+        <label><input id="input-lang-cpp" type="checkbox" checked>C++</label>
+        <label><input id="input-lang-python" type="checkbox">Python</label>
+        <label><input id="input-lang-rust" type="checkbox">Rust</label>
+        <label><input id="input-lang-java" type="checkbox">Java</label>
+        <label><input id="input-lang-go" type="checkbox">Go</label>
+        <label><input id="input-lang-ruby" type="checkbox">Ruby</label>
+        <label><input id="input-lang-nim" type="checkbox">Nim</label>
+        <label><input id="input-lang-haskel" type="checkbox">Haskell</label>
+    </dd>
+    <dt><label for="input-include">include(optional): </label></dt>
+    <dd><textarea id="input-include" placeholder="src/"></textarea></dd>
+    <dt><label for="input-exclude">exclude(optional): </label></dt>
+    <dd><textarea id="input-exclude" placeholder="tools/&#10;.github/"></textarea>
+    </dd>
+    <dt><label for="input-config-toml">oj-verify config(optional): </label></dt>
+    <dd><input id="input-config-toml" placeholder="(e.g.) .verify-helper/config.toml" type="text"></dd>
+    <dt><label for="input-parallel-size">Parallel size: </label></dt>
+    <dd><input id="input-parallel-size" type="number" value="20" min="1" max="100" step="1"></dd>
+</dl>
+
+<div id="action-yml-area" class="code">
+    <pre class="hljs"><code id="action-yml" class="language-yaml"></code></pre>
+    <div class="btn-area">
+        <div class="btn-group">
+            <button type="button" class="code-btn"
+                onclick="document.getElementById('action-yml').classList.toggle('extended')">Extend</button>
+            <button type="button" class="code-btn code-copy-btn hint--top hint--always hint--disable"
+                aria-label="Copied!">Copy</button>
+        </div>
+    </div>
+</div>

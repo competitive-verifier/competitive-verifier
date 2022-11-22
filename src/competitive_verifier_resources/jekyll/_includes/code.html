@@ -5,7 +5,7 @@
 {% elsif include.embedded.size < 2 %}
 {%- assign codeBody = include.embedded[0].code -%}
 <div class="code">
-    <pre class="pre-code"><code class="language-{{include.extension}}">{{ codeBody }}</code></pre>
+    <pre class="hljs"><code class="language-{{include.extension}}">{{ codeBody }}</code></pre>
     <div class="btn-area">
         <div class="btn-group"><button type="button" class="code-btn code-copy-btn hint--top hint--always hint--disable" aria-label="Copied!">Copy</button></div>
     </div>
@@ -14,7 +14,7 @@
 <div class="code">
 {%- for source in include.embedded -%}
     {%- assign codeBody = source.code -%}
-    <pre class="pre-code {% unless forloop.first %}disable{% endunless %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody |xml_escape }}</code></pre>
+    <pre class="hljs {% unless forloop.first %}disable{% endunless %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody |xml_escape }}</code></pre>
 {%- endfor -%}
     <div class="btn-area">
         <div class="btn-group">
