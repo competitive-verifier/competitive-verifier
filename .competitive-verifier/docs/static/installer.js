@@ -209,30 +209,30 @@
             const parallelSize = parseInt(inputParallelSize.value.trim())
 
             let resultYaml = template
-                .replace('{{{branch}}}', branch)
-                .replace('"{{{parallel_size}}}"', parallelSize.toString())
-                .replace('"{{{parallel_indexes}}}"', parallelIndexMatrix(parallelSize))
+                .replaceAll('{{{branch}}}', branch)
+                .replaceAll('"{{{parallel_size}}}"', parallelSize.toString())
+                .replaceAll('"{{{parallel_indexes}}}"', parallelIndexMatrix(parallelSize))
 
             const initializeForResolving = ["# Initialize your own environment for resolving."]
             const initializeForVerification = ["# Initialize your own environment for verification."]
 
             initLanguages(initializeForResolving, initializeForVerification)
             if (initializeForResolving.length > 1) {
-                resultYaml = resultYaml.replace(initializeForResolving[0], stepDefinition(initializeForResolving))
+                resultYaml = resultYaml.replaceAll(initializeForResolving[0], stepDefinition(initializeForResolving))
             }
             if (initializeForVerification.length > 1) {
-                resultYaml = resultYaml.replace(initializeForVerification[0], stepDefinition(initializeForVerification))
+                resultYaml = resultYaml.replaceAll(initializeForVerification[0], stepDefinition(initializeForVerification))
             }
 
             if (configToml) {
-                resultYaml = resultYaml.replace('# config: .verify-helper/config.toml', `config: ${configToml}`)
+                resultYaml = resultYaml.replaceAll('# config: .verify-helper/config.toml', `config: ${configToml}`)
             }
 
             if (include) {
-                resultYaml = resultYaml.replace('# include: your-own-include/', yamlTextProperty('include', include))
+                resultYaml = resultYaml.replaceAll('# include: your-own-include/', yamlTextProperty('include', include))
             }
             if (exclude) {
-                resultYaml = resultYaml.replace('# exclude: your-own-exclude/', yamlTextProperty('exclude', exclude))
+                resultYaml = resultYaml.replaceAll('# exclude: your-own-exclude/', yamlTextProperty('exclude', exclude))
             }
 
             return resultYaml.trim()
