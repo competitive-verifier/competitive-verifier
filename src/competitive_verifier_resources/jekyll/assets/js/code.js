@@ -1,18 +1,42 @@
-hljs.highlightAll()
-$('.code-copy-btn').on('click', async function () {
-    var preText = $(this).closest(".code").find(".pre-code.enabled code").text()
-    navigator.clipboard.writeText(preText)
+document.getElementsByClassName('hljs')
 
-    $(this).showBalloon()
-    await new Promise(r => setTimeout(r, 300))
-    $(this).hideBalloon()
-});
+for (const code of document.querySelectorAll('.hljs code')) {
+    hljs.highlightElement(code)
+}
 
-$('.code-toggle-btn').on('click', function () {
-    $('.code-toggle-btn').removeClass('selected')
-    $(this).addClass('selected')
+for (const btn of document.getElementsByClassName('code-copy-btn')) {
+    btn.addEventListener('click', async function () {
+        const preText = this.closest('.code').querySelector('.hljs:not(.disable) code').innerText
+        navigator.clipboard.writeText(preText)
 
-    targetId = $(this).data('target')
-    $('.pre-code').removeClass('enabled')
-    $(`#${targetId}`).addClass('enabled')
-});
+        this.classList.remove("hint--disable")
+        await new Promise(r => setTimeout(r, 700))
+        this.classList.add("hint--disable")
+    })
+}
+
+for (const btn of document.getElementsByClassName('code-copy-btn')) {
+    btn.addEventListener('click', async function () {
+        const preText = this.closest('.code').querySelector('.hljs:not(.disable) code').innerText
+        navigator.clipboard.writeText(preText)
+
+        this.classList.remove("hint--disable")
+        await new Promise(r => setTimeout(r, 700))
+        this.classList.add("hint--disable")
+    })
+}
+
+for (const btn of document.getElementsByClassName('code-toggle-btn')) {
+    btn.addEventListener('click', function () {
+        for (const btn of document.getElementsByClassName('code-toggle-btn')) {
+            btn.classList.remove('selected')
+        }
+        this.classList.add('selected')
+
+        const targetId = this.dataset.target
+        for (const pre of document.getElementsByClassName('hljs')) {
+            pre.classList.add('disable')
+        }
+        document.getElementById(targetId).classList.remove('disable')
+    })
+}
