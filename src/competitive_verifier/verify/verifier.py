@@ -177,7 +177,8 @@ class BaseVerifier(InputContainer):
 
         for p, f in self.current_verification_files.items():
             logger.info("Start: %s", p.as_posix())
-            with log.group(f"Verify: {p.as_posix()}"):
+
+            def enumerate_verifications() -> list[VerificationResult]:
                 logger.debug(repr(f))
                 prev_time = self.now()
                 verifications = list[VerificationResult]()
@@ -189,7 +190,7 @@ class BaseVerifier(InputContainer):
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
                     logger.error("Failed to download")
-                    continue
+                    return verifications
 
                 for ve in f.verification:
                     logger.debug("command=%s", repr(ve))
@@ -202,7 +203,7 @@ class BaseVerifier(InputContainer):
                         verifications.append(
                             self.create_command_result(ResultStatus.SKIPPED, prev_time)
                         )
-                        continue
+                        return verifications
 
                     try:
                         rs, error_message = self.run_verification(ve)
@@ -225,7 +226,10 @@ class BaseVerifier(InputContainer):
                         verifications.append(
                             self.create_command_result(ResultStatus.FAILURE, prev_time)
                         )
-                file_results[p] = FileResult(verifications=verifications)
+                return verifications
+
+            with log.group(f"Verify: {p.as_posix()}"):
+                file_results[p] = FileResult(verifications=enumerate_verifications())
 
         sippable_file_results = self.skippable_results()
         self._result = VerifyCommandResult(
