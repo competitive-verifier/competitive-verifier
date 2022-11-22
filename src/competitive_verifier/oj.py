@@ -1,10 +1,8 @@
-import datetime
 import hashlib
 import os
 import pathlib
 import shutil
 import sys
-import uuid
 from contextlib import nullcontext
 from logging import getLogger
 from typing import Optional
@@ -23,7 +21,6 @@ import competitive_verifier.exec
 from competitive_verifier import log
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
-_random_cache_dir = competitive_verifier.config.cache_dir / "random"
 onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
 

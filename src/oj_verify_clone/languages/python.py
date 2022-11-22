@@ -2,12 +2,13 @@
 # Python Version: 3.x
 import concurrent.futures
 import functools
+import os
 import pathlib
 import platform
 import sys
 from logging import getLogger
 from typing import Sequence
-import os
+
 import importlab.environment
 import importlab.fs
 import importlab.graph

@@ -1,8 +1,8 @@
 import os
 import pathlib
+import traceback
 from itertools import chain
 from logging import getLogger
-import traceback
 from typing import Generator
 
 import competitive_verifier.config as config
@@ -13,9 +13,9 @@ from competitive_verifier.models import (
     AddtionalSource,
     ConstVerification,
     ProblemVerification,
+    ResultStatus,
     Verification,
     VerificationFile,
-    ResultStatus,
     VerificationInput,
 )
 from oj_verify_clone.languages.models import LanguageEnvironment

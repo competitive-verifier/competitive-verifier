@@ -22,7 +22,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 competitive-verifier = "competitive_verifier.console.app:main"
-oj-verify-python-compile = "oj_verify_clone.python_compile:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
