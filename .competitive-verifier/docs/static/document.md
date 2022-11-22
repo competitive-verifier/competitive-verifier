@@ -132,7 +132,6 @@ Other judging platforms do not currently publish the test cases in usable forms,
 |Macro name|Description|Remarks|
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
-| `IGNORE` | If this is defined in a file, the verification is skipped. | You can use this in a scope like `#ifdef __clang__` to ignore in a specific environment. |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
 
