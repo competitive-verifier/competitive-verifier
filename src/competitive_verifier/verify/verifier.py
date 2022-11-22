@@ -182,8 +182,8 @@ class BaseVerifier(InputContainer):
                 prev_time = self.now()
                 verifications = list[VerificationResult]()
                 try:
-                    if download:
-                        run_download(f, check=True, group_log=False)
+                    if download and not run_download(f, check=True, group_log=False):
+                        raise Exception()
                 except Exception:
                     verifications.append(
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
