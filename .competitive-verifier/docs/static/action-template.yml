@@ -77,8 +77,9 @@ jobs:
           destination: ${{runner.temp}}/result.json
           split-size: ${{ env.SPLIT_SIZE }}
           split-index: ${{ matrix.index }}
-        env:
-          YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+        # specify tokens
+        # env:
+        #   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
       - name: Upload result artifact
         uses: actions/upload-artifact@v3
@@ -141,7 +142,7 @@ jobs:
         with:
           verify-result: ${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
   deploy:
-    if: (success() || failure()) && github.ref == 'refs/heads/main'
+    if: (success() || failure()) && github.ref == 'refs/heads/{{{branch}}}'
     needs: docs-and-check
     environment:
       name: github-pages
