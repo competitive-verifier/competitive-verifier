@@ -1,6 +1,7 @@
 import pathlib
 from itertools import chain
 from logging import getLogger
+import traceback
 from typing import Generator
 
 import competitive_verifier.config as config
@@ -106,7 +107,15 @@ class OjResolver:
                             AddtionalSource(name="bundled", path=dest_path)
                         )
                 except Exception:
-                    pass
+                    bundled_code = traceback.format_exc()
+                    dest_dir = get_bundled_dir()
+                    dest_path = dest_dir / path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    logger.info("bundle_path=%s", dest_path.as_posix())
+                    dest_path.write_text(bundled_code)
+                    additonal_sources.append(
+                        AddtionalSource(name="bundle error", path=dest_path)
+                    )
 
             verifications = list(
                 chain.from_iterable(

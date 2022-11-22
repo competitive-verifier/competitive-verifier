@@ -1,7 +1,7 @@
 # Python Version: 3.x
 import abc
 import pathlib
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 import oj_verify_clone.languages.special_comments as special_comments
 
@@ -47,14 +47,11 @@ class Language:
 
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
         """
         :throws Exception:
-        :throws NotImplementedError:
         """
-
-        raise NotImplementedError
+        return None
 
     def is_verification_file(
         self, path: pathlib.Path, *, basedir: pathlib.Path

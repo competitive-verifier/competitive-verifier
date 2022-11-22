@@ -233,12 +233,7 @@ class CPlusPlusLanguage(Language):
             path.resolve(), CXX=env.CXX, joined_CXXFLAGS=joined_CXXFLAGS
         )
 
-    def bundle(
-        self,
-        path: pathlib.Path,
-        *,
-        basedir: pathlib.Path = pathlib.Path.cwd(),
-    ) -> bytes:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
         include_paths: list[pathlib.Path] = [basedir]
         assert isinstance(include_paths, list)
         bundler = Bundler(iquotes=include_paths)

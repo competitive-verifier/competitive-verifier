@@ -1,7 +1,7 @@
 # Python Version: 3.x
 import pathlib
 from logging import getLogger
-from typing import Sequence
+from typing import Optional, Sequence
 
 import oj_verify_clone.utils as utils
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
@@ -85,9 +85,9 @@ class UserDefinedLanguage(Language):
             dependencies.append(pathlib.Path(line.decode()))
         return dependencies
 
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
         if "bundle" not in self.config:
-            raise RuntimeError("bundler is not specified: {}".format(str(path)))
+            return None
         command = self.config["bundle"].format(path=str(path), basedir=str(basedir))
         logger.info("$ %s", command)
         return subprocess.run(command, text=False).stdout
