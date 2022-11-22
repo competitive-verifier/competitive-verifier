@@ -20,8 +20,6 @@ concurrency:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      hash: ${{ steps.download.outputs.problems-hash }}
     steps:
       - uses: actions/checkout@v3
 
@@ -32,6 +30,14 @@ jobs:
           cache-pip: true
           ref: ${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
 
+      - name: go test
+        id: go-unittest
+        run: go test
+        working-directory: examples/go
+        continue-on-error: true
+        env:
+          GO111MODULE: "off"
+
       - name: oj-resolve
         uses: competitive-verifier/oj-resolve-action@v1
         with:
@@ -41,6 +47,8 @@ jobs:
             tests
           output-path: resolved.json
           config: examples/awk-config.toml
+        env:
+          GOTESTRESULT: ${{ steps.go-unittest.outcome == 'success' }}
 
       - name: Merge json
         uses: competitive-verifier/merge-verify-files@v1

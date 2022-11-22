@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 @functools.lru_cache(maxsize=None)
 def list_special_comments(path: pathlib.Path) -> dict[str, str]:
     pattern = re.compile(
-        r"\b(?:verify|verification)-helper:\s*([0-9A-Z_]+)(?:\s(.*))?$"
+        r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Z_]+)(?:\s(.*))?$"
     )
     attributes: dict[str, str] = {}
     for line in path.read_text().splitlines():
@@ -20,11 +20,6 @@ def list_special_comments(path: pathlib.Path) -> dict[str, str]:
             key = matched.group(1)
             value = (matched.group(2) or "").strip()
             attributes[key] = value
-            if "verify-helper:" in matched.group(0):
-                logger.warning(
-                    'use "verification-helper:" instead of "verify-helper:": %s',
-                    str(path),
-                )
     return attributes
 
 

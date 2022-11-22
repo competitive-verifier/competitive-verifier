@@ -1,3 +1,4 @@
+import os
 import pathlib
 from itertools import chain
 from logging import getLogger
@@ -10,10 +11,11 @@ import competitive_verifier.oj as oj
 import oj_verify_clone.list
 from competitive_verifier.models import (
     AddtionalSource,
-    CommandVerification,
+    ConstVerification,
     ProblemVerification,
     Verification,
     VerificationFile,
+    ResultStatus,
     VerificationInput,
 )
 from oj_verify_clone.languages.models import LanguageEnvironment
@@ -82,16 +84,29 @@ class OjResolver:
                         error=error,
                     )
 
-                if "UNITTEST" in attr:
-                    tempdir = oj.get_random_cache_directory()
-                    yield CommandVerification(
-                        command=env.get_execute_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                        compile=env.get_compile_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                    )
+                unit_test_envvar = attr.get("UNITTEST")
+                if unit_test_envvar:
+                    var = os.getenv(unit_test_envvar)
+                    if var is None:
+                        logger.warning(
+                            "UNITTEST envvar %s is not defined.",
+                            unit_test_envvar,
+                        )
+                        yield ConstVerification(status=ResultStatus.FAILURE)
+                    elif var.lower() == "false" or var == "0":
+                        logger.info(
+                            "UNITTEST envvar %s=%s is falsy.",
+                            unit_test_envvar,
+                            var,
+                        )
+                        yield ConstVerification(status=ResultStatus.FAILURE)
+                    else:
+                        logger.info(
+                            "UNITTEST envvar %s=%s is truthy.",
+                            unit_test_envvar,
+                            var,
+                        )
+                        yield ConstVerification(status=ResultStatus.SUCCESS)
 
             additonal_sources: list[AddtionalSource] = []
             if bundle:

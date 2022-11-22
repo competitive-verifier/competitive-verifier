@@ -38,11 +38,6 @@ def get_directory(url: str) -> pathlib.Path:
     return competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
 
 
-def get_random_cache_directory() -> pathlib.Path:
-    d = datetime.datetime.now().astimezone().strftime("%Y%m%d%H%M%S")
-    return _random_cache_dir / f"{d}{uuid.uuid4().hex}"
-
-
 def is_yukicoder(url: str) -> bool:
     return YukicoderService.from_url(url) is not None
 
