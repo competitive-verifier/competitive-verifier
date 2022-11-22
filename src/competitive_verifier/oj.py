@@ -21,10 +21,11 @@ import competitive_verifier.exec
 from competitive_verifier import log
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
+_problem_cache_dir = competitive_verifier.config.cache_dir / "problems"
 onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
 
-_checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"
+checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"
 
 
 def get_cache_directory() -> pathlib.Path:
@@ -32,7 +33,7 @@ def get_cache_directory() -> pathlib.Path:
 
 
 def get_directory(url: str) -> pathlib.Path:
-    return competitive_verifier.config.cache_dir / hashlib.md5(url.encode()).hexdigest()
+    return _problem_cache_dir / hashlib.md5(url.encode()).hexdigest()
 
 
 def is_yukicoder(url: str) -> bool:
@@ -49,7 +50,7 @@ def get_checker_path(url: str) -> Optional[pathlib.Path]:
         problem_dir = (
             checker_problem._get_problem_directory_path()
         )  # pyright: reportPrivateUsage=false
-        return problem_dir / _checker_exe_path
+        return problem_dir / checker_exe_path
 
 
 def download(url: str, *, group_log: bool = False) -> bool:
@@ -130,8 +131,8 @@ def test(
         str(tle),
     ]
 
-    checker_path = get_checker_path(url)
-    if checker_path:
+    checker_path = directory / checker_exe_path
+    if checker_path.exists():
         arg_list += ["--judge-command", str(checker_path)]
     if error:
         arg_list += ["-e", str(error)]

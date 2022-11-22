@@ -31,7 +31,7 @@ def test_oj_download(clear_env: Any):
         assert args.cookie == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
         assert args.url == "http://example.com"
         assert args.directory == pathlib.Path(
-            ".competitive-verifier/cache/a9b9f04336ce0181a08e774e01113b31/test"
+            ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
         )
         assert args.yukicoder_token is None
 
@@ -58,7 +58,7 @@ def test_oj_download_yukicoder():
             )
             assert args.url == "http://example.com"
             assert args.directory == pathlib.Path(
-                ".competitive-verifier/cache/a9b9f04336ce0181a08e774e01113b31/test"
+                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
             )
             assert args.yukicoder_token == "YKTK"
         finally:
@@ -83,5 +83,5 @@ def test_oj_test():
         assert args.error is None
         assert args.command == "ls ."
         assert args.directory == pathlib.Path(
-            ".competitive-verifier/cache/a9b9f04336ce0181a08e774e01113b31/test"
+            ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
         )
