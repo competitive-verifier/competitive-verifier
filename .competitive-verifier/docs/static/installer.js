@@ -266,7 +266,7 @@
         {
             const link = repoRoot + "/actions"
             const img = repoRoot + "/workflows/verify/badge.svg"
-            badgeVerifyRaw.value = `[![Actions Status](${img}](${link})`
+            badgeVerifyRaw.value = `[![Actions Status](${img})](${link})`
             badgeVerifyLink.href = link
             badgeVerifyImg.src = img
         }
