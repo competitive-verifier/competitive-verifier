@@ -343,7 +343,7 @@ def _source_files_in_same_targets(
 class RustLanguageEnvironment(LanguageEnvironment):
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
+    ) -> Optional[str]:
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)

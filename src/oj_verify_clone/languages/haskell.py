@@ -11,6 +11,5 @@ class HaskellLanguage(UserDefinedLanguage):
         if config is None:
             config = get_config()["languages"].get("haskell", {})
         assert config is not None
-        config.setdefault("compile", "echo")
         config.setdefault("execute", "runghc {basedir}/{path}")
         super().__init__(extension="hs", config=config)

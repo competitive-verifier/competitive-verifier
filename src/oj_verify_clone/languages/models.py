@@ -7,15 +7,13 @@ import oj_verify_clone.languages.special_comments as special_comments
 
 
 class LanguageEnvironment:
-    @abc.abstractmethod
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
+    ) -> Optional[str]:
         """
         :throws Exception:
         """
-
-        raise NotImplementedError
+        return None
 
     @abc.abstractmethod
     def get_execute_command(

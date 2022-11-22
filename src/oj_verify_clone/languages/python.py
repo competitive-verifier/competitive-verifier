@@ -7,37 +7,26 @@ import platform
 import sys
 from logging import getLogger
 from typing import Sequence
-
+import os
 import importlab.environment
 import importlab.fs
 import importlab.graph
 
-import oj_verify_clone.shlex2 as shlex
 from oj_verify_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 
 
 class PythonLanguageEnvironment(LanguageEnvironment):
-    def get_compile_command(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return shlex.join(
-            [
-                "oj-verify-python-compile",
-                "--path",
-                str(path.resolve()),
-                "--basedir",
-                str(basedir.resolve()),
-                "--output",
-                str(tempdir.resolve() / "compiled.py"),
-            ]
-        )
-
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
-        return shlex.join([sys.executable, str(tempdir / "compiled.py")])
+        python_path = os.getenv("PYTHONPATH")
+        if python_path:
+            python_path = basedir.resolve().as_posix() + os.pathsep + python_path
+        else:
+            python_path = basedir.resolve().as_posix()
+        return f"env PYTHONPATH={python_path} python {path}"
 
 
 @functools.lru_cache(maxsize=None)

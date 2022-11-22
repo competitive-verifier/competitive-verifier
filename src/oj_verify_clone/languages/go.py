@@ -11,6 +11,5 @@ class GoLanguage(UserDefinedLanguage):
         if config is None:
             config = get_config()["languages"].get("go", {})
         assert config is not None
-        config.setdefault("compile", "echo")
-        config.setdefault("execute", "go run {basedir}/{path}")
+        config.setdefault("execute", "env GO111MODULE=off go run {basedir}/{path}")
         super().__init__(extension="go", config=config)

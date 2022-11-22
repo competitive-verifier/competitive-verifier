@@ -11,6 +11,5 @@ class RubyLanguage(UserDefinedLanguage):
         if config is None:
             config = get_config()["languages"].get("ruby", {})
         assert config is not None
-        config.setdefault("compile", "echo")
         config.setdefault("execute", "ruby {basedir}/{path}")
         super().__init__(extension="rb", config=config)

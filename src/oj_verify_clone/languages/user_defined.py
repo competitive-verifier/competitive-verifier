@@ -20,11 +20,13 @@ class UserDefinedLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        assert "compile" in self.config
-        return self.config["compile"].format(
-            path=str(path), basedir=str(basedir), tempdir=str(tempdir)
-        )
+    ) -> Optional[str]:
+        compile = self.config.get("compile")
+        if compile:
+            return compile.format(
+                path=str(path), basedir=str(basedir), tempdir=str(tempdir)
+            )
+        return None
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
