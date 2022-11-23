@@ -25,7 +25,7 @@ def run_impl(
     write_summary: bool = False,
 ) -> VerifyCommandResult:
     configure_stderr_logging()
-    result = merge(map(VerifyCommandResult.parse_file, result_json))
+    result = merge(map(VerifyCommandResult.parse_file_relative, result_json))
     if write_summary:
         gh_summary_path = github.env.get_step_summary_path()
         if gh_summary_path and gh_summary_path.parent.exists():

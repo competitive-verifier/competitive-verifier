@@ -20,7 +20,7 @@ def merge(results: Iterable[VerifyCommandResult]) -> VerifyCommandResult:
 def run_impl(*result_json: pathlib.Path) -> bool:
     configure_stderr_logging()
 
-    result = merge(map(VerifyCommandResult.parse_file, result_json))
+    result = merge(map(VerifyCommandResult.parse_file_relative, result_json))
 
     counter = Counter(
         r.status for fr in result.files.values() for r in fr.verifications

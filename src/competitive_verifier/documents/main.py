@@ -38,7 +38,7 @@ def run(args: argparse.Namespace) -> bool:
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     logger.info("result_json=%s", [str(p) for p in args.result_json])
 
-    input = VerificationInput.parse_file(args.verify_files_json)
+    input = VerificationInput.parse_file_relative(args.verify_files_json)
     result = merge_result.run_impl(
         *args.result_json,
         write_summary=args.write_summary,

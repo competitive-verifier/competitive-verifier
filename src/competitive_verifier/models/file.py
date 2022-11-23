@@ -5,6 +5,8 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, StrBytes, validator
 
+from competitive_verifier.util import to_relative
+
 from ._scc import SccGraph
 from .verification import Verification
 
@@ -112,10 +114,20 @@ class VerificationInput:
         return VerificationInput(VerificationInputImpl.parse_raw(b, **kwargs))
 
     @staticmethod
-    def parse_file(
+    def parse_file_relative(
         path: Union[str, pathlib.Path], **kwargs: Any
     ) -> "VerificationInput":
-        return VerificationInput(VerificationInputImpl.parse_file(path, **kwargs))
+        impl = VerificationInputImpl.parse_file(path, **kwargs)
+        new_files: dict[pathlib.Path, VerificationFile] = {}
+        for p, f in impl.files.items():
+            p = to_relative(p)
+            if not p:
+                continue
+            f.dependencies = set(d for d in map(to_relative, f.dependencies) if d)
+            new_files[p] = f
+
+        impl.files = new_files
+        return VerificationInput(impl)
 
     @staticmethod
     def parse_obj(obj: Any) -> "VerificationInput":

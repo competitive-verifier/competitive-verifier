@@ -58,7 +58,7 @@ def run_impl(
 def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
-    verification = VerificationInput.parse_file(args.verify_files_json)
+    verification = VerificationInput.parse_file_relative(args.verify_files_json)
 
     return run_impl(verification.files.values(), group_log=True)
 

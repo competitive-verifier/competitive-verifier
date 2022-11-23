@@ -1,9 +1,11 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import Any
+from typing import Any, Union
 
 from pydantic import BaseModel, Field, validator
+
+from competitive_verifier.util import to_relative
 
 from .result_status import ResultStatus
 
@@ -50,6 +52,21 @@ class FileResult(BaseModel):
 class VerifyCommandResult(BaseModel):
     total_seconds: float
     files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
+
+    @classmethod
+    def parse_file_relative(
+        cls, path: Union[str, pathlib.Path], **kwargs: Any
+    ) -> "VerifyCommandResult":
+        impl = cls.parse_file(path, **kwargs)
+        new_files: dict[pathlib.Path, FileResult] = {}
+        for p, f in impl.files.items():
+            p = to_relative(p)
+            if not p:
+                continue
+            new_files[p] = f
+
+        impl.files = new_files
+        return impl
 
     def json(self, **kwargs: Any) -> str:
         class WithStrDict(BaseModel):
