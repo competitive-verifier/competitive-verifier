@@ -179,7 +179,6 @@ class CPlusPlusLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, Any]:
         attributes: dict[str, Any] = {}
-        attributes.update(special_comments.list_doxygen_annotations(path.resolve()))
 
         comments = special_comments.list_special_comments(path.resolve())
         if comments:

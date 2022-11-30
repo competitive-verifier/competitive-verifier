@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 @functools.lru_cache(maxsize=None)
 def list_special_comments(path: pathlib.Path) -> dict[str, str]:
     pattern = re.compile(
-        r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Z_]+)(?:\s(.*))?$"
+        r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"
     )
     attributes: dict[str, str] = {}
     for line in path.read_text().splitlines():
@@ -20,41 +20,6 @@ def list_special_comments(path: pathlib.Path) -> dict[str, str]:
             key = matched.group(1)
             value = (matched.group(2) or "").strip()
             attributes[key] = value
-    return attributes
-
-
-@functools.lru_cache(maxsize=None)
-def list_doxygen_annotations(path: pathlib.Path) -> dict[str, str]:
-    pattern = re.compile(r"@(title|category|brief|docs|see|sa|ignore) (.*)")
-    attributes: dict[str, str] = {}
-    for line in path.read_text().splitlines():
-        matched = pattern.search(line)
-        if matched:
-            key = matched.group(1)
-            value = matched.group(2).strip()
-            if key == "docs":
-                attributes["_deprecated_at_docs"] = value
-                logger.warning(
-                    'deprecated annotation: "@%s %s" in %s.  use front-matter style instead',
-                    key,
-                    value,
-                    str(path),
-                )
-            elif key in ("title", "brief"):
-                if "document_title" in attributes:
-                    continue
-                attributes["document_title"] = value
-            elif key in ("category", "see", "sa", "ignore"):
-                logger.debug(
-                    'ignored annotation: "@%s %s" in %s', key, value, str(path)
-                )
-                if key == "ignore":
-                    logger.warning(
-                        'Now `@ignore` has no effect. Please write as `exclude: ["%s"]` at `.verify-helper/docs/_config.yml` instead.',
-                        value,
-                    )
-            else:
-                assert False
     return attributes
 
 
