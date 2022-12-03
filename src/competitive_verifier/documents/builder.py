@@ -2,7 +2,7 @@ import importlib.resources
 import pathlib
 from itertools import chain
 from logging import getLogger
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 import yaml
 
@@ -52,16 +52,19 @@ _RESOURCE_STATIC_FILE_PATHS: list[str] = [
 class DocumentBuilder:
     input: VerificationInput
     result: VerifyCommandResult
+    docs_dir: Optional[pathlib.Path]
     destination_dir: pathlib.Path
 
     def __init__(
         self,
         input: VerificationInput,
         result: VerifyCommandResult,
+        docs_dir: Optional[pathlib.Path],
         destination_dir: pathlib.Path,
     ) -> None:
         self.input = input
         self.result = result
+        self.docs_dir = docs_dir
         self.destination_dir = destination_dir
 
     def build(self) -> bool:
@@ -89,7 +92,10 @@ class DocumentBuilder:
         return result
 
     def impl(self) -> bool:
-        config = load_render_config(destination_dir=self.destination_dir)
+        config = load_render_config(
+            docs_dir=self.docs_dir,
+            destination_dir=self.destination_dir,
+        )
         logger.debug("lender config=%s", config)
 
         excluded_files = set(

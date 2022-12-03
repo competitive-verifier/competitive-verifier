@@ -24,12 +24,13 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     result: VerifyCommandResult,
+    docs_dir: Optional[pathlib.Path],
     destination_dir: pathlib.Path,
     ignore_error: bool,
 ) -> bool:
     logger.debug("input=%s", input.json())
     logger.debug("result=%s", result.json())
-    builder = DocumentBuilder(input, result, destination_dir)
+    builder = DocumentBuilder(input, result, docs_dir, destination_dir)
     return builder.build() or ignore_error
 
 
@@ -43,7 +44,7 @@ def run(args: argparse.Namespace) -> bool:
         *args.result_json,
         write_summary=args.write_summary,
     )
-    return run_impl(input, result, args.destination, args.ignore_error)
+    return run_impl(input, result, args.docs, args.destination, args.ignore_error)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -52,6 +53,12 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
     destination = config_dir / "_jekyll"
+    docs = config_dir / "docs"
+    parser.add_argument(
+        "--docs",
+        type=pathlib.Path,
+        help=f"Document settings directory. default: {docs.as_posix()}",
+    )
     parser.add_argument(
         "--destination",
         type=pathlib.Path,

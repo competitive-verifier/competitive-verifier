@@ -1,7 +1,6 @@
 import importlib.resources
 import os
 import pathlib
-from functools import lru_cache
 from logging import getLogger
 from typing import Any, Optional
 
@@ -20,8 +19,7 @@ COMPETITIVE_VERIFY_DOCS_CONFIG_YML = "COMPETITIVE_VERIFY_DOCS_CONFIG_YML"
 logger = getLogger(__name__)
 
 
-@lru_cache(maxsize=1)
-def get_docs_dir() -> pathlib.Path:
+def _get_default_docs_dir() -> pathlib.Path:
     oj_verify_config_dir = pathlib.Path(".verify-helper")
     if not conf.config_dir.exists() and oj_verify_config_dir.exists():
         config_dir = oj_verify_config_dir
@@ -29,7 +27,7 @@ def get_docs_dir() -> pathlib.Path:
     return config_dir / "docs"
 
 
-def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
+def _load_user_render_config_yml(docs_dir: pathlib.Path) -> Optional[dict[str, Any]]:
     env_config_yml = os.getenv(COMPETITIVE_VERIFY_DOCS_CONFIG_YML)
     if env_config_yml:
         print(env_config_yml)
@@ -45,7 +43,6 @@ def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
                 e,
             )
 
-    docs_dir = get_docs_dir()
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
         try:
@@ -60,7 +57,11 @@ def _load_user_render_config_yml() -> Optional[dict[str, Any]]:
             )
 
 
-def load_render_config(*, destination_dir: pathlib.Path) -> SiteRenderConfig:
+def load_render_config(
+    *,
+    docs_dir: Optional[pathlib.Path],
+    destination_dir: pathlib.Path,
+) -> SiteRenderConfig:
     # load default _config.yml
     default_config_yml = yaml.safe_load(
         (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
@@ -68,14 +69,16 @@ def load_render_config(*, destination_dir: pathlib.Path) -> SiteRenderConfig:
     assert default_config_yml is not None
 
     config_yml: dict[str, Any] = default_config_yml
-    user_config_yml = _load_user_render_config_yml()
+    if not docs_dir:
+        docs_dir = _get_default_docs_dir()
+
+    user_config_yml = _load_user_render_config_yml(docs_dir)
     if user_config_yml:
         config_yml.update(user_config_yml)
 
     config_yml.setdefault("action_name", github.env.get_workflow_name())
     config_yml.setdefault("branch_name", github.env.get_ref_name())
 
-    docs_dir = get_docs_dir()
     static_dir = docs_dir / "static"
     index_md_path = docs_dir / "index.md"
     return SiteRenderConfig(
