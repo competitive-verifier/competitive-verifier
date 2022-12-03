@@ -81,6 +81,7 @@
     const inputLangRuby = getInput('input-lang-ruby')
     const inputLangNim = getInput('input-lang-nim')
     const inputLangHaskel = getInput('input-lang-haskel')
+    const inputLangCSharp = getInput('input-lang-csharp')
     const inputLangs = [
         inputLangCpp,
         inputLangPython,
@@ -90,9 +91,8 @@
         inputLangRuby,
         inputLangNim,
         inputLangHaskel,
+        inputLangCSharp,
     ]
-
-    const outputCreateActionLink = document.getElementById('create-action')
 
     /**
      *  @param {string[]} initializeForResolving
@@ -108,6 +108,8 @@
         const useRuby = inputLangRuby.checked
         const useNim = inputLangNim.checked
         const useHaskel = inputLangHaskel.checked
+        const useCSharp = inputLangCSharp.checked
+
 
         let ojResolve = false
 
@@ -183,6 +185,42 @@
                 '    targets: x86_64-unknown-linux-gnu',
             )
         }
+        if (useCSharp) {
+            const setup = [
+                '- name: Setup .NET SDK',
+                '  uses: actions/setup-dotnet@v3',
+                '  with:',
+                '    dotnet-version: |',
+                '      7.0.x',
+                '      3.1.x',
+                '- name: Build',
+                '  run: dotnet build ${{ env.WORKFLOW_BUILD_SLN }} -c Release',
+            ]
+
+            initializeForResolving.push(...setup,
+                '- name: setup CompetitiveVerifierCsResolver',
+                '  run: dotnet tool install -g CompetitiveVerifierCsResolver',
+                '# required only if you have unit test.',
+                '- name: Unit test',
+                '  run: dotnet test ${{ env.UNITTEST_CSPROJ }} --logger "CompetitiveVerifier;OutFile=${{runner.temp}}/unittest.csv" --no-build  -c Release',
+                '  env:',
+                '    UNITTEST_CSPROJ: YourUnittest.csproj',
+                '- name: Resolve',
+                '  run: dotnet run --project ${{ env.VERIFY_CSPROJ }} --no-build -c Release | tee ${{runner.temp}}/problems.json',
+                '  env:',
+                '    VERIFY_CSPROJ: YourVerify.csproj',
+                '- name: cs-resolve',
+                '  uses: competitive-verifier/actions/cs-resolve@v1',
+                '  with:',
+                '    output-path: verify_files.json',
+                '    # Specify patterns',
+                '    # include: your-own-include/',
+                '    # exclude: your-own-exclude/',
+                '    unittest-result: ${{runner.temp}}/unittest.csv',
+                '    problems: ${{runner.temp}}/problems.json',
+            )
+            initializeForVerification.push(...setup)
+        }
 
         if (ojResolve) {
             initializeForResolving.push(
@@ -243,12 +281,6 @@
 
 
     const output = document.getElementById('action-yml')
-    const badgeVerifyRaw = document.getElementById('badge-verify-raw')
-    const badgeVerifyLink = document.getElementById('badge-verify-link')
-    const badgeVerifyImg = document.getElementById('badge-verify-img')
-    const badgePagesRaw = document.getElementById('badge-pages-raw')
-    const badgePagesLink = document.getElementById('badge-pages-link')
-    const badgePagesImg = document.getElementById('badge-pages-img')
 
     async function update() {
         const actionYaml = await getActionYaml()
@@ -258,12 +290,21 @@
         const [_, repoUser, repoName] = parseRepository() || [undefined, undefined, undefined]
         const repoRoot = `https://github.com/${repoUser}/${repoName}`
         {
+            const url = `${repoRoot}/settings/pages`
+            const outputSettingsPagesLink = document.getElementById('settings-pages')
+            outputSettingsPagesLink.href = url
+        }
+        {
+            const outputCreateActionLink = document.getElementById('create-action')
             // New action
             const filename = ".github%2Fworkflows%2Fverify.yml"
             const url = `${repoRoot}/new/${inputBranch.value}?filename=${filename}&value=${encodeURIComponent('# Paste action')}`
             outputCreateActionLink.href = url
         }
         {
+            const badgeVerifyRaw = document.getElementById('badge-verify-raw')
+            const badgeVerifyLink = document.getElementById('badge-verify-link')
+            const badgeVerifyImg = document.getElementById('badge-verify-img')
             const link = repoRoot + "/actions"
             const img = repoRoot + "/workflows/verify/badge.svg"
             badgeVerifyRaw.value = `[![Actions Status](${img})](${link})`
@@ -271,6 +312,9 @@
             badgeVerifyImg.src = img
         }
         {
+            const badgePagesRaw = document.getElementById('badge-pages-raw')
+            const badgePagesLink = document.getElementById('badge-pages-link')
+            const badgePagesImg = document.getElementById('badge-pages-img')
             const link = `https://${repoUser}.github.io/${repoName}`
             const img = "https://img.shields.io/static/v1?label=GitHub+Pages&message=+&color=brightgreen&logo=github"
             badgePagesRaw.value = `[![GitHub Pages](${img})](${link})`

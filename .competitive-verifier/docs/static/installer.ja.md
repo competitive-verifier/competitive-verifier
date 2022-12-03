@@ -9,6 +9,7 @@
 ## 設定手順
 1. **GitHub Actions テンプレート** を埋める。
 1. <a id="create-action" target="_blank">作成画面</a> を開き、 **GitHub Actions テンプレート** の内容をコピペする
+1. <a id="settings-pages" target="_blank">GitHub Pages 設定</a> を開き、 Source を **GitHub Actions** にする
 1. 下の方にある緑の `Commit new file` ボタンを押す
 
 ## おまけの手順

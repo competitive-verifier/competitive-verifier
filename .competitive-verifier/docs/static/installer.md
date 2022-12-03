@@ -11,6 +11,7 @@ redirect_from:
 ## To set up automated verification
 1. Fill configs of **GitHub Actions template**.
 1. Open <a id="create-action" target="_blank">New action</a> page and paste **GitHub Actions template**.
+1. Open <a id="settings-pages" target="_blank">GitHub Pages settings</a> and change `Source` setting to **GitHub Actions**.
 1. Click the green `Commit new file` button.
 
 ## Additonal
