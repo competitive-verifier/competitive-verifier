@@ -8,12 +8,13 @@
 - [English Version](document.html)
 - [日本語バージョン](document.ja.html)
 
-## `oj-resolve`
+## 依存関係の解決
+### oj-resolve
 
 Online Judge Verification Helper の機能を使って、ソースコードを解析します。
 
 
-### 対応している言語
+#### 対応している言語
 {:.no_toc}
 
 一覧表:
@@ -21,7 +22,6 @@ Online Judge Verification Helper の機能を使って、ソースコードを�
 | 言語 | 認識される拡張子 | 属性の指定方法 | 対応機能 (verify / bundle / doc) | ファイル例 |
 |---|---|---|---|---|
 | C++ | `.cpp` `.hpp` | `#define [KEY] [VALUE]` | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
-| C# script | `.csx` |  `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [segment_tree.range_sum_query.test.csx](https://github.com/online-judge-tools/verification-helper/blob/master/examples/csharpscript/segment_tree.range_sum_query.test.csx) |
 | Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_tree_yosupo_test.nim](https://github.com/online-judge-tools/verification-helper/blob/master/examples/nim/union_find_tree_yosupo_test.nim) |
 | Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.test.py](https://github.com/online-judge-tools/verification-helper/blob/master/examples/python/union_find_yosupo.test.py) |
 | Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld.test.hs](https://github.com/online-judge-tools/verification-helper/blob/master/Examples2/Haskell/HelloWorld.test.hs) |
@@ -46,13 +46,6 @@ CXXFLAGS = ["-std=c++17", "-Wall", "-g", "-fsanitize=undefined", "-D_GLIBCXX_DEB
 
 -   [`ulimit`](https://linux.die.net/man/3/ulimit) が動作しないような環境では、自分で `CXXFLAGS` を設定する場合はスタックサイズに注意してください。
 -   認識される拡張子は `.cpp` `.hpp` `.cc` `.h` のみです。`.c` や `.h++` のような拡張子のファイルや拡張子なしのファイルは認識されないことに注意してください。
-
-#### C# script の設定
-
-設定項目はありません。
-コンパイラには .NET Core が使われます。
-
--   いまのところ `.cs` という拡張子が認識されないことに注意してください ([#248](https://github.com/online-judge-tools/verification-helper/issues/248))。
 
 #### Nim の設定
 
@@ -116,6 +109,54 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 verification_file_suffix = ".test.sed"
 ```
 
+#### ユニットテストの設定
+
+ユニットテストがある場合は, `UNITTEST` 属性を使うことができます。
+
+{% raw %}
+```go
+// competitive-verifier: UNITTEST GOTEST_RESULT
+
+package main
+
+import (
+    "testing"
+    "./helloworld"
+)
+
+func TestHelloWorld(t *testing.T) {
+    want:= "Hello World"
+    if got := helloworld.GetHelloWorld(); got != want {
+        t.Errorf("helloworld.GetHelloWorld() = %v, want %v", got, want)
+    }
+}
+```
+
+``` yml
+      - name: go test
+        id: go-unittest
+        run: go test
+        working-directory: examples/go
+        continue-on-error: true
+        env:
+          GO111MODULE: "off"
+
+      - name: oj-resolve
+        uses: competitive-verifier/actions/oj-resolve@v1
+        with:
+          include: examples
+          exclude: |
+            src
+            tests
+          output-path: resolved.json
+          config: examples/awk-config.toml
+        env:
+          GOTEST_RESULT: ${{ steps.go-unittest.outcome == 'success' }}
+```
+{% endraw %}
+### csharp-resolver: C# の設定
+
+[https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver) を使います。
 
 ## verify 自動実行
 
@@ -137,6 +178,7 @@ verification_file_suffix = ".test.sed"
 | `PROBLEM` | 提出する問題の URL を指定します | |
 | `ERROR` | 許容誤差を指定します | |
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
+| `document_title` | ドキュメントのタイトルを指定します | |
 
 ## ドキュメント生成
 
