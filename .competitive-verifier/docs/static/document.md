@@ -154,8 +154,7 @@ func TestHelloWorld(t *testing.T) {
 {% endraw %}
 ### csharp-resolver: C# settings
 
-Use 
-[https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver).
+Use [https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver).
 
 
 ## Automating the verification
