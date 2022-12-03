@@ -91,10 +91,3 @@ class VerifyCommandResult(BaseModel):
 
     def is_success(self) -> bool:
         return all(f.is_success() for f in self.files.values())
-
-    # def show_summary(self) -> None:
-    #     counter = Counter(r.command_result for r in self.files)
-    #     logger.info(
-    #         " ".join(f"Test result: {s.value}: {counter.get(s)}"
-    #          for s in ResultStatus)
-    #     )
