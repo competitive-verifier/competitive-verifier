@@ -8,11 +8,12 @@
 - [English Version](document.html)
 - [日本語バージョン](document.ja.html)
 
-## `oj-resolve`
+## resolve
+### oj-resolve
 
 `oj-resolve` subcommand reslove source code status by Online Judge Verification Helper.
 
-### Supported languages
+#### Supported languages
 {:.no_toc}
 
 Summary:
@@ -20,7 +21,6 @@ Summary:
 | Language | Available file extensions | How to specify attributes | Features (verify / bundle / doc) | Example file |
 |---|---|---|---|---|
 | C++ | `.cpp` `.hpp` | `#define [KEY] [VALUE]` | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
-| C# script | `.csx` |  `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [segment_tree.range_sum_query.test.csx](https://github.com/online-judge-tools/verification-helper/blob/master/examples/csharpscript/segment_tree.range_sum_query.test.csx) |
 | Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_tree_yosupo_test.nim](https://github.com/online-judge-tools/verification-helper/blob/master/examples/nim/union_find_tree_yosupo_test.nim) |
 | Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.test.py](https://github.com/online-judge-tools/verification-helper/blob/master/examples/python/union_find_yosupo.test.py) |
 | Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld.test.hs](https://github.com/online-judge-tools/verification-helper/blob/master/Examples2/Haskell/HelloWorld.test.hs) |
@@ -45,13 +45,6 @@ CXXFLAGS = ["-std=c++17", "-Wall", "-g", "-fsanitize=undefined", "-D_GLIBCXX_DEB
 
 -   If you use environments which [`ulimit`](https://linux.die.net/man/3/ulimit) doesn't work on, and if you want to set `CXXFLAGS` by yourself, please be careful about the stack size.
 -   The supported extensions are `.cpp`, `.hpp`, `.cc`, and `.h`. Please note that files with other extensions like `.c` `.h++` and files without extensions are not recognized.
-
-#### Settings for C#
-
-There is no config now.
-.NET Core is used as the compiler.
-
--   Note that currently the `.cs` extension is not recognized ([#248](https://github.com/online-judge-tools/verification-helper/issues/248)).
 
 #### Settings for Nim
 
@@ -114,6 +107,13 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 verification_file_suffix = ".test.sed"
 ```
 
+
+### csharp-resolver: C# settings
+
+Use 
+[https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver).
+
+
 ## Automating the verification
 
 ### Available judging platforms
@@ -134,6 +134,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 | `PROBLEM` | specify the URL of the problem to submit | |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
+| `document_title` | specify the title of source  | |
 
 ## Generating Documentation
 
