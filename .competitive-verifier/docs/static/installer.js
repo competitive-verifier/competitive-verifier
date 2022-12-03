@@ -187,7 +187,7 @@
         if (ojResolve) {
             initializeForResolving.push(
                 '- name: oj-resolve',
-                '  uses: competitive-verifier/oj-resolve-action@v1',
+                '  uses: competitive-verifier/actions/oj-resolve@v1',
                 '  with:',
                 '    output-path: verify_files.json',
                 '    # Specify patterns',

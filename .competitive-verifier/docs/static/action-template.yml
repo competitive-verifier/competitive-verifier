@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/setup-competitive-verifier@v1
+        uses: competitive-verifier/actions/setup@v1
         with:
           python-version: "3.9"
           cache-pip: true
@@ -31,7 +31,7 @@ jobs:
       # Initialize your own environment for resolving.
 
       - name: Upload verify_files.json
-        uses: competitive-verifier/upload-verify-artifact@v1
+        uses: competitive-verifier/actions/upload-verify-artifact@v1
         with:
           file: verify_files.json
 
@@ -61,10 +61,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download verify_files.json
-        uses: competitive-verifier/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v1
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/setup-competitive-verifier@v1
+        uses: competitive-verifier/actions/setup@v1
         with:
           python-version: "3.9"
           cache-pip: true
@@ -72,7 +72,7 @@ jobs:
       # Initialize your own environment for verification.
 
       - name: Verify
-        uses: competitive-verifier/verify-action@v1
+        uses: competitive-verifier/actions/verify@v1
         with:
           destination: ${{runner.temp}}/result.json
           split-size: ${{ env.SPLIT_SIZE }}
@@ -96,7 +96,7 @@ jobs:
 
       - name: Download verify_files.json and all artifacts
         id: all-artifacts
-        uses: competitive-verifier/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v1
         with:
           download-all: true
           artifact-root: .artifacts/
@@ -115,13 +115,13 @@ jobs:
           SRCDIR: .artifacts/Bundled-${{ runner.os }}
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/setup-competitive-verifier@v1
+        uses: competitive-verifier/actions/setup@v1
         with:
           python-version: "3.9"
           cache-pip: true
 
       - name: Docs
-        uses: competitive-verifier/docs-action@v1
+        uses: competitive-verifier/actions/docs@v1
         with:
           verify-result: ${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
           destination: _jekyll
@@ -138,7 +138,7 @@ jobs:
           path: _site
 
       - name: Check
-        uses: competitive-verifier/check-action@v1
+        uses: competitive-verifier/actions/check@v1
         with:
           verify-result: ${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
   deploy:
