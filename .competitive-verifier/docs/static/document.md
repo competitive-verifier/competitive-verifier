@@ -8,7 +8,7 @@
 - [English Version](document.html)
 - [日本語バージョン](document.ja.html)
 
-## resolve
+## Resolving dependencies
 ### oj-resolve
 
 `oj-resolve` subcommand reslove source code status by Online Judge Verification Helper.
@@ -107,6 +107,49 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 verification_file_suffix = ".test.sed"
 ```
 
+#### Unit test
+
+If you have unit test, you can use `UNITTEST` attribute.
+
+```go
+// competitive-verifier: UNITTEST GOTEST_RESULT
+
+package main
+
+import (
+    "testing"
+    "./helloworld"
+)
+
+func TestHelloWorld(t *testing.T) {
+    want:= "Hello World"
+    if got := helloworld.GetHelloWorld(); got != want {
+        t.Errorf("helloworld.GetHelloWorld() = %v, want %v", got, want)
+    }
+}
+```
+
+```yml
+      - name: go test
+        id: go-unittest
+        run: go test
+        working-directory: examples/go
+        continue-on-error: true
+        env:
+          GO111MODULE: "off"
+
+      - name: oj-resolve
+        uses: competitive-verifier/actions/oj-resolve@v1
+        with:
+          include: examples
+          exclude: |
+            src
+            tests
+          output-path: resolved.json
+          config: examples/awk-config.toml
+        env:
+          GOTEST_RESULT: ${{ steps.go-unittest.outcome == 'success' }}
+```
 
 ### csharp-resolver: C# settings
 
