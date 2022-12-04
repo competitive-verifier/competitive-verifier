@@ -34,8 +34,9 @@ for (const btn of document.getElementsByClassName('code-toggle-btn')) {
         this.classList.add('selected')
 
         const targetId = this.dataset.target
-        for (const pre of document.getElementsByClassName('hljs')) {
-            pre.classList.add('disable')
+        for (const hljs of document.getElementsByClassName('hljs')) {
+            if (hljs.tagName.toLowerCase() === 'pre')
+                hljs.classList.add('disable')
         }
         document.getElementById(targetId).classList.remove('disable')
     })
