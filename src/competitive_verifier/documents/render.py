@@ -20,11 +20,11 @@ logger = getLogger(__name__)
 
 
 def _get_default_docs_dir() -> pathlib.Path:
-    oj_verify_config_dir = pathlib.Path(".verify-helper")
-    if not conf.config_dir.exists() and oj_verify_config_dir.exists():
-        config_dir = oj_verify_config_dir
-    config_dir = conf.config_dir
-    return config_dir / "docs"
+    default_docs_dir = conf.config_dir / "docs"
+    oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
+    if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
+        return oj_verify_docs_dir
+    return default_docs_dir
 
 
 def _load_user_render_config_yml(docs_dir: pathlib.Path) -> Optional[dict[str, Any]]:
@@ -72,6 +72,7 @@ def load_render_config(
     if not docs_dir:
         docs_dir = _get_default_docs_dir()
 
+    logger.info("docs_dir=%s", docs_dir.as_posix())
     user_config_yml = _load_user_render_config_yml(docs_dir)
     if user_config_yml:
         config_yml.update(user_config_yml)
