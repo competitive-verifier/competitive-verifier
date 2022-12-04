@@ -194,7 +194,9 @@
                 '      7.0.x',
                 '      3.1.x',
                 '- name: Build',
-                '  run: dotnet build ${{ env.WORKFLOW_BUILD_SLN }} -c Release',
+                '  run: dotnet build $WORKFLOW_BUILD_SLN -c Release',
+                '  env:',
+                '    WORKFLOW_BUILD_SLN: YourSolution.sln',
             ]
 
             initializeForResolving.push(...setup,
@@ -202,11 +204,11 @@
                 '  run: dotnet tool install -g CompetitiveVerifierCsResolver',
                 '# required only if you have unit test.',
                 '- name: Unit test',
-                '  run: dotnet test ${{ env.UNITTEST_CSPROJ }} --logger "CompetitiveVerifier;OutFile=${{runner.temp}}/unittest.csv" --no-build  -c Release',
+                '  run: dotnet test $UNITTEST_CSPROJ --logger "CompetitiveVerifier;OutDirectory=${{runner.temp}}/VerifierCsUnitTestResult" --no-build  -c Release',
                 '  env:',
                 '    UNITTEST_CSPROJ: YourUnittest.csproj',
                 '- name: Resolve',
-                '  run: dotnet run --project ${{ env.VERIFY_CSPROJ }} --no-build -c Release | tee ${{runner.temp}}/problems.json',
+                '  run: dotnet run --project $VERIFY_CSPROJ --no-build -c Release | tee ${{runner.temp}}/problems.json',
                 '  env:',
                 '    VERIFY_CSPROJ: YourVerify.csproj',
                 '- name: cs-resolve',
@@ -216,7 +218,7 @@
                 '    # Specify patterns',
                 '    # include: your-own-include/',
                 '    # exclude: your-own-exclude/',
-                '    unittest-result: ${{runner.temp}}/unittest.csv',
+                '    unittest-result: ${{runner.temp}}/VerifierCsUnitTestResult/*.csv',
                 '    problems: ${{runner.temp}}/problems.json',
             )
             initializeForVerification.push(...setup)
