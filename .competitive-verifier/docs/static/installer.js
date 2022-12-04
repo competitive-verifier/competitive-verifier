@@ -61,6 +61,7 @@
 
     const inputRepo = getInput('input-repo')
     const inputBranch = getInput('input-branch')
+    const inputHasYukicoder = getInput('input-yukicoder')
     const inputInclude = getInput('input-include')
     const inputExclude = getInput('input-exclude')
     const inputConfigToml = getInput('input-config-toml')
@@ -73,6 +74,7 @@
         inputExclude,
         inputConfigToml,
         inputParallelSize,
+        inputHasYukicoder,
     ]
 
     const inputLangCpp = getInput('input-lang-cpp')
@@ -258,6 +260,10 @@
             const initializeForResolving = ["# Initialize your own environment for resolving."]
             const initializeForVerification = ["# Initialize your own environment for verification."]
 
+            if (inputHasYukicoder.checked) {
+                resultYaml = resultYaml.replaceAll("# YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}", "  YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}")
+            }
+
             initLanguages(initializeForResolving, initializeForVerification)
             if (initializeForResolving.length > 1) {
                 resultYaml = resultYaml.replaceAll(initializeForResolving[0], stepDefinition(initializeForResolving))
@@ -295,6 +301,9 @@
         setToInput(inputConfigToml, "configToml")
         setToInput(inputParallelSize, "parallel")
 
+        if (urlParams.get("tokens").toLowerCase() == "yuki")
+            inputHasYukicoder.checked = true
+
         const loadLanguages = () => {
             const input = urlParams.get("langs")
             if (!input) return
@@ -326,6 +335,12 @@
         readInput(inputExclude, "exclude")
         readInput(inputConfigToml, "configToml")
         readInput(inputParallelSize, "parallel")
+
+        if (inputHasYukicoder.checked) {
+            urlParams.set("tokens", "yuki")
+        } else {
+            urlParams.set("tokens", "")
+        }
 
         const langs = []
         if (inputLangCpp.checked) langs.push("cpp")
