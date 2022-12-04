@@ -275,13 +275,16 @@ def _render_source_code_stats_for_top_page(
     def _build_categories_list(
         categories: dict[str, list[dict[str, str]]]
     ) -> list[dict[str, Any]]:
-        return [
-            {
-                "name": category,
-                "pages": pages,
-            }
-            for category, pages in categories.items()
-        ]
+        return sorted(
+            (
+                {
+                    "name": category,
+                    "pages": sorted(pages, key=lambda p: p.get("path", "")),
+                }
+                for category, pages in categories.items()
+            ),
+            key=lambda d: d.get("name", ""),
+        )
 
     return {
         "libraryCategories": _build_categories_list(library_categories),
