@@ -12,7 +12,7 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include="oj_verify_clone", from = "src" }
+    { include="competitive_verifier_oj_clone", from = "src" }
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -72,7 +72,7 @@ include_trailing_comma = true
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "examples,src/oj_verify_clone/languages,src/competitive_verifier_resources/jekyll,"
+exclude = "examples,src/competitive_verifier_oj_clone/languages,src/competitive_verifier_resources/jekyll,"
 ignore = "E203,E266,W503,"
 
 [tool.pyright]

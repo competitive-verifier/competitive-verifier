@@ -3,7 +3,7 @@ import pathlib
 import sys
 from typing import Optional
 
-import oj_verify_clone.config
+import competitive_verifier_oj_clone.config
 
 from .resolver import OjResolver
 
@@ -15,7 +15,7 @@ def run_impl(
     enable_bundle: bool,
 ) -> bool:
     if config_path:
-        oj_verify_clone.config.set_config_path(config_path)
+        competitive_verifier_oj_clone.config.set_config_path(config_path)
 
     resolver = OjResolver(
         include=include,

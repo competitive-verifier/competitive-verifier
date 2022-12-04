@@ -13,7 +13,7 @@ import importlab.environment
 import importlab.fs
 import importlab.graph
 
-from oj_verify_clone.languages.models import Language, LanguageEnvironment
+from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 

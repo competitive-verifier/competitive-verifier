@@ -2,10 +2,10 @@ import pathlib
 from logging import getLogger
 from typing import Any, Optional, Sequence
 
-import oj_verify_clone.shlex2 as shlex
-from oj_verify_clone.config import get_config
-from oj_verify_clone.languages.models import LanguageEnvironment
-from oj_verify_clone.languages.user_defined import UserDefinedLanguage
+import competitive_verifier_oj_clone.shlex2 as shlex
+from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.languages.models import LanguageEnvironment
+from competitive_verifier_oj_clone.languages.user_defined import UserDefinedLanguage
 
 logger = getLogger(__name__)
 

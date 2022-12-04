@@ -8,7 +8,7 @@ from typing import Generator
 import competitive_verifier.config as config
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
-import oj_verify_clone.list
+import competitive_verifier_oj_clone.list
 from competitive_verifier.models import (
     AddtionalSource,
     ConstVerification,
@@ -18,7 +18,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
-from oj_verify_clone.languages.models import LanguageEnvironment
+from competitive_verifier_oj_clone.languages.models import LanguageEnvironment
 
 logger = getLogger(__name__)
 
@@ -57,7 +57,7 @@ class OjResolver:
             if path in exclude_paths:
                 continue
 
-            language = oj_verify_clone.list.get(path)
+            language = competitive_verifier_oj_clone.list.get(path)
             if language is None:
                 continue
 
