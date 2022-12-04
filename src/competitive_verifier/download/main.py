@@ -14,6 +14,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
+from competitive_verifier.resource import ulimit_stack
 
 logger = getLogger(__name__)
 
@@ -46,6 +47,10 @@ def run_impl(
     group_log: bool = False,
 ) -> bool:
     result = True
+    try:
+        ulimit_stack()
+    except Exception:
+        logger.warning("failed to increase the stack size[ulimit]")
     for url in parse_urls(input):
         if not oj.download(url, group_log=group_log):
             result = False

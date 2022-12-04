@@ -18,7 +18,7 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.verify.resource import ulimit_stack
+from competitive_verifier.resource import ulimit_stack
 from competitive_verifier.verify.split_state import SplitState
 
 logger = getLogger(__name__)
