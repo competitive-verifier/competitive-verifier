@@ -2,7 +2,7 @@ import argparse
 import importlib.metadata
 import sys
 from logging import DEBUG, INFO, getLogger
-from typing import Optional
+from typing import Callable, Optional
 
 logger = getLogger(__name__)
 
@@ -13,6 +13,7 @@ def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.download.main as download
     import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
+    import competitive_verifier.migrate.main as migrate
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
 
@@ -68,18 +69,51 @@ def get_parser() -> argparse.ArgumentParser:
     )
     oj_resolve.argument(subparser)
 
+    subparser = subparsers.add_parser(
+        "migrate",
+        help="Migration from verification-helper(`oj-verify`) project",
+    )
+    migrate.argument(subparser)
+
     return parser
 
 
-def main(args: Optional[list[str]] = None):
+def select_logging_runner(
+    subcommand: str,
+) -> tuple[Callable[[int], None], Optional[Callable[[argparse.Namespace], bool]]]:
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
     import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
+    import competitive_verifier.migrate.main as migrate
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
-    from competitive_verifier.log import configure_logging
+    from competitive_verifier.log import configure_logging, configure_stderr_logging
+
+    # Use sys.stdout for result
+    if subcommand == "merge-result":
+        return configure_stderr_logging, merge_result.run
+    if subcommand == "merge-input":
+        return configure_stderr_logging, merge_input.run
+    if subcommand == "oj-resolve":
+        return configure_stderr_logging, oj_resolve.run
+    if subcommand == "check":
+        return configure_stderr_logging, check.run
+    if subcommand == "migrate":
+        return configure_stderr_logging, migrate.run
+
+    # Use sys.stdout for logging
+    if subcommand == "download":
+        return configure_logging, download.run
+    if subcommand == "verify":
+        return configure_logging, verify.run
+    if subcommand == "docs":
+        return configure_logging, docs.run
+    return configure_logging, None
+
+
+def main(args: Optional[list[str]] = None):
 
     parser = get_parser()
     parsed = parser.parse_args(args)
@@ -92,27 +126,13 @@ def main(args: Optional[list[str]] = None):
     if parsed.verbose:
         default_level = DEBUG
 
-    # Use sys.stdout for result
-    if parsed.subcommand == "merge-result":
-        sys.exit(0 if merge_result.run(parsed) else 1)
-    if parsed.subcommand == "merge-input":
-        sys.exit(0 if merge_input.run(parsed) else 1)
-    if parsed.subcommand == "oj-resolve":
-        sys.exit(0 if oj_resolve.run(parsed) else 1)
-    if parsed.subcommand == "check":
-        sys.exit(0 if check.run(parsed) else 1)
+    configure_log, runner = select_logging_runner(parsed.subcommand)
 
-    configure_logging(default_level=default_level)
-
-    # Use sys.stdout for logging
-    if parsed.subcommand == "download":
-        sys.exit(0 if download.run(parsed) else 1)
-    elif parsed.subcommand == "verify":
-        sys.exit(0 if verify.run(parsed) else 1)
-    elif parsed.subcommand == "docs":
-        sys.exit(0 if docs.run(parsed) else 1)
-
-    parser.print_help()
+    configure_log(default_level)
+    if runner:
+        sys.exit(0 if runner(parsed) else 1)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
