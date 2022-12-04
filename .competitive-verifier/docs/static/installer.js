@@ -1,4 +1,4 @@
-(function () {
+(async function () {
     const templatePromise = fetch('action-template.yml').then(p => p.text())
 
 
@@ -56,6 +56,8 @@
         return lines.join(separator)
     }
 
+    const urlParams = new URLSearchParams(location.search)
+    const pathname = location.pathname
 
     const inputRepo = getInput('input-repo')
     const inputBranch = getInput('input-branch')
@@ -281,6 +283,65 @@
         }
     }
 
+    function loadQuery() {
+        const setToInput = (node, name) => {
+            const value = urlParams.get(name)
+            if (value)
+                node.value = value
+        }
+        setToInput(inputRepo, "repository")
+        setToInput(inputInclude, "include")
+        setToInput(inputExclude, "exclude")
+        setToInput(inputConfigToml, "configToml")
+        setToInput(inputParallelSize, "parallel")
+
+        const loadLanguages = () => {
+            const input = urlParams.get("langs")
+            if (!input) return
+            const langs = new Set(input.split('|').map(s => s.toLowerCase()))
+
+            inputLangCpp.checked = langs.has("cpp")
+            inputLangPython.checked = langs.has("python")
+            inputLangRust.checked = langs.has("rust")
+            inputLangJava.checked = langs.has("java")
+            inputLangGo.checked = langs.has("go")
+            inputLangRuby.checked = langs.has("ruby")
+            inputLangNim.checked = langs.has("nim")
+            inputLangHaskel.checked = langs.has("haskel")
+            inputLangCSharp.checked = langs.has("csharp")
+        }
+
+        loadLanguages()
+    }
+    function updateQuery() {
+        const readInput = (node, name) => {
+            const value = node.value
+            if (value)
+                urlParams.set(name, value)
+            else
+                urlParams.delete(name)
+        }
+        readInput(inputRepo, "repository")
+        readInput(inputInclude, "include")
+        readInput(inputExclude, "exclude")
+        readInput(inputConfigToml, "configToml")
+        readInput(inputParallelSize, "parallel")
+
+        const langs = []
+        if (inputLangCpp.checked) langs.push("cpp")
+        if (inputLangPython.checked) langs.push("python")
+        if (inputLangRust.checked) langs.push("rust")
+        if (inputLangJava.checked) langs.push("java")
+        if (inputLangGo.checked) langs.push("go")
+        if (inputLangRuby.checked) langs.push("ruby")
+        if (inputLangNim.checked) langs.push("nim")
+        if (inputLangHaskel.checked) langs.push("haskel")
+        if (inputLangCSharp.checked) langs.push("csharp")
+        urlParams.set("langs", langs.join("|"))
+
+        history.replaceState("", "", `${pathname}?${urlParams}`)
+    }
+
 
     const output = document.getElementById('action-yml')
 
@@ -323,6 +384,7 @@
             badgePagesLink.href = link
             badgePagesImg.src = img
         }
+        updateQuery()
     }
 
     async function retrieveDefaultBranch() {
@@ -340,7 +402,7 @@
         if (repsitory.endsWith('.git')) {
             repsitory = repsitory.substring(0, repsitory.length - 4)
         }
-        let found = repsitory.match(/\/github.com\/([^\/]+)\/([^\/]+)$/)
+        let found = repsitory.match(/github.com\/([^\/]+)\/([^\/]+)$/)
         if (!found) {
             found = repsitory.match(/^([^\/]+)\/([^\/]+)$/)
         }
@@ -356,5 +418,8 @@
     for (const lang of inputLangs) {
         lang.addEventListener('change', update)
     }
-    update()
+
+    loadQuery()
+    await retrieveDefaultBranch()
+    await update()
 })()
