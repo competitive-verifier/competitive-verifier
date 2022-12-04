@@ -177,6 +177,7 @@ func TestHelloWorld(t *testing.T) {
 |---|---|---|
 | `PROBLEM` | 提出する問題の URL を指定します | |
 | `ERROR` | 許容誤差を指定します | |
+| `TLE` | TLE までの秒数を指定します | |
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
 | `document_title` | ドキュメントのタイトルを指定します | |
 

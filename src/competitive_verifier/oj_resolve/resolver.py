@@ -69,6 +69,10 @@ class OjResolver:
             ) -> Generator[Verification, None, None]:
                 error_str = attr.get("ERROR")
                 error = float(error_str) if error_str else None
+
+                tle_str = attr.get("TLE")
+                tle = float(tle_str) if tle_str else None
+
                 url = attr.get("PROBLEM")
 
                 if url:
@@ -82,6 +86,7 @@ class OjResolver:
                         ),
                         problem=url,
                         error=error,
+                        tle=tle,
                     )
 
                 unit_test_envvar = attr.get("UNITTEST")

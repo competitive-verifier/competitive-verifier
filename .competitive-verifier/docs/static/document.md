@@ -176,6 +176,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
+| `TLE` | specify the TLE time in seconds | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
 | `document_title` | specify the title of source  | |
 
