@@ -77,6 +77,7 @@ jobs:
           destination: ${{runner.temp}}/result.json
           split-size: ${{ env.SPLIT_SIZE }}
           split-index: ${{ matrix.index }}
+          timeout: 1200
         # specify tokens
         # env:
         #   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
