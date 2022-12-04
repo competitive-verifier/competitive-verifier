@@ -150,7 +150,7 @@
             initializeForVerification.push(
                 '# required only if you want to verify Nim code',
                 '- name: Install dependencies (Nim)',
-                '  run: sudo apt install nim',
+                '  uses: jiro4989/setup-nim-action@v1',
             )
         }
         if (useHaskel) {
