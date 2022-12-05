@@ -11,6 +11,15 @@ The library is inspired by [online-judge-tools/verification-helper](https://gith
 See [GitHub Pages](https://competitive-verifier.github.io/competitive-verifier/installer.html).
 [日本語](https://competitive-verifier.github.io/competitive-verifier/installer.ja.html)
 
+### Migrate from verification-helper
+
+Run this script.
+
+```sh
+pip install git+https://github.com/competitive-verifier/competitive-verifier.git@main
+competitive-verifier migrate
+```
+
 ### Install(local)
 
 Needs Python 3.9 or greater.
