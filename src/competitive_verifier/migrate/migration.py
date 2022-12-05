@@ -23,7 +23,7 @@ from competitive_verifier_oj_clone.list import get as get_lang
 logger = getLogger(__name__)
 
 
-_title_pattern = re.compile(r".*@(?:title|brief) (.*)")
+_title_pattern = re.compile(r"@(?:title|brief) (.*)")
 _docs_pattern = re.compile(r"@docs (.*)$", re.MULTILINE)
 _documentation_of_pattern = re.compile(r"^documentation_of:.*", re.MULTILINE)
 
@@ -82,7 +82,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
 
     if "competitive-verifier: document_title" not in content:
         new_content, hit_cnt = _title_pattern.subn(
-            r"// competitive-verifier: document_title \1", content, 1
+            r"competitive-verifier: document_title \1", content, 1
         )
 
         if hit_cnt > 0:
