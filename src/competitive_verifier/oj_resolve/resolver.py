@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import pathlib
 import traceback
@@ -28,33 +29,49 @@ def get_bundled_dir() -> pathlib.Path:
 
 
 class OjResolver:
-    include: list[pathlib.Path]
-    exclude: list[pathlib.Path]
+    include: list[str]
+    exclude: list[str]
+    _match_exclude_cache: dict[pathlib.Path, bool]
 
     def __init__(
         self,
         *,
-        include: list[pathlib.Path],
-        exclude: list[pathlib.Path],
+        include: list[str],
+        exclude: list[str],
     ) -> None:
         self.include = include
         self.exclude = exclude
+        self._match_exclude_cache = {}
+
+    def _match_exclude2(self, paths: list[pathlib.Path]) -> bool:
+        if not paths:
+            return False
+        path = paths.pop()
+        cache = self._match_exclude_cache.get(path, None)
+        if cache is not None:
+            return cache
+
+        for ex in self.exclude:
+            if fnmatch.fnmatch(path.as_posix(), ex):
+                self._match_exclude_cache[path] = True
+                return True
+        result = self._match_exclude2(paths)
+        self._match_exclude_cache[path] = result
+        return result
+
+    def _match_exclude(self, path: pathlib.Path) -> bool:
+        paths = list(path.parents)
+        paths.reverse()
+        paths.append(path)
+        return self._match_exclude2(paths)
 
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
         basedir = pathlib.Path.cwd()
 
-        def to_relative(path: pathlib.Path) -> pathlib.Path:
-            if path.is_absolute():
-                return path.relative_to(basedir)
-            return path
-
-        exclude_paths = set(
-            chain.from_iterable(p.glob("**/*") for p in map(to_relative, self.exclude))
-        )
-
         for path in git.ls_files(*self.include):
-            if path in exclude_paths:
+            if self._match_exclude(path):
+                logger.debug("exclude=%s", path.as_posix())
                 continue
 
             language = competitive_verifier_oj_clone.list.get(path)

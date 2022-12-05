@@ -9,8 +9,8 @@ from .resolver import OjResolver
 
 
 def run_impl(
-    include: list[pathlib.Path],
-    exclude: list[pathlib.Path],
+    include: list[str],
+    exclude: list[str],
     config_path: Optional[pathlib.Path],
     enable_bundle: bool,
 ) -> bool:
@@ -41,14 +41,14 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         nargs="*",
         help="Included file",
         default=[],
-        type=pathlib.Path,
+        type=str,
     )
     parser.add_argument(
         "--exclude",
         nargs="*",
         help="Excluded file",
         default=[],
-        type=pathlib.Path,
+        type=str,
     )
     parser.add_argument(
         "--no-bundle",

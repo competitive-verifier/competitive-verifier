@@ -1,6 +1,5 @@
 import importlib.resources
 import pathlib
-from itertools import chain
 from logging import getLogger
 from typing import Any, Iterable, Optional
 
@@ -47,6 +46,17 @@ _RESOURCE_STATIC_FILE_PATHS: list[str] = [
     "assets/js/code.js",
     "Gemfile",
 ]
+
+
+def is_excluded(
+    relative_path: pathlib.Path,
+    *,
+    excluded_paths: list[pathlib.Path],
+) -> bool:
+    for excluded in excluded_paths:
+        if relative_path == excluded or excluded in relative_path.parents:
+            return True
+    return False
 
 
 class DocumentBuilder:
@@ -98,11 +108,9 @@ class DocumentBuilder:
         )
         logger.debug("lender config=%s", config)
 
+        excluded_paths: list[pathlib.Path] = config.config_yml.get("exclude", [])
         excluded_files = set(
-            chain.from_iterable(
-                ex.glob("**/*")
-                for ex in map(pathlib.Path, config.config_yml.get("exclude", []))
-            )
+            f for f in git.ls_files() if is_excluded(f, excluded_paths=excluded_paths)
         )
         logger.debug(
             "excluded_files=%s",
