@@ -67,6 +67,10 @@ class OjResolver:
             def env_to_verifications(
                 env: LanguageEnvironment,
             ) -> Generator[Verification, None, None]:
+                if "IGNORE" in attr:
+                    yield ConstVerification(status=ResultStatus.SKIPPED)
+                    return
+
                 error_str = attr.get("ERROR")
                 error = float(error_str) if error_str else None
 
