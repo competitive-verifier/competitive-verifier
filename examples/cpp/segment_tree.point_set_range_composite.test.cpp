@@ -1,4 +1,4 @@
-// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/point_set_range_composite
+#define PROBLEM "https://judge.yosupo.jp/problem/point_set_range_composite"
 #include <cstdint>
 #include <iostream>
 #include <tuple>

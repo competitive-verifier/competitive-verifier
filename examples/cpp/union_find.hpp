@@ -1,11 +1,10 @@
-// competitive-verifier: document_title a Union-Find
 #ifndef EXAMPLES_UNION_FIND_HPP
 #define EXAMPLES_UNION_FIND_HPP
 #include <algorithm>
 #include <vector>
 
 /**
-// competitive-verifier: document_title a Union-Find
+ * @brief a Union-Find
  * @note most operations in $O(\alpha(n))$ where $\alpha(n)$ is the inverse of Ackermann function
  * @note implemented with union-by-size + path-compression
  */

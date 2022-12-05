@@ -1,10 +1,9 @@
-// competitive-verifier: document_title a Segment Tree (generalized with monoids) 
 #pragma once
 #include <cassert>
 #include <vector>
 
 /**
-// competitive-verifier: document_title a Segment Tree (generalized with monoids) 
+ * @brief a Segment Tree (generalized with monoids) 
  * @tparam Monoid is a monoid; commutativity is not required
  * @see https://en.wikipedia.org/wiki/Segment_tree
  */
