@@ -378,9 +378,15 @@
         {
             const outputCreateActionLink = document.getElementById('create-action')
             // New action
-            const filename = ".github%2Fworkflows%2Fverify.yml"
-            const url = `${repoRoot}/new/${inputBranch.value}?filename=${filename}&value=${encodeURIComponent('# Paste action')}`
-            outputCreateActionLink.href = url
+            const createUrl = `${repoRoot}/new/${inputBranch.value}/.github/workflows?filename=verify.yml&value=${encodeURIComponent('# Paste action')}`
+            outputCreateActionLink.href = createUrl
+
+            const editUrl = `${repoRoot}/edit/${inputBranch.value}/.github/workflows/verify.yml`;
+            (async function () {
+                const editResponse = await fetch(`https://api.github.com/repos/${repoUser}/${repoName}/contents/.github/workflows/verify.yml`)
+                if (editResponse.ok)
+                    outputCreateActionLink.href = editUrl
+            })()
         }
         {
             const badgeVerifyRaw = document.getElementById('badge-verify-raw')
