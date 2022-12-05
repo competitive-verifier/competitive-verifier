@@ -52,7 +52,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.py"],
+        ["c1/a.py", "c1/b1.py", "c1/b2.py", "c1/test.py"],
         {
             "c1/test.py": {
                 "path": "c1/test.py",
@@ -136,7 +136,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.py"],
+        ["c1/a.py", "c1/b1.py", "c1/b2.py", "c1/test.py"],
         {
             "c1/test.py": {
                 "path": "c1/test.py",
@@ -238,7 +238,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.py"],
+        ["c1/a.py", "c1/b1.py", "c1/b2.py", "c1/test.py", "c1/test2.py"],
         {
             "c1/test.py": {
                 "path": "c1/test.py",
@@ -358,7 +358,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.py"],
+        ["c1/a.py", "c1/b1.py", "c1/b2.py", "c1/test.py", "c1/test2.py"],
         {
             "c1/test.py": {
                 "path": "c1/test.py",
@@ -451,7 +451,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.py"],
+        ["c1/a.py", "c1/b1.py", "c1/b2.py", "c1/test.py"],
         {
             "c1/b1.py": {
                 "path": "c1/b1.py",
@@ -517,7 +517,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
             },
         },
-        ["otherpath.java"],
+        ["c1/hello.java", "c1/hello_test.java"],
         {
             "c1/hello.java": {
                 "path": "c1/hello.java",
@@ -553,7 +553,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
 
 
 @pytest.mark.parametrize(
-    "name, dep_input_obj, dep_result_obj, excluded_files_str, expected_obj",
+    "name, dep_input_obj, dep_result_obj, included_files_str, expected_obj",
     test_resolve_dependency_params,
     ids=[tup[0] for tup in test_resolve_dependency_params],
 )
@@ -561,7 +561,7 @@ def test_resolve_dependency(
     name: str,
     dep_input_obj: Any,
     dep_result_obj: Any,
-    excluded_files_str: list[str],
+    included_files_str: list[str],
     expected_obj: Any,
 ):
     with mock.patch(
@@ -574,7 +574,7 @@ def test_resolve_dependency(
         resolved = resolve_dependency(
             input=dep_input,
             result=dep_result,
-            excluded_files=set(Path(s) for s in excluded_files_str),
+            included_files=set(Path(s) for s in included_files_str),
         )
         expected = Parser.parse_obj(expected_obj).__root__
         assert resolved == expected

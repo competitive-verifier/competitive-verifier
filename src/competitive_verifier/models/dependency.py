@@ -119,7 +119,7 @@ def resolve_dependency(
     *,
     input: VerificationInput,
     result: VerifyCommandResult,
-    excluded_files: set[pathlib.Path],
+    included_files: set[pathlib.Path],
 ) -> dict[pathlib.Path, SourceCodeStat]:
     d: dict[pathlib.Path, SourceCodeStat] = {}
     statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
@@ -127,7 +127,7 @@ def resolve_dependency(
     }
 
     for p, r in result.files.items():
-        if p in excluded_files:
+        if p not in included_files:
             continue
         st = _VerificationStatusFlag.TEST_NOTHING
         for v in r.verifications:
@@ -140,7 +140,7 @@ def resolve_dependency(
         statuses[p] = st
 
     for group in input.scc():
-        group -= excluded_files
+        group &= included_files
         if not group:
             continue
 
@@ -151,9 +151,9 @@ def resolve_dependency(
             group_status |= statuses[path]
 
         for path in group:
-            depends_on = input.depends_on[path] - excluded_files
-            required_by = input.required_by[path] - excluded_files
-            verified_with = input.verified_with[path] - excluded_files
+            depends_on = input.depends_on[path] & included_files
+            required_by = input.required_by[path] & included_files
+            verified_with = input.verified_with[path] & included_files
 
             for dep in depends_on:
                 statuses[dep] |= group_status

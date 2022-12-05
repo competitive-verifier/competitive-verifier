@@ -109,21 +109,23 @@ class DocumentBuilder:
         logger.debug("lender config=%s", config)
 
         excluded_paths: list[pathlib.Path] = config.config_yml.get("exclude", [])
-        excluded_files = set(
-            f for f in git.ls_files() if is_excluded(f, excluded_paths=excluded_paths)
+        included_files = set(
+            f
+            for f in git.ls_files()
+            if not is_excluded(f, excluded_paths=excluded_paths)
         )
         logger.debug(
-            "excluded_files=%s",
-            " ".join(p.as_posix() for p in excluded_files),
+            "included_files=%s",
+            " ".join(p.as_posix() for p in included_files),
         )
 
-        render_jobs = self.enumerate_rendering_jobs(config.index_md, excluded_files)
+        render_jobs = self.enumerate_rendering_jobs(config.index_md, included_files)
 
         logger.info("render %s files...", len(render_jobs))
         stats = resolve_dependency(
             input=self.input,
             result=self.result,
-            excluded_files=excluded_files,
+            included_files=included_files,
         )
         rendered_pages = self.render_pages(
             stats=stats,
@@ -194,14 +196,14 @@ class DocumentBuilder:
     def enumerate_rendering_jobs(
         self,
         index_md: pathlib.Path,
-        excluded_files: set[pathlib.Path],
+        included_files: set[pathlib.Path],
     ) -> list[PageRenderJob]:
         markdown_paths = set(
             p
             for p in git.ls_files()
             if p.suffix == ".md" and not p.name.startswith(".")
         )
-        markdown_paths -= excluded_files
+        markdown_paths &= included_files
         logger.debug(
             "markdown_paths=%s",
             " ".join(p.as_posix() for p in markdown_paths),
