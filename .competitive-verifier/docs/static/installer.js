@@ -219,6 +219,7 @@
                 '  uses: competitive-verifier/actions/cs-resolve@v1',
                 '  with:',
                 '    output-path: verify_files.json',
+                '    msbuild-properties: Configuration=Release',
                 '    # Specify patterns',
                 '    # include: your-own-include/',
                 '    # exclude: your-own-exclude/',
