@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from oj_verify_clone.config import get_config
-from oj_verify_clone.languages.user_defined import UserDefinedLanguage
+from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.languages.user_defined import UserDefinedLanguage
 
 
 class GoLanguage(UserDefinedLanguage):

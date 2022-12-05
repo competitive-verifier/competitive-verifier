@@ -2,8 +2,8 @@ import pathlib
 from logging import getLogger
 from typing import Optional
 
-from oj_verify_clone.config import get_config
-from oj_verify_clone.languages.models import Language
+from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.languages.models import Language
 
 logger = getLogger(__name__)
 
@@ -11,15 +11,15 @@ _dict: Optional[dict[str, Language]] = None
 
 
 def _get_dict() -> dict[str, Language]:
-    from oj_verify_clone.languages.cplusplus import CPlusPlusLanguage
-    from oj_verify_clone.languages.go import GoLanguage
-    from oj_verify_clone.languages.haskell import HaskellLanguage
-    from oj_verify_clone.languages.java import JavaLanguage
-    from oj_verify_clone.languages.nim import NimLanguage
-    from oj_verify_clone.languages.python import PythonLanguage
-    from oj_verify_clone.languages.ruby import RubyLanguage
-    from oj_verify_clone.languages.rust import RustLanguage
-    from oj_verify_clone.languages.user_defined import UserDefinedLanguage
+    from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
+    from competitive_verifier_oj_clone.languages.go import GoLanguage
+    from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
+    from competitive_verifier_oj_clone.languages.java import JavaLanguage
+    from competitive_verifier_oj_clone.languages.nim import NimLanguage
+    from competitive_verifier_oj_clone.languages.python import PythonLanguage
+    from competitive_verifier_oj_clone.languages.ruby import RubyLanguage
+    from competitive_verifier_oj_clone.languages.rust import RustLanguage
+    from competitive_verifier_oj_clone.languages.user_defined import UserDefinedLanguage
 
     global _dict  # pylint: disable=invalid-name
     if _dict is None:

@@ -14,12 +14,15 @@ def get_markdown_paths(*, basedir: pathlib.Path) -> list[pathlib.Path]:
     return [p for p in basedir.glob("**/*.md") if not p.name.startswith(".")]
 
 
-def _resolve_documentation_of(
-    documentation_of: str, *, markdown_path: pathlib.Path
+def resolve_documentation_of(
+    documentation_of: str,
+    *,
+    basepath: pathlib.Path,
+    check_exists: bool = True,
 ) -> Optional[pathlib.Path]:
     if documentation_of.startswith("."):
         # a relative path
-        path = markdown_path.parent / pathlib.Path(documentation_of)
+        path = basepath.parent / pathlib.Path(documentation_of)
         if path.exists():
             return path
     elif documentation_of.startswith("//"):
@@ -32,8 +35,8 @@ def _resolve_documentation_of(
     if path.exists():
         return path
 
-    path = markdown_path.parent / pathlib.Path(documentation_of)
-    if path.exists():
+    path = basepath.parent / pathlib.Path(documentation_of)
+    if path.exists() or not check_exists:
         return path
 
     return None
@@ -57,9 +60,7 @@ def build_markdown_job(
             content=content,
         )
 
-    documentation_of_path = _resolve_documentation_of(
-        documentation_of, markdown_path=path
-    )
+    documentation_of_path = resolve_documentation_of(documentation_of, basepath=path)
     if documentation_of_path is None:
         logger.warning(
             "the `documentation_of` path of %s is not found: %s",

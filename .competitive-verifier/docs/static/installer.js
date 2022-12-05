@@ -1,4 +1,4 @@
-(function () {
+(async function () {
     const templatePromise = fetch('action-template.yml').then(p => p.text())
 
 
@@ -56,9 +56,12 @@
         return lines.join(separator)
     }
 
+    const urlParams = new URLSearchParams(location.search)
+    const pathname = location.pathname
 
     const inputRepo = getInput('input-repo')
     const inputBranch = getInput('input-branch')
+    const inputHasYukicoder = getInput('input-yukicoder')
     const inputInclude = getInput('input-include')
     const inputExclude = getInput('input-exclude')
     const inputConfigToml = getInput('input-config-toml')
@@ -71,6 +74,7 @@
         inputExclude,
         inputConfigToml,
         inputParallelSize,
+        inputHasYukicoder,
     ]
 
     const inputLangCpp = getInput('input-lang-cpp')
@@ -256,6 +260,10 @@
             const initializeForResolving = ["# Initialize your own environment for resolving."]
             const initializeForVerification = ["# Initialize your own environment for verification."]
 
+            if (inputHasYukicoder.checked) {
+                resultYaml = resultYaml.replaceAll("# YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}", "  YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}")
+            }
+
             initLanguages(initializeForResolving, initializeForVerification)
             if (initializeForResolving.length > 1) {
                 resultYaml = resultYaml.replaceAll(initializeForResolving[0], stepDefinition(initializeForResolving))
@@ -279,6 +287,77 @@
         } catch (error) {
             return error
         }
+    }
+
+    function loadQuery() {
+        const setToInput = (node, name) => {
+            const value = urlParams.get(name)
+            if (value)
+                node.value = value
+        }
+        setToInput(inputRepo, "repository")
+        setToInput(inputInclude, "include")
+        setToInput(inputExclude, "exclude")
+        setToInput(inputConfigToml, "configToml")
+        setToInput(inputParallelSize, "parallel")
+
+        const tokens = urlParams.get("tokens")
+        if (tokens && tokens.toLowerCase() == "yuki")
+            inputHasYukicoder.checked = true
+        else
+            inputHasYukicoder.checked = false
+
+        const loadLanguages = () => {
+            const input = urlParams.get("langs")
+            if (!input) return
+            const langs = new Set(input.split('|').map(s => s.toLowerCase()))
+
+            inputLangCpp.checked = langs.has("cpp")
+            inputLangPython.checked = langs.has("python")
+            inputLangRust.checked = langs.has("rust")
+            inputLangJava.checked = langs.has("java")
+            inputLangGo.checked = langs.has("go")
+            inputLangRuby.checked = langs.has("ruby")
+            inputLangNim.checked = langs.has("nim")
+            inputLangHaskel.checked = langs.has("haskel")
+            inputLangCSharp.checked = langs.has("csharp")
+        }
+
+        loadLanguages()
+    }
+    function updateQuery() {
+        const readInput = (node, name) => {
+            const value = node.value
+            if (value)
+                urlParams.set(name, value)
+            else
+                urlParams.delete(name)
+        }
+        readInput(inputRepo, "repository")
+        readInput(inputInclude, "include")
+        readInput(inputExclude, "exclude")
+        readInput(inputConfigToml, "configToml")
+        readInput(inputParallelSize, "parallel")
+
+        if (inputHasYukicoder.checked) {
+            urlParams.set("tokens", "yuki")
+        } else {
+            urlParams.set("tokens", "")
+        }
+
+        const langs = []
+        if (inputLangCpp.checked) langs.push("cpp")
+        if (inputLangPython.checked) langs.push("python")
+        if (inputLangRust.checked) langs.push("rust")
+        if (inputLangJava.checked) langs.push("java")
+        if (inputLangGo.checked) langs.push("go")
+        if (inputLangRuby.checked) langs.push("ruby")
+        if (inputLangNim.checked) langs.push("nim")
+        if (inputLangHaskel.checked) langs.push("haskel")
+        if (inputLangCSharp.checked) langs.push("csharp")
+        urlParams.set("langs", langs.join("|"))
+
+        history.replaceState("", "", `${pathname}?${urlParams}`)
     }
 
 
@@ -323,6 +402,7 @@
             badgePagesLink.href = link
             badgePagesImg.src = img
         }
+        updateQuery()
     }
 
     async function retrieveDefaultBranch() {
@@ -340,7 +420,7 @@
         if (repsitory.endsWith('.git')) {
             repsitory = repsitory.substring(0, repsitory.length - 4)
         }
-        let found = repsitory.match(/\/github.com\/([^\/]+)\/([^\/]+)$/)
+        let found = repsitory.match(/github.com\/([^\/]+)\/([^\/]+)$/)
         if (!found) {
             found = repsitory.match(/^([^\/]+)\/([^\/]+)$/)
         }
@@ -356,5 +436,8 @@
     for (const lang of inputLangs) {
         lang.addEventListener('change', update)
     }
-    update()
+
+    loadQuery()
+    await retrieveDefaultBranch()
+    await update()
 })()
