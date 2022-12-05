@@ -301,8 +301,11 @@
         setToInput(inputConfigToml, "configToml")
         setToInput(inputParallelSize, "parallel")
 
-        if (urlParams.get("tokens").toLowerCase() == "yuki")
+        const tokens = urlParams.get("tokens")
+        if (tokens && tokens.toLowerCase() == "yuki")
             inputHasYukicoder.checked = true
+        else
+            inputHasYukicoder.checked = false
 
         const loadLanguages = () => {
             const input = urlParams.get("langs")

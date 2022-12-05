@@ -4,12 +4,36 @@ import shutil
 from logging import getLogger
 from typing import Optional
 
+import yaml
+from competitive_verifier.exec import exec_command
+import urllib.parse
 import competitive_verifier.git as git
 from competitive_verifier.documents.job import resolve_documentation_of
+from competitive_verifier_oj_clone.languages.models import Language
 from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
+from competitive_verifier_oj_clone.languages.go import GoLanguage
+from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
+from competitive_verifier_oj_clone.languages.java import JavaLanguage
+from competitive_verifier_oj_clone.languages.nim import NimLanguage
+from competitive_verifier_oj_clone.languages.python import PythonLanguage
+from competitive_verifier_oj_clone.languages.ruby import RubyLanguage
+from competitive_verifier_oj_clone.languages.rust import RustLanguage
 from competitive_verifier_oj_clone.list import get as get_lang
 
 logger = getLogger(__name__)
+
+
+_title_pattern = re.compile(r".*@(?:title|brief) (.*)")
+_docs_pattern = re.compile(r"@docs (.*)$", re.MULTILINE)
+_documentation_of_pattern = re.compile(r"^documentation_of:.*", re.MULTILINE)
+
+_problem_pattern = re.compile(
+    r'#define PROBLEM "(.+)"',
+    re.MULTILINE,
+)
+_error_pattern = re.compile(r"#define ERROR (.*)", re.MULTILINE)
+
+_yukicoder_pattern = re.compile(r"[^#]*YUKICODER_TOKEN: .*")
 
 
 def migrate_conf_dir(*, dry_run: bool):
@@ -19,8 +43,10 @@ def migrate_conf_dir(*, dry_run: bool):
         return
 
     if not new_conf_dir.exists():
+        gitignore = new_conf_dir / ".gitignore"
         if not dry_run:
             new_conf_dir.mkdir(parents=True, exist_ok=True)
+            gitignore.write_bytes(b"/*/\n!docs/")
         logger.warning("Create directory: %s", new_conf_dir.as_posix())
 
     for p in old_conf_dir.glob("**/*"):
@@ -38,17 +64,6 @@ def migrate_conf_dir(*, dry_run: bool):
     shutil.rmtree(old_conf_dir)
 
 
-_title_pattern = re.compile(r".*@(?:title|brief) (.*)")
-_docs_pattern = re.compile(r"@docs (.*)$", re.MULTILINE)
-_documentation_of_pattern = re.compile(r"^documentation_of:.*", re.MULTILINE)
-
-_problem_pattern = re.compile(
-    r'#define PROBLEM "(.+)"',
-    re.MULTILINE,
-)
-_error_pattern = re.compile(r"#define ERROR (.*)", re.MULTILINE)
-
-
 def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path]:
     docs_match = _docs_pattern.search(content)
     if docs_match:
@@ -59,8 +74,6 @@ def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path
 
 
 def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
-    if not isinstance(get_lang(path), CPlusPlusLanguage):
-        return
     hit = False
     logger.debug("Migrate file: %s", path.as_posix())
     content = path.read_text(encoding="utf-8")
@@ -89,7 +102,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         content = new_content
         hit = True
 
-    new_content, hit_cnt = _problem_pattern.subn(
+    new_content, hit_cnt = _error_pattern.subn(
         r"// competitive-verifier: ERROR \1", content
     )
     if hit_cnt > 0:
@@ -141,9 +154,81 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         logger.debug("Not updated: %s", path.as_posix())
 
 
+def _lang_type_to_str(lang: Optional[Language]) -> Optional[str]:
+    if isinstance(lang, CPlusPlusLanguage):
+        return "cpp"
+    if isinstance(lang, GoLanguage):
+        return "go"
+    if isinstance(lang, HaskellLanguage):
+        return "haskel"
+    if isinstance(lang, JavaLanguage):
+        return "java"
+    if isinstance(lang, NimLanguage):
+        return "nim"
+    if isinstance(lang, PythonLanguage):
+        return "python"
+    if isinstance(lang, RubyLanguage):
+        return "ruby"
+    if isinstance(lang, RustLanguage):
+        return "rust"
+    return None
+
+
+def _get_action_query(languages: set[str]) -> dict[str, str]:
+    d = {
+        "configToml": ".competitive-verifier/config.toml",
+        "langs": "|".join(languages),
+    }
+    if not pathlib.Path(d["configToml"]).exists():
+        del d["configToml"]
+    remote = exec_command(
+        ["git", "remote", "get-url", "origin"],
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    if remote:
+        d["repository"] = remote
+
+    workflow_path = pathlib.Path(".github/workflows/verify.yml")
+    if workflow_path.exists():
+        workflow = workflow_path.read_text()
+        if _yukicoder_pattern.search(workflow):
+            d["tokens"] = "yuki"
+
+    jekyll_config_path = pathlib.Path(".competitive-verifier/docs/_config.yml")
+    if jekyll_config_path.exists():
+        with jekyll_config_path.open("r") as fp:
+            jekyll_config = yaml.safe_load(fp)
+        try:
+            exclude = jekyll_config.get("exclude")
+            if isinstance(exclude, list):
+                exclude = "\n".join(exclude)  # type: ignore
+            if exclude:
+                d["exclude"] = exclude
+        except (Exception):
+            pass
+    return d
+
+
 def main(dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
-    for file in git.ls_files():
-        migrate_cpp_annotations(file, dry_run=dry_run)
 
+    languages = set[str]()
+
+    for path in git.ls_files():
+        lang = get_lang(path)
+        if isinstance(lang, CPlusPlusLanguage):
+            migrate_cpp_annotations(path, dry_run=dry_run)
+        lang_str = _lang_type_to_str(lang)
+        if lang_str:
+            languages.add(lang_str)
+
+    d = _get_action_query(languages)
+
+    logger.info("Complete migrations")
+    print("Next steps")
+    # page = "http://localhost:4000"
+    page = "https://competitive-verifier.github.io/competitive-verifier"
+    print(f"  1. Open {page}/installer.html?{urllib.parse.urlencode(d)}")
+    print("  2. Update your GitHub Actions.")
     return True
