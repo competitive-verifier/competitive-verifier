@@ -165,7 +165,7 @@ class BaseVerifier(InputContainer):
         )
         try:
             ulimit_stack()
-        except Exception:
+        except BaseException:
             logger.warning("failed to increase the stack size[ulimit]")
 
         if self.prev_result:
@@ -185,7 +185,7 @@ class BaseVerifier(InputContainer):
                 try:
                     if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
-                except Exception:
+                except BaseException:
                     verifications.append(
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
@@ -215,7 +215,7 @@ class BaseVerifier(InputContainer):
                                     file=str(p.resolve()),
                                 )
                         verifications.append(self.create_command_result(rs, prev_time))
-                    except Exception as e:
+                    except BaseException as e:
                         message = (
                             e.message
                             if isinstance(e, VerifierError)
