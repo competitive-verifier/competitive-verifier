@@ -222,9 +222,20 @@ class DocumentBuilder:
         index_job = build_index_job(index_md)
         logger.debug("index_job=%s", index_job)
 
-        return list(
-            ({index_job.path: index_job} | source_jobs | markdown_jobs).values()
-        )
+        result: dict[pathlib.Path, PageRenderJob] = {index_job.path: index_job}
+        for path, job in source_jobs.items():
+            prev = result.get(path)
+            if prev:
+                result[path] = job.merge(prev)
+            else:
+                result[path] = job
+        for path, job in markdown_jobs.items():
+            prev = result.get(path)
+            if prev:
+                result[path] = job.merge(prev)
+            else:
+                result[path] = job
+        return list(result.values())
 
 
 def _working_directory_is_in_git_root() -> bool:
