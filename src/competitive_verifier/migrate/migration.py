@@ -29,7 +29,7 @@ _docs_pattern = re.compile(r"@docs (.*)$", re.MULTILINE)
 _documentation_of_pattern = re.compile(r"^documentation_of:.*", re.MULTILINE)
 
 _problem_pattern = re.compile(
-    r'#define PROBLEM "(.+)"',
+    r"#define PROBLEM (.+)",
     re.MULTILINE,
 )
 _error_pattern = re.compile(r"#define ERROR (.*)", re.MULTILINE)
@@ -76,13 +76,18 @@ def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path
     return None
 
 
+def _strip_quote(s: str) -> str:
+    return s.strip().strip("\"'")
+
+
 def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     hit = False
     logger.debug("Migrate file: %s", path.as_posix())
     content = path.read_text(encoding="utf-8")
 
     new_content, hit_cnt = _problem_pattern.subn(
-        r"// competitive-verifier: PROBLEM \1", content
+        lambda m: f"// competitive-verifier: PROBLEM {_strip_quote(m.group(1))}",
+        content,
     )
     if hit_cnt > 0:
         logger.warning(
@@ -93,7 +98,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         hit = True
 
     new_content, hit_cnt = _error_pattern.subn(
-        r"// competitive-verifier: ERROR \1", content
+        lambda m: f"// competitive-verifier: ERROR {_strip_quote(m.group(1))}", content
     )
     if hit_cnt > 0:
         logger.warning(
