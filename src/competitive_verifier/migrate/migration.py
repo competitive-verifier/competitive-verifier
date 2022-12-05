@@ -1,19 +1,20 @@
 import pathlib
 import re
 import shutil
+import urllib.parse
 from logging import getLogger
 from typing import Optional
 
 import yaml
-from competitive_verifier.exec import exec_command
-import urllib.parse
+
 import competitive_verifier.git as git
 from competitive_verifier.documents.job import resolve_documentation_of
-from competitive_verifier_oj_clone.languages.models import Language
+from competitive_verifier.exec import exec_command
 from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
 from competitive_verifier_oj_clone.languages.go import GoLanguage
 from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
 from competitive_verifier_oj_clone.languages.java import JavaLanguage
+from competitive_verifier_oj_clone.languages.models import Language
 from competitive_verifier_oj_clone.languages.nim import NimLanguage
 from competitive_verifier_oj_clone.languages.python import PythonLanguage
 from competitive_verifier_oj_clone.languages.ruby import RubyLanguage
@@ -79,19 +80,6 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     hit = False
     logger.debug("Migrate file: %s", path.as_posix())
     content = path.read_text(encoding="utf-8")
-
-    if "competitive-verifier: document_title" not in content:
-        new_content, hit_cnt = _title_pattern.subn(
-            r"competitive-verifier: document_title \1", content, 1
-        )
-
-        if hit_cnt > 0:
-            logger.warning(
-                "[Updated] %s: Add `competitive-verifier: document_title`",
-                path.as_posix(),
-            )
-            content = new_content
-            hit = True
 
     new_content, hit_cnt = _problem_pattern.subn(
         r"// competitive-verifier: PROBLEM \1", content

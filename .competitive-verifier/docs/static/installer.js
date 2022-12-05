@@ -241,6 +241,15 @@
                 '    # config: .verify-helper/config.toml',
             )
         }
+
+        if (useCpp) {
+            initializeForResolving.push(
+                '- name: parse-doxygen',
+                '  uses: competitive-verifier/actions/parse-doxygen@v1',
+                '  with:',
+                '    verify-files: verify_files.json',
+            )
+        }
     }
 
     async function getActionYaml() {
