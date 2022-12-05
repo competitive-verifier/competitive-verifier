@@ -39,19 +39,21 @@ _yukicoder_pattern = re.compile(r"[^#]*YUKICODER_TOKEN: .*")
 def migrate_conf_dir(*, dry_run: bool):
     old_conf_dir = pathlib.Path(".verify-helper")
     new_conf_dir = pathlib.Path(".competitive-verifier")
-    if not old_conf_dir.exists():
+    old_docs_dir = old_conf_dir / "docs"
+    new_docs_dir = new_conf_dir / "docs"
+    if not old_docs_dir.exists():
         return
 
-    if not new_conf_dir.exists():
+    if not new_docs_dir.exists():
         gitignore = new_conf_dir / ".gitignore"
         if not dry_run:
-            new_conf_dir.mkdir(parents=True, exist_ok=True)
+            new_docs_dir.mkdir(parents=True, exist_ok=True)
             gitignore.write_bytes(b"/*/\n!docs/")
-        logger.warning("Create directory: %s", new_conf_dir.as_posix())
+        logger.warning("Create directory: %s", new_docs_dir.as_posix())
 
-    for p in old_conf_dir.glob("**/*"):
-        relative = p.relative_to(old_conf_dir)
-        new_path = new_conf_dir / relative
+    for p in old_docs_dir.glob("**/*"):
+        relative = p.relative_to(old_docs_dir)
+        new_path = new_docs_dir / relative
         if p.is_dir():
             logger.warning("Create directory: %s", new_path.as_posix())
             new_path.mkdir(parents=True, exist_ok=True)
@@ -61,7 +63,7 @@ def migrate_conf_dir(*, dry_run: bool):
                 new_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(p, new_path)
                 p.unlink(missing_ok=True)
-    shutil.rmtree(old_conf_dir)
+    shutil.rmtree(old_docs_dir)
 
 
 def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path]:
@@ -176,7 +178,7 @@ def _lang_type_to_str(lang: Optional[Language]) -> Optional[str]:
 
 def _get_action_query(languages: set[str]) -> dict[str, str]:
     d = {
-        "configToml": ".competitive-verifier/config.toml",
+        "configToml": ".verify-helper/config.toml",
         "langs": "|".join(languages),
     }
     if not pathlib.Path(d["configToml"]).exists():
