@@ -367,6 +367,9 @@
         if (inputLangCSharp.checked) langs.push("csharp")
         urlParams.set("langs", langs.join("|"))
 
+        for (const link of document.getElementsByClassName('lang-link')) {
+            link.href = `${link.dataset.path}?${urlParams}`
+        }
         history.replaceState("", "", `${pathname}?${urlParams}`)
     }
 

@@ -5,8 +5,8 @@ redirect_from:
 
 # Tool to set up automated verification CI by GitHub Actions
 
-- [English Version](installer.html)
-- [日本語バージョン](installer.ja.html)
+- <a class="lang-link" data-path="installer.html" href="installer.html">English Version</a>
+- <a class="lang-link" data-path="installer.ja.html" href="installer.ja.html">日本語バージョン</a>
 
 ## To set up automated verification
 1. Fill configs of **GitHub Actions template**.

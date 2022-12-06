@@ -3,8 +3,8 @@
 
 # 競プロライブラリに自動で verify をしてくれる CI を簡単に設定できる Web ページ
 
-- [English Version](installer.html)
-- [日本語バージョン](installer.ja.html)
+- <a class="lang-link" data-path="installer.html" href="installer.html">English Version</a>
+- <a class="lang-link" data-path="installer.ja.html" href="installer.ja.html">日本語バージョン</a>
 
 ## 設定手順
 1. **GitHub Actions テンプレート** を埋める。
