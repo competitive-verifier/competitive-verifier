@@ -212,7 +212,7 @@
                 '  env:',
                 '    UNITTEST_CSPROJ: YourUnittest.csproj',
                 '- name: Resolve',
-                '  run: dotnet run --project $VERIFY_CSPROJ --no-build -c Release | tee ${{runner.temp}}/problems.json',
+                '  run: dotnet run --project $VERIFY_CSPROJ --no-launch-profile --no-build -c Release | tee ${{runner.temp}}/problems.json',
                 '  env:',
                 '    VERIFY_CSPROJ: YourVerify.csproj',
                 '- name: cs-resolve',
