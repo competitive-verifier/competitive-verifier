@@ -28,11 +28,22 @@ _title_pattern = re.compile(r"@(?:title|brief) (.*)")
 _docs_pattern = re.compile(r"@docs (.*)$", re.MULTILINE)
 _documentation_of_pattern = re.compile(r"^documentation_of:.*", re.MULTILINE)
 
-_problem_pattern = re.compile(
-    r"#define PROBLEM (.+)",
-    re.MULTILINE,
-)
-_error_pattern = re.compile(r"#define ERROR (.*)", re.MULTILINE)
+_problem_pattern = re.compile(r"#define PROBLEM(?:\\\n| |\t)+(.+)")
+_error_pattern = re.compile(r"#define ERROR(?:\\\n| |\t)+(.+)")
+
+
+def problem_subn(content: str) -> tuple[str, int]:
+    return _problem_pattern.subn(
+        lambda m: f"// competitive-verifier: PROBLEM {_strip_quote(m.group(1))}",
+        content,
+    )
+
+
+def error_subn(content: str) -> tuple[str, int]:
+    return _error_pattern.subn(
+        lambda m: f"// competitive-verifier: ERROR {_strip_quote(m.group(1))}", content
+    )
+
 
 _yukicoder_pattern = re.compile(r"[^#]*YUKICODER_TOKEN: .*")
 
@@ -85,10 +96,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     logger.debug("Migrate file: %s", path.as_posix())
     content = path.read_text(encoding="utf-8")
 
-    new_content, hit_cnt = _problem_pattern.subn(
-        lambda m: f"// competitive-verifier: PROBLEM {_strip_quote(m.group(1))}",
-        content,
-    )
+    new_content, hit_cnt = problem_subn(content)
     if hit_cnt > 0:
         logger.warning(
             "[Updated] %s: Replace `#define PROBLEM` to `competitive-verifier: PROBLEM`",
@@ -97,9 +105,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         content = new_content
         hit = True
 
-    new_content, hit_cnt = _error_pattern.subn(
-        lambda m: f"// competitive-verifier: ERROR {_strip_quote(m.group(1))}", content
-    )
+    new_content, hit_cnt = error_subn(content)
     if hit_cnt > 0:
         logger.warning(
             "[Updated] %s: Replace `#define ERROR` to `competitive-verifier: ERROR`",
