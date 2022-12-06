@@ -1,6 +1,7 @@
 import subprocess
 from contextlib import nullcontext
 from logging import getLogger
+import sys
 from typing import Literal, Optional, Union, overload
 
 from competitive_verifier import log
@@ -48,6 +49,8 @@ def exec_command(
         logger.info("subprocess.run: %s", command)
         cm = nullcontext()
 
+    encoding = sys.stdout.encoding if text else None
+
     with cm:
         return subprocess.run(
             command,
@@ -56,4 +59,5 @@ def exec_command(
             check=check,
             env=env,
             capture_output=capture_output,
+            encoding=encoding,
         )
