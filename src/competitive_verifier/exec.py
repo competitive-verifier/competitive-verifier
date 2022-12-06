@@ -1,7 +1,7 @@
 import subprocess
+import sys
 from contextlib import nullcontext
 from logging import getLogger
-import sys
 from typing import Literal, Optional, Union, overload
 
 from competitive_verifier import log

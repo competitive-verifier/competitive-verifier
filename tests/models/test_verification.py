@@ -1,5 +1,6 @@
 # flake8: noqa E501
 import pathlib
+import sys
 from dataclasses import dataclass
 from typing import Any, Sequence
 from unittest import mock
@@ -116,6 +117,7 @@ test_run_params = [  # type: ignore
             "check": False,
             "env": None,
             "capture_output": False,
+            "encoding": sys.stdout.encoding,
         },
     ),
     (
@@ -127,6 +129,7 @@ test_run_params = [  # type: ignore
             "check": False,
             "env": None,
             "capture_output": False,
+            "encoding": sys.stdout.encoding,
         },
     ),
 ]
@@ -225,6 +228,7 @@ test_run_compile_params = [  # type: ignore
             "check": False,
             "env": None,
             "capture_output": False,
+            "encoding": sys.stdout.encoding,
         },
     ),
     (
@@ -243,6 +247,7 @@ test_run_compile_params = [  # type: ignore
             "check": False,
             "env": None,
             "capture_output": False,
+            "encoding": sys.stdout.encoding,
         },
     ),
     (
@@ -260,6 +265,7 @@ test_run_compile_params = [  # type: ignore
             "check": False,
             "env": None,
             "capture_output": False,
+            "encoding": sys.stdout.encoding,
         },
     ),
 ]
