@@ -80,10 +80,9 @@ class DocumentBuilder:
     def build(self) -> bool:
         if not _working_directory_is_in_git_root():
             logger.warning(
-                "Working directory should be git root. " "Working directory: %s",
+                "Working directory %s is not git root.",
                 pathlib.Path.cwd().as_posix(),
             )
-            return False
 
         logger.info("Generate documents...")
         result = self.impl()
