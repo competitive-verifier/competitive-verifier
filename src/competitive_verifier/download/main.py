@@ -63,13 +63,22 @@ def run_impl(
 def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
-    verification = VerificationInput.parse_file_relative(args.verify_files_json)
+    logger.info("urls=%s", args.urls)
+    files: list[VerificationFile] = []
+    if args.verify_files_json:
+        verification = VerificationInput.parse_file_relative(args.verify_files_json)
+        files = list(verification.files.values())
 
-    return run_impl(verification.files.values(), group_log=True)
+    return run_impl(files + args.urls, group_log=True)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    add_verify_files_json_argument(parser)
+    add_verify_files_json_argument(parser, required=False)
+    parser.add_argument(
+        "urls",
+        nargs="*",
+        help="A list of problem URL",
+    )
     return parser
 
 
