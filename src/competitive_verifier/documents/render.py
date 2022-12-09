@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 import yaml
 
-from competitive_verifier import github
+from competitive_verifier import git, github
 
 from .. import config as conf
 from .type import SiteRenderConfig
@@ -79,6 +79,14 @@ def load_render_config(
 
     config_yml.setdefault("action_name", github.env.get_workflow_name())
     config_yml.setdefault("branch_name", github.env.get_ref_name())
+
+    git_root = git.get_root_directory().resolve()
+    basedir = pathlib.Path.cwd().relative_to(git_root).as_posix()
+    if basedir.startswith("."):
+        basedir = ""
+    else:
+        basedir = f"{basedir}/"
+    config_yml.setdefault("basedir", basedir)
 
     static_dir = docs_dir / "static"
     index_md_path = docs_dir / "index.md"
