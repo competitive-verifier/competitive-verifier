@@ -409,7 +409,7 @@ class Bundler:
                         self.result_lines.append(b"\n")
                         continue
 
-                if uncommented_line:
+                if uncommented_line and not re.match(rb"^\s*$", uncommented_line):
                     non_guard_line_found = True
                     if (
                         include_guard_macro is not None
