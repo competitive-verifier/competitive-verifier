@@ -244,6 +244,7 @@ class DocumentBuilder:
                 result[path] = job.merge(prev)
             else:
                 result[path] = job
+        logger.error(result)
         return list(result.values())
 
 

@@ -179,7 +179,7 @@ func TestHelloWorld(t *testing.T) {
 | `ERROR` | 許容誤差を指定します | |
 | `TLE` | TLE までの秒数を指定します | |
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
-| `document_title` | ドキュメントのタイトルを指定します | |
+| `TITLE` | ドキュメントのタイトルを指定します | |
 
 ## ドキュメント生成
 
