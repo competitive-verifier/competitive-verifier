@@ -13,6 +13,7 @@ from typing import Any, Optional, Sequence
 import competitive_verifier_oj_clone.shlex2 as shlex
 from competitive_verifier_oj_clone.config import get_config
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
+from competitive_verifier_oj_clone.utils import read_text_normalized
 
 from .. import subprocess2 as subprocess
 
@@ -279,7 +280,7 @@ def _related_source_files(
         for dep_info_path in sorted(
             dep_info_paths, key=lambda p: p.stat().st_mtime_ns, reverse=True
         ):
-            dep_info = dep_info_path.read_text()
+            dep_info = read_text_normalized(dep_info_path)
             for line in dep_info.splitlines():
                 ss = line.split(": ")
                 if (

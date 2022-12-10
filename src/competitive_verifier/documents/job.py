@@ -133,8 +133,7 @@ def build_source_job(
 def build_index_job(index_md_path: pathlib.Path) -> PageRenderJob:
     content = b""
     if index_md_path.exists():
-        with index_md_path.open("rb") as fh:
-            content = fh.read()
+        content = index_md_path.read_bytes()
     return PageRenderJob(
         path=pathlib.Path("index.md"),
         document_path=None,

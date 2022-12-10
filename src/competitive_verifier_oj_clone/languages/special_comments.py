@@ -4,6 +4,8 @@ import pathlib
 import re
 from logging import getLogger
 
+from competitive_verifier_oj_clone.utils import read_text_normalized
+
 logger = getLogger(__name__)
 
 
@@ -14,7 +16,7 @@ def list_special_comments(path: pathlib.Path) -> dict[str, str]:
         r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"
     )
     attributes: dict[str, str] = {}
-    for line in path.read_text().splitlines():
+    for line in read_text_normalized(path).splitlines():
         matched = pattern.search(line)
         if matched:
             key = matched.group(1)
@@ -28,7 +30,7 @@ def list_embedded_urls(path: pathlib.Path) -> list[str]:
     pattern = re.compile(
         r"""['"`]?https?://\S*"""
     )  # use a broad pattern. There are no needs to make match strict.
-    content = path.read_text()
+    content = read_text_normalized(path)
     urls: list[str] = []
     for url in pattern.findall(content):
         # The URL may be written like `"https://atcoder.jp/"`. In this case, we need to remove `"`s around the URL.

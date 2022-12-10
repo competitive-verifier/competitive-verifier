@@ -147,7 +147,7 @@ func TestHelloWorld(t *testing.T) {
             src
             tests
           output-path: resolved.json
-          config: examples/awk-config.toml
+          config: examples/config.toml
         env:
           GOTEST_RESULT: ${{ steps.go-unittest.outcome == 'success' }}
 ```
