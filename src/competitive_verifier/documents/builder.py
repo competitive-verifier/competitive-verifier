@@ -79,7 +79,7 @@ class DocumentBuilder:
 
     def build(self) -> bool:
         if not _working_directory_is_in_git_root():
-            logger.warning(
+            logger.info(
                 "Working directory %s is not git root.",
                 pathlib.Path.cwd().as_posix(),
             )
@@ -244,7 +244,6 @@ class DocumentBuilder:
                 result[path] = job.merge(prev)
             else:
                 result[path] = job
-        logger.error(result)
         return list(result.values())
 
 
