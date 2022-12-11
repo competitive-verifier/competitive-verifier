@@ -12,3 +12,8 @@ jobs:
       - uses: Actions-R-Us/actions-tagger@v2
         with:
           publish_latest_tag: true
+
+      - name: Build and publish to pypi
+        uses: JRubics/poetry-publish@v1.15
+        with:
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
