@@ -4,6 +4,8 @@
 
 The library is inspired by [online-judge-tools/verification-helper](https://github.com/online-judge-tools/verification-helper).
 
+If you want more info, see [DESIGN.md](DESIGN.md).
+
 ## Get started
 
 ### GitHub Actions
@@ -31,4 +33,17 @@ Run this script.
 
 ```sh
 competitive-verifier migrate
+```
+
+## Development
+
+```sh
+pip install -U poetry
+poetry install
+
+# test
+poetry run pytest
+
+# format
+poetry run poe format
 ```
