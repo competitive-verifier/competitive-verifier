@@ -2,6 +2,7 @@ import importlib.resources
 import pathlib
 from logging import getLogger
 from typing import Any, Iterable, Optional
+
 import yaml
 
 from competitive_verifier import git, github

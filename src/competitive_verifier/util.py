@@ -1,5 +1,5 @@
-from os import PathLike
 import pathlib
+from os import PathLike
 from typing import Any, Optional
 
 from charset_normalizer import from_path

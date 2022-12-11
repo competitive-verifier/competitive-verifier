@@ -1,8 +1,9 @@
 # Python Version: 3.x
 import glob
-from os import PathLike
 import pathlib
+from os import PathLike
 from typing import Any, Callable, Iterator
+
 from charset_normalizer import from_path
 
 
