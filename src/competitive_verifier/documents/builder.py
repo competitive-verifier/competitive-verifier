@@ -13,6 +13,7 @@ from competitive_verifier.models import (
     VerifyCommandResult,
     resolve_dependency,
 )
+from competitive_verifier.util import read_text_normalized
 
 from .front_matter import merge_front_matter
 from .job import build_index_job, build_markdown_job, build_source_job
@@ -313,8 +314,7 @@ def _render_source_code_stats_for_top_page(
 
 
 def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
-    with stat.path.open("rb") as fh:
-        code = fh.read().decode()
+    code = read_text_normalized(stat.path)
 
     attributes = stat.file_input.document_attributes.copy()
     problem = next(
@@ -330,7 +330,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
 
     embedded = [{"name": "default", "code": code}]
     for s in stat.file_input.additonal_sources:
-        embedded.append({"name": s.name, "code": s.path.read_text(encoding="utf-8")})
+        embedded.append({"name": s.name, "code": read_text_normalized(s.path)})
     return {
         "path": stat.path.as_posix(),
         "embedded": embedded,

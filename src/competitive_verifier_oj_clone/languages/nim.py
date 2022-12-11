@@ -7,6 +7,7 @@ from typing import Any, Optional
 import competitive_verifier_oj_clone.shlex2 as shlex
 from competitive_verifier_oj_clone.config import get_config
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
+from competitive_verifier_oj_clone.utils import read_text_normalized
 
 logger = getLogger(__name__)
 
@@ -45,7 +46,7 @@ def _list_direct_dependencies(
     path: pathlib.Path, *, basedir: pathlib.Path
 ) -> list[pathlib.Path]:
     items: list[str] = []
-    for line in (basedir / path).read_text().splitlines():
+    for line in read_text_normalized(basedir / path).splitlines():
         line = line.strip()
         if line.startswith("include"):
             items += line[7:].strip().split(",")
