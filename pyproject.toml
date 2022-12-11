@@ -6,7 +6,7 @@ description = "Verifier for libraries of competitive programming"
 license = "MIT"
 authors = ["kzrnm <gengesa@gmail.com>"]
 
-repository = "https://github.com/kzrnm/competitive-verifier"
+repository = "https://github.com/competitive-verifier/competitive-verifier"
 readme = "README.md"
 
 packages = [
