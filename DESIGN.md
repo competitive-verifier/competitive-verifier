@@ -30,7 +30,7 @@
     - verify を並列実行した際にはすべてを終えてからチェックすることを想定している
 1. download: 問題のダウンロード
     - 開発時の利便性を考えて verify から問題のダウンロード部分だけ切り出して実行
-1. merge-input, merge-result: 並列実行で別々に使用したファイルをマージする  
+1. merge-input, merge-result: 並列実行で別々に使用したファイルをマージする
 1. migrate: `oj-verify` からのマイグレーション
 
 ## 設計思想
