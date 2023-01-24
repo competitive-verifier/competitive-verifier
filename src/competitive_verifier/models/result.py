@@ -45,8 +45,11 @@ class FileResult(BaseModel):
     def need_verification(self, base_time: datetime.datetime) -> bool:
         return any(r.need_reverifying(base_time) for r in self.verifications)
 
-    def is_success(self) -> bool:
-        return all(r.status == ResultStatus.SUCCESS for r in self.verifications)
+    def is_success(self, allow_skip: bool) -> bool:
+        if allow_skip:
+            return all(r.status != ResultStatus.FAILURE for r in self.verifications)
+        else:
+            return all(r.status == ResultStatus.SUCCESS for r in self.verifications)
 
 
 class VerifyCommandResult(BaseModel):
@@ -89,5 +92,5 @@ class VerifyCommandResult(BaseModel):
             files=d,
         )
 
-    def is_success(self) -> bool:
-        return all(f.is_success() for f in self.files.values())
+    def is_success(self, allow_skip: bool = False) -> bool:
+        return all(f.is_success(allow_skip) for f in self.files.values())

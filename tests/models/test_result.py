@@ -286,7 +286,7 @@ test_is_success_params = [
                 VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
             ]
         ),
-        True,
+        (True, True),
     ),
     (
         FileResult(
@@ -295,7 +295,7 @@ test_is_success_params = [
                 VerificationResult(elapsed=1, status=ResultStatus.FAILURE),
             ]
         ),
-        False,
+        (False, False),
     ),
     (
         FileResult(
@@ -304,7 +304,7 @@ test_is_success_params = [
                 VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
             ]
         ),
-        False,
+        (False, True),
     ),
 ]
 
@@ -315,9 +315,10 @@ test_is_success_params = [
 )
 def test_is_success(
     obj: FileResult,
-    expected: bool,
+    expected: tuple[bool, bool],
 ):
-    assert obj.is_success() == expected
+    assert obj.is_success(allow_skip=False) == expected[0]
+    assert obj.is_success(allow_skip=True) == expected[1]
 
 
 def test_verify_command_result_json():
