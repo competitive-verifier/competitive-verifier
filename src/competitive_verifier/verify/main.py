@@ -63,7 +63,14 @@ def run_impl(
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(result_json, encoding="utf-8")
 
-    return result.is_success() or ignore_error
+    is_success = result.is_success()
+
+    if is_success:
+        logger.info("success!")
+    else:
+        logger.warning("not success!")
+
+    return is_success or ignore_error
 
 
 def run(args: argparse.Namespace) -> bool:
