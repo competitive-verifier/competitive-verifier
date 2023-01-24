@@ -58,7 +58,6 @@ def run_impl(
             logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
 
     print(result_json)
-    github.set_output("verify-result", result_json)
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
