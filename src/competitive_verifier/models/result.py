@@ -92,5 +92,5 @@ class VerifyCommandResult(BaseModel):
             files=d,
         )
 
-    def is_success(self, allow_skip: bool = False) -> bool:
+    def is_success(self, allow_skip: bool = True) -> bool:
         return all(f.is_success(allow_skip) for f in self.files.values())
