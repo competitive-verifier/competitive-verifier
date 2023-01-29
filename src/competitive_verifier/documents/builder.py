@@ -5,7 +5,7 @@ from typing import Any, Iterable, Optional
 
 import yaml
 
-from competitive_verifier import git, github
+from competitive_verifier import git, github, log
 from competitive_verifier.models import (
     ProblemVerification,
     SourceCodeStat,
@@ -122,11 +122,12 @@ class DocumentBuilder:
         render_jobs = self.enumerate_rendering_jobs(config.index_md, included_files)
 
         logger.info("render %s files...", len(render_jobs))
-        stats = resolve_dependency(
-            input=self.input,
-            result=self.result,
-            included_files=included_files,
-        )
+        with log.group("Resolve dependency"):
+            stats = resolve_dependency(
+                input=self.input,
+                result=self.result,
+                included_files=included_files,
+            )
         rendered_pages = self.render_pages(
             stats=stats,
             render_jobs=render_jobs,

@@ -158,10 +158,11 @@ class BaseVerifier(InputContainer):
 
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
         start_time = self.now()
-
+        with log.group("current_verification_files"):
+            current_verification_files = self.current_verification_files
         logger.info(
             "current_verification_files: %s",
-            " ".join(p.as_posix() for p in self.current_verification_files.keys()),
+            " ".join(p.as_posix() for p in current_verification_files.keys()),
         )
         try:
             ulimit_stack()
@@ -175,7 +176,7 @@ class BaseVerifier(InputContainer):
         else:
             file_results = dict[pathlib.Path, FileResult]()
 
-        for p, f in self.current_verification_files.items():
+        for p, f in current_verification_files.items():
             logger.info("Start: %s", p.as_posix())
 
             def enumerate_verifications() -> list[VerificationResult]:
