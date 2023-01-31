@@ -86,7 +86,10 @@ class VerifyCommandResult(BaseModel):
 
     def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()
-        d.update(other.files)
+        for k, r in other.files.items():
+            cur = d.get(k)
+            if r.newest or (cur is None) or (not cur.newest):
+                d[k] = r
         return VerifyCommandResult(
             total_seconds=self.total_seconds + other.total_seconds,
             files=d,

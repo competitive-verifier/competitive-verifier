@@ -339,3 +339,378 @@ def test_verify_command_result_json():
         },
     )
     assert VerifyCommandResult.parse_raw(obj.json()) == obj
+
+
+test_merge_params = [
+    (
+        VerifyCommandResult(
+            total_seconds=4.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=1,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ]
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=3,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz2.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ]
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=7.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz2.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ]
+                ),
+            },
+        ),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=4.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=1,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ],
+                    newest=True,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=3,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ],
+                    newest=False,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=7.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ]
+                ),
+            },
+        ),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=4.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=1,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ],
+                    newest=False,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=3,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ],
+                    newest=True,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=7.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ]
+                ),
+            },
+        ),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=4.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=1,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=3,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125602),
+                        ),
+                    ],
+                    newest=True,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=3,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ],
+                    newest=True,
+                ),
+            },
+        ),
+        VerifyCommandResult(
+            total_seconds=7.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=4,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125603),
+                        ),
+                        VerificationResult(
+                            elapsed=5,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125604),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=6,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125605),
+                        ),
+                    ]
+                ),
+            },
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "obj1, obj2, expected",
+    test_merge_params,
+)
+def test_merge(
+    obj1: VerifyCommandResult,
+    obj2: VerifyCommandResult,
+    expected: VerifyCommandResult,
+):
+    assert obj1.merge(obj2) == expected
