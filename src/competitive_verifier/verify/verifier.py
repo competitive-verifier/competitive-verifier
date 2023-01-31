@@ -55,10 +55,14 @@ class InputContainer(ABC):
         base_time = min(self.verification_time, self.get_file_timestamp(path))
         result = file_result.need_verification(base_time)
         if result:
-            logger.info("%s needs verification. base_time: %s", path.as_posix(), base_time)
+            logger.info(
+                "%s needs verification. base_time: %s", path.as_posix(), base_time
+            )
         else:
             logger.info(
-                "%s doesn't need verification. base_time: %s", path.as_posix(), base_time
+                "%s doesn't need verification. base_time: %s",
+                path.as_posix(),
+                base_time,
             )
         return result
 
