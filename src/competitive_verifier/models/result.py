@@ -43,6 +43,8 @@ class FileResult(BaseModel):
     newest: bool = True
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
+        if len(self.verifications) == 0:
+            return True
         return any(r.need_reverifying(base_time) for r in self.verifications)
 
     def is_success(self, allow_skip: bool) -> bool:

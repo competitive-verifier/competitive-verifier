@@ -164,7 +164,7 @@ def test_parse_FileResult(
 
 
 test_file_result_need_verification_params = [  # type: ignore
-    (FileResult(verifications=[]), datetime(2016, 12, 24, 19, 0, 0), False),
+    (FileResult(verifications=[]), datetime(2016, 12, 24, 19, 0, 0), True),
     (
         FileResult(
             verifications=[

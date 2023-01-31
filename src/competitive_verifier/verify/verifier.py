@@ -52,9 +52,15 @@ class InputContainer(ABC):
         path: pathlib.Path,
         file_result: FileResult,
     ) -> bool:
-        return file_result.need_verification(
-            min(self.verification_time, self.get_file_timestamp(path))
-        )
+        base_time = min(self.verification_time, self.get_file_timestamp(path))
+        result = file_result.need_verification(base_time)
+        if result:
+            logger.info("%s needs verification. base_time: %s", path.as_posix(), base_time)
+        else:
+            logger.info(
+                "%s doesn't need verification. base_time: %s", path.as_posix(), base_time
+            )
+        return result
 
     @cached_property
     def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
