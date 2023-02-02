@@ -275,6 +275,21 @@ def test_file_need_verification(
         assert resolver.file_need_verification(path, file_result) == expected
 
 
+@pytest.mark.parametrize(
+    "resolver, path, file_result, _",
+    test_file_need_verification_params,
+)
+def test_file_need_verification_no_file(
+    resolver: InputContainer,
+    path: Path,
+    file_result: FileResult,
+    _: bool,
+):
+    with patch.object(Path, "exists") as mock_exists:
+        mock_exists.return_value = False
+        assert not resolver.file_need_verification(path, file_result)
+
+
 test_remaining_verification_files_params: list[
     tuple[InputContainer, dict[Path, VerificationFile]]
 ] = [
