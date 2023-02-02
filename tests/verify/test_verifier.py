@@ -2,6 +2,7 @@
 import datetime
 from pathlib import Path
 from typing import Any, Optional
+from unittest.mock import patch
 
 import pytest
 
@@ -269,7 +270,9 @@ def test_file_need_verification(
     file_result: FileResult,
     expected: bool,
 ):
-    assert resolver.file_need_verification(path, file_result) == expected
+    with patch.object(Path, "exists") as mock_exists:
+        mock_exists.return_value = True
+        assert resolver.file_need_verification(path, file_result) == expected
 
 
 test_remaining_verification_files_params: list[

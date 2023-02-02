@@ -2,6 +2,7 @@
 import datetime
 from pathlib import Path
 from typing import Any, Optional
+from unittest.mock import patch
 
 import pytest
 
@@ -421,4 +422,6 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 
 @pytest.mark.parametrize("verifier, expected", test_verify_params)
 def test_verify(verifier: MockVerifier, expected: Any):
-    assert verifier.verify() == VerifyCommandResult.parse_obj(expected)
+    with patch.object(Path, "exists") as mock_exists:
+        mock_exists.return_value = True
+        assert verifier.verify() == VerifyCommandResult.parse_obj(expected)

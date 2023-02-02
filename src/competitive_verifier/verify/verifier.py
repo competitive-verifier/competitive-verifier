@@ -52,6 +52,8 @@ class InputContainer(ABC):
         path: pathlib.Path,
         file_result: FileResult,
     ) -> bool:
+        if not path.exists():
+            return False
         base_time = min(self.verification_time, self.get_file_timestamp(path))
         result = file_result.need_verification(base_time)
         if result:
@@ -180,9 +182,11 @@ class BaseVerifier(InputContainer):
             logger.warning("failed to increase the stack size[ulimit]")
 
         if self.prev_result:
-            file_results = self.prev_result.files.copy()
-            for file_result in file_results.values():
-                file_result.newest = False
+            file_results = {
+                k: v.copy(update={"newest": False})
+                for k, v in self.prev_result.files.items()
+                if k.exists()
+            }
         else:
             file_results = dict[pathlib.Path, FileResult]()
 
