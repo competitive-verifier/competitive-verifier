@@ -1,7 +1,8 @@
 import importlib.resources
 import pathlib
 from logging import getLogger
-from typing import Any, Iterable, Optional
+from functools import cache
+from typing import Any, Iterable, Optional, Union
 
 import yaml
 
@@ -49,15 +50,16 @@ _RESOURCE_STATIC_FILE_PATHS: list[str] = [
 ]
 
 
-def is_excluded(
-    relative_path: pathlib.Path,
-    *,
-    excluded_paths: list[pathlib.Path],
-) -> bool:
-    for excluded in excluded_paths:
-        if relative_path == excluded or excluded in relative_path.parents:
-            return True
-    return False
+class ExcludedPaths:
+    def __init__(self, excluded_paths: list[Union[str, pathlib.Path]]) -> None:
+        self.excluded_paths = [pathlib.Path(p) for p in excluded_paths]
+
+    @cache
+    def is_excluded(self, relative_path: pathlib.Path) -> bool:
+        for excluded in self.excluded_paths:
+            if relative_path == excluded or excluded in relative_path.parents:
+                return True
+        return False
 
 
 class DocumentBuilder:
@@ -108,11 +110,9 @@ class DocumentBuilder:
         )
         logger.debug("lender config=%s", config)
 
-        excluded_paths: list[pathlib.Path] = config.config_yml.get("exclude", [])
+        excluded_paths = ExcludedPaths(config.config_yml.get("exclude", []))
         included_files = set(
-            f
-            for f in git.ls_files()
-            if not is_excluded(f, excluded_paths=excluded_paths)
+            f for f in git.ls_files() if not excluded_paths.is_excluded(f)
         )
         logger.debug(
             "included_files=%s",
@@ -132,6 +132,7 @@ class DocumentBuilder:
             stats=stats,
             render_jobs=render_jobs,
             site_render_config=config,
+            excluded_paths=excluded_paths,
         )
 
         # make install
@@ -157,6 +158,7 @@ class DocumentBuilder:
         stats: dict[pathlib.Path, SourceCodeStat],
         render_jobs: list[PageRenderJob],
         site_render_config: SiteRenderConfig,
+        excluded_paths: ExcludedPaths,
     ) -> dict[pathlib.Path, bytes]:
         """
         :returns: mapping from absolute paths to file contents
@@ -170,23 +172,36 @@ class DocumentBuilder:
 
             front_matter = job.front_matter.copy(deep=True)
             if front_matter.layout == "toppage":
-                data = _render_source_code_stats_for_top_page(
+                front_matter.data = _render_source_code_stats_for_top_page(
                     stats_iter=stats.values(),
                     page_title_dict=page_title_dict,
                 )
-                front_matter.data = data
 
             elif documentation_of is not None:
+                documentation_of_path = pathlib.Path(documentation_of)
+                if not documentation_of_path.exists():
+                    logger.warning(
+                        "Skip %s because %s doesn't exist.",
+                        job.path,
+                        documentation_of,
+                    )
+                    continue
+                if excluded_paths.is_excluded(documentation_of_path):
+                    logger.info(
+                        "Skip %s because %s is excluded.",
+                        job.path,
+                        documentation_of,
+                    )
+                    continue
                 if not front_matter.layout:
                     front_matter.layout = "document"
-                data = _render_source_code_stat_for_page(
-                    job,
-                    pathlib.Path(documentation_of),
-                    stats=stats,
-                    page_title_dict=page_title_dict,
-                )
                 if not front_matter.data:
-                    front_matter.data = data
+                    front_matter.data = _render_source_code_stat_for_page(
+                        job,
+                        documentation_of_path,
+                        stats=stats,
+                        page_title_dict=page_title_dict,
+                    )
 
             path = site_render_config.destination_dir / job.path
             content = merge_front_matter(front_matter, job.content)
