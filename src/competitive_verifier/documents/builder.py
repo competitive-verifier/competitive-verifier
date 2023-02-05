@@ -1,7 +1,7 @@
 import importlib.resources
 import pathlib
-from logging import getLogger
 from functools import cache
+from logging import getLogger
 from typing import Any, Iterable, Optional, Union
 
 import yaml
