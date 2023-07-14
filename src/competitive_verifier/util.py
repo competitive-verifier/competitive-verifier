@@ -2,7 +2,7 @@ import pathlib
 from os import PathLike
 from typing import Any, Optional
 
-from charset_normalizer import from_path
+from charset_normalizer import from_path  # type: ignore
 
 
 def to_relative(path: pathlib.Path) -> Optional[pathlib.Path]:

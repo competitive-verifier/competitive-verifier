@@ -170,7 +170,7 @@ class DocumentBuilder:
         for job in render_jobs:
             documentation_of = job.front_matter.documentation_of
 
-            front_matter = job.front_matter.copy(deep=True)
+            front_matter = job.front_matter.model_copy(deep=True)
             if front_matter.layout == "toppage":
                 front_matter.data = _render_source_code_stats_for_top_page(
                     stats_iter=stats.values(),

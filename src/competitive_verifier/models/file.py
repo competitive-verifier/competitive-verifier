@@ -1,10 +1,11 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Optional, Union
+from typing import Any, Union
 
-from pydantic import BaseModel, Field, StrBytes, validator
+from pydantic import BaseModel, Field, field_validator
 
+from competitive_verifier.models.path import ForcePosixPath
 from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
@@ -19,13 +20,13 @@ class AddtionalSource(BaseModel):
     name: str
     """Source type
     """
-    path: pathlib.Path
+    path: ForcePosixPath
     """Source file path
     """
 
 
 class VerificationFile(BaseModel):
-    dependencies: set[pathlib.Path] = Field(default_factory=set)
+    dependencies: set[ForcePosixPath] = Field(default_factory=set)
     verification: list[Verification] = Field(default_factory=list)
     document_attributes: dict[str, Any] = Field(default_factory=dict)
     """Attributes for documentation
@@ -34,10 +35,8 @@ class VerificationFile(BaseModel):
     """Addtional source paths
     """
 
-    class Config:
-        json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
-
-    @validator("verification", pre=True)
+    @field_validator("verification", mode="before")
+    @classmethod
     def verification_list(cls, v: Any) -> list[Any]:
         if v is None:
             return []
@@ -55,69 +54,18 @@ class VerificationFile(BaseModel):
         return self.is_verification() and all(v.is_skippable for v in self.verification)
 
 
-# NOTE: computed fields  https://github.com/pydantic/pydantic/pull/2625
-class VerificationInputImpl(BaseModel):
-    files: dict[pathlib.Path, VerificationFile] = Field(default_factory=dict)
-
-    def json(self, **kwargs: Any) -> str:
-        class WithStrDict(BaseModel):
-            files: dict[str, VerificationFile] = Field(default_factory=dict)
-
-            class Config:
-                json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
-
-        return WithStrDict(
-            files={k.as_posix(): v for k, v in self.files.items()},
-        ).json(**kwargs)
-
-
-class VerificationInput:
-    impl: VerificationInputImpl
-
-    def __init__(
-        self,
-        impl: Optional[VerificationInputImpl] = None,
-        *,
-        files: Optional[dict[pathlib.Path, VerificationFile]] = None,
-    ) -> None:
-        if not impl:
-            impl = VerificationInputImpl(
-                files=files,  # type: ignore
-            )
-        self.impl = impl
+class VerificationInput(BaseModel):
+    files: dict[ForcePosixPath, VerificationFile] = Field(default_factory=dict)
 
     def merge(self, other: "VerificationInput") -> "VerificationInput":
         return VerificationInput(files=self.files | other.files)
-
-    @property
-    def files(self) -> dict[pathlib.Path, VerificationFile]:
-        return self.impl.files
-
-    def __repr__(self) -> str:
-        return "VerificationInput" + repr(self.impl)[len("VerificationInputImpl") :]
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, VerificationInput):
-            return self.impl == other.impl
-        elif isinstance(other, VerificationInputImpl):
-            return self.impl == other
-        return NotImplemented
-
-    def dict(self, **kwargs: Any) -> dict[str, Any]:
-        return self.impl.dict(**kwargs)
-
-    def json(self, **kwargs: Any) -> str:
-        return self.impl.json(**kwargs)
-
-    @staticmethod
-    def parse_raw(b: StrBytes, **kwargs: Any) -> "VerificationInput":
-        return VerificationInput(VerificationInputImpl.parse_raw(b, **kwargs))
 
     @staticmethod
     def parse_file_relative(
         path: Union[str, pathlib.Path], **kwargs: Any
     ) -> "VerificationInput":
-        impl = VerificationInputImpl.parse_file(path, **kwargs)
+        with pathlib.Path(path).open("rb") as p:
+            impl = VerificationInput.model_validate_json(p.read(), **kwargs)
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
             p = to_relative(p)
@@ -127,11 +75,7 @@ class VerificationInput:
             new_files[p] = f
 
         impl.files = new_files
-        return VerificationInput(impl)
-
-    @staticmethod
-    def parse_obj(obj: Any) -> "VerificationInput":
-        return VerificationInput(VerificationInputImpl.parse_obj(obj))
+        return impl
 
     def scc(self, *, reversed: bool = False) -> list[set[pathlib.Path]]:
         """Strongly Connected Component

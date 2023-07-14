@@ -206,7 +206,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
                 exclude = "\n".join(exclude)  # type: ignore
             if exclude:
                 d["exclude"] = exclude
-        except (Exception):
+        except Exception:
             pass
     return d
 

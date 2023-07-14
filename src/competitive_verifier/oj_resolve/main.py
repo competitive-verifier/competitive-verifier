@@ -22,7 +22,7 @@ def run_impl(
         exclude=exclude,
     )
     resolved = resolver.resolve(bundle=enable_bundle)
-    print(resolved.impl.json(exclude_none=True))
+    print(resolved.model_dump_json(exclude_none=True))
     return True
 
 

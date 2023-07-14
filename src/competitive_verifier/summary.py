@@ -112,7 +112,6 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     alignment = [":---"] + [":---:"] * (len(header) - 1)
 
     if file_results[True]:
-
         fp.write("## Results\n")
         write_table_line(header)
         write_table_line(alignment)

@@ -1,6 +1,5 @@
 import pathlib
 from datetime import datetime, timedelta, timezone
-from json import dumps as json_dumps
 from typing import Any
 
 import pytest
@@ -43,16 +42,7 @@ test_parse_FileResult_params = [  # type: ignore
             ],
             "newest": True,
         },
-        {
-            "verifications": [
-                {
-                    "status": "success",
-                    "elapsed": 1.5,
-                    "last_execution_time": "2016-12-24T15:16:34",
-                }
-            ],
-            "newest": True,
-        },
+        '{"verifications":[{"status":"success","elapsed":1.5,"last_execution_time":"2016-12-24T15:16:34"}],"newest":true}',
     ),
     (
         FileResult(
@@ -89,16 +79,7 @@ test_parse_FileResult_params = [  # type: ignore
             ],
             "newest": False,
         },
-        {
-            "verifications": [
-                {
-                    "status": "success",
-                    "elapsed": 1.5,
-                    "last_execution_time": "2016-12-24T15:16:34+00:00",
-                }
-            ],
-            "newest": False,
-        },
+        '{"verifications":[{"status":"success","elapsed":1.5,"last_execution_time":"2016-12-24T15:16:34Z"}],"newest":false}',
     ),
     (
         FileResult(
@@ -134,33 +115,24 @@ test_parse_FileResult_params = [  # type: ignore
             ],
             "newest": True,
         },
-        {
-            "verifications": [
-                {
-                    "status": "success",
-                    "elapsed": 1.5,
-                    "last_execution_time": "2016-12-24T15:16:34+09:00",
-                }
-            ],
-            "newest": True,
-        },
+        '{"verifications":[{"status":"success","elapsed":1.5,"last_execution_time":"2016-12-24T15:16:34+09:00"}],"newest":true}',
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    "obj, raw_dict, output_dict, output_json_dict",
+    "obj, raw_dict, output_dict, output_json",
     test_parse_FileResult_params,
 )
 def test_parse_FileResult(
     obj: FileResult,
     raw_dict: dict[str, Any],
     output_dict: dict[str, Any],
-    output_json_dict: dict[str, Any],
+    output_json: str,
 ):
-    assert obj == FileResult.parse_obj(raw_dict)
-    assert obj.dict() == output_dict
-    assert obj.json() == json_dumps(output_json_dict)
+    assert obj == FileResult.model_validate(raw_dict)
+    assert obj.model_dump() == output_dict
+    assert obj.model_dump_json() == output_json
 
 
 test_file_result_need_verification_params = [  # type: ignore
@@ -338,7 +310,7 @@ def test_verify_command_result_json():
             ),
         },
     )
-    assert VerifyCommandResult.parse_raw(obj.json()) == obj
+    assert VerifyCommandResult.model_validate_json(obj.model_dump_json()) == obj
 
 
 test_merge_params = [

@@ -327,7 +327,6 @@ class Bundler:
             assert len(lines) == len(uncommented_lines)
             self._line(1, path)
             for i, (line, uncommented_line) in enumerate(zip(lines, uncommented_lines)):
-
                 # nest の処理
                 if re.match(rb"\s*#\s*(if|ifdef|ifndef)\s.*", uncommented_line):
                     preprocess_if_nest += 1
@@ -365,6 +364,7 @@ class Bundler:
                     self._line(i + 2, path)
                     continue
 
+                matched: Optional[re.Match[bytes]]
                 # #ifndef HOGE_H as guard
                 if (
                     not pragma_once_found
@@ -491,7 +491,7 @@ class Bundler:
                 self.result_lines.append(line)
 
             # #if #endif の対応が壊れてたら諦める
-            last_index = i + 1  # pyright: reportUnboundVariable=false
+            last_index = i + 1  # pyright: ignore reportUnboundVariable=false
             if preprocess_if_nest != 0:
                 raise BundleErrorAt(
                     path, last_index, "unmatched #if / #ifdef / #ifndef"

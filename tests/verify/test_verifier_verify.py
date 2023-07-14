@@ -36,7 +36,7 @@ class MockVerifier(BaseVerifier):
         split_state: Optional[SplitState],
     ) -> None:
         super().__init__(
-            input=VerificationInput.parse_obj(obj),
+            input=VerificationInput.model_validate(obj),
             verification_time=verification_time,
             prev_result=prev_result,
             split_state=split_state,
@@ -285,7 +285,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     },
                 }
             },
-            prev_result=VerifyCommandResult.parse_obj(
+            prev_result=VerifyCommandResult.model_validate(
                 {
                     "total_seconds": 7.0,
                     "files": {
@@ -424,4 +424,4 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 def test_verify(verifier: MockVerifier, expected: Any):
     with patch.object(Path, "exists") as mock_exists:
         mock_exists.return_value = True
-        assert verifier.verify() == VerifyCommandResult.parse_obj(expected)
+        assert verifier.verify() == VerifyCommandResult.model_validate(expected)

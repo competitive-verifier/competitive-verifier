@@ -28,8 +28,8 @@ def run_impl(
     destination_dir: pathlib.Path,
     ignore_error: bool,
 ) -> bool:
-    logger.debug("input=%s", input.json())
-    logger.debug("result=%s", result.json())
+    logger.debug("input=%s", input.model_dump_json())
+    logger.debug("result=%s", result.model_dump_json())
     builder = DocumentBuilder(input, result, docs_dir, destination_dir)
     return builder.build() or ignore_error
 

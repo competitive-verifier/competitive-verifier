@@ -2,11 +2,11 @@
 import pathlib
 import sys
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 from unittest import mock
 
 import pytest
-from pydantic import BaseModel
+from pydantic import RootModel
 
 import competitive_verifier.models
 from competitive_verifier.models import (
@@ -27,44 +27,44 @@ test_command_union_json_params = [  # type: ignore
     (
         ConstVerification(status=ResultStatus.SUCCESS),
         '{"type": "const","status":"success"}',
-        '{"type": "const", "status": "success"}',
+        '{"type":"const","status":"success"}',
     ),
     (
         ConstVerification(status=ResultStatus.FAILURE),
         '{"type": "const","status":"failure"}',
-        '{"type": "const", "status": "failure"}',
+        '{"type":"const","status":"failure"}',
     ),
     (
         ConstVerification(status=ResultStatus.SKIPPED),
         '{"type": "const","status":"skipped"}',
-        '{"type": "const", "status": "skipped"}',
+        '{"type":"const","status":"skipped"}',
     ),
     (
         ConstVerification(status=ResultStatus.SUCCESS),
         '{"type": "const","status":"success"}',
-        '{"type": "const", "status": "success"}',
+        '{"type":"const","status":"success"}',
     ),
     (
         CommandVerification(command="ls ~"),
         '{"type":"command","command":"ls ~"}',
-        '{"type": "command", "command": "ls ~", "compile": null}',
+        '{"type":"command","command":"ls ~","compile":null}',
     ),
     (
         CommandVerification(compile="cat LICENSE", command="ls ~"),
         '{"type": "command", "compile": "cat LICENSE", "command": "ls ~"}',
-        '{"type": "command", "command": "ls ~", "compile": "cat LICENSE"}',
+        '{"type":"command","command":"ls ~","compile":"cat LICENSE"}',
     ),
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
         '{"type":"problem","problem":"https://example.com","command":"ls ~"}',
-        '{"type": "problem", "command": "ls ~", "compile": null, "problem": "https://example.com", "error": null, "tle": null}',
+        '{"type":"problem","command":"ls ~","compile":null,"problem":"https://example.com","error":null,"tle":null}',
     ),
     (
         ProblemVerification(
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
         '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "command": "ls ~"}',
-        '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": null, "tle": null}',
+        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com","error":null,"tle":null}',
     ),
     (
         ProblemVerification(
@@ -75,7 +75,7 @@ test_command_union_json_params = [  # type: ignore
             tle=2,
         ),
         '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "error": 0.000001, "tle": 2, "command": "ls ~"}',
-        '{"type": "problem", "command": "ls ~", "compile": "cat LICENSE", "problem": "https://example.com", "error": 1e-06, "tle": 2.0}',
+        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com","error":1e-6,"tle":2.0}',
     ),
 ]
 
@@ -86,13 +86,12 @@ def test_command_union_json(
     raw_json: str,
     output_json: str,
 ):
-    class VerificationUnion(BaseModel):
-        __root__: Verification
+    VerificationUnion = RootModel[Verification]
 
-    assert obj == type(obj).parse_raw(raw_json)
-    assert obj.json() == output_json
+    assert obj == type(obj).model_validate_json(raw_json)
+    assert obj.model_dump_json() == output_json
 
-    assert obj == VerificationUnion.parse_raw(raw_json).__root__
+    assert obj == VerificationUnion.model_validate_json(raw_json).root
 
 
 def mock_exec_command():
@@ -272,7 +271,9 @@ test_run_compile_params = [  # type: ignore
 
 
 @pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
-def test_run_compile(obj: Verification, args: Sequence[Any], kwargs: dict[str, Any]):
+def test_run_compile(
+    obj: Verification, args: Optional[Sequence[Any]], kwargs: dict[str, Any]
+):
     with mock_exec_command() as patch:
         obj.run_compile_command(
             DataVerificationParams(

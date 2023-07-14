@@ -3,8 +3,9 @@ import pathlib
 from logging import getLogger
 from typing import Any, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
+from competitive_verifier.models.path import ForcePosixPath
 from competitive_verifier.util import to_relative
 
 from .result_status import ResultStatus
@@ -23,7 +24,8 @@ class VerificationResult(BaseModel):
         default_factory=datetime.datetime.now
     )
 
-    @validator("status", pre=True)
+    @field_validator("status", mode="before")
+    @classmethod
     def verification_list(cls, v: Any) -> Any:
         if isinstance(v, str):
             return v.lower()
@@ -31,8 +33,6 @@ class VerificationResult(BaseModel):
 
     def need_reverifying(self, base_time: datetime.datetime) -> bool:
         if self.status != ResultStatus.SUCCESS:
-            return True
-        if self.last_execution_time is None:
             return True
 
         return self.last_execution_time < base_time
@@ -56,13 +56,14 @@ class FileResult(BaseModel):
 
 class VerifyCommandResult(BaseModel):
     total_seconds: float
-    files: dict[pathlib.Path, FileResult] = Field(default_factory=dict)
+    files: dict[ForcePosixPath, FileResult] = Field(default_factory=dict)
 
     @classmethod
     def parse_file_relative(
         cls, path: Union[str, pathlib.Path], **kwargs: Any
     ) -> "VerifyCommandResult":
-        impl = cls.parse_file(path, **kwargs)
+        with pathlib.Path(path).open("rb") as p:
+            impl = cls.model_validate_json(p.read(), **kwargs)
         new_files: dict[pathlib.Path, FileResult] = {}
         for p, f in impl.files.items():
             p = to_relative(p)
@@ -73,18 +74,15 @@ class VerifyCommandResult(BaseModel):
         impl.files = new_files
         return impl
 
-    def json(self, **kwargs: Any) -> str:
+    def model_dump_json(self, **kwargs: Any) -> str:
         class WithStrDict(BaseModel):
             total_seconds: float
             files: dict[str, FileResult]
 
-            class Config:
-                json_encoders = {pathlib.Path: lambda v: v.as_posix()}  # type: ignore
-
         return WithStrDict(
             total_seconds=self.total_seconds,
             files={k.as_posix(): v for k, v in self.files.items()},
-        ).json(**kwargs)
+        ).model_dump_json(**kwargs)
 
     def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()

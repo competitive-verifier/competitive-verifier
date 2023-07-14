@@ -32,7 +32,7 @@ class MockInputContainer(InputContainer):
         split_state: Optional[SplitState] = None,
     ) -> None:
         super().__init__(
-            input=VerificationInput.parse_obj(obj) if obj else None,  # type: ignore
+            input=VerificationInput.model_validate(obj) if obj else None,  # type: ignore
             verification_time=verification_time,  # type: ignore
             prev_result=prev_result,
             split_state=split_state,

@@ -114,7 +114,6 @@ def select_logging_runner(
 
 
 def main(args: Optional[list[str]] = None):
-
     parser = get_parser()
     parsed = parser.parse_args(args)
 
