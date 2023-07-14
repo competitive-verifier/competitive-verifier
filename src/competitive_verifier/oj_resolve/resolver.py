@@ -89,7 +89,10 @@ class OjResolver:
                     return
 
                 error_str = attr.get("ERROR")
-                error = float(error_str) if error_str else None
+                try:
+                    error = float(error_str) if error_str else None
+                except ValueError:
+                    error = None
 
                 tle_str = attr.get("TLE")
                 tle = float(tle_str) if tle_str else None
