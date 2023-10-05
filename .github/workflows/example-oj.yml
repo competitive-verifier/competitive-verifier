@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
-          package: git+https://github.com/competitive-verifier/competitive-verifier.git@${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - name: go test
         id: go-unittest
@@ -55,7 +55,7 @@ jobs:
         with:
           verify-files: |
             resolved.json
-            examples/awk/verify_files.json
+            ${{ (github.event_name != 'pull_request' || github.repository == github.event.pull_request.head.repo.full_name) && 'examples/awk/verify_files.json' || 'examples/awk/verify_files_without_token.json' }}
           output-path: verify_files.json
 
       - name: Upload verify_files.json
@@ -95,7 +95,7 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
-          package: git+https://github.com/competitive-verifier/competitive-verifier.git@${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - uses: actions/setup-java@v3
         with:
@@ -152,7 +152,7 @@ jobs:
         with:
           python-version: "3.9"
           cache-pip: true
-          package: git+https://github.com/competitive-verifier/competitive-verifier.git@${{ github.repository == 'competitive-verifier/competitive-verifier' && github.ref || 'main' }}
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - name: Docs
         uses: competitive-verifier/actions/docs@v1
