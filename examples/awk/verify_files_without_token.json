@@ -1,0 +1,48 @@
+{
+    "$schema": "../../schema/verify_files.schema.json",
+    "files": {
+        "examples/awk/circle.test.awk": {
+            "dependencies": [
+                "examples/awk/circle.awk"
+            ],
+            "verification": {
+                "type": "problem",
+                "command": "awk -f examples/awk/circle.test.awk",
+                "problem": "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_4_B",
+                "error": 0.00001,
+                "tle": 1
+            }
+        },
+        "examples/awk/circle.awk": {},
+        "examples/awk/aplusb.awk": {
+            "document_attributes": {
+                "TITLE": "Calculate \"A + B\""
+            },
+            "dependencies": [],
+            "verification": {
+                "type": "problem",
+                "command": "awk -f examples/awk/aplusb.awk",
+                "problem": "https://judge.yosupo.jp/problem/aplusb"
+            }
+        },
+        "examples/awk/echo.sh": {},
+        "examples/awk/verify_files.json": {
+            "dependencies": [],
+            "verification": [
+                {
+                    "type": "command",
+                    "command": "true"
+                }
+            ]
+        },
+        "examples/awk/dummy.awk": {
+            "dependencies": [
+                "examples/awk/echo.sh"
+            ],
+            "verification": {
+                "type": "const",
+                "status": "success"
+            }
+        }
+    }
+}
