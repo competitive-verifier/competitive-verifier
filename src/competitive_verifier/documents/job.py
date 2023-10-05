@@ -68,16 +68,16 @@ def build_markdown_job(
             documentation_of,
         )
         return None
-    if documentation_of_path not in source_paths:
+    documentation_of_relative_path = documentation_of_path.resolve().relative_to(
+        pathlib.Path.cwd()
+    )
+    if documentation_of_relative_path not in source_paths:
         logger.warning(
             "the `documentation_of` path of %s is not target: %s",
             path.as_posix(),
             documentation_of,
         )
         return None
-    documentation_of_relative_path = documentation_of_path.resolve().relative_to(
-        pathlib.Path.cwd()
-    )
     fm.documentation_of = documentation_of_relative_path.as_posix()
     mdpath = documentation_of_relative_path.with_suffix(
         documentation_of_relative_path.suffix + ".md"
