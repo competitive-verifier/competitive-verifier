@@ -12,6 +12,7 @@ import onlinejudge.utils
 import onlinejudge_command.main
 import onlinejudge_command.subcommand.download
 import onlinejudge_command.subcommand.test
+from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 from onlinejudge.type import NotLoggedInError
@@ -38,6 +39,10 @@ def get_directory(url: str) -> pathlib.Path:
 
 def is_yukicoder(url: str) -> bool:
     return YukicoderService.from_url(url) is not None
+
+
+def is_atcoder(url: str) -> bool:
+    return AtCoderService.from_url(url) is not None
 
 
 def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
@@ -83,6 +88,9 @@ def download(url: str, *, group_log: bool = False) -> bool:
             YUKICODER_TOKEN = os.environ.get("YUKICODER_TOKEN")
             if YUKICODER_TOKEN:
                 arg_list += ["--yukicoder-token", YUKICODER_TOKEN]
+            DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")
+            if DROPBOX_TOKEN:
+                arg_list += ["--dropbox-token", DROPBOX_TOKEN]
 
             try:
                 parser = onlinejudge_command.main.get_parser()  # type: ignore
@@ -100,6 +108,8 @@ def download(url: str, *, group_log: bool = False) -> bool:
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
                     logger.error("Required: $YUKICODER_TOKEN environment variable")
+                elif isinstance(e, NotLoggedInError) and is_atcoder(url):
+                    logger.error("Required: $DROPBOX_TOKEN environment variable")
                 else:
                     logger.exception("Failed to download", e)
                 return False
