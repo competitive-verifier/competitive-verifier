@@ -12,9 +12,9 @@ import onlinejudge.utils
 import onlinejudge_command.main
 import onlinejudge_command.subcommand.download
 import onlinejudge_command.subcommand.test
+from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
-from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.type import NotLoggedInError
 
 import competitive_verifier.config
