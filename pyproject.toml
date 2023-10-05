@@ -13,7 +13,7 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include="competitive_verifier_oj_clone", from = "src" }
+    { include = "competitive_verifier_oj_clone", from = "src" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -50,7 +50,10 @@ flake8 = "pflake8 src tests"
 isort = "isort src tests"
 black = "black src tests"
 pyright = "pyright src tests"
-format = ["pyright", "flake8", "isort", "black"]
+format = ["isort", "black", "pyright", "flake8"]
+"lint:isort" = "isort --check-only --diff src tests"
+"lint:black" = "black --diff --check src tests"
+lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
 
 [tool.pylint.'MESSAGES CONTROL']
