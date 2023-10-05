@@ -86,7 +86,12 @@ test_parse_VerificationFile_params: list[
         {
             "dependencies": set(),
             "document_attributes": {},
-            "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
+            "verification": [
+                {
+                    "type": "const",
+                    "status": "success",
+                }
+            ],
             "additonal_sources": [],
         },
     ),
@@ -103,7 +108,12 @@ test_parse_VerificationFile_params: list[
         {
             "dependencies": set(),
             "document_attributes": {},
-            "verification": [ConstVerification(status=ResultStatus.SUCCESS)],
+            "verification": [
+                {
+                    "type": "const",
+                    "status": "success",
+                }
+            ],
             "additonal_sources": [],
         },
     ),
@@ -137,8 +147,8 @@ def test_parse_VerificationFile(
     raw_dict: dict[str, Any],
     output_dict: dict[str, Any],
 ):
-    assert obj == VerificationFile.parse_obj(raw_dict)
-    assert obj.dict() == output_dict
+    assert obj == VerificationFile.model_validate(raw_dict)
+    assert obj.model_dump() == output_dict
 
 
 test_is_verification_params = [

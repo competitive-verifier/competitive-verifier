@@ -6,7 +6,7 @@ from competitive_verifier.models import VerificationInput
 test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
     (
         [
-            VerificationInput.parse_obj(
+            VerificationInput.model_validate(
                 {
                     "files": {
                         "foo/bar.py": {},
@@ -27,7 +27,7 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
                 }
             ),
         ],
-        VerificationInput.parse_obj(
+        VerificationInput.model_validate(
             {
                 "files": {
                     "foo/bar.py": {},
@@ -50,7 +50,7 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
     ),
     (
         [
-            VerificationInput.parse_obj(
+            VerificationInput.model_validate(
                 {
                     "files": {
                         "foo/bar.py": {},
@@ -70,7 +70,7 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
                     },
                 }
             ),
-            VerificationInput.parse_obj(
+            VerificationInput.model_validate(
                 {
                     "files": {
                         "hoge/bar.py": {},
@@ -91,7 +91,7 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
                 }
             ),
         ],
-        VerificationInput.parse_obj(
+        VerificationInput.model_validate(
             {
                 "files": {
                     "foo/bar.py": {},

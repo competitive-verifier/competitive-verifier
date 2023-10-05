@@ -5,6 +5,7 @@ import pathlib
 from pydantic import BaseModel
 
 from competitive_verifier import git
+from competitive_verifier.models.path import ForcePosixPath
 
 from .file import VerificationFile, VerificationInput
 from .result import ResultStatus, VerifyCommandResult
@@ -21,7 +22,6 @@ class VerificationStatus(str, enum.Enum):
     def __new__(
         cls, title: str, icon: str = "", is_success: bool = False
     ) -> "VerificationStatus":
-
         obj = str.__new__(cls, title)
         obj._value_ = title
 
@@ -87,6 +87,7 @@ class _VerificationStatusFlag(enum.Flag):
                 cls.TEST_SKIP: VerificationStatus.TEST_WAITING_JUDGE,
                 cls.TEST_NOTHING: VerificationStatus.TEST_WAITING_JUDGE,
             }
+            cls._conv_dict_attr = d
         return d
 
     def to_status(self) -> VerificationStatus:
@@ -94,25 +95,14 @@ class _VerificationStatusFlag(enum.Flag):
 
 
 class SourceCodeStat(BaseModel):
-    path: pathlib.Path
+    path: ForcePosixPath
     file_input: VerificationFile
     is_verification: bool
     verification_status: VerificationStatus
     timestamp: datetime.datetime
-    depends_on: set[pathlib.Path]
-    required_by: set[pathlib.Path]
-    verified_with: set[pathlib.Path]
-
-
-def filter_edge(
-    edges: dict[pathlib.Path, set[pathlib.Path]],
-    excluded: set[pathlib.Path],
-) -> dict[pathlib.Path, set[pathlib.Path]]:
-    d: dict[pathlib.Path, set[pathlib.Path]] = {}
-    for p, s in edges.items():
-        if p not in excluded:
-            d[p] = s - excluded
-    return d
+    depends_on: set[ForcePosixPath]
+    required_by: set[ForcePosixPath]
+    verified_with: set[ForcePosixPath]
 
 
 def resolve_dependency(

@@ -24,7 +24,7 @@ def _split_front_matter_without_parsing_yaml(content: bytes) -> tuple[bytes, byt
 
 def split_front_matter(content: bytes) -> tuple[FrontMatter, bytes]:
     front_matter, content = _split_front_matter_without_parsing_yaml(content)
-    return FrontMatter.parse_obj(yaml.safe_load(front_matter) or {}), content
+    return FrontMatter.model_validate(yaml.safe_load(front_matter) or {}), content
 
 
 def merge_front_matter(front_matter: FrontMatter, content: bytes) -> bytes:
@@ -33,7 +33,7 @@ def merge_front_matter(front_matter: FrontMatter, content: bytes) -> bytes:
     return b"\n".join(
         [
             _separator,
-            yaml.safe_dump(front_matter.dict()).rstrip().encode(),
+            yaml.safe_dump(front_matter.model_dump()).rstrip().encode(),
             _separator,
             content,
         ]

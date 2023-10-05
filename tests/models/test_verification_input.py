@@ -4,7 +4,7 @@ from pathlib import Path
 
 from competitive_verifier.models import VerificationInput
 
-test_input = VerificationInput.parse_obj(
+test_input = VerificationInput.model_validate(
     {
         "files": {
             "foo/bar1.py": {},
@@ -40,15 +40,13 @@ test_input = VerificationInput.parse_obj(
 )
 
 
-def test_to_dict():
-    assert test_input.dict() == test_input.impl.dict()
-
-
 def test_to_json():
-    assert test_input.json() == test_input.impl.json()
-    assert VerificationInput.parse_raw(test_input.json()) == test_input
+    assert (
+        VerificationInput.model_validate_json(test_input.model_dump_json())
+        == test_input
+    )
 
-    obj = VerificationInput.parse_obj(
+    obj = VerificationInput.model_validate(
         {
             "files": {
                 "foo/bar.py": {},
@@ -67,7 +65,7 @@ def test_to_json():
             },
         }
     )
-    assert json.loads(obj.json()) == {
+    assert json.loads(obj.model_dump_json()) == {
         "files": {
             "foo/bar.py": {
                 "dependencies": [],
@@ -91,7 +89,7 @@ def test_to_json():
 
 
 def test_repr():
-    obj = VerificationInput.parse_obj(
+    obj = VerificationInput.model_validate(
         {
             "files": {
                 "foo/bar.py": {},

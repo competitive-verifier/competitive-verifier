@@ -4,7 +4,7 @@ from typing import Any
 from unittest import mock
 
 import pytest
-from pydantic import BaseModel
+from pydantic import RootModel
 
 from competitive_verifier.models import (
     SourceCodeStat,
@@ -14,9 +14,7 @@ from competitive_verifier.models import (
     resolve_dependency,
 )
 
-
-class Parser(BaseModel):
-    __root__: dict[Path, SourceCodeStat]
+Parser = RootModel[dict[Path, SourceCodeStat]]
 
 
 test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
@@ -568,13 +566,13 @@ def test_resolve_dependency(
         "competitive_verifier.models.dependency.git.get_commit_time",
         return_value=datetime.datetime(2010, 2, 15),
     ):
-        dep_input = VerificationInput.parse_obj(dep_input_obj)
-        dep_result = VerifyCommandResult.parse_obj(dep_result_obj)
+        dep_input = VerificationInput.model_validate(dep_input_obj)
+        dep_result = VerifyCommandResult.model_validate(dep_result_obj)
 
         resolved = resolve_dependency(
             input=dep_input,
             result=dep_result,
             included_files=set(Path(s) for s in included_files_str),
         )
-        expected = Parser.parse_obj(expected_obj).__root__
+        expected = Parser.model_validate(expected_obj).root
         assert resolved == expected

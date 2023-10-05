@@ -183,7 +183,7 @@ class BaseVerifier(InputContainer):
 
         if self.prev_result:
             file_results = {
-                k: v.copy(update={"newest": False})
+                k: v.model_copy(update={"newest": False})
                 for k, v in self.prev_result.files.items()
                 if k.exists()
             }
@@ -210,10 +210,7 @@ class BaseVerifier(InputContainer):
                 for ve in f.verification:
                     logger.debug("command=%s", repr(ve))
                     prev_time = self.now()
-                    if (
-                        self.timeout is not None
-                        and (prev_time - start_time).total_seconds() > self.timeout
-                    ):
+                    if (prev_time - start_time).total_seconds() > self.timeout:
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
                         verifications.append(
                             self.create_command_result(ResultStatus.SKIPPED, prev_time)

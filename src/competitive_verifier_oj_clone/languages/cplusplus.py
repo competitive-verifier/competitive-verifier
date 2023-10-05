@@ -137,7 +137,7 @@ class CPlusPlusLanguage(Language):
         if "environments" in self.config:
             # configured: use specified CXX & CXXFLAGS
             for env in self.config["environments"]:
-                CXX: str = env.get("CXX")
+                CXX: Optional[str] = env.get("CXX")
                 if CXX is None:
                     raise RuntimeError("CXX is not specified")
                 CXXFLAGS: list[str] = env.get("CXXFLAGS", default_CXXFLAGS)

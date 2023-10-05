@@ -14,7 +14,7 @@ class FrontMatter(BaseModel):
     """
 
     def merge(self, other: "FrontMatter") -> "FrontMatter":
-        result = self.copy()
+        result = self.model_copy()
         if not result.title:
             result.title = other.title
         if not result.layout:
@@ -48,7 +48,7 @@ class PageRenderJob(BaseModel):
 
     def merge(self, other: "PageRenderJob") -> "PageRenderJob":
         assert self.path == other.path
-        result = self.copy()
+        result = self.model_copy()
         if not result.document_path:
             result.document_path = other.document_path
         if not result.content:
