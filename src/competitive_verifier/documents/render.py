@@ -17,10 +17,10 @@ _CONFIG_YML_PATH = "_config.yml"
 COMPETITIVE_VERIFY_DOCS_CONFIG_YML = "COMPETITIVE_VERIFY_DOCS_CONFIG_YML"
 
 logger = getLogger(__name__)
+default_docs_dir = conf.config_dir / "docs"
 
 
 def _get_default_docs_dir() -> pathlib.Path:
-    default_docs_dir = conf.config_dir / "docs"
     oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
     if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
         return oj_verify_docs_dir

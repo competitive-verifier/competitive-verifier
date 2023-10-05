@@ -1,11 +1,15 @@
 {
+    "files.exclude": {
+        ".venv": true,
+        "**/__pycache__": true,
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
     "python.analysis.typeCheckingMode": "strict",
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.mypyEnabled": false,
-    "python.formatting.provider": "black",
-    "python.linting.lintOnSave": true,
     "python.testing.pytestArgs": [
         "tests"
     ],
