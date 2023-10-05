@@ -28,14 +28,5 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
-      - name: Run flake8
-        run: poetry run pflake8 src tests
-
-      - name: Run isort
-        run: poetry run isort --check-only --diff src tests
-
-      - name: Run black
-        run: poetry run black --diff --check src tests
-
-      - name: Run pyright
-        run: poetry run pyright
+      - name: Run linter
+        run: poetry run poe lint
