@@ -139,7 +139,7 @@ jobs:
           destination: _site
       - name: Upload artifact
         id: upload-pages
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: _site
 

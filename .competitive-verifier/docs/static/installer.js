@@ -136,7 +136,7 @@
             initializeForVerification.push(
                 '# required only if you want to verify Go code',
                 '- name: Install dependencies (Go)',
-                '  uses: actions/setup-go@v3',
+                '  uses: actions/setup-go@v4',
             )
         }
         if (useRuby) {
@@ -175,7 +175,7 @@
                 '    toolchain: nightly',
                 '    targets: x86_64-unknown-linux-gnu',
                 '- name: Install cargo-udeps for Rust',
-                '  uses: baptiste0928/cargo-install@v1',
+                '  uses: baptiste0928/cargo-install@v2',
                 '  with:',
                 '    crate: cargo-udeps',
                 '    cache-key: cargo-udeps-key',
