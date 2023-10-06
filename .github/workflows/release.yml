@@ -13,7 +13,7 @@ jobs:
         with:
           publish_latest_tag: true
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v1.15

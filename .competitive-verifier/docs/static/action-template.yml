@@ -20,7 +20,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
@@ -58,7 +58,7 @@ jobs:
         index:
           ["{{{parallel_indexes}}}"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download verify_files.json
         uses: competitive-verifier/actions/download-verify-artifact@v1
@@ -93,7 +93,7 @@ jobs:
     outputs:
       upload-pages: ${{steps.upload-pages.outcome == 'success'}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
