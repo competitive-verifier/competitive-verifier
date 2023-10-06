@@ -7,3 +7,12 @@ sass:
   style: compressed
 mathjax: 3
 highlightjs-style: default
+icons:
+  LIBRARY_ALL_AC: ":heavy_check_mark:"
+  LIBRARY_PARTIAL_AC: ":heavy_check_mark:"
+  LIBRARY_SOME_WA: ":question:"
+  LIBRARY_ALL_WA: ":x:"
+  LIBRARY_NO_TESTS: ":warning:"
+  TEST_ACCEPTED: ":heavy_check_mark:"
+  TEST_WRONG_ANSWER: ":x:"
+  TEST_WAITING_JUDGE: ":warning:"

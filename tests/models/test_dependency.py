@@ -16,7 +16,6 @@ from competitive_verifier.models import (
 
 Parser = RootModel[dict[Path, SourceCodeStat]]
 
-
 test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
     (
         "AC",
@@ -576,3 +575,27 @@ def test_resolve_dependency(
         )
         expected = Parser.model_validate(expected_obj).root
         assert resolved == expected
+
+
+test_VerificationStatus_is_success_params: list[tuple[VerificationStatus, bool]] = [
+    (VerificationStatus.LIBRARY_ALL_AC, True),
+    (VerificationStatus.LIBRARY_PARTIAL_AC, True),
+    (VerificationStatus.LIBRARY_SOME_WA, False),
+    (VerificationStatus.LIBRARY_ALL_WA, False),
+    (VerificationStatus.LIBRARY_NO_TESTS, True),
+    (VerificationStatus.TEST_ACCEPTED, True),
+    (VerificationStatus.TEST_WRONG_ANSWER, False),
+    (VerificationStatus.TEST_WAITING_JUDGE, True),
+]
+
+
+@pytest.mark.parametrize(
+    "status, is_success",
+    test_VerificationStatus_is_success_params,
+)
+def test_VerificationStatus_is_success(
+    status: VerificationStatus,
+    is_success: bool,
+):
+    assert status.is_success == is_success
+    assert status.is_failed != is_success

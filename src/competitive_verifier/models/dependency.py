@@ -11,32 +11,29 @@ from .file import VerificationFile, VerificationInput
 from .result import ResultStatus, VerifyCommandResult
 
 
-class VerificationStatus(str, enum.Enum):
-    icon: str
-    is_success: bool
-
+class VerificationStatus(enum.Enum):
     @property
     def is_failed(self) -> bool:
         return not self.is_success
 
-    def __new__(
-        cls, title: str, icon: str = "", is_success: bool = False
-    ) -> "VerificationStatus":
-        obj = str.__new__(cls, title)
-        obj._value_ = title
+    @property
+    def is_success(self) -> bool:
+        return (
+            self == self.LIBRARY_ALL_AC
+            or self == self.LIBRARY_PARTIAL_AC
+            or self == self.LIBRARY_NO_TESTS
+            or self == self.TEST_ACCEPTED
+            or self == self.TEST_WAITING_JUDGE
+        )
 
-        obj.icon = icon
-        obj.is_success = is_success
-        return obj
-
-    LIBRARY_ALL_AC = ("LIBRARY_ALL_AC", ":heavy_check_mark:", True)
-    LIBRARY_PARTIAL_AC = ("LIBRARY_PARTIAL_AC", ":question:", True)
-    LIBRARY_SOME_WA = ("LIBRARY_SOME_WA", ":question:", False)
-    LIBRARY_ALL_WA = ("LIBRARY_ALL_WA", ":x:", False)
-    LIBRARY_NO_TESTS = ("LIBRARY_NO_TESTS", ":warning:", True)
-    TEST_ACCEPTED = ("TEST_ACCEPTED", ":heavy_check_mark:", True)
-    TEST_WRONG_ANSWER = ("TEST_WRONG_ANSWER", ":x:", False)
-    TEST_WAITING_JUDGE = ("TEST_WAITING_JUDGE", ":warning:", True)
+    LIBRARY_ALL_AC = enum.auto()
+    LIBRARY_PARTIAL_AC = enum.auto()
+    LIBRARY_SOME_WA = enum.auto()
+    LIBRARY_ALL_WA = enum.auto()
+    LIBRARY_NO_TESTS = enum.auto()
+    TEST_ACCEPTED = enum.auto()
+    TEST_WRONG_ANSWER = enum.auto()
+    TEST_WAITING_JUDGE = enum.auto()
 
 
 class _VerificationStatusFlag(enum.Flag):
