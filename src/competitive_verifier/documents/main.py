@@ -17,6 +17,7 @@ from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .builder import DocumentBuilder
+from .render import default_docs_dir
 
 logger = getLogger(__name__)
 
@@ -53,11 +54,10 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
     destination = config_dir / "_jekyll"
-    docs = config_dir / "docs"
     parser.add_argument(
         "--docs",
         type=pathlib.Path,
-        help=f"Document settings directory. default: {docs.as_posix()}",
+        help=f"Document settings directory. default: {default_docs_dir.as_posix()}",
     )
     parser.add_argument(
         "--destination",
