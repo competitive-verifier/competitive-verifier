@@ -30,7 +30,7 @@ class VerificationStatus(str, enum.Enum):
         return obj
 
     LIBRARY_ALL_AC = ("LIBRARY_ALL_AC", ":heavy_check_mark:", True)
-    LIBRARY_PARTIAL_AC = ("LIBRARY_PARTIAL_AC", ":question:", True)
+    LIBRARY_PARTIAL_AC = ("LIBRARY_PARTIAL_AC", ":heavy_check_mark:", True)
     LIBRARY_SOME_WA = ("LIBRARY_SOME_WA", ":question:", False)
     LIBRARY_ALL_WA = ("LIBRARY_ALL_WA", ":x:", False)
     LIBRARY_NO_TESTS = ("LIBRARY_NO_TESTS", ":warning:", True)
