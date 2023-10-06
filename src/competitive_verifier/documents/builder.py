@@ -305,7 +305,7 @@ def _render_source_code_stats_for_top_page(
             {
                 "path": stat.path.as_posix(),
                 "title": page_title_dict[stat.path],
-                "icon": stat.verification_status.icon,
+                "icon": stat.verification_status.name,
             }
         )
 
@@ -370,7 +370,7 @@ def _render_source_code_stat_for_page(
     stat = stats[path]
     data = _render_source_code_stat(stat)
     data["_pathExtension"] = path.suffix.lstrip(".")
-    data["_verificationStatusIcon"] = stat.verification_status.icon
+    data["_verificationStatusIcon"] = stat.verification_status.name
     data["_isVerificationFailed"] = stat.verification_status.is_failed
     if job.document_path:
         data["_document_path"] = job.document_path.as_posix()
@@ -379,7 +379,7 @@ def _render_source_code_stat_for_page(
         return {
             "path": path.as_posix(),
             "title": page_title_dict[path],
-            "icon": stats[path].verification_status.icon,
+            "icon": stats[path].verification_status.name,
         }
 
     def path_list(paths: Iterable[pathlib.Path]) -> list[dict[str, Any]]:

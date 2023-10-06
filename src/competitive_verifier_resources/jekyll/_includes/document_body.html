@@ -2,7 +2,7 @@
     <h2>Depends on</h2>
     <ul>
     {%- for item in page.data._extendedDependsOn -%}
-        <li><a href="{{ item.path | relative_url }}">{{ item.icon }} {{ item.title }}
+        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
@@ -14,7 +14,7 @@
     <h2>Required by</h2>
     <ul>
     {%- for item in page.data._extendedRequiredBy -%}
-        <li><a href="{{ item.path | relative_url }}">{{ item.icon }} {{ item.title }}
+        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
@@ -26,7 +26,7 @@
     <h2>Verified with</h2>
     <ul>
     {%- for item in page.data._extendedVerifiedWith -%}
-        <li><a href="{{ item.path | relative_url }}">{{ item.icon }} {{ item.title }}
+        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
