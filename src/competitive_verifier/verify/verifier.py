@@ -4,7 +4,7 @@ import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Optional
+from typing import Optional, Union
 
 from competitive_verifier import git, github, log
 from competitive_verifier.download.main import run_impl as run_download
@@ -262,7 +262,7 @@ class BaseVerifier(InputContainer):
 
     def run_verification(
         self, verification: Verification
-    ) -> tuple[ResultStatus, Optional[str]]:
+    ) -> tuple[Union[ResultStatus, VerificationResult], Optional[str]]:
         """Run verification
 
         Returns:
@@ -301,15 +301,18 @@ class BaseVerifier(InputContainer):
 
     def create_command_result(
         self,
-        status: ResultStatus,
+        status_or_result: Union[ResultStatus, VerificationResult],
         prev_time: datetime.datetime,
         *,
         name: Optional[str] = None,
     ) -> VerificationResult:
+        if isinstance(status_or_result, VerificationResult):
+            return status_or_result
+
         elapsed = (self.now() - prev_time).total_seconds()
         return VerificationResult(
             verification_name=name,
-            status=status,
+            status=status_or_result,
             elapsed=elapsed,
             last_execution_time=self.verification_time,
         )

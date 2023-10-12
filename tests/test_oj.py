@@ -69,7 +69,7 @@ def test_oj_test():
     with mock.patch(
         "competitive_verifier.oj.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
-    ), mock.patch("onlinejudge_command.subcommand.test.run") as patch:
+    ), mock.patch("competitive_verifier.oj.run_test") as patch:
         oj.test(url="http://example.com", command="ls .", tle=2, error=None)
 
         patch.assert_called_once()

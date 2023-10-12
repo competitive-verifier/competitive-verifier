@@ -20,6 +20,14 @@ class VerificationResult(BaseModel):
     """
     Elapsed seconds
     """
+    slowest: Optional[float] = None
+    """
+    slowest seconds
+    """
+    heaviest: Optional[float] = None
+    """
+    heaviest MB
+    """
 
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
