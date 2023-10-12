@@ -75,16 +75,6 @@ class VerifyCommandResult(BaseModel):
         impl.files = new_files
         return impl
 
-    def model_dump_json(self, **kwargs: Any) -> str:
-        class WithStrDict(BaseModel):
-            total_seconds: float
-            files: dict[str, FileResult]
-
-        return WithStrDict(
-            total_seconds=self.total_seconds,
-            files={k.as_posix(): v for k, v in self.files.items()},
-        ).model_dump_json(**kwargs)
-
     def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()
         for k, r in other.files.items():
