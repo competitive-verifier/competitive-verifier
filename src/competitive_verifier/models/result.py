@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -23,6 +23,7 @@ class VerificationResult(BaseModel):
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
     )
+    aditional_data: Optional[dict[str, Any]] = None
 
     @field_validator("status", mode="before")
     @classmethod
