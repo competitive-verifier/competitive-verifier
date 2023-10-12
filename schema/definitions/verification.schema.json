@@ -7,6 +7,10 @@
             "allOf": [
                 {
                     "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Verification name"
+                        },
                         "type": {
                             "description": "command type",
                             "enum": [

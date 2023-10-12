@@ -42,7 +42,9 @@ test_input = VerificationInput.model_validate(
 
 def test_to_json():
     assert (
-        VerificationInput.model_validate_json(test_input.model_dump_json())
+        VerificationInput.model_validate_json(
+            test_input.model_dump_json(exclude_none=True)
+        )
         == test_input
     )
 
@@ -65,7 +67,7 @@ def test_to_json():
             },
         }
     )
-    assert json.loads(obj.model_dump_json()) == {
+    assert json.loads(obj.model_dump_json(exclude_none=True)) == {
         "files": {
             "foo/bar.py": {
                 "dependencies": [],
@@ -116,7 +118,7 @@ def test_repr():
         f"files={{{repr(Path('foo/bar.py'))}: "
         f"VerificationFile(dependencies=set(), verification=[], document_attributes={{}}, additonal_sources=[]),"
         f" {repr(Path('foo/baz.py'))}: "
-        f"VerificationFile(dependencies={{{repr(Path('foo/bar.py'))}}}, verification=[ConstVerification(type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}}, additonal_sources=[AddtionalSource(name='dummy', path={repr(Path('tmp/dumm.py'))})])"
+        f"VerificationFile(dependencies={{{repr(Path('foo/bar.py'))}}}, verification=[ConstVerification(name=None, type='const', status=<ResultStatus.SUCCESS: 'success'>)], document_attributes={{'title': {repr('foo-baz')}}}, additonal_sources=[AddtionalSource(name='dummy', path={repr(Path('tmp/dumm.py'))})])"
         f"}})"
     )
 

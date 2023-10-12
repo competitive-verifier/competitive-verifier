@@ -213,7 +213,11 @@ class BaseVerifier(InputContainer):
                     if (prev_time - start_time).total_seconds() > self.timeout:
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
                         verifications.append(
-                            self.create_command_result(ResultStatus.SKIPPED, prev_time)
+                            self.create_command_result(
+                                ResultStatus.SKIPPED,
+                                prev_time,
+                                name=ve.name,
+                            )
                         )
                         return verifications
 
@@ -226,7 +230,9 @@ class BaseVerifier(InputContainer):
                                     message=f"{error_message} {p.as_posix()}",
                                     file=str(p.resolve()),
                                 )
-                        verifications.append(self.create_command_result(rs, prev_time))
+                        verifications.append(
+                            self.create_command_result(rs, prev_time, name=ve.name)
+                        )
                     except BaseException as e:
                         message = (
                             e.message
@@ -236,7 +242,11 @@ class BaseVerifier(InputContainer):
                         logger.error("%s: %s, %s", message, p, repr(ve))
                         traceback.print_exc()
                         verifications.append(
-                            self.create_command_result(ResultStatus.FAILURE, prev_time)
+                            self.create_command_result(
+                                ResultStatus.FAILURE,
+                                prev_time,
+                                name=ve.name,
+                            )
                         )
                 return verifications
 
@@ -280,7 +290,9 @@ class BaseVerifier(InputContainer):
 
                 for v in f.verification:
                     rs = self.run_verification(v)[0]
-                    verifications.append(self.create_command_result(rs, prev_time))
+                    verifications.append(
+                        self.create_command_result(rs, prev_time, name=v.name)
+                    )
                 results[p] = FileResult(
                     verifications=verifications,
                     newest=False,
@@ -291,9 +303,12 @@ class BaseVerifier(InputContainer):
         self,
         status: ResultStatus,
         prev_time: datetime.datetime,
+        *,
+        name: Optional[str] = None,
     ) -> VerificationResult:
         elapsed = (self.now() - prev_time).total_seconds()
         return VerificationResult(
+            verification_name=name,
             status=status,
             elapsed=elapsed,
             last_execution_time=self.verification_time,

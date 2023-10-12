@@ -30,6 +30,11 @@ test_command_union_json_params = [  # type: ignore
         '{"type":"const","status":"success"}',
     ),
     (
+        ConstVerification(status=ResultStatus.SUCCESS, name="foo"),
+        '{"type": "const","name":"foo","status":"success"}',
+        '{"name":"foo","type":"const","status":"success"}',
+    ),
+    (
         ConstVerification(status=ResultStatus.FAILURE),
         '{"type": "const","status":"failure"}',
         '{"type":"const","status":"failure"}',
@@ -47,7 +52,7 @@ test_command_union_json_params = [  # type: ignore
     (
         CommandVerification(command="ls ~"),
         '{"type":"command","command":"ls ~"}',
-        '{"type":"command","command":"ls ~","compile":null}',
+        '{"type":"command","command":"ls ~"}',
     ),
     (
         CommandVerification(compile="cat LICENSE", command="ls ~"),
@@ -57,14 +62,19 @@ test_command_union_json_params = [  # type: ignore
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
         '{"type":"problem","problem":"https://example.com","command":"ls ~"}',
-        '{"type":"problem","command":"ls ~","compile":null,"problem":"https://example.com","error":null,"tle":null}',
+        '{"type":"problem","command":"ls ~","problem":"https://example.com"}',
+    ),
+    (
+        ProblemVerification(name="bar", command="ls ~", problem="https://example.com"),
+        '{"type":"problem","name":"bar","problem":"https://example.com","command":"ls ~"}',
+        '{"name":"bar","type":"problem","command":"ls ~","problem":"https://example.com"}',
     ),
     (
         ProblemVerification(
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
         '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "command": "ls ~"}',
-        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com","error":null,"tle":null}',
+        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com"}',
     ),
     (
         ProblemVerification(
@@ -89,7 +99,7 @@ def test_command_union_json(
     VerificationUnion = RootModel[Verification]
 
     assert obj == type(obj).model_validate_json(raw_json)
-    assert obj.model_dump_json() == output_json
+    assert obj.model_dump_json(exclude_none=True) == output_json
 
     assert obj == VerificationUnion.model_validate_json(raw_json).root
 

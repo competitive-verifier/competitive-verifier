@@ -14,6 +14,7 @@ logger = getLogger(__name__)
 
 
 class VerificationResult(BaseModel):
+    verification_name: Optional[str] = None
     status: ResultStatus
     elapsed: float
     """

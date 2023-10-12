@@ -13,6 +13,8 @@ class VerificationParams(Protocol):
 
 
 class BaseVerification(BaseModel, ABC):
+    name: Optional[str] = None
+
     @abstractmethod
     def run(
         self,
