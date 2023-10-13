@@ -359,11 +359,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
         "verifiedWith": [path.as_posix() for path in stat.verified_with],
         "attributes": attributes,
         "testcases": [
-            (
-                c.model_copy(update={"name": f"{v.verification_name}-{c.name}"})
-                if v.verification_name
-                else c
-            ).model_dump(mode="json")
+            c.model_dump(mode="json") | {"verification": v.verification_name}
             for v in stat.verification_results
             for c in (v.testcases or [])
         ]
