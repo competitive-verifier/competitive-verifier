@@ -33,7 +33,7 @@
             },
             "dependencies": [],
             "verification": {
-                "name": "awk",
+                "name": "awk(yukicoder)",
                 "type": "problem",
                 "compile": "ls .",
                 "command": "awk -f examples/awk/aplusb2.awk",

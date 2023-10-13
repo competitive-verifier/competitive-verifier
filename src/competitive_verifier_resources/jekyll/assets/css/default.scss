@@ -1,5 +1,7 @@
+---
+---
+
 {% if site.theme == "jekyll-theme-minimal" %}
-<style type="text/css">
 @media screen and (min-width: 900px) {
     div.wrapper {
         width: 100%;
@@ -21,5 +23,8 @@ h1 a:hover {
 h1 a:focus {
     font-weight: bold;
 }
-</style>
 {% endif %}
+
+.emoji {
+    vertical-align: middle;
+}
