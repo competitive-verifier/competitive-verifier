@@ -9,4 +9,4 @@ To see the generated document, do the following steps:
     7. Open http://127.0.0.1:4000 on your web browser
 
   GitHub Actions
-    See sample of https://github.com/{{{{{repository}}}}}
+    See sample of https://github.com/competitive-verifier/competitive-verifier
