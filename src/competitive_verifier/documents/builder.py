@@ -359,7 +359,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
         "verifiedWith": [path.as_posix() for path in stat.verified_with],
         "attributes": attributes,
         "testcases": [
-            c.model_dump(mode="json") | {"verification": v.verification_name}
+            c.model_dump(mode="json") | {"environment": v.verification_name}
             for v in stat.verification_results
             for c in (v.testcases or [])
         ]

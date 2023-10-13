@@ -61,7 +61,7 @@
     <tbody>
         {%- for case in page.data.testcases -%}
         <tr>
-            <td class="col col1">{{ case.verification }}</td>
+            <td class="col col1">{{ case.environment }}</td>
             <td class="col col2">{{ case.name }}</td>
             {%- if case.status == "AC" -%}
             <td class="col col3">{{ site.icons.TEST_ACCEPTED }}&nbsp;AC</td>
