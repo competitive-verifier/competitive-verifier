@@ -19,7 +19,7 @@ from onlinejudge.type import NotLoggedInError
 import competitive_verifier.config
 import competitive_verifier.exec
 from competitive_verifier import log
-from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.models.result import TestcaseResult, VerificationResult
 from competitive_verifier.models.result_status import ResultStatus
 from competitive_verifier.oj_test_command import run as run_test
 
@@ -158,4 +158,13 @@ def test(
         elapsed=result.elapsed,
         slowest=result.slowest,
         heaviest=result.heaviest,
+        testcases=[
+            TestcaseResult(
+                name=case.testcase.name,
+                elapsed=case.elapsed,
+                memory=case.memory,
+                status=case.status,
+            )
+            for case in result.testcases
+        ],
     )

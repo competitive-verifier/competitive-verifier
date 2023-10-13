@@ -3,6 +3,7 @@ import pathlib
 from logging import getLogger
 from typing import Any, Optional, Union
 
+from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel, Field, field_validator
 
 from competitive_verifier.models.path import ForcePosixPath
@@ -11,6 +12,13 @@ from competitive_verifier.util import to_relative
 from .result_status import ResultStatus
 
 logger = getLogger(__name__)
+
+
+class TestcaseResult(BaseModel):
+    name: str
+    status: JudgeStatus
+    elapsed: float
+    memory: Optional[float]
 
 
 class VerificationResult(BaseModel):
@@ -29,10 +37,11 @@ class VerificationResult(BaseModel):
     heaviest MB
     """
 
+    testcases: Optional[list[TestcaseResult]] = None
+
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
     )
-    aditional_data: Optional[dict[str, Any]] = None
 
     @field_validator("status", mode="before")
     @classmethod

@@ -22,7 +22,7 @@ class TestCase(BaseModel):
     output: Optional[pathlib.Path] = None
 
 
-class CaseResult(BaseModel):
+class OjTestcaseResult(BaseModel):
     status: JudgeStatus
     elapsed: float
     memory: Optional[float] = None
@@ -30,7 +30,7 @@ class CaseResult(BaseModel):
     testcase: TestCase
 
 
-class TestResult(BaseModel):
+class OjTestResult(BaseModel):
     is_success: bool
 
     elapsed: float
@@ -43,10 +43,10 @@ class TestResult(BaseModel):
     """max memory [MB]
     """
 
-    testcases: list[CaseResult]
+    testcases: list[OjTestcaseResult]
 
 
-def run(args: "argparse.Namespace") -> TestResult:
+def run(args: "argparse.Namespace") -> OjTestResult:
     # list tests
     if not args.test:
         args.test = fmtutils.glob_with_format(args.directory, args.format)  # by default
@@ -73,10 +73,10 @@ def run(args: "argparse.Namespace") -> TestResult:
         raise RuntimeError("--mle is used but GNU time does not exist")
 
     # run tests
-    history: list[CaseResult] = []
+    history: list[OjTestcaseResult] = []
     for name, paths in sorted(tests.items()):
         history.append(
-            CaseResult.model_validate(
+            OjTestcaseResult.model_validate(
                 test_single_case(name, paths["in"], paths.get("out"), args=args),
             )
         )
@@ -124,7 +124,7 @@ def run(args: "argparse.Namespace") -> TestResult:
 
     logger.info(history)
     # return the result
-    return TestResult(
+    return OjTestResult(
         is_success=ac_count == len(tests),
         slowest=slowest,
         elapsed=elapsed,
