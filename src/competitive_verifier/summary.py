@@ -14,7 +14,7 @@ FAILURE = ResultStatus.FAILURE
 SKIPPED = ResultStatus.SKIPPED
 
 
-def to_human_str(total_seconds: float) -> str:
+def to_human_str_seconds(total_seconds: float) -> str:
     hours = int(total_seconds // 3600)
     rm = total_seconds % 3600
     minutes = int(rm // 60)
@@ -33,35 +33,17 @@ def to_human_str(total_seconds: float) -> str:
         return f"{int(total_seconds*1000)}ms"
 
 
+def to_human_str_mega_bytes(total_mega_bytes: float) -> str:
+    if total_mega_bytes < 0.001:
+        return "0MB"
+    if total_mega_bytes < 100:
+        return f"{total_mega_bytes:.3g}MB"
+    return f"{int(total_mega_bytes)}MB"
+
+
 def write_summary(fp: TextIO, result: VerifyCommandResult):
     def with_icon(icon: str, text: str) -> str:
         return icon + "&nbsp;&nbsp;" + text
-
-    def write_table_line(cells: list[str]) -> None:
-        for c in cells:
-            fp.write("|")
-            fp.write(c)
-        fp.write("|\n")
-
-    def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
-        for p, fr in results:
-            counter = Counter(r.status for r in fr.verifications)
-            if counter.get(FAILURE):
-                emoji_status = "❌"
-            elif counter.get(SKIPPED):
-                emoji_status = "⚠"
-            else:
-                emoji_status = "✔"
-            write_table_line(
-                [
-                    with_icon(emoji_status, p.as_posix()),
-                    str(counter.get(SUCCESS, "-")),
-                    str(counter.get(FAILURE, "-")),
-                    str(counter.get(SKIPPED, "-")),
-                    str(sum(counter.values())),
-                    to_human_str(sum(r.elapsed for r in fr.verifications)),
-                ]
-            )
 
     file_results: dict[bool, list[tuple[pathlib.Path, FileResult]]] = {
         False: [],
@@ -103,13 +85,53 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     header = [
         with_icon("📝", "File"),
-        with_icon("✓", "Passed"),
-        with_icon("✘", "Failed"),
-        with_icon("↷", "Skipped"),
-        with_icon("∑", "Total"),
-        with_icon("⧗", "Elapsed"),
+        "✔<br>Passed",
+        "❌<br>Failed",
+        "⚠<br>Skipped",
+        "∑<br>Total",
+        "⏳<br>Elapsed",
+        "🦥<br>Slowest",
+        "🐘<br>Heaviest",
     ]
     alignment = [":---"] + [":---:"] * (len(header) - 1)
+
+    def write_table_line(cells: list[str]) -> None:
+        assert len(cells) == len(header)
+        for c in cells:
+            fp.write("|")
+            fp.write(c)
+        fp.write("|\n")
+
+    def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
+        for p, fr in results:
+            counter = Counter(r.status for r in fr.verifications)
+            if counter.get(FAILURE):
+                emoji_status = "❌"
+            elif counter.get(SKIPPED):
+                emoji_status = "⚠"
+            else:
+                emoji_status = "✔"
+            elapsed = sum(r.elapsed for r in fr.verifications)
+            slowest = max(
+                (r.slowest for r in fr.verifications if r.slowest is not None),
+                default=None,
+            )
+            heaviest = max(
+                (r.heaviest for r in fr.verifications if r.heaviest is not None),
+                default=None,
+            )
+            write_table_line(
+                [
+                    with_icon(emoji_status, p.as_posix()),
+                    str(counter.get(SUCCESS, "-")),
+                    str(counter.get(FAILURE, "-")),
+                    str(counter.get(SKIPPED, "-")),
+                    str(sum(counter.values())),
+                    to_human_str_seconds(elapsed),
+                    "-" if slowest is None else to_human_str_seconds(slowest),
+                    "-" if heaviest is None else to_human_str_mega_bytes(heaviest),
+                ]
+            )
 
     if file_results[True]:
         fp.write("## Results\n")
@@ -122,7 +144,9 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
                 str(counter.get(FAILURE, "-")),
                 str(counter.get(SKIPPED, "-")),
                 str(sum(counter.values())),
-                to_human_str(result.total_seconds),
+                to_human_str_seconds(result.total_seconds),
+                "-",
+                "-",
             ]
         )
         write_table_line([""] * len(header))
