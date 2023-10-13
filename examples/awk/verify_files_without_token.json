@@ -20,6 +20,7 @@
             },
             "dependencies": [],
             "verification": {
+                "name": "awk",
                 "type": "problem",
                 "command": "awk -f examples/awk/aplusb.awk",
                 "problem": "https://judge.yosupo.jp/problem/aplusb"
