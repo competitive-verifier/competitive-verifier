@@ -47,7 +47,7 @@ def run_impl(
         split_state=split_state,
     )
     result = verifier.verify(download=download)
-    result_json = result.model_dump_json()
+    result_json = result.model_dump_json(exclude_none=True)
 
     if write_summary:
         gh_summary_path = github.env.get_step_summary_path()

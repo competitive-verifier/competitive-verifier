@@ -4,7 +4,7 @@ import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Optional
+from typing import Optional, Union
 
 from competitive_verifier import git, github, log
 from competitive_verifier.download.main import run_impl as run_download
@@ -213,7 +213,11 @@ class BaseVerifier(InputContainer):
                     if (prev_time - start_time).total_seconds() > self.timeout:
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
                         verifications.append(
-                            self.create_command_result(ResultStatus.SKIPPED, prev_time)
+                            self.create_command_result(
+                                ResultStatus.SKIPPED,
+                                prev_time,
+                                name=ve.name,
+                            )
                         )
                         return verifications
 
@@ -226,7 +230,9 @@ class BaseVerifier(InputContainer):
                                     message=f"{error_message} {p.as_posix()}",
                                     file=str(p.resolve()),
                                 )
-                        verifications.append(self.create_command_result(rs, prev_time))
+                        verifications.append(
+                            self.create_command_result(rs, prev_time, name=ve.name)
+                        )
                     except BaseException as e:
                         message = (
                             e.message
@@ -236,7 +242,11 @@ class BaseVerifier(InputContainer):
                         logger.error("%s: %s, %s", message, p, repr(ve))
                         traceback.print_exc()
                         verifications.append(
-                            self.create_command_result(ResultStatus.FAILURE, prev_time)
+                            self.create_command_result(
+                                ResultStatus.FAILURE,
+                                prev_time,
+                                name=ve.name,
+                            )
                         )
                 return verifications
 
@@ -252,7 +262,7 @@ class BaseVerifier(InputContainer):
 
     def run_verification(
         self, verification: Verification
-    ) -> tuple[ResultStatus, Optional[str]]:
+    ) -> tuple[Union[ResultStatus, VerificationResult], Optional[str]]:
         """Run verification
 
         Returns:
@@ -263,7 +273,8 @@ class BaseVerifier(InputContainer):
             error_message = "Failed to compile"
 
         rs = verification.run(self)
-        if rs != ResultStatus.SUCCESS:
+
+        if rs.status != ResultStatus.SUCCESS:
             error_message = "Failed to test"
         return (rs, error_message)
 
@@ -280,7 +291,9 @@ class BaseVerifier(InputContainer):
 
                 for v in f.verification:
                     rs = self.run_verification(v)[0]
-                    verifications.append(self.create_command_result(rs, prev_time))
+                    verifications.append(
+                        self.create_command_result(rs, prev_time, name=v.name)
+                    )
                 results[p] = FileResult(
                     verifications=verifications,
                     newest=False,
@@ -289,12 +302,18 @@ class BaseVerifier(InputContainer):
 
     def create_command_result(
         self,
-        status: ResultStatus,
+        status_or_result: Union[ResultStatus, VerificationResult],
         prev_time: datetime.datetime,
+        *,
+        name: Optional[str] = None,
     ) -> VerificationResult:
+        if isinstance(status_or_result, VerificationResult):
+            return status_or_result
+
         elapsed = (self.now() - prev_time).total_seconds()
         return VerificationResult(
-            status=status,
+            verification_name=name,
+            status=status_or_result,
             elapsed=elapsed,
             last_execution_time=self.verification_time,
         )

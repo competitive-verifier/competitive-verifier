@@ -131,8 +131,8 @@ def test_parse_FileResult(
     output_json: str,
 ):
     assert obj == FileResult.model_validate(raw_dict)
-    assert obj.model_dump() == output_dict
-    assert obj.model_dump_json() == output_json
+    assert obj.model_dump(exclude_none=True) == output_dict
+    assert obj.model_dump_json(exclude_none=True) == output_json
 
 
 test_file_result_need_verification_params = [  # type: ignore
@@ -310,7 +310,10 @@ def test_verify_command_result_json():
             ),
         },
     )
-    assert VerifyCommandResult.model_validate_json(obj.model_dump_json()) == obj
+    assert (
+        VerifyCommandResult.model_validate_json(obj.model_dump_json(exclude_none=True))
+        == obj
+    )
 
 
 test_merge_params = [

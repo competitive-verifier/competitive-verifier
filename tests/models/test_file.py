@@ -148,7 +148,7 @@ def test_parse_VerificationFile(
     output_dict: dict[str, Any],
 ):
     assert obj == VerificationFile.model_validate(raw_dict)
-    assert obj.model_dump() == output_dict
+    assert obj.model_dump(exclude_none=True) == output_dict
 
 
 test_is_verification_params = [

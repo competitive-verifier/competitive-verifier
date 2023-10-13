@@ -1,8 +1,9 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import Any, Union
+from typing import Any, Optional, Union
 
+from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel, Field, field_validator
 
 from competitive_verifier.models.path import ForcePosixPath
@@ -13,12 +14,30 @@ from .result_status import ResultStatus
 logger = getLogger(__name__)
 
 
+class TestcaseResult(BaseModel):
+    name: str
+    status: JudgeStatus
+    elapsed: float
+    memory: Optional[float]
+
+
 class VerificationResult(BaseModel):
+    verification_name: Optional[str] = None
     status: ResultStatus
     elapsed: float
     """
     Elapsed seconds
     """
+    slowest: Optional[float] = None
+    """
+    slowest seconds
+    """
+    heaviest: Optional[float] = None
+    """
+    heaviest MB
+    """
+
+    testcases: Optional[list[TestcaseResult]] = None
 
     last_execution_time: datetime.datetime = Field(
         default_factory=datetime.datetime.now
@@ -73,16 +92,6 @@ class VerifyCommandResult(BaseModel):
 
         impl.files = new_files
         return impl
-
-    def model_dump_json(self, **kwargs: Any) -> str:
-        class WithStrDict(BaseModel):
-            total_seconds: float
-            files: dict[str, FileResult]
-
-        return WithStrDict(
-            total_seconds=self.total_seconds,
-            files={k.as_posix(): v for k, v in self.files.items()},
-        ).model_dump_json(**kwargs)
 
     def merge(self, other: "VerifyCommandResult") -> "VerifyCommandResult":
         d = self.files.copy()

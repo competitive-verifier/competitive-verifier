@@ -11,7 +11,6 @@ import onlinejudge._implementation.utils
 import onlinejudge.utils
 import onlinejudge_command.main
 import onlinejudge_command.subcommand.download
-import onlinejudge_command.subcommand.test
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
@@ -20,6 +19,9 @@ from onlinejudge.type import NotLoggedInError
 import competitive_verifier.config
 import competitive_verifier.exec
 from competitive_verifier import log
+from competitive_verifier.models.result import TestcaseResult, VerificationResult
+from competitive_verifier.models.result_status import ResultStatus
+from competitive_verifier.oj_test_command import run as run_test
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
 _problem_cache_dir = competitive_verifier.config.cache_dir / "problems"
@@ -93,9 +95,9 @@ def download(url: str, *, group_log: bool = False) -> bool:
                 arg_list += ["--dropbox-token", DROPBOX_TOKEN]
 
             try:
-                parser = onlinejudge_command.main.get_parser()  # type: ignore
-                args = parser.parse_args(arg_list)  # type: ignore
-                onlinejudge_command.subcommand.download.run(args)  # type: ignore
+                parser = onlinejudge_command.main.get_parser()
+                args = parser.parse_args(arg_list)
+                onlinejudge_command.subcommand.download.run(args)
 
                 checker_path = get_checker_path(url)
                 if checker_path:
@@ -124,7 +126,7 @@ def test(
     command: str,
     tle: float,
     error: Optional[float],
-) -> bool:
+) -> VerificationResult:
     directory = get_directory(url)
     test_directory = directory / "test"
 
@@ -147,6 +149,22 @@ def test(
     if error:
         arg_list += ["-e", str(error)]
 
-    parser = onlinejudge_command.main.get_parser()  # type: ignore
-    args = parser.parse_args(arg_list)  # type: ignore
-    return bool(onlinejudge_command.subcommand.test.run(args))  # type: ignore
+    parser = onlinejudge_command.main.get_parser()
+    args = parser.parse_args(arg_list)
+    result = run_test(args)
+
+    return VerificationResult(
+        status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,
+        elapsed=result.elapsed,
+        slowest=result.slowest,
+        heaviest=result.heaviest,
+        testcases=[
+            TestcaseResult(
+                name=case.testcase.name,
+                elapsed=case.elapsed,
+                memory=case.memory,
+                status=case.status,
+            )
+            for case in result.testcases
+        ],
+    )

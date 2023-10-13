@@ -3,6 +3,8 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
+from competitive_verifier.models.result import VerificationResult
+
 from .. import oj
 from ..exec import exec_command
 from .result_status import ResultStatus
@@ -13,11 +15,13 @@ class VerificationParams(Protocol):
 
 
 class BaseVerification(BaseModel, ABC):
+    name: Optional[str] = None
+
     @abstractmethod
     def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> ResultStatus:
+    ) -> Union[ResultStatus, VerificationResult]:
         ...
 
     @abstractmethod
@@ -96,18 +100,18 @@ class ProblemVerification(BaseVerification):
     def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> ResultStatus:
+    ) -> VerificationResult:
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 
-        if oj.test(
+        result = oj.test(
             url=self.problem,
             command=self.command,
             tle=self.tle or params.default_tle,
             error=self.error,
-        ):
-            return ResultStatus.SUCCESS
-        return ResultStatus.FAILURE
+        )
+        result.verification_name = self.name
+        return result
 
     def run_compile_command(
         self,
