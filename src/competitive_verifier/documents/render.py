@@ -67,6 +67,7 @@ def load_render_config(
         (importlib.resources.files(_RESOURCE_PACKAGE) / _CONFIG_YML_PATH).read_bytes()
     )
     assert default_config_yml is not None
+    default_icons: dict[str, Any] = default_config_yml["icons"]
 
     config_yml: dict[str, Any] = default_config_yml
     if not docs_dir:
@@ -76,6 +77,9 @@ def load_render_config(
     user_config_yml = _load_user_render_config_yml(docs_dir)
     if user_config_yml:
         config_yml.update(user_config_yml)
+
+    default_icons.update(config_yml["icons"])
+    config_yml["icons"] = default_icons
 
     config_yml.setdefault("action_name", github.env.get_workflow_name())
     config_yml.setdefault("branch_name", github.env.get_ref_name())
