@@ -273,7 +273,8 @@ class BaseVerifier(InputContainer):
             error_message = "Failed to compile"
 
         rs = verification.run(self)
-        if rs != ResultStatus.SUCCESS:
+
+        if rs.status != ResultStatus.SUCCESS:
             error_message = "Failed to test"
         return (rs, error_message)
 

@@ -2,18 +2,19 @@ import argparse
 import json
 import pathlib
 import platform
+from logging import getLogger
 from typing import Optional
 
 import onlinejudge_command.format_utils as fmtutils
 import onlinejudge_command.utils as utils
 from onlinejudge_command.subcommand.test import (
-    MEMORY_WARNING,
     JudgeStatus,
     check_gnu_time,
-    logger,
     test_single_case,
 )
 from pydantic import BaseModel
+
+logger = getLogger(__name__)
 
 
 class TestCase(BaseModel):
@@ -103,10 +104,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
     logger.info("")
     logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
     if heaviest >= 0:
-        if heaviest < MEMORY_WARNING:
-            logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
-        else:
-            logger.warning("max memory: %f MB  (for %s)", heaviest, heaviest_name)
+        logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
     if ac_count == len(tests):
         logger.info(
             utils.SUCCESS + "test " + utils.green("success") + ": %d cases", len(tests)
@@ -122,7 +120,6 @@ def run(args: "argparse.Namespace") -> OjTestResult:
         with args.log_file.open(mode="w") as fh:
             json.dump(history, fh)
 
-    logger.info(history)
     # return the result
     return OjTestResult(
         is_success=ac_count == len(tests),
