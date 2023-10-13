@@ -6,6 +6,7 @@
                 "examples/awk/circle.awk"
             ],
             "verification": {
+                "name": "awk",
                 "type": "problem",
                 "command": "awk -f examples/awk/circle.test.awk",
                 "problem": "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_4_B",
@@ -20,6 +21,7 @@
             },
             "dependencies": [],
             "verification": {
+                "name": "awk",
                 "type": "problem",
                 "command": "awk -f examples/awk/aplusb.awk",
                 "problem": "https://judge.yosupo.jp/problem/aplusb"
@@ -31,6 +33,7 @@
             },
             "dependencies": [],
             "verification": {
+                "name": "awk",
                 "type": "problem",
                 "compile": "ls .",
                 "command": "awk -f examples/awk/aplusb2.awk",
