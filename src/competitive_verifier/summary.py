@@ -111,7 +111,6 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         "🐘<br>Heaviest",
     ]
     alignment = [":---"] + [":---:"] * (len(header) - 1)
-    tb = TableWriter(fp, header)
 
     def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
         for p, fr in results:
@@ -144,7 +143,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     if file_results:
         fp.write("## Results\n")
-        tb.write_table_line(*header)
+        tb = TableWriter(fp, header)
         tb.write_table_line(*alignment)
         tb.write_table_line(
             "_**Sum**_",
@@ -162,7 +161,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
     if past_results:
         fp.write("## Past results\n")
-        tb.write_table_line(*header)
+        tb = TableWriter(fp, header)
         tb.write_table_line(*alignment)
         write_table_file_result(past_results)
 
