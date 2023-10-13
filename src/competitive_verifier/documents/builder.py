@@ -347,6 +347,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     embedded = [{"name": "default", "code": code}]
     for s in stat.file_input.additonal_sources:
         embedded.append({"name": s.name, "code": read_text_normalized(s.path)})
+
     return {
         "path": stat.path.as_posix(),
         "embedded": embedded,
@@ -357,6 +358,17 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
         "requiredBy": [path.as_posix() for path in stat.required_by],
         "verifiedWith": [path.as_posix() for path in stat.verified_with],
         "attributes": attributes,
+        "testcases": [
+            (
+                c.model_copy(update={"name": f"{v.verification_name}-{c.name}"})
+                if v.verification_name
+                else c
+            ).model_dump(mode="json")
+            for v in stat.verification_results
+            for c in (v.testcases or [])
+        ]
+        if stat.verification_results
+        else None,
     }
 
 

@@ -1,6 +1,7 @@
 import datetime
 import enum
 import pathlib
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ from competitive_verifier import git
 from competitive_verifier.models.path import ForcePosixPath
 
 from .file import VerificationFile, VerificationInput
-from .result import ResultStatus, VerifyCommandResult
+from .result import ResultStatus, VerificationResult, VerifyCommandResult
 
 
 class VerificationStatus(enum.Enum):
@@ -100,6 +101,7 @@ class SourceCodeStat(BaseModel):
     depends_on: set[ForcePosixPath]
     required_by: set[ForcePosixPath]
     verified_with: set[ForcePosixPath]
+    verification_results: Optional[list[VerificationResult]] = None
 
 
 def resolve_dependency(
@@ -112,6 +114,7 @@ def resolve_dependency(
     statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
         p: _VerificationStatusFlag.TEST_NOTHING for p in input.files.keys()
     }
+    verification_results_dict: dict[pathlib.Path, list[VerificationResult]] = {}
 
     for p, r in result.files.items():
         if p not in included_files:
@@ -125,6 +128,7 @@ def resolve_dependency(
             elif v.status == ResultStatus.SKIPPED:
                 st |= _VerificationStatusFlag.HAVE_SKIP
         statuses[p] = st
+        verification_results_dict[p] = r.verifications
 
     for group in input.scc():
         group &= included_files
@@ -149,6 +153,10 @@ def resolve_dependency(
             file_input = input.files[path]
             is_verification = file_input.is_verification()
 
+            verification_results = verification_results_dict.get(path)
+
+            assert not is_verification or verification_results is not None
+
             flag_status = group_status
             if not is_verification:
                 flag_status |= _VerificationStatusFlag.IS_LIBRARY
@@ -162,5 +170,6 @@ def resolve_dependency(
                 verified_with=verified_with,
                 timestamp=timestamp,
                 verification_status=flag_status.to_status(),
+                verification_results=verification_results,
             )
     return d

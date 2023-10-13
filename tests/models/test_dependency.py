@@ -64,6 +64,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_results": [
+                    {
+                        "status": "success",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -148,6 +155,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "verification_results": [
+                    {
+                        "status": "failure",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -250,6 +264,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_results": [
+                    {
+                        "status": "success",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -268,6 +289,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WAITING_JUDGE,
+                "verification_results": [
+                    {
+                        "status": "skipped",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -370,6 +398,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_results": [
+                    {
+                        "status": "success",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -388,6 +423,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "verification_results": [
+                    {
+                        "status": "failure",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    },
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": set(),
@@ -539,6 +581,13 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 },
                 "is_verification": True,
                 "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_results": [
+                    {
+                        "status": "success",
+                        "elapsed": 1,
+                        "last_execution_time": datetime.datetime(2020, 2, 15),
+                    }
+                ],
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/hello.java"},
                 "required_by": {"c1/hello.java"},

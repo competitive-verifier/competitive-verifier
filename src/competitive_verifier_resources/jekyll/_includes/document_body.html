@@ -36,3 +36,32 @@
 <h2>Code</h2>
 
 {%- include code.html extension=page.data._pathExtension embedded=page.data.embedded -%}
+
+{%- if page.data.testcases and page.data.testcases.size != 0 -%}
+<h2>Test cases</h2>
+<table class="testcases-table">
+    <style>
+        .col:not(.col1) {
+            text-align: center;
+        }
+    </style>
+    <thead>
+      <tr>
+        <th class="col col1">Name</th>
+        <th class="col col2">Status</th>
+        <th class="col col3">Elapsed</th>
+        <th class="col col4">Memory</th>
+      </tr>
+    </thead>
+    <tbody>
+{%- for case in page.data.testcases -%}
+      <tr>
+        <td class="col col1">{{ case.name }}</td>
+        <td class="col col2">{{ case.status }}</td>
+        <td class="col col3">{{ case.elapsed | times: 1000 | round }} ms</td>
+        <td class="col col4">{{ case.memory | round }} MB</td>
+      </tr>
+{%- endfor -%}
+    </tbody>
+  </table>
+{%- endif -%}
