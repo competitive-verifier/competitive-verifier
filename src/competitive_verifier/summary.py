@@ -5,11 +5,12 @@ import os
 import pathlib
 from collections import Counter
 from itertools import chain
-from typing import TextIO
+from typing import Optional, TextIO
 
 from onlinejudge_command.subcommand.test import JudgeStatus
 
 from competitive_verifier.models import FileResult, ResultStatus, VerifyCommandResult
+from competitive_verifier.models.result import TestcaseResult
 
 SUCCESS = ResultStatus.SUCCESS
 FAILURE = ResultStatus.FAILURE
@@ -170,10 +171,8 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         first_failure = True
         for p, fr in file_results:
             cases = [
-                (
-                    c.model_copy(update={"name": f"{v.verification_name}-{c.name}"})
-                    if v.verification_name
-                    else c
+                DisplayTestcaseResult(
+                    verification=v.verification_name, **(c.model_dump())
                 )
                 for v in fr.verifications
                 for c in (v.testcases or [])
@@ -186,13 +185,28 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
                 first_failure = False
             fp.write(f"### {p.as_posix()}\n\n")
 
-            etb = TableWriter(fp, ["name", "status", "Elapsed", "Memory"])
-            etb.write_table_line(*[":---"] + [":---:"] * 3)
+            etb = TableWriter(
+                fp, ["env", "name", "status", "Elapsed", "Memory"]
+            )
+            etb.write_table_line(*[":---"] * 2 + [":---:"] * 3)
 
             for c in cases:
                 etb.write_table_line(
+                    c.verification or "",
                     c.name,
                     c.status.name,
-                    to_human_str_seconds(c.elapsed),
-                    to_human_str_mega_bytes(c.memory) if c.memory else "-",
+                    c.elapsed_str,
+                    c.memory_str,
                 )
+
+
+class DisplayTestcaseResult(TestcaseResult):
+    verification: Optional[str]
+
+    @property
+    def elapsed_str(self):
+        return to_human_str_seconds(self.elapsed)
+
+    @property
+    def memory_str(self):
+        return to_human_str_mega_bytes(self.memory) if self.memory else "-"
