@@ -16,9 +16,15 @@ logger = getLogger(__name__)
 
 class UserDefinedLanguageEnvironment(LanguageEnvironment):
     config: dict[str, str]
+    _name: str
 
-    def __init__(self, *, config: dict[str, str]):
+    def __init__(self, *, name: str, config: dict[str, str]):
         self.config = config
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
@@ -99,4 +105,4 @@ class UserDefinedLanguage(Language):
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[LanguageEnvironment]:
-        return [UserDefinedLanguageEnvironment(config=self.config)]
+        return [UserDefinedLanguageEnvironment(name=self.extension, config=self.config)]

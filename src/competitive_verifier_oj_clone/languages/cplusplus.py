@@ -26,6 +26,10 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
         self.CXX = CXX  # type:ignore
         self.CXXFLAGS = CXXFLAGS  # type:ignore
 
+    @property
+    def name(self) -> str:
+        return self.CXX.name
+
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:

@@ -6,7 +6,12 @@ from typing import Any, Optional, Sequence
 import competitive_verifier_oj_clone.languages.special_comments as special_comments
 
 
-class LanguageEnvironment:
+class LanguageEnvironment(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> Optional[str]:

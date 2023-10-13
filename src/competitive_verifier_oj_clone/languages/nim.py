@@ -20,6 +20,10 @@ class NimLanguageEnvironment(LanguageEnvironment):
         self.compile_to = compile_to
         self.NIMFLAGS = NIMFLAGS  # type: ignore
 
+    @property
+    def name(self) -> str:
+        return "Nim"
+
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:

@@ -1,36 +1,36 @@
 {%- if page.data.dependsOn.size != 0 -%}
-    <h2>Depends on</h2>
-    <ul>
+<h2>Depends on</h2>
+<ul>
     {%- for item in page.data._extendedDependsOn -%}
-        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
-    </ul>
+</ul>
 {%- endif -%}
 
 
 {%- if page.data.requiredBy.size != 0 -%}
-    <h2>Required by</h2>
-    <ul>
+<h2>Required by</h2>
+<ul>
     {%- for item in page.data._extendedRequiredBy -%}
-        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
-    </ul>
+</ul>
 {%- endif -%}
 
 
 {%- if page.data.verifiedWith.size != 0 -%}
-    <h2>Verified with</h2>
-    <ul>
+<h2>Verified with</h2>
+<ul>
     {%- for item in page.data._extendedVerifiedWith -%}
-        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
             {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
         </a></li>
     {%- endfor -%}
-    </ul>
+</ul>
 {%- endif -%}
 
 <h2>Code</h2>
@@ -41,27 +41,44 @@
 <h2>Test cases</h2>
 <table class="testcases-table">
     <style>
-        .col:not(.col1) {
+        .col:not(.col1):not(.col2) {
             text-align: center;
+        }
+
+        .emoji {
+            vertical-align: middle;
         }
     </style>
     <thead>
-      <tr>
-        <th class="col col1">Name</th>
-        <th class="col col2">Status</th>
-        <th class="col col3">Elapsed</th>
-        <th class="col col4">Memory</th>
-      </tr>
+        <tr>
+            <th class="col col1">Env</th>
+            <th class="col col2">Name</th>
+            <th class="col col3">Status</th>
+            <th class="col col4">Elapsed</th>
+            <th class="col col5">Memory</th>
+        </tr>
     </thead>
     <tbody>
-{%- for case in page.data.testcases -%}
-      <tr>
-        <td class="col col1">{{ case.name }}</td>
-        <td class="col col2">{{ case.status }}</td>
-        <td class="col col3">{{ case.elapsed | times: 1000 | round }} ms</td>
-        <td class="col col4">{{ case.memory | round }} MB</td>
-      </tr>
-{%- endfor -%}
+        {%- for case in page.data.testcases -%}
+        <tr>
+            <td class="col col1">{{ case.environment }}</td>
+            <td class="col col2">{{ case.name }}</td>
+            {%- if case.status == "AC" -%}
+            <td class="col col3">{{ site.icons.TEST_ACCEPTED }}&nbsp;AC</td>
+            {%- else -%}
+            <td class="col col3">{{site.icons.TEST_WRONG_ANSWER}}&nbsp;{{ case.status }}</td>
+            {%- endif -%}
+            <td class="col col4">{{ case.elapsed | times: 1000 | round }} ms</td>
+            <td class="col col5">{{ case.memory | round }} MB</td>
+        </tr>
+        {%- endfor -%}
     </tbody>
-  </table>
+</table>
+{%- endif -%}
+
+
+{%- if case.status == "AC" -%}
+<td class="col col3">✓&nbsp;AC</td>
+{%- else -%}
+<td class="col col3">✘&nbsp;{{ case.status }}</td>
 {%- endif -%}

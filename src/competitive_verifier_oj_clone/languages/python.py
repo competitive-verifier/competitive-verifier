@@ -19,6 +19,10 @@ logger = getLogger(__name__)
 
 
 class PythonLanguageEnvironment(LanguageEnvironment):
+    @property
+    def name(self) -> str:
+        return "Python"
+
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
