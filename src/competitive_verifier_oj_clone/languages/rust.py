@@ -342,6 +342,10 @@ def _source_files_in_same_targets(
 
 
 class RustLanguageEnvironment(LanguageEnvironment):
+    @property
+    def name(self) -> str:
+        return "Rust"
+
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> Optional[str]:

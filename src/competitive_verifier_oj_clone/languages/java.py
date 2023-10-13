@@ -11,6 +11,10 @@ logger = getLogger(__name__)
 
 
 class JavaLanguageEnvironment(LanguageEnvironment):
+    @property
+    def name(self) -> str:
+        return "Java"
+
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
