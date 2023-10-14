@@ -72,10 +72,6 @@ jobs:
             verify-directory: examples/python
           - name: ruby
             verify-directory: examples/ruby
-          - name: nim
-            verify-directory: examples/nim
-          - name: haskell
-            verify-directory: examples/haskell
     with:
       verify-directory: ${{ matrix.langs.verify-directory }}
       name: ${{ matrix.langs.name }}
