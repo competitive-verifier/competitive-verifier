@@ -5,7 +5,7 @@ on:
 
 env:
   YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
-  COMPETITIVE_VERIFY_FILES_PATH: .competitive-verifier/tmp/awk-verify-files.json
+  COMPETITIVE_VERIFY_FILES_PATH: .competitive-verifier/tmp/external-verify-files.json
 
 jobs:
   setup:
@@ -23,7 +23,7 @@ jobs:
         id: create-json
         run: |
           mkdir -p .competitive-verifier/tmp
-          cp examples/awk/verify_files.json $COMPETITIVE_VERIFY_FILES_PATH
+          cp examples/external/verify_files.json $COMPETITIVE_VERIFY_FILES_PATH
       - name: Create hash
         id: create-hash
         run: |

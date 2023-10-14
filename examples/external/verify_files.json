@@ -1,0 +1,37 @@
+{
+    "$schema": "../../schema/verify_files.schema.json",
+    "files": {
+        "examples/external/hello.sh": {
+            "document_attributes": {
+                "TITLE": "Hello World"
+            }
+        },
+        "examples/external/hello.test.sh": {
+            "dependencies": [
+                "examples/external/hello.sh"
+            ],
+            "verification": {
+                "name": "handmade",
+                "type": "problem",
+                "command": "sh examples/external/hello.test.sh",
+                "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                "tle": 0.5
+            }
+        },
+        "examples/external/verify_files.json": {
+            "dependencies": [],
+            "verification": [
+                {
+                    "type": "command",
+                    "command": "true"
+                }
+            ]
+        },
+        "examples/external/dummy.sh": {
+            "verification": {
+                "type": "const",
+                "status": "success"
+            }
+        }
+    }
+}

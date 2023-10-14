@@ -55,7 +55,7 @@ jobs:
         with:
           verify-files: |
             resolved.json
-            ${{ (github.event_name != 'pull_request' || github.repository == github.event.pull_request.head.repo.full_name) && 'examples/awk/verify_files.json' || 'examples/awk/verify_files_without_token.json' }}
+            examples/external/verify_files.json
           output-path: verify_files.json
 
       - name: Upload verify_files.json
