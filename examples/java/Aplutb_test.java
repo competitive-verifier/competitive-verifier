@@ -1,5 +1,6 @@
 // competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
 package examples.java;
+import java.util.Scanner;
 
 public class Aplutb_test {
     public static void main(String[] args) {
