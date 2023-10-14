@@ -1,0 +1,151 @@
+# いくつも言語があるようなリポジトリでのテクニック
+name: verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  verify-external:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          python-version: "3.11"
+          cache-pip: true
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
+
+      - name: Copy verify.json
+        run: cp examples/external/verify_files.json verify.json
+
+      - name: Verify
+        uses: competitive-verifier/actions/verify@v1
+        with:
+          verify-files: verify.json
+          destination: result.json
+        env:
+          YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Result-${{ runner.os }}-external
+          path: |
+            verify.json
+            result.json
+          retention-days: 1
+
+  verify-single:
+    uses: ./.github/workflows/verify-single.yml
+    strategy:
+      matrix:
+        langs:
+          - name: others
+            verify-directory: examples/tests examples/awk
+            for_testing: true
+          - name: cpp
+            verify-directory: examples/cpp
+            for_testing: true
+          - name: go
+            verify-directory: examples/go
+            for_testing: true
+          - name: java
+            verify-directory: examples/java
+            for_testing: true
+          - name: python
+            verify-directory: examples/python
+          - name: ruby
+            verify-directory: examples/ruby
+    with:
+      verify-directory: ${{ matrix.langs.verify-directory }}
+      name: ${{ matrix.langs.name }}
+      enabled: ${{ github.event_name != 'pull_request' || !!matrix.langs.for_testing }}
+    secrets: inherit
+
+  docs-and-check:
+    runs-on: ubuntu-latest
+    needs: [verify-external, verify-single]
+    outputs:
+      upload-pages: ${{steps.upload-pages.outcome == 'success'}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: .artifacts/
+
+      - name: Extract bundled
+        shell: bash
+        run: |
+          rm -rf .competitive-verifier/bundled
+          mkdir -p .competitive-verifier/bundled
+          cp -Tr .artifacts/Bundled-*/ .competitive-verifier/bundled/
+
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          python-version: "3.11"
+          cache-pip: true
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
+
+      - name: Merge json
+        uses: competitive-verifier/actions/merge-verify-files@v1
+        with:
+          verify-files: .artifacts/Result-*/verify.json
+          output-path: ${{ runner.temp }}/verify.json
+
+      - name: Docs
+        uses: competitive-verifier/actions/docs@v1
+        with:
+          verify-files: ${{ runner.temp }}/verify.json
+          verify-result: .artifacts/Result-*/result.json
+          destination: _jekyll
+          write-summary: true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: _jekyll
+          destination: _site
+      - name: Upload artifact
+        id: upload-pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: _site
+
+      - name: Check
+        uses: competitive-verifier/actions/check@v1
+        with:
+          verify-result: .artifacts/Result-*/result.json
+  deploy:
+    if: (success() || failure()) && github.ref == 'refs/heads/main'
+    needs: docs-and-check
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

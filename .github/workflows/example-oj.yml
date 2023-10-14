@@ -1,21 +1,7 @@
-name: verify
+name: Example verify
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
   setup:
@@ -26,7 +12,7 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
@@ -93,11 +79,12 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
-      - uses: actions/setup-java@v3
+      - name: Install dependencies (Java)
+        uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "11"
@@ -150,7 +137,7 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
@@ -178,14 +165,3 @@ jobs:
         uses: competitive-verifier/actions/check@v1
         with:
           verify-result: ${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
-  deploy:
-    if: (success() || failure()) && github.ref == 'refs/heads/main'
-    needs: docs-and-check
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2

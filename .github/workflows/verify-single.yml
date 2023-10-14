@@ -1,0 +1,88 @@
+name: verify-single
+on:
+  workflow_call: 
+    inputs:
+      enabled:
+        type: boolean
+        description: If true, workflow is enabled.
+        default: true
+      verify-directory:
+        type: string
+        description: Directory that contains verification targets
+        required: true
+      name:
+        type: string
+        description: Verification name
+        required: true
+    secrets:
+      YUKICODER_TOKEN:
+        required: true
+        description: YUKICODER_TOKEN
+jobs:
+  verify-single:
+    if: inputs.enabled
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          python-version: "3.11"
+          cache-pip: true
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
+
+      - name: go test
+        id: go-unittest
+        run: go test
+        working-directory: examples/go
+        shell: bash
+        continue-on-error: true
+        if: ${{ inputs.name == 'go' }}
+        env:
+          GO111MODULE: "off"
+
+      - name: oj-resolve
+        uses: competitive-verifier/actions/oj-resolve@v1
+        with:
+          include: ${{ inputs.verify-directory }}
+          output-path: verify.json
+          config: examples/config.toml
+        env:
+          GOTESTRESULT: ${{ steps.go-unittest.outcome == 'success' }}
+
+      - name: parse-doxygen
+        if: ${{ inputs.name == 'cpp' }}
+        uses: competitive-verifier/actions/parse-doxygen@v1
+        with:
+          verify-files: verify.json
+
+
+      - name: Verify
+        uses: competitive-verifier/actions/verify@v1
+        with:
+          verify-files: verify.json
+          destination: result.json
+        env:
+          YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
+
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Result-${{ runner.os }}-${{ inputs.name }}
+          path: |
+              verify.json
+              result.json
+          retention-days: 1
+
+      - name: Check bundled
+        id: test-bundled
+        run: |
+          echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
+      - name: Upload bundled
+        uses: actions/upload-artifact@v3
+        if: steps.test-bundled.outputs.count > 0
+        with:
+          name: Bundled-${{ runner.os }}-${{ inputs.name }}
+          path: .competitive-verifier/bundled
+          retention-days: 1
