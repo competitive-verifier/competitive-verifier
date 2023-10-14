@@ -25,22 +25,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
-        with:
-          python-version: "3.11"
-          cache-pip: true
-          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
-
       - name: go test
         id: go-unittest
-        run: go test
+        run: go test .
         working-directory: examples/go
         shell: bash
         continue-on-error: true
         if: ${{ inputs.name == 'go' }}
         env:
           GO111MODULE: "off"
+
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          python-version: "3.11"
+          cache-pip: true
+          package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - name: oj-resolve
         uses: competitive-verifier/actions/oj-resolve@v1

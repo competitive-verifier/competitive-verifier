@@ -1,9 +1,9 @@
 // competitive-verifier: UNITTEST GOTESTRESULT
 
-package helloworld_test
+package main
 
 import (
-	"helloworld"
+	"./helloworld"
 	"testing"
 )
 
