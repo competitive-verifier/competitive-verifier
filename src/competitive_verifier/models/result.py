@@ -40,7 +40,7 @@ class VerificationResult(BaseModel):
     testcases: Optional[list[TestcaseResult]] = None
 
     last_execution_time: datetime.datetime = Field(
-        default_factory=datetime.datetime.now
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
     )
 
     @field_validator("status", mode="before")

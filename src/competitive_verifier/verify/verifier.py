@@ -166,7 +166,7 @@ class BaseVerifier(InputContainer):
         return self.split_state.index == 0
 
     def now(self) -> datetime.datetime:
-        return datetime.datetime.now()
+        return datetime.datetime.now(datetime.timezone.utc)
 
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
         start_time = self.now()
