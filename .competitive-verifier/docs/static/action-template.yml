@@ -25,7 +25,7 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
 
       # Initialize your own environment for resolving.
@@ -66,7 +66,7 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
 
       # Initialize your own environment for verification.
@@ -76,7 +76,7 @@ jobs:
           destination: ${{runner.temp}}/result.json
           split-size: ${{ env.SPLIT_SIZE }}
           split-index: ${{ matrix.index }}
-          timeout: 1200
+          timeout: 1800
         env:
           # YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
@@ -120,7 +120,7 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.9"
+          python-version: "3.11"
           cache-pip: true
 
       - name: Docs
@@ -148,7 +148,7 @@ jobs:
         with:
           verify-result: ${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
   deploy:
-    if: always() && github.ref == 'refs/heads/{{{branch}}}' && needs.docs-and-check.outputs.upload-pages == 'true'
+    if: (success() || failure()) && github.ref == 'refs/heads/{{{branch}}}' && needs.docs-and-check.outputs.upload-pages == 'true'
     needs: docs-and-check
     environment:
       name: github-pages

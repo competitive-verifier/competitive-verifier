@@ -1,4 +1,4 @@
-name: handmade verify
+name: Example handmade verify
 
 on:
   workflow_dispatch:
@@ -56,7 +56,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 
@@ -87,7 +87,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Install competitive-verifier
         run: pip install git+https://github.com/competitive-verifier/competitive-verifier.git
 

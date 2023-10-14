@@ -1,1 +1,0 @@
--e git+https://github.com/competitive-verifier/competitive-verifier@master#egg=competitive_verifier

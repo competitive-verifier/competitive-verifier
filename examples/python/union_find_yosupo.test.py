@@ -1,4 +1,4 @@
-# verification-helper: PROBLEM https://judge.yosupo.jp/problem/unionfind
+# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/unionfind
 import sys
 input = sys.stdin.buffer.readline
 
