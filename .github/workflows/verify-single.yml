@@ -38,7 +38,6 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.11"
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 

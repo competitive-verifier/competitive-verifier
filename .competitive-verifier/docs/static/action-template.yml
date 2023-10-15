@@ -25,7 +25,6 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.11"
           cache-pip: true
 
       # Initialize your own environment for resolving.
@@ -66,7 +65,6 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.11"
           cache-pip: true
 
       # Initialize your own environment for verification.
@@ -120,7 +118,6 @@ jobs:
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v1
         with:
-          python-version: "3.11"
           cache-pip: true
 
       - name: Docs
