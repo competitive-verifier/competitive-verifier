@@ -1,13 +1,4 @@
 {
-    "terminal.integrated.env.windows": {
-        "COMPETITIVE_VERIFY_FILES_PATH": "examples/external/verify_files.json"
-    },
-    "terminal.integrated.env.osx": {
-        "COMPETITIVE_VERIFY_FILES_PATH": "examples/external/verify_files.json"
-    },
-    "terminal.integrated.env.linux": {
-        "COMPETITIVE_VERIFY_FILES_PATH": "examples/external/verify_files.json"
-    },
     "files.exclude": {
         ".venv": true,
         "**/__pycache__": true,

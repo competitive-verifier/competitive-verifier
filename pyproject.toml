@@ -45,7 +45,7 @@ black = { version = "^23.7.0", extras = ["lint"] }
 isort = { version = "^5.10.1", extras = ["lint"] }
 pyright = { version = "^1.1.277", extras = ["lint"] }
 pyproject-flake8 = { version = "^6.0.0.post1", extras = ["lint"] }
-poethepoet = "^0.16.4"
+poethepoet = "^0.24.1"
 
 [tool.poe.tasks]
 flake8 = "pflake8 src tests"
@@ -57,6 +57,26 @@ format = ["isort", "black", "pyright", "flake8"]
 "lint:black" = "black --diff --check src tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
+
+"dev:verify" = { cmd = "competitive-verifier verify -o .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
+"dev:docs" = { cmd = "competitive-verifier docs .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
+
+"jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
+"jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
+
+[tool.poe.tasks.serve]
+[[tool.poe.tasks.serve.sequence]]
+default = "pass"
+[tool.poe.tasks.serve.sequence.control]
+expr = "os.path.isdir('.competitive-verifier/_jekyll/.vendor')"
+imports = ["os"]
+[[tool.poe.tasks.serve.sequence.switch]]
+case = "False"
+ref = "jekyll:init"
+
+[[tool.poe.tasks.serve.sequence]]
+ref = "jekyll:serve"
+
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
