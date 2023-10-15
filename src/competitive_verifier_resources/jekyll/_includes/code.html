@@ -1,22 +1,22 @@
 
 
-{% if include.embedded.size == null == include.embedded.size < 1 %}
+{%- if include.embedded.size == null == include.embedded.size < 1 -%}
 <div style="height: 5em;">:x: <b>There is no code.</b></div>
-{% else %}
+{%- else -%}
 <div class="code">
 {%- for source in include.embedded -%}
     {%- assign codeBody = source.code -%}
     <pre class="hljs {% unless forloop.first %}disable{% endunless %}" id="code-body-{{forloop.index}}"><code class="language-{{include.extension}}">{{ codeBody | xml_escape }}</code></pre>
 {%- endfor -%}
     <div class="btn-area">
-    {% if include.embedded.size >= 2 %}
+    {%- if include.embedded.size >= 2 -%}
         <div class="btn-group">
         {%- for source in include.embedded -%}
             <button type="button" class="code-btn code-toggle-btn {% if forloop.first %}selected{% endif %}" data-target="code-body-{{forloop.index}}">{{source.name}}</button>
         {%- endfor -%}
         </div>
-    {% endif %}
+    {%- endif -%}
         <div class="btn-group"><button type="button" class="code-btn code-copy-btn hint--top hint--always hint--disable" aria-label="Copied!">Copy</button></div>
     </div>
 </div>
-{% endif %}
+{%- endif -%}
