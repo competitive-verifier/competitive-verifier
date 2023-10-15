@@ -66,6 +66,9 @@ jobs:
       - name: Install dependencies (Go)
         uses: actions/setup-go@v4
         if: ${{ inputs.name == 'go' }}
+        with:
+          # go.mod などもないのでキャッシュできない
+          cache: false
 
       - name: Install dependencies (Nim)
         uses: jiro4989/setup-nim-action@v1
