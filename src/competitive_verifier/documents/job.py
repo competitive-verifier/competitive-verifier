@@ -96,20 +96,12 @@ def build_source_job(
 ) -> Optional[PageRenderJob]:
     mdpath = path.with_suffix(path.suffix + ".md")
 
-    # add redirects from old URLs
-    old_directory = "/verify/" if file.is_verification() else "/library/"
-    redirect_from = [
-        old_directory + path.as_posix(),
-        old_directory + path.with_suffix(".html").as_posix(),
-    ]
-
     # add title specified as a attributes
     title = file.document_attributes.get("TITLE")
     if not title:
         title = file.document_attributes.get("document_title", path.as_posix())
     front_matter = FrontMatter(
         documentation_of=path.as_posix(),
-        redirect_from=redirect_from,
         title=title,
     )
     # treat @docs path/to.md directives
