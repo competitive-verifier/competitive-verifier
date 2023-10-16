@@ -6,6 +6,7 @@ from typing import Any, Union
 from pydantic import BaseModel, Field, field_validator
 
 from competitive_verifier.models.path import ForcePosixPath
+from competitive_verifier.models.result import FileResult
 from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
@@ -186,3 +187,8 @@ class VerificationInput(BaseModel):
             self._init_dependency_graph()
             d = self._verified_with
         return d
+
+    def filterd_files(self, files: dict[ForcePosixPath, FileResult]):
+        for k, v in files.items():
+            if k in self.files:
+                yield k, v
