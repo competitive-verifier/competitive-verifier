@@ -77,10 +77,12 @@ def run(args: argparse.Namespace) -> bool:
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     input = VerificationInput.parse_file_relative(args.verify_files_json)
-    if args.prev_result is None:
-        prev_result = None
-    else:
-        prev_result = VerifyCommandResult.parse_file_relative(args.prev_result)
+    prev_result = None
+    if args.prev_result:
+        try:
+            prev_result = VerifyCommandResult.parse_file_relative(args.prev_result)
+        except:
+            logger.warning("Failed to parse prev_result: %s", args.prev_result)
 
     return run_impl(
         input,
