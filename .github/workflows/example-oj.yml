@@ -2,6 +2,10 @@ name: Example verify
 
 on:
   workflow_dispatch:
+    inputs:
+      ignore_prev_result:
+        type: boolean
+        default: false
 
 jobs:
   setup:

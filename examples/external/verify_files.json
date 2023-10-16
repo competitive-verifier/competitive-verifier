@@ -1,6 +1,23 @@
 {
     "$schema": "../../schema/verify_files.schema.json",
     "files": {
+        "examples/external/aplusb.test.bash": {
+            "verification": [
+                {
+                    "name": "bash",
+                    "type": "problem",
+                    "command": "bash examples/external/aplusb.test.bash",
+                    "problem": "https://judge.yosupo.jp/problem/aplusb"
+                }
+            ],
+            "document_attributes": {
+                "TITLE": "Bash Calculate \"A + B\"",
+                "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                "links": [
+                    "https://competitive-verifier.github.io/competitive-verifier/examples/awk/aplusb.awk"
+                ]
+            }
+        },
         "examples/external/hello.sh": {
             "document_attributes": {
                 "TITLE": "Hello World"

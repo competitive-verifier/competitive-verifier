@@ -1,3 +1,21 @@
+
+{% if false %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"
+    integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    console.log("🐛DEBUG")
+    setTimeout(function () {
+        const actionYml = document.getElementById("action-yml")
+        try {
+            jsyaml.load(actionYml.textContent)
+            console.log("OK")
+        } catch (error) {
+            actionYml.textContent = error.toString()
+        }
+    }, 500)
+</script>
+{% endif %}
 <script defer src="{{ '/installer.js' | relative_url }}"></script>
 <style>
     .template-data dd>input,
@@ -44,11 +62,13 @@
     <dd><input id="input-config-toml" placeholder="(e.g.) .verify-helper/config.toml" type="text"></dd>
     <dt><label for="input-parallel-size">Parallel size: </label></dt>
     <dd><input id="input-parallel-size" type="number" value="20" min="1" max="100" step="1"></dd>
+    <dt><label>Others: </label></dt>
+    <dd><label><input id="input-prev-result" type="checkbox">Use previous result</label></dd>
 </dl>
 
 <div id="action-yml-area" class="code">
     {%- raw -%}
-    <pre class="hljs"><code id="action-yml" class="language-yaml"></code></pre>
+    <pre class="hljs"><code id="action-yml" class="language-yaml extended"></code></pre>
     {% endraw %}
     <div class="btn-area">
         <div class="btn-group">
