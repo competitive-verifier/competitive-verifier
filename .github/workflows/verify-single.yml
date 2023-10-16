@@ -83,6 +83,7 @@ jobs:
         with:
           verify-files: verify.json
           destination: result.json
+          prev-result: examples/prev-result.json
         env:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
