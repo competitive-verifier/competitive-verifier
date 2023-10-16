@@ -81,7 +81,7 @@ def run(args: argparse.Namespace) -> bool:
     if args.prev_result:
         try:
             prev_result = VerifyCommandResult.parse_file_relative(args.prev_result)
-        except:
+        except Exception:
             logger.warning("Failed to parse prev_result: %s", args.prev_result)
 
     return run_impl(
