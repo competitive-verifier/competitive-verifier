@@ -188,7 +188,7 @@ class CPlusPlusLanguage(Language):
         if comments:
             attributes.update(comments)
 
-        elif super().is_verification_file(path, basedir=basedir):
+        else:
             # use old-style if special comments not found
             # #define PROBLEM "https://..." の形式は複数 environments との相性がよくない。あと遅い
             attributes[_NOT_SPECIAL_COMMENTS] = ""
@@ -200,6 +200,7 @@ class CPlusPlusLanguage(Language):
                 macros = _cplusplus_list_defined_macros(
                     path.resolve(), CXX=env.CXX, joined_CXXFLAGS=joined_CXXFLAGS
                 )
+                logger.warn(macros)
 
                 # convert macros to attributes
                 if _IGNORE not in macros:
