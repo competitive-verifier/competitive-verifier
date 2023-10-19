@@ -56,11 +56,6 @@ class Language:
         """
         return None
 
-    def is_verification_file(
-        self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> bool:
-        return ".test." in path.name
-
     @abc.abstractmethod
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
