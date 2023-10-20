@@ -33,7 +33,15 @@ def merge_front_matter(front_matter: FrontMatter, content: bytes) -> bytes:
     return b"\n".join(
         [
             _separator,
-            yaml.safe_dump(front_matter.model_dump()).rstrip().encode(),
+            yaml.safe_dump(
+                front_matter.model_dump(
+                    mode="json",
+                    by_alias=True,
+                    exclude_none=True,
+                )
+            )
+            .rstrip()
+            .encode(),
             _separator,
             content,
         ]

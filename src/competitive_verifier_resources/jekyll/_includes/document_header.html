@@ -3,19 +3,19 @@
 {%- else -%}
     {%- capture page_title -%}{{page.data.path}}{%- endcapture -%}
 {%- endif -%}
-<h1>{{ site.icons[page.data._verificationStatusIcon] }} {{ page_title }}</h1>
+<h1>{{ site.icons[page.data.verificationStatus] }} {{ page_title }}</h1>
 
 <ul>
     <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ site.basedir }}{{ page.data.path }}">View this file on GitHub</a></li>
-    {% if page.data._document_path %}
-    <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ site.basedir }}{{ page.data._document_path }}">View document part on GitHub</a></li>
+    {% if page.data.documentPath %}
+    <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ site.basedir }}{{ page.data.documentPath }}">View document part on GitHub</a></li>
     {%- endif -%}
     <li>Last update: {{ page.data.timestamp }}</li>
     {% if page.data.attributes.PROBLEM %}
     <li>Problem: <a href="{{ page.data.attributes.PROBLEM }}">{{ page.data.attributes.PROBLEM }}</a></li>
     {%- endif -%}
-    {% if page.data._pathExtension == "hpp" %}<li><a id="include-directive-anchor">Include: <code id="include-directive-code">#include "{{ page.data.path }}"</code></a></li>{%- endif -%}
-    {% if page.data._isVerificationFailed %}<li>Link: <a href="{{ site.github.repository_url }}/actions">{{ site.icons[page.data._verificationStatusIcon] }} View error logs on GitHub Actions</a></li>{%- endif -%}
+    {% if page.data.pathExtension == "hpp" %}<li><a id="include-directive-anchor">Include: <code id="include-directive-code">#include "{{ page.data.path }}"</code></a></li>{%- endif -%}
+    {% if page.data.isFailed %}<li>Link: <a href="{{ site.github.repository_url }}/actions">{{ site.icons[page.data.verificationStatus] }} View error logs on GitHub Actions</a></li>{%- endif -%}
     {%- for link in page.data.attributes.links -%}
     {%- if link != page.data.attributes.PROBLEM -%}
     <li>Link: <a href="{{ link }}">{{ link }}</a></li>
@@ -23,7 +23,7 @@
     {%- endfor -%}
 </ul>
 
-{% if page.data._pathExtension == "hpp" %}
+{% if page.data.pathExtension == "hpp" %}
 <script defer type="text/javascript">
     // make the include directive clickable
     (function() {

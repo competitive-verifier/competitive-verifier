@@ -15,6 +15,7 @@ from competitive_verifier.documents.builder import (
     render_source_code_stat_for_page,
     render_source_code_stats_for_top_page,
 )
+from competitive_verifier.documents.builder_type import RenderPage
 from competitive_verifier.documents.type import (
     FrontMatter,
     PageRenderJob,
@@ -58,7 +59,7 @@ def test_load_static_files():
 class Input_render_source_code_stat_for_page(BaseModel):
     job: PageRenderJob
     stat: SourceCodeStat
-    links: dict[pathlib.Path, dict[str, Any]]
+    links: dict[pathlib.Path, RenderPage]
 
 
 def generate_render_source_code_stat_for_page_params() -> (
@@ -67,36 +68,36 @@ def generate_render_source_code_stat_for_page_params() -> (
     ]
 ):
     links = {
-        pathlib.Path("lib/any.txt"): {
-            "path": "lib/any.txt",
-            "title": "ANY",
-            "icon": VerificationStatus.LIBRARY_SOME_WA.name,
-        },
-        pathlib.Path("lib/req.txt"): {
-            "path": "lib/req.txt",
-            "title": "LIBFAILURE",
-            "icon": VerificationStatus.LIBRARY_ALL_WA.name,
-        },
-        pathlib.Path("lib/success.txt"): {
-            "path": "lib/success.txt",
-            "title": "LIB",
-            "icon": VerificationStatus.LIBRARY_ALL_AC.name,
-        },
-        pathlib.Path("lib/failure.txt"): {
-            "path": "lib/failure.txt",
-            "title": "LIBFAILURE",
-            "icon": VerificationStatus.LIBRARY_ALL_WA.name,
-        },
-        pathlib.Path("test/success.txt"): {
-            "path": "test/success.txt",
-            "title": "SUCCESS",
-            "icon": VerificationStatus.TEST_ACCEPTED.name,
-        },
-        pathlib.Path("test/failure.txt"): {
-            "path": "test/failure.txt",
-            "title": "test/failure.txt",
-            "icon": VerificationStatus.TEST_WAITING_JUDGE.name,
-        },
+        pathlib.Path("lib/any.txt"): RenderPage(
+            path=pathlib.Path("lib/any.txt"),
+            title="ANY",
+            icon=VerificationStatus.LIBRARY_SOME_WA,
+        ),
+        pathlib.Path("lib/req.txt"): RenderPage(
+            path=pathlib.Path("lib/req.txt"),
+            title="LIBFAILURE",
+            icon=VerificationStatus.LIBRARY_ALL_WA,
+        ),
+        pathlib.Path("lib/success.txt"): RenderPage(
+            path=pathlib.Path("lib/success.txt"),
+            title="LIB",
+            icon=VerificationStatus.LIBRARY_ALL_AC,
+        ),
+        pathlib.Path("lib/failure.txt"): RenderPage(
+            path=pathlib.Path("lib/failure.txt"),
+            title="LIBFAILURE",
+            icon=VerificationStatus.LIBRARY_ALL_WA,
+        ),
+        pathlib.Path("test/success.txt"): RenderPage(
+            path=pathlib.Path("test/success.txt"),
+            title="SUCCESS",
+            icon=VerificationStatus.TEST_ACCEPTED,
+        ),
+        pathlib.Path("test/failure.txt"): RenderPage(
+            path=pathlib.Path("test/failure.txt"),
+            title="test/failure.txt",
+            icon=VerificationStatus.TEST_WAITING_JUDGE,
+        ),
     }
     tzinfo = ZoneInfo("Asia/Tokyo")
 
@@ -137,29 +138,43 @@ def generate_render_source_code_stat_for_page_params() -> (
             "path": "lib/success.txt",
             "embedded": [{"name": "default", "code": "echo OK"}],
             "isVerificationFile": False,
-            "verificationStatus": 1,
             "timestamp": "2023-01-02 03:04:05.000678+09:00",
             "dependsOn": ["lib/any.txt"],
             "requiredBy": ["lib/req.txt"],
             "verifiedWith": ["test/success.txt"],
             "attributes": {"**FOO**": "😄"},
-            "testcases": None,
-            "_pathExtension": "txt",
-            "_verificationStatusIcon": "LIBRARY_ALL_AC",
-            "_isVerificationFailed": False,
-            "_extendedDependsOn": [
-                {"path": "lib/any.txt", "title": "ANY", "icon": "LIBRARY_SOME_WA"}
-            ],
-            "_extendedRequiredBy": [
-                {"path": "lib/req.txt", "title": "LIBFAILURE", "icon": "LIBRARY_ALL_WA"}
-            ],
-            "_extendedVerifiedWith": [
-                {
-                    "path": "test/success.txt",
-                    "title": "SUCCESS",
-                    "icon": "TEST_ACCEPTED",
-                }
-            ],
+            "pathExtension": "txt",
+            "verificationStatus": "LIBRARY_ALL_AC",
+            "isFailed": False,
+            "dependencies": {
+                "dependsOn": {
+                    "files": [
+                        {
+                            "path": "lib/any.txt",
+                            "title": "ANY",
+                            "icon": "LIBRARY_SOME_WA",
+                        }
+                    ],
+                },
+                "requiredBy": {
+                    "files": [
+                        {
+                            "path": "lib/req.txt",
+                            "title": "LIBFAILURE",
+                            "icon": "LIBRARY_ALL_WA",
+                        }
+                    ],
+                },
+                "verifiedWith": {
+                    "files": [
+                        {
+                            "path": "test/success.txt",
+                            "title": "SUCCESS",
+                            "icon": "TEST_ACCEPTED",
+                        }
+                    ],
+                },
+            },
         },
     )
 
@@ -202,29 +217,43 @@ def generate_render_source_code_stat_for_page_params() -> (
             "path": "lib/any.txt",
             "embedded": [{"name": "default", "code": "# ANY !"}],
             "isVerificationFile": False,
-            "verificationStatus": 1,
             "timestamp": "2023-01-02 03:04:05.000678+09:00",
             "dependsOn": ["lib/any.txt"],
             "requiredBy": ["lib/success.txt"],
             "verifiedWith": ["test/success.txt"],
             "attributes": {"**FOO**": "😄"},
-            "testcases": None,
-            "_pathExtension": "txt",
-            "_verificationStatusIcon": "LIBRARY_ALL_AC",
-            "_isVerificationFailed": False,
-            "_extendedDependsOn": [
-                {"path": "lib/any.txt", "title": "ANY", "icon": "LIBRARY_SOME_WA"}
-            ],
-            "_extendedRequiredBy": [
-                {"path": "lib/success.txt", "title": "LIB", "icon": "LIBRARY_ALL_AC"}
-            ],
-            "_extendedVerifiedWith": [
-                {
-                    "path": "test/success.txt",
-                    "title": "SUCCESS",
-                    "icon": "TEST_ACCEPTED",
-                }
-            ],
+            "pathExtension": "txt",
+            "verificationStatus": "LIBRARY_ALL_AC",
+            "isFailed": False,
+            "dependencies": {
+                "dependsOn": {
+                    "files": [
+                        {
+                            "path": "lib/any.txt",
+                            "title": "ANY",
+                            "icon": "LIBRARY_SOME_WA",
+                        }
+                    ],
+                },
+                "requiredBy": {
+                    "files": [
+                        {
+                            "path": "lib/success.txt",
+                            "title": "LIB",
+                            "icon": "LIBRARY_ALL_AC",
+                        }
+                    ],
+                },
+                "verifiedWith": {
+                    "files": [
+                        {
+                            "path": "test/success.txt",
+                            "title": "SUCCESS",
+                            "icon": "TEST_ACCEPTED",
+                        }
+                    ],
+                },
+            },
         },
     )
 
@@ -302,7 +331,6 @@ def generate_render_source_code_stat_for_page_params() -> (
             "path": "lib/failure.txt",
             "embedded": [{"name": "default", "code": "assert"}],
             "isVerificationFile": False,
-            "verificationStatus": 7,
             "timestamp": "2023-01-02 03:04:05.000678+09:00",
             "dependsOn": ["lib/failure.txt"],
             "requiredBy": [],
@@ -338,18 +366,22 @@ def generate_render_source_code_stat_for_page_params() -> (
                     "status": "TLE",
                 },
             ],
-            "_pathExtension": "txt",
-            "_verificationStatusIcon": "TEST_WRONG_ANSWER",
-            "_isVerificationFailed": True,
-            "_extendedDependsOn": [
-                {
-                    "path": "lib/failure.txt",
-                    "title": "LIBFAILURE",
-                    "icon": "LIBRARY_ALL_WA",
-                }
-            ],
-            "_extendedRequiredBy": [],
-            "_extendedVerifiedWith": [],
+            "pathExtension": "txt",
+            "verificationStatus": "TEST_WRONG_ANSWER",
+            "isFailed": True,
+            "dependencies": {
+                "dependsOn": {
+                    "files": [
+                        {
+                            "path": "lib/failure.txt",
+                            "title": "LIBFAILURE",
+                            "icon": "LIBRARY_ALL_WA",
+                        }
+                    ]
+                },
+                "requiredBy": {"files": []},
+                "verifiedWith": {"files": []},
+            },
         },
     )
 
@@ -439,54 +471,62 @@ test_render_source_code_stats_for_top_page_params: list[
             ],
         ),
         {
-            "libraryCategories": [
+            "top": [
                 {
-                    "name": "src",
-                    "pages": [
+                    "type": "Library Files",
+                    "categories": [
                         {
-                            "path": "src/LIBRARY_ALL_AC.py",
-                            "title": "accept",
-                            "icon": "LIBRARY_ALL_AC",
-                        },
-                        {
-                            "path": "src/LIBRARY_NO_TESTS.py",
-                            "title": "src/LIBRARY_NO_TESTS.py",
-                            "icon": "LIBRARY_NO_TESTS",
-                        },
-                        {
-                            "path": "src/LIBRARY_PARTIAL_AC.py",
-                            "title": "src/LIBRARY_PARTIAL_AC.py",
-                            "icon": "LIBRARY_PARTIAL_AC",
-                        },
-                        {
-                            "path": "src/LIBRARY_SOME_WA.py",
-                            "title": "src/LIBRARY_SOME_WA.py",
-                            "icon": "LIBRARY_SOME_WA",
-                        },
+                            "name": "src",
+                            "pages": [
+                                {
+                                    "path": "src/LIBRARY_ALL_AC.py",
+                                    "title": "accept",
+                                    "icon": "LIBRARY_ALL_AC",
+                                },
+                                {
+                                    "path": "src/LIBRARY_NO_TESTS.py",
+                                    "title": "src/LIBRARY_NO_TESTS.py",
+                                    "icon": "LIBRARY_NO_TESTS",
+                                },
+                                {
+                                    "path": "src/LIBRARY_PARTIAL_AC.py",
+                                    "title": "src/LIBRARY_PARTIAL_AC.py",
+                                    "icon": "LIBRARY_PARTIAL_AC",
+                                },
+                                {
+                                    "path": "src/LIBRARY_SOME_WA.py",
+                                    "title": "src/LIBRARY_SOME_WA.py",
+                                    "icon": "LIBRARY_SOME_WA",
+                                },
+                            ],
+                        }
                     ],
-                }
-            ],
-            "verificationCategories": [
+                },
                 {
-                    "name": "test",
-                    "pages": [
+                    "type": "Verification Files",
+                    "categories": [
                         {
-                            "path": "test/TEST_ACCEPTED.py",
-                            "title": "test/TEST_ACCEPTED.py",
-                            "icon": "TEST_ACCEPTED",
-                        },
-                        {
-                            "path": "test/TEST_WAITING_JUDGE.py",
-                            "title": "Skipped",
-                            "icon": "TEST_WAITING_JUDGE",
-                        },
-                        {
-                            "path": "test/TEST_WRONG_ANSWER.py",
-                            "title": "test/TEST_WRONG_ANSWER.py",
-                            "icon": "TEST_WRONG_ANSWER",
-                        },
+                            "name": "test",
+                            "pages": [
+                                {
+                                    "path": "test/TEST_ACCEPTED.py",
+                                    "title": "test/TEST_ACCEPTED.py",
+                                    "icon": "TEST_ACCEPTED",
+                                },
+                                {
+                                    "path": "test/TEST_WAITING_JUDGE.py",
+                                    "title": "Skipped",
+                                    "icon": "TEST_WAITING_JUDGE",
+                                },
+                                {
+                                    "path": "test/TEST_WRONG_ANSWER.py",
+                                    "title": "test/TEST_WRONG_ANSWER.py",
+                                    "icon": "TEST_WRONG_ANSWER",
+                                },
+                            ],
+                        }
                     ],
-                }
+                },
             ],
         },
     ),
