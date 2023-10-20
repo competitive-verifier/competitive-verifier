@@ -207,7 +207,7 @@ class DocumentBuilder:
                         links={
                             p: {
                                 "path": p.as_posix(),
-                                "title": page_title_dict[p],
+                                "title": page_title_dict.get(p),
                                 "icon": s.verification_status.name,
                             }
                             for p, s in stats.items()
@@ -291,9 +291,9 @@ def _build_page_title_dict(
     page_title_dict: dict[pathlib.Path, str] = {}
     for job in render_jobs:
         assert job.path.suffix == ".md"
-        title = job.front_matter.title or job.path.stem
-        page_title_dict[job.path] = title
-        page_title_dict[job.path.with_suffix("")] = title
+        title = job.front_matter.title
+        if title:
+            page_title_dict[job.path.with_suffix("")] = title
     return page_title_dict
 
 
@@ -312,12 +312,13 @@ def render_source_code_stats_for_top_page(
         category = stat.path.parent.as_posix()
         if category not in categories:
             categories[category] = []
+        title = page_title_dict.get(stat.path)
         categories[category].append(
             {
                 "path": stat.path.as_posix(),
-                "title": page_title_dict[stat.path],
                 "icon": stat.verification_status.name,
             }
+            | ({"title": title} if title else {})
         )
 
     def _build_categories_list(

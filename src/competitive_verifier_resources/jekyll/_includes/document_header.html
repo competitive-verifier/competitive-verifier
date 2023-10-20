@@ -1,6 +1,9 @@
-<h1>{{ site.icons[page.data._verificationStatusIcon] }} {{ page.title }}
-    {%- if page.title != page.data.path -%}<br><small>({{ page.data.path }})</small>{%- endif -%}
-</h1>
+{%- if page.title -%}
+    {%- capture page_title -%}{{page.title}} <small>({{ page.data.path }})</small>{%- endcapture -%}
+{%- else -%}
+    {%- capture page_title -%}{{page.data.path}}{%- endcapture -%}
+{%- endif -%}
+<h1>{{ site.icons[page.data._verificationStatusIcon] }} {{ page_title }}</h1>
 
 <ul>
     <li><a href="{{ site.github.repository_url }}/blob/{{ site.branch_name | default: "HEAD" }}/{{ site.basedir }}{{ page.data.path }}">View this file on GitHub</a></li>
