@@ -1,13 +1,12 @@
 #define PROBLEM "https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/all/DSL_2_B"
 #include <iostream>
 #include "examples/cpp/segment_tree.hpp"
-#include "examples/cpp/monoids.hpp"
 #include "examples/cpp/macros.hpp"
 using namespace std;
 
 int main() {
     int n, q; cin >> n >> q;
-    segment_tree<plus_monoid> segtree(n);
+    plus_segment_tree segtree(n);
     REP (i, n) {
         segtree.point_set(i, 0);
     }

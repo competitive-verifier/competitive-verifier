@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <vector>
+#include "examples/cpp/monoids.hpp"
 
 /**
  * @brief a Segment Tree (generalized with monoids) 
@@ -46,3 +47,7 @@ struct segment_tree {
         return mon.mult(lacc, racc);
     }
 };
+
+typedef segment_tree<plus_monoid> plus_segment_tree;
+typedef segment_tree<max_monoid> max_segment_tree;
+typedef segment_tree<min_monoid> min_segment_tree;
