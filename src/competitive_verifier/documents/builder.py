@@ -104,6 +104,26 @@ class DocumentBuilder:
         return result
 
     def impl(self) -> bool:
+        config, rendered_pages = self.render_pages()
+
+        # make install
+        logger.info("writing %s files...", len(rendered_pages))
+        for path, content in rendered_pages.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
+            path.write_bytes(content)
+
+        logger.info("list static files...")
+        static_files = load_static_files(config=config)
+
+        logger.info("writing %s static files...", len(static_files))
+        for path, content in static_files.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
+            path.write_bytes(content)
+        return True
+
+    def render_pages(self) -> tuple[SiteRenderConfig, dict[pathlib.Path, bytes]]:
         config = load_render_config(
             docs_dir=self.docs_dir,
             destination_dir=self.destination_dir,
@@ -128,31 +148,14 @@ class DocumentBuilder:
                 result=self.result,
                 included_files=included_files,
             )
-        rendered_pages = self.render_pages(
+        return config, self._render_pages_impl(
             stats=stats,
             render_jobs=render_jobs,
             site_render_config=config,
             excluded_paths=excluded_paths,
         )
 
-        # make install
-        logger.info("writing %s files...", len(rendered_pages))
-        for path, content in rendered_pages.items():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            logger.debug("writing to %s", path.as_posix())
-            path.write_bytes(content)
-
-        logger.info("list static files...")
-        static_files = load_static_files(config=config)
-
-        logger.info("writing %s static files...", len(static_files))
-        for path, content in static_files.items():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            logger.debug("writing to %s", path.as_posix())
-            path.write_bytes(content)
-        return True
-
-    def render_pages(
+    def _render_pages_impl(
         self,
         *,
         stats: dict[pathlib.Path, SourceCodeStat],
@@ -329,45 +332,6 @@ def _render_source_code_stats_for_top_page(
     }
 
 
-def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
-    code = read_text_normalized(stat.path)
-
-    attributes = stat.file_input.document_attributes.copy()
-    problem = next(
-        (
-            v.problem
-            for v in stat.file_input.verification
-            if isinstance(v, ProblemVerification)
-        ),
-        None,
-    )
-    if problem:
-        attributes.setdefault("PROBLEM", problem)
-
-    embedded = [{"name": "default", "code": code}]
-    for s in stat.file_input.additonal_sources:
-        embedded.append({"name": s.name, "code": read_text_normalized(s.path)})
-
-    return {
-        "path": stat.path.as_posix(),
-        "embedded": embedded,
-        "isVerificationFile": stat.is_verification,
-        "verificationStatus": stat.verification_status.value,
-        "timestamp": str(stat.timestamp),
-        "dependsOn": [path.as_posix() for path in stat.depends_on],
-        "requiredBy": [path.as_posix() for path in stat.required_by],
-        "verifiedWith": [path.as_posix() for path in stat.verified_with],
-        "attributes": attributes,
-        "testcases": [
-            c.model_dump(mode="json") | {"environment": v.verification_name}
-            for v in stat.verification_results
-            for c in (v.testcases or [])
-        ]
-        if stat.verification_results
-        else None,
-    }
-
-
 def _render_source_code_stat_for_page(
     job: PageRenderJob,
     path: pathlib.Path,
@@ -375,6 +339,44 @@ def _render_source_code_stat_for_page(
     stats: dict[pathlib.Path, SourceCodeStat],
     page_title_dict: dict[pathlib.Path, str],
 ) -> dict[str, Any]:
+    def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
+        code = read_text_normalized(stat.path)
+
+        attributes = stat.file_input.document_attributes.copy()
+        problem = next(
+            (
+                v.problem
+                for v in stat.file_input.verification
+                if isinstance(v, ProblemVerification)
+            ),
+            None,
+        )
+        if problem:
+            attributes.setdefault("PROBLEM", problem)
+
+        embedded = [{"name": "default", "code": code}]
+        for s in stat.file_input.additonal_sources:
+            embedded.append({"name": s.name, "code": read_text_normalized(s.path)})
+
+        return {
+            "path": stat.path.as_posix(),
+            "embedded": embedded,
+            "isVerificationFile": stat.is_verification,
+            "verificationStatus": stat.verification_status.value,
+            "timestamp": str(stat.timestamp),
+            "dependsOn": [path.as_posix() for path in stat.depends_on],
+            "requiredBy": [path.as_posix() for path in stat.required_by],
+            "verifiedWith": [path.as_posix() for path in stat.verified_with],
+            "attributes": attributes,
+            "testcases": [
+                c.model_dump(mode="json") | {"environment": v.verification_name}
+                for v in stat.verification_results
+                for c in (v.testcases or [])
+            ]
+            if stat.verification_results
+            else None,
+        }
+
     stat = stats[path]
     data = _render_source_code_stat(stat)
     data["_pathExtension"] = path.suffix.lstrip(".")
