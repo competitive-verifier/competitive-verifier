@@ -36,8 +36,3 @@ jobs:
 
       - name: Run test
         run: poetry run pytest -v
-  test-ok:
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ok
