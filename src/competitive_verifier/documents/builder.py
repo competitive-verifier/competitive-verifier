@@ -14,6 +14,9 @@ from competitive_verifier.models import (
     VerifyCommandResult,
     resolve_dependency,
 )
+from competitive_verifier.models.dependency import (
+    SourceCodeStatSlim,
+)
 from competitive_verifier.util import read_text_normalized
 
 from .front_matter import merge_front_matter
@@ -175,7 +178,7 @@ class DocumentBuilder:
 
             front_matter = job.front_matter.model_copy(deep=True)
             if front_matter.layout == "toppage":
-                front_matter.data = _render_source_code_stats_for_top_page(
+                front_matter.data = render_source_code_stats_for_top_page(
                     stats_iter=stats.values(),
                     page_title_dict=page_title_dict,
                 )
@@ -199,7 +202,7 @@ class DocumentBuilder:
                 if not front_matter.layout:
                     front_matter.layout = "document"
                 if not front_matter.data:
-                    front_matter.data = _render_source_code_stat_for_page(
+                    front_matter.data = render_source_code_stat_for_page(
                         job,
                         documentation_of_path,
                         stats=stats,
@@ -289,9 +292,9 @@ def _build_page_title_dict(
     return page_title_dict
 
 
-def _render_source_code_stats_for_top_page(
+def render_source_code_stats_for_top_page(
     *,
-    stats_iter: Iterable[SourceCodeStat],
+    stats_iter: Iterable[SourceCodeStatSlim],
     page_title_dict: dict[pathlib.Path, str],
 ) -> dict[str, Any]:
     library_categories: dict[str, list[dict[str, str]]] = {}
@@ -332,7 +335,7 @@ def _render_source_code_stats_for_top_page(
     }
 
 
-def _render_source_code_stat_for_page(
+def render_source_code_stat_for_page(
     job: PageRenderJob,
     path: pathlib.Path,
     *,

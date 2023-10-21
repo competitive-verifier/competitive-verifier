@@ -12,7 +12,11 @@ from competitive_verifier.documents.builder import (
     render_source_code_stats_for_top_page,
 )
 from competitive_verifier.documents.type import PageRenderJob, SiteRenderConfig
-from competitive_verifier.models.dependency import SourceCodeStat
+from competitive_verifier.models.dependency import (
+    SourceCodeStat,
+    SourceCodeStatSlim,
+    VerificationStatus,
+)
 
 STATIC_FILES_PATH = "src/competitive_verifier_resources/jekyll"
 # For windows test
@@ -67,7 +71,7 @@ def test_render_source_code_stat_for_page(
 
 
 class Input_render_source_code_stats_for_top_page(BaseModel):
-    stats_iter: Iterable[SourceCodeStat]
+    stats_iter: Iterable[SourceCodeStatSlim]
     page_title_dict: dict[pathlib.Path, str]
 
 
@@ -76,29 +80,104 @@ test_render_source_code_stats_for_top_page_params: list[
 ] = [
     (
         Input_render_source_code_stats_for_top_page(
-            page_title_dict={pathlib.Path("foo/bar.py"): "FOOBAR"},
+            page_title_dict={
+                pathlib.Path("src/LIBRARY_ALL_AC.py"): "accept",
+                pathlib.Path("test/TEST_WAITING_JUDGE.py"): "Skipped",
+                pathlib.Path("src/LIBRARY_PARTIAL_AC.py"): "src/LIBRARY_PARTIAL_AC.py",
+                pathlib.Path("src/LIBRARY_SOME_WA.py"): "src/LIBRARY_SOME_WA.py",
+                pathlib.Path("src/LIBRARY_NO_TESTS.py"): "src/LIBRARY_NO_TESTS.py",
+                pathlib.Path("test/TEST_ACCEPTED.py"): "test/TEST_ACCEPTED.py",
+                pathlib.Path("test/TEST_WRONG_ANSWER.py"): "test/TEST_WRONG_ANSWER.py",
+            },
             stats_iter=[
-                SourceCodeStat(
-                    path=pathlib.Path("foo/bar.py"),
-                    depends_on={},
-                    required_by={pathlib.Path("foo/baz.py")},
-                    verified_with={},
+                SourceCodeStatSlim(
+                    path=pathlib.Path("src/LIBRARY_ALL_AC.py"),
+                    is_verification=False,
+                    verification_status=VerificationStatus.LIBRARY_ALL_AC,
                 ),
-                SourceCodeStat(
-                    path=pathlib.Path("foo/baz.py"),
-                    depends_on={pathlib.Path("foo/bar.py")},
-                    required_by={},
-                    verified_with={pathlib.Path("foo/test.py")},
+                SourceCodeStatSlim(
+                    path=pathlib.Path("src/LIBRARY_PARTIAL_AC.py"),
+                    is_verification=False,
+                    verification_status=VerificationStatus.LIBRARY_PARTIAL_AC,
                 ),
-                SourceCodeStat(
-                    path=pathlib.Path("foo/test.py"),
-                    depends_on={},
-                    required_by={pathlib.Path("foo/baz.py")},
-                    verified_with={},
+                SourceCodeStatSlim(
+                    path=pathlib.Path("src/LIBRARY_SOME_WA.py"),
+                    is_verification=False,
+                    verification_status=VerificationStatus.LIBRARY_SOME_WA,
+                ),
+                SourceCodeStatSlim(
+                    path=pathlib.Path("src/LIBRARY_NO_TESTS.py"),
+                    is_verification=False,
+                    verification_status=VerificationStatus.LIBRARY_NO_TESTS,
+                ),
+                SourceCodeStatSlim(
+                    path=pathlib.Path("test/TEST_ACCEPTED.py"),
+                    is_verification=True,
+                    verification_status=VerificationStatus.TEST_ACCEPTED,
+                ),
+                SourceCodeStatSlim(
+                    path=pathlib.Path("test/TEST_WAITING_JUDGE.py"),
+                    is_verification=True,
+                    verification_status=VerificationStatus.TEST_WAITING_JUDGE,
+                ),
+                SourceCodeStatSlim(
+                    path=pathlib.Path("test/TEST_WRONG_ANSWER.py"),
+                    is_verification=True,
+                    verification_status=VerificationStatus.TEST_WRONG_ANSWER,
                 ),
             ],
         ),
-        {},
+        {
+            "libraryCategories": [
+                {
+                    "name": "src",
+                    "pages": [
+                        {
+                            "path": "src/LIBRARY_ALL_AC.py",
+                            "title": "accept",
+                            "icon": "LIBRARY_ALL_AC",
+                        },
+                        {
+                            "path": "src/LIBRARY_NO_TESTS.py",
+                            "title": "src/LIBRARY_NO_TESTS.py",
+                            "icon": "LIBRARY_NO_TESTS",
+                        },
+                        {
+                            "path": "src/LIBRARY_PARTIAL_AC.py",
+                            "title": "src/LIBRARY_PARTIAL_AC.py",
+                            "icon": "LIBRARY_PARTIAL_AC",
+                        },
+                        {
+                            "path": "src/LIBRARY_SOME_WA.py",
+                            "title": "src/LIBRARY_SOME_WA.py",
+                            "icon": "LIBRARY_SOME_WA",
+                        },
+                    ],
+                }
+            ],
+            "verificationCategories": [
+                {
+                    "name": "test",
+                    "pages": [
+                        {
+                            "path": "test/TEST_ACCEPTED.py",
+                            "title": "test/TEST_ACCEPTED.py",
+                            "icon": "TEST_ACCEPTED",
+                        },
+                        {
+                            "path": "test/TEST_WAITING_JUDGE.py",
+                            "title": "Skipped",
+                            "icon": "TEST_WAITING_JUDGE",
+                        },
+                        {
+                            "path": "test/TEST_WRONG_ANSWER.py",
+                            "title": "test/TEST_WRONG_ANSWER.py",
+                            "icon": "TEST_WRONG_ANSWER",
+                        },
+                    ],
+                }
+            ],
+        },
     ),
 ]
 
