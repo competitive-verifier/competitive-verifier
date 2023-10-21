@@ -92,7 +92,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     ],
                 ),
                 "test/skip.py": FileResult(
-                    newest=False,
+                    newest=True,
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -169,7 +169,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     ],
                 ),
                 "test/skip.py": FileResult(
-                    newest=False,
+                    newest=True,
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -405,7 +405,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     ],
                 ),
                 "test/skip.py": FileResult(
-                    newest=False,
+                    newest=True,
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
