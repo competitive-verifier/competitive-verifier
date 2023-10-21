@@ -27,10 +27,8 @@ from competitive_verifier.models.dependency import (
     VerificationStatus,
 )
 from competitive_verifier.models.file import VerificationFile
-from competitive_verifier.models.result import (
-    VerificationResult,
-    TestcaseResult as _TestcaseResult,
-)
+from competitive_verifier.models.result import TestcaseResult as _TestcaseResult
+from competitive_verifier.models.result import VerificationResult
 from competitive_verifier.models.result_status import ResultStatus
 
 STATIC_FILES_PATH = "src/competitive_verifier_resources/jekyll"
