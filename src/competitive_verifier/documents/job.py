@@ -100,25 +100,15 @@ def build_source_job(
     title = file.document_attributes.get("TITLE")
     if not title:
         title = file.document_attributes.get("document_title")
-    front_matter = FrontMatter(
-        documentation_of=path.as_posix(),
-        title=title,
-    )
-    # treat @docs path/to.md directives
-    content = b""
-    # if '_deprecated_at_docs' in stat.attributes:
-    #     at_docs_path = pathlib.Path(stat.attributes['_deprecated_at_docs'])
-    #     try:
-    #         with open(at_docs_path, 'rb') as fh:
-    #             content = fh.read()
-    #     except FileNotFoundError as e:
-    #         logger.exception('failed to read markdown file specified by @docs in %s: %s', str(stat.path), e)
 
     return PageRenderJob(
         path=mdpath,
+        title=title,
         document_path=None,
-        front_matter=front_matter,
-        content=content,
+        front_matter=FrontMatter(
+            documentation_of=path.as_posix(),
+            title=title or path.as_posix(),
+        ),
     )
 
 

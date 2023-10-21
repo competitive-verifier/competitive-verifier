@@ -1,49 +1,18 @@
-{%- if page.data.dependsOn.size != 0 -%}
-<h2>Depends on</h2>
+{%- for dep in page.data.dependencies -%}
+{%- if dep.files.size != 0 -%}
+<h2>{{dep.type}}</h2>
 <ul>
-    {%- for item in page.data.dependencies.dependsOn.files -%}
+    {%- for item in dep.files -%}
     {%- if item.title -%}
         {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
     {%- else -%}
         {%- capture link_title -%}{{item.path}}{%- endcapture -%}
     {%- endif -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
-        </a></li>
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}</a></li>
     {%- endfor -%}
 </ul>
 {%- endif -%}
-
-
-{%- if page.data.requiredBy.size != 0 -%}
-<h2>Required by</h2>
-<ul>
-    {%- for item in page.data.dependencies.requiredBy.files -%}
-    {%- if item.title -%}
-        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
-    {%- else -%}
-        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
-    {%- endif -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
-        </a></li>
-    {%- endfor -%}
-</ul>
-{%- endif -%}
-
-
-{%- if page.data.verifiedWith.size != 0 -%}
-<h2>Verified with</h2>
-<ul>
-    {%- for item in page.data.dependencies.verifiedWith.files -%}
-    {%- if item.title -%}
-        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
-    {%- else -%}
-        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
-    {%- endif -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
-        </a></li>
-    {%- endfor -%}
-</ul>
-{%- endif -%}
+{%- endfor -%}
 
 <h2>Code</h2>
 

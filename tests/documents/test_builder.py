@@ -143,8 +143,9 @@ def generate_render_source_code_stat_for_page_params() -> (
             "pathExtension": "txt",
             "verificationStatus": "LIBRARY_ALL_AC",
             "isFailed": False,
-            "dependencies": {
-                "dependsOn": {
+            "dependencies": [
+                {
+                    "type": "Depends on",
                     "files": [
                         {
                             "filename": "any.txt",
@@ -154,7 +155,8 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-                "requiredBy": {
+                {
+                    "type": "Required by",
                     "files": [
                         {
                             "filename": "req.txt",
@@ -163,7 +165,8 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-                "verifiedWith": {
+                {
+                    "type": "Verified with",
                     "files": [
                         {
                             "filename": "success.txt",
@@ -173,7 +176,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-            },
+            ],
         },
     )
 
@@ -224,8 +227,9 @@ def generate_render_source_code_stat_for_page_params() -> (
             "pathExtension": "txt",
             "verificationStatus": "LIBRARY_ALL_AC",
             "isFailed": False,
-            "dependencies": {
-                "dependsOn": {
+            "dependencies": [
+                {
+                    "type": "Depends on",
                     "files": [
                         {
                             "filename": "any.txt",
@@ -235,7 +239,8 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-                "requiredBy": {
+                {
+                    "type": "Required by",
                     "files": [
                         {
                             "filename": "success.txt",
@@ -245,7 +250,8 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-                "verifiedWith": {
+                {
+                    "type": "Verified with",
                     "files": [
                         {
                             "filename": "success.txt",
@@ -255,7 +261,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                         }
                     ],
                 },
-            },
+            ],
         },
     )
 
@@ -371,8 +377,9 @@ def generate_render_source_code_stat_for_page_params() -> (
             "pathExtension": "txt",
             "verificationStatus": "TEST_WRONG_ANSWER",
             "isFailed": True,
-            "dependencies": {
-                "dependsOn": {
+            "dependencies": [
+                {
+                    "type": "Depends on",
                     "files": [
                         {
                             "filename": "failure.txt",
@@ -380,11 +387,11 @@ def generate_render_source_code_stat_for_page_params() -> (
                             "title": "LIBFAILURE",
                             "icon": "LIBRARY_ALL_WA",
                         }
-                    ]
+                    ],
                 },
-                "requiredBy": {"files": []},
-                "verifiedWith": {"files": []},
-            },
+                {"type": "Required by", "files": []},
+                {"type": "Verified with", "files": []},
+            ],
         },
     )
 

@@ -52,13 +52,8 @@ class EnvTestcaseResult(BuilderBaseModel, TestcaseResult):
 
 
 class Dependency(BuilderBaseModel):
+    type: str
     files: list[RenderPage]
-
-
-class Dependencies(BuilderBaseModel):
-    depends_on: Dependency
-    required_by: Dependency
-    verified_with: Dependency
 
 
 class RenderSourceCodeStat(BuilderBaseModel):
@@ -79,7 +74,7 @@ class RenderSourceCodeStat(BuilderBaseModel):
 
 class RenderForPage(RenderSourceCodeStat):
     path_extension: str
-    dependencies: Dependencies
+    dependencies: list[Dependency]
     is_failed: bool
     verification_status: StatusIcon
     document_path: Optional[ForcePosixPath]
@@ -89,7 +84,7 @@ class RenderForPage(RenderSourceCodeStat):
         cls,
         parent: RenderSourceCodeStat,
         *,
-        dependencies: Dependencies,
+        dependencies: list[Dependency],
     ) -> "RenderForPage":
         return RenderForPage(
             dependencies=dependencies,
