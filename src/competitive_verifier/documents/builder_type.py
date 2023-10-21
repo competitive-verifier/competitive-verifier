@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated, Any, Optional
 
-from pydantic import BaseModel, ConfigDict, PlainSerializer
+from pydantic import BaseModel, ConfigDict, PlainSerializer, computed_field
 from pydantic.alias_generators import to_camel
 
 from competitive_verifier.models.dependency import VerificationStatus
@@ -25,6 +25,11 @@ class RenderPage(BuilderBaseModel):
     path: ForcePosixPath
     icon: StatusIcon
     title: Optional[str]
+
+    @computed_field
+    @property
+    def filename(self) -> str:
+        return self.path.name
 
 
 class TopPageCategory(BuilderBaseModel):
