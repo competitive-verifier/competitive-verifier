@@ -43,8 +43,11 @@ class PageRenderJob(BaseModel):
     relative path from basedir
     """
 
+    title: Optional[str] = None
+    """User defined title
+    """
     front_matter: FrontMatter
-    content: bytes
+    content: bytes = b""
 
     def merge(self, other: "PageRenderJob") -> "PageRenderJob":
         assert self.path == other.path

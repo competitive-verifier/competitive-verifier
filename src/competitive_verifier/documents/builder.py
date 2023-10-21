@@ -18,7 +18,6 @@ from competitive_verifier.models.dependency import SourceCodeStatSlim
 from competitive_verifier.util import read_text_normalized
 
 from .builder_type import (
-    Dependencies,
     Dependency,
     EmbeddedCode,
     EnvTestcaseResult,
@@ -303,7 +302,7 @@ def _build_page_title_dict(
     page_title_dict: dict[pathlib.Path, str] = {}
     for job in render_jobs:
         assert job.path.suffix == ".md"
-        title = job.front_matter.title
+        title = job.title
         if title:
             page_title_dict[job.path.with_suffix("")] = title
     return page_title_dict
@@ -414,17 +413,20 @@ def render_source_code_stat_for_page(
 ) -> dict[str, Any]:
     data = _render_source_code_stat(stat)
 
-    def extend_dependencies(paths: Iterable[pathlib.Path]) -> Dependency:
-        return Dependency(files=[links[path] for path in sorted(paths, key=str)])
+    def extend_dependencies(type: str, paths: Iterable[pathlib.Path]) -> Dependency:
+        return Dependency(
+            type=type,
+            files=[links[path] for path in sorted(paths, key=str)],
+        )
 
     return RenderForPage(
         path_extension=path.suffix.lstrip("."),
         is_failed=stat.verification_status.is_failed,
-        dependencies=Dependencies(
-            depends_on=extend_dependencies(stat.depends_on),
-            required_by=extend_dependencies(stat.required_by),
-            verified_with=extend_dependencies(stat.verified_with),
-        ),
+        dependencies=[
+            extend_dependencies("Depends on", stat.depends_on),
+            extend_dependencies("Required by", stat.required_by),
+            extend_dependencies("Verified with", stat.verified_with),
+        ],
         document_path=job.document_path,
         **data.model_dump(),
     ).model_dump(mode="json", by_alias=True, exclude_none=True)

@@ -1,4 +1,4 @@
-{%- if page.title -%}
+{%- if page.title != page.data.path -%}
     {%- capture page_title -%}{{page.title}} <small>({{ page.data.path }})</small>{%- endcapture -%}
 {%- else -%}
     {%- capture page_title -%}{{page.data.path}}{%- endcapture -%}
