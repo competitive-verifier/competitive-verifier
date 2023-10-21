@@ -73,7 +73,7 @@ def generate_render_source_code_stat_for_page_params() -> (
         ),
         pathlib.Path("lib/req.txt"): RenderPage(
             path=pathlib.Path("lib/req.txt"),
-            title="LIBFAILURE",
+            title=None,
             icon=VerificationStatus.LIBRARY_ALL_WA,
         ),
         pathlib.Path("lib/success.txt"): RenderPage(
@@ -93,7 +93,7 @@ def generate_render_source_code_stat_for_page_params() -> (
         ),
         pathlib.Path("test/failure.txt"): RenderPage(
             path=pathlib.Path("test/failure.txt"),
-            title="test/failure.txt",
+            title=None,
             icon=VerificationStatus.TEST_WAITING_JUDGE,
         ),
     }
@@ -148,6 +148,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "dependsOn": {
                     "files": [
                         {
+                            "filename": "any.txt",
                             "path": "lib/any.txt",
                             "title": "ANY",
                             "icon": "LIBRARY_SOME_WA",
@@ -157,8 +158,8 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "requiredBy": {
                     "files": [
                         {
+                            "filename": "req.txt",
                             "path": "lib/req.txt",
-                            "title": "LIBFAILURE",
                             "icon": "LIBRARY_ALL_WA",
                         }
                     ],
@@ -166,6 +167,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "verifiedWith": {
                     "files": [
                         {
+                            "filename": "success.txt",
                             "path": "test/success.txt",
                             "title": "SUCCESS",
                             "icon": "TEST_ACCEPTED",
@@ -227,6 +229,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "dependsOn": {
                     "files": [
                         {
+                            "filename": "any.txt",
                             "path": "lib/any.txt",
                             "title": "ANY",
                             "icon": "LIBRARY_SOME_WA",
@@ -236,6 +239,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "requiredBy": {
                     "files": [
                         {
+                            "filename": "success.txt",
                             "path": "lib/success.txt",
                             "title": "LIB",
                             "icon": "LIBRARY_ALL_AC",
@@ -245,6 +249,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "verifiedWith": {
                     "files": [
                         {
+                            "filename": "success.txt",
                             "path": "test/success.txt",
                             "title": "SUCCESS",
                             "icon": "TEST_ACCEPTED",
@@ -371,6 +376,7 @@ def generate_render_source_code_stat_for_page_params() -> (
                 "dependsOn": {
                     "files": [
                         {
+                            "filename": "failure.txt",
                             "path": "lib/failure.txt",
                             "title": "LIBFAILURE",
                             "icon": "LIBRARY_ALL_WA",
@@ -424,11 +430,6 @@ test_render_source_code_stats_for_top_page_params: list[
             page_title_dict={
                 pathlib.Path("src/LIBRARY_ALL_AC.py"): "accept",
                 pathlib.Path("test/TEST_WAITING_JUDGE.py"): "Skipped",
-                pathlib.Path("src/LIBRARY_PARTIAL_AC.py"): "src/LIBRARY_PARTIAL_AC.py",
-                pathlib.Path("src/LIBRARY_SOME_WA.py"): "src/LIBRARY_SOME_WA.py",
-                pathlib.Path("src/LIBRARY_NO_TESTS.py"): "src/LIBRARY_NO_TESTS.py",
-                pathlib.Path("test/TEST_ACCEPTED.py"): "test/TEST_ACCEPTED.py",
-                pathlib.Path("test/TEST_WRONG_ANSWER.py"): "test/TEST_WRONG_ANSWER.py",
             },
             stats_iter=[
                 SourceCodeStatSlim(
@@ -477,23 +478,24 @@ test_render_source_code_stats_for_top_page_params: list[
                             "name": "src",
                             "pages": [
                                 {
+                                    "filename": "LIBRARY_ALL_AC.py",
                                     "path": "src/LIBRARY_ALL_AC.py",
                                     "title": "accept",
                                     "icon": "LIBRARY_ALL_AC",
                                 },
                                 {
+                                    "filename": "LIBRARY_NO_TESTS.py",
                                     "path": "src/LIBRARY_NO_TESTS.py",
-                                    "title": "src/LIBRARY_NO_TESTS.py",
                                     "icon": "LIBRARY_NO_TESTS",
                                 },
                                 {
+                                    "filename": "LIBRARY_PARTIAL_AC.py",
                                     "path": "src/LIBRARY_PARTIAL_AC.py",
-                                    "title": "src/LIBRARY_PARTIAL_AC.py",
                                     "icon": "LIBRARY_PARTIAL_AC",
                                 },
                                 {
+                                    "filename": "LIBRARY_SOME_WA.py",
                                     "path": "src/LIBRARY_SOME_WA.py",
-                                    "title": "src/LIBRARY_SOME_WA.py",
                                     "icon": "LIBRARY_SOME_WA",
                                 },
                             ],
@@ -507,18 +509,19 @@ test_render_source_code_stats_for_top_page_params: list[
                             "name": "test",
                             "pages": [
                                 {
+                                    "filename": "TEST_ACCEPTED.py",
                                     "path": "test/TEST_ACCEPTED.py",
-                                    "title": "test/TEST_ACCEPTED.py",
                                     "icon": "TEST_ACCEPTED",
                                 },
                                 {
+                                    "filename": "TEST_WAITING_JUDGE.py",
                                     "path": "test/TEST_WAITING_JUDGE.py",
                                     "title": "Skipped",
                                     "icon": "TEST_WAITING_JUDGE",
                                 },
                                 {
+                                    "filename": "TEST_WRONG_ANSWER.py",
                                     "path": "test/TEST_WRONG_ANSWER.py",
-                                    "title": "test/TEST_WRONG_ANSWER.py",
                                     "icon": "TEST_WRONG_ANSWER",
                                 },
                             ],
