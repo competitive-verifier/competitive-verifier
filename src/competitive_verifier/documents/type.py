@@ -37,7 +37,7 @@ class PageRenderJob(BaseModel):
 
     relative path from basedir
     """
-    document_path: Optional[pathlib.Path]
+    document_path: Optional[pathlib.Path] = None
     """original markdown path
 
     relative path from basedir

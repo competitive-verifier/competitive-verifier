@@ -92,11 +92,14 @@ class _VerificationStatusFlag(enum.Flag):
         return self._conv_dict[self]
 
 
-class SourceCodeStat(BaseModel):
+class SourceCodeStatSlim(BaseModel):
     path: ForcePosixPath
-    file_input: VerificationFile
     is_verification: bool
     verification_status: VerificationStatus
+
+
+class SourceCodeStat(SourceCodeStatSlim):
+    file_input: VerificationFile
     timestamp: datetime.datetime
     depends_on: set[ForcePosixPath]
     required_by: set[ForcePosixPath]

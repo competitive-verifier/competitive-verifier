@@ -1,9 +1,13 @@
 {%- if page.data.dependsOn.size != 0 -%}
 <h2>Depends on</h2>
 <ul>
-    {%- for item in page.data._extendedDependsOn -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
-            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+    {%- for item in page.data.dependencies.dependsOn.files -%}
+    {%- if item.title -%}
+        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
+    {%- else -%}
+        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
+    {%- endif -%}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
         </a></li>
     {%- endfor -%}
 </ul>
@@ -13,9 +17,13 @@
 {%- if page.data.requiredBy.size != 0 -%}
 <h2>Required by</h2>
 <ul>
-    {%- for item in page.data._extendedRequiredBy -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
-            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+    {%- for item in page.data.dependencies.requiredBy.files -%}
+    {%- if item.title -%}
+        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
+    {%- else -%}
+        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
+    {%- endif -%}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
         </a></li>
     {%- endfor -%}
 </ul>
@@ -25,9 +33,13 @@
 {%- if page.data.verifiedWith.size != 0 -%}
 <h2>Verified with</h2>
 <ul>
-    {%- for item in page.data._extendedVerifiedWith -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ item.title }}
-            {%- if item.title != item.path %}<small>({{ item.path }})</small>{%- endif -%}
+    {%- for item in page.data.dependencies.verifiedWith.files -%}
+    {%- if item.title -%}
+        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
+    {%- else -%}
+        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
+    {%- endif -%}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}
         </a></li>
     {%- endfor -%}
 </ul>
@@ -35,7 +47,7 @@
 
 <h2>Code</h2>
 
-{%- include code.html extension=page.data._pathExtension embedded=page.data.embedded -%}
+{%- include code.html extension=page.data.pathExtension embedded=page.data.embedded -%}
 
 {%- if page.data.testcases and page.data.testcases.size != 0 -%}
 <h2>Test cases</h2>

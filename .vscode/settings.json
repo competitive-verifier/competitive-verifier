@@ -1,4 +1,11 @@
 {
+    "files.associations": {
+        "**/_includes/**/*.html": "jekyll",
+        "**/_layouts/**/*.html": "jekyll"
+    },
+    "emmet.includeLanguages": {
+        "jekyll": "html"
+    },
     "files.exclude": {
         ".venv": true,
         "**/__pycache__": true,

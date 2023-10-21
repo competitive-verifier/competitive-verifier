@@ -44,10 +44,7 @@ test_merge_FrontMatter_params: list[tuple[FrontMatter, bytes, bytes]] = [
 
 String $A + B$""",
         b"""---
-data: null
 documentation_of: //examples/awk/aplusb2.awk
-layout: null
-redirect_from: null
 title: A + B
 ---
 # aplusb2

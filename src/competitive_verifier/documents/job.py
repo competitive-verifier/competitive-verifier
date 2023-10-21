@@ -99,7 +99,7 @@ def build_source_job(
     # add title specified as a attributes
     title = file.document_attributes.get("TITLE")
     if not title:
-        title = file.document_attributes.get("document_title", path.as_posix())
+        title = file.document_attributes.get("document_title")
     front_matter = FrontMatter(
         documentation_of=path.as_posix(),
         title=title,

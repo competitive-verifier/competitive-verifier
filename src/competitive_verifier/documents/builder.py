@@ -14,8 +14,21 @@ from competitive_verifier.models import (
     VerifyCommandResult,
     resolve_dependency,
 )
+from competitive_verifier.models.dependency import SourceCodeStatSlim
 from competitive_verifier.util import read_text_normalized
 
+from .builder_type import (
+    Dependencies,
+    Dependency,
+    EmbeddedCode,
+    EnvTestcaseResult,
+    RenderForPage,
+    RenderPage,
+    RenderSourceCodeStat,
+    RenderTopPage,
+    TopPageCategory,
+    TopPageFiles,
+)
 from .front_matter import merge_front_matter
 from .job import build_index_job, build_markdown_job, build_source_job
 from .render import load_render_config
@@ -104,6 +117,26 @@ class DocumentBuilder:
         return result
 
     def impl(self) -> bool:
+        config, rendered_pages = self.render_pages()
+
+        # make install
+        logger.info("writing %s files...", len(rendered_pages))
+        for path, content in rendered_pages.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
+            path.write_bytes(content)
+
+        logger.info("list static files...")
+        static_files = load_static_files(config=config)
+
+        logger.info("writing %s static files...", len(static_files))
+        for path, content in static_files.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            logger.debug("writing to %s", path.as_posix())
+            path.write_bytes(content)
+        return True
+
+    def render_pages(self) -> tuple[SiteRenderConfig, dict[pathlib.Path, bytes]]:
         config = load_render_config(
             docs_dir=self.docs_dir,
             destination_dir=self.destination_dir,
@@ -128,31 +161,14 @@ class DocumentBuilder:
                 result=self.result,
                 included_files=included_files,
             )
-        rendered_pages = self.render_pages(
+        return config, self._render_pages_impl(
             stats=stats,
             render_jobs=render_jobs,
             site_render_config=config,
             excluded_paths=excluded_paths,
         )
 
-        # make install
-        logger.info("writing %s files...", len(rendered_pages))
-        for path, content in rendered_pages.items():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            logger.debug("writing to %s", path.as_posix())
-            path.write_bytes(content)
-
-        logger.info("list static files...")
-        static_files = load_static_files(config=config)
-
-        logger.info("writing %s static files...", len(static_files))
-        for path, content in static_files.items():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            logger.debug("writing to %s", path.as_posix())
-            path.write_bytes(content)
-        return True
-
-    def render_pages(
+    def _render_pages_impl(
         self,
         *,
         stats: dict[pathlib.Path, SourceCodeStat],
@@ -172,7 +188,7 @@ class DocumentBuilder:
 
             front_matter = job.front_matter.model_copy(deep=True)
             if front_matter.layout == "toppage":
-                front_matter.data = _render_source_code_stats_for_top_page(
+                front_matter.data = render_source_code_stats_for_top_page(
                     stats_iter=stats.values(),
                     page_title_dict=page_title_dict,
                 )
@@ -196,11 +212,18 @@ class DocumentBuilder:
                 if not front_matter.layout:
                     front_matter.layout = "document"
                 if not front_matter.data:
-                    front_matter.data = _render_source_code_stat_for_page(
+                    front_matter.data = render_source_code_stat_for_page(
                         job,
                         documentation_of_path,
-                        stats=stats,
-                        page_title_dict=page_title_dict,
+                        stats[documentation_of_path],
+                        links={
+                            p: RenderPage(
+                                path=p,
+                                title=page_title_dict.get(p),
+                                icon=s.verification_status,
+                            )
+                            for p, s in stats.items()
+                        },
                     )
 
             path = site_render_config.destination_dir / job.path
@@ -280,19 +303,19 @@ def _build_page_title_dict(
     page_title_dict: dict[pathlib.Path, str] = {}
     for job in render_jobs:
         assert job.path.suffix == ".md"
-        title = job.front_matter.title or job.path.stem
-        page_title_dict[job.path] = title
-        page_title_dict[job.path.with_suffix("")] = title
+        title = job.front_matter.title
+        if title:
+            page_title_dict[job.path.with_suffix("")] = title
     return page_title_dict
 
 
-def _render_source_code_stats_for_top_page(
+def render_source_code_stats_for_top_page(
     *,
-    stats_iter: Iterable[SourceCodeStat],
+    stats_iter: Iterable[SourceCodeStatSlim],
     page_title_dict: dict[pathlib.Path, str],
 ) -> dict[str, Any]:
-    library_categories: dict[str, list[dict[str, str]]] = {}
-    verification_categories: dict[str, list[dict[str, str]]] = {}
+    library_categories: dict[str, list[RenderPage]] = {}
+    verification_categories: dict[str, list[RenderPage]] = {}
     for stat in stats_iter:
         if stat.is_verification:
             categories = verification_categories
@@ -301,35 +324,43 @@ def _render_source_code_stats_for_top_page(
         category = stat.path.parent.as_posix()
         if category not in categories:
             categories[category] = []
+
         categories[category].append(
-            {
-                "path": stat.path.as_posix(),
-                "title": page_title_dict[stat.path],
-                "icon": stat.verification_status.name,
-            }
+            RenderPage(
+                path=stat.path,
+                icon=stat.verification_status,
+                title=page_title_dict.get(stat.path),
+            ),
         )
 
     def _build_categories_list(
-        categories: dict[str, list[dict[str, str]]]
-    ) -> list[dict[str, Any]]:
+        categories: dict[str, list[RenderPage]]
+    ) -> list[TopPageCategory]:
         return sorted(
             (
-                {
-                    "name": category,
-                    "pages": sorted(pages, key=lambda p: p.get("path", "")),
-                }
+                TopPageCategory(
+                    name=category, pages=sorted(pages, key=lambda p: p.path.as_posix())
+                )
                 for category, pages in categories.items()
             ),
-            key=lambda d: d.get("name", ""),
+            key=lambda d: d.name,
         )
 
-    return {
-        "libraryCategories": _build_categories_list(library_categories),
-        "verificationCategories": _build_categories_list(verification_categories),
-    }
+    return RenderTopPage(
+        top=[
+            TopPageFiles(
+                type="Library Files",
+                categories=_build_categories_list(library_categories),
+            ),
+            TopPageFiles(
+                type="Verification Files",
+                categories=_build_categories_list(verification_categories),
+            ),
+        ],
+    ).model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
-def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
+def _render_source_code_stat(stat: SourceCodeStat) -> RenderSourceCodeStat:
     code = read_text_normalized(stat.path)
 
     attributes = stat.file_input.document_attributes.copy()
@@ -344,60 +375,59 @@ def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
     if problem:
         attributes.setdefault("PROBLEM", problem)
 
-    embedded = [{"name": "default", "code": code}]
+    embedded = [EmbeddedCode(name="default", code=code)]
     for s in stat.file_input.additonal_sources:
-        embedded.append({"name": s.name, "code": read_text_normalized(s.path)})
+        embedded.append(EmbeddedCode(name=s.name, code=read_text_normalized(s.path)))
 
-    return {
-        "path": stat.path.as_posix(),
-        "embedded": embedded,
-        "isVerificationFile": stat.is_verification,
-        "verificationStatus": stat.verification_status.value,
-        "timestamp": str(stat.timestamp),
-        "dependsOn": [path.as_posix() for path in stat.depends_on],
-        "requiredBy": [path.as_posix() for path in stat.required_by],
-        "verifiedWith": [path.as_posix() for path in stat.verified_with],
-        "attributes": attributes,
-        "testcases": [
-            c.model_dump(mode="json") | {"environment": v.verification_name}
+    return RenderSourceCodeStat(
+        path=stat.path,
+        embedded=embedded,
+        is_verification_file=stat.is_verification,
+        verification_status=stat.verification_status,
+        timestamp=stat.timestamp,
+        depends_on=[path for path in stat.depends_on],
+        required_by=[path for path in stat.required_by],
+        verified_with=[path for path in stat.verified_with],
+        attributes=attributes,
+        testcases=[
+            EnvTestcaseResult(
+                name=c.name,
+                status=c.status,
+                elapsed=c.elapsed,
+                memory=c.memory,
+                environment=v.verification_name,
+            )
             for v in stat.verification_results
             for c in (v.testcases or [])
         ]
         if stat.verification_results
         else None,
-    }
+    )
 
 
-def _render_source_code_stat_for_page(
+def render_source_code_stat_for_page(
     job: PageRenderJob,
     path: pathlib.Path,
+    stat: SourceCodeStat,
     *,
-    stats: dict[pathlib.Path, SourceCodeStat],
-    page_title_dict: dict[pathlib.Path, str],
+    links: dict[pathlib.Path, RenderPage],
 ) -> dict[str, Any]:
-    stat = stats[path]
     data = _render_source_code_stat(stat)
-    data["_pathExtension"] = path.suffix.lstrip(".")
-    data["_verificationStatusIcon"] = stat.verification_status.name
-    data["_isVerificationFailed"] = stat.verification_status.is_failed
-    if job.document_path:
-        data["_document_path"] = job.document_path.as_posix()
 
-    def ext(path: pathlib.Path) -> dict[str, Any]:
-        return {
-            "path": path.as_posix(),
-            "title": page_title_dict[path],
-            "icon": stats[path].verification_status.name,
-        }
+    def extend_dependencies(paths: Iterable[pathlib.Path]) -> Dependency:
+        return Dependency(files=[links[path] for path in sorted(paths, key=str)])
 
-    def path_list(paths: Iterable[pathlib.Path]) -> list[dict[str, Any]]:
-        return [ext(path) for path in sorted(paths, key=str)]
-
-    data["_extendedDependsOn"] = path_list(stat.depends_on)
-    data["_extendedRequiredBy"] = path_list(stat.required_by)
-    data["_extendedVerifiedWith"] = path_list(stat.verified_with)
-
-    return data
+    return RenderForPage(
+        path_extension=path.suffix.lstrip("."),
+        is_failed=stat.verification_status.is_failed,
+        dependencies=Dependencies(
+            depends_on=extend_dependencies(stat.depends_on),
+            required_by=extend_dependencies(stat.required_by),
+            verified_with=extend_dependencies(stat.verified_with),
+        ),
+        document_path=job.document_path,
+        **data.model_dump(),
+    ).model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
 def load_static_files(*, config: SiteRenderConfig) -> dict[pathlib.Path, bytes]:
