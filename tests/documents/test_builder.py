@@ -3,7 +3,6 @@ import pathlib
 from pathlib import Path
 from typing import Any, Generator, Iterable
 from unittest import mock
-from zoneinfo import ZoneInfo
 
 import pytest
 from onlinejudge_command.subcommand.test import JudgeStatus
@@ -97,7 +96,7 @@ def generate_render_source_code_stat_for_page_params() -> (
             icon=VerificationStatus.TEST_WAITING_JUDGE,
         ),
     }
-    tzinfo = ZoneInfo("Asia/Tokyo")
+    tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
 
     yield (
         Input_render_source_code_stat_for_page(
