@@ -296,7 +296,7 @@ class BaseVerifier(InputContainer):
                     )
                 results[p] = FileResult(
                     verifications=verifications,
-                    newest=False,
+                    newest=True,
                 )
         return results
 
