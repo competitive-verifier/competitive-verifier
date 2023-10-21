@@ -103,7 +103,6 @@ def build_source_job(
 
     return PageRenderJob(
         path=mdpath,
-        title=title,
         document_path=None,
         front_matter=FrontMatter(
             documentation_of=path.as_posix(),

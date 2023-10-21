@@ -43,9 +43,6 @@ class PageRenderJob(BaseModel):
     relative path from basedir
     """
 
-    title: Optional[str] = None
-    """User defined title
-    """
     front_matter: FrontMatter
     content: bytes = b""
 
@@ -56,8 +53,6 @@ class PageRenderJob(BaseModel):
             result.document_path = other.document_path
         if not result.content:
             result.content = other.content
-        if not result.title:
-            result.title = other.title
         result.front_matter = result.front_matter.merge(other.front_matter)
         return result
 
