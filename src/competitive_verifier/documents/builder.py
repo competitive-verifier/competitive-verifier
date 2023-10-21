@@ -14,9 +14,7 @@ from competitive_verifier.models import (
     VerifyCommandResult,
     resolve_dependency,
 )
-from competitive_verifier.models.dependency import (
-    SourceCodeStatSlim,
-)
+from competitive_verifier.models.dependency import SourceCodeStatSlim
 from competitive_verifier.util import read_text_normalized
 
 from .front_matter import merge_front_matter
@@ -205,8 +203,15 @@ class DocumentBuilder:
                     front_matter.data = render_source_code_stat_for_page(
                         job,
                         documentation_of_path,
-                        stats=stats,
-                        page_title_dict=page_title_dict,
+                        stats[documentation_of_path],
+                        links={
+                            p: {
+                                "path": p.as_posix(),
+                                "title": page_title_dict[p],
+                                "icon": s.verification_status.name,
+                            }
+                            for p, s in stats.items()
+                        },
                     )
 
             path = site_render_config.destination_dir / job.path
@@ -338,9 +343,9 @@ def render_source_code_stats_for_top_page(
 def render_source_code_stat_for_page(
     job: PageRenderJob,
     path: pathlib.Path,
+    stat: SourceCodeStat,
     *,
-    stats: dict[pathlib.Path, SourceCodeStat],
-    page_title_dict: dict[pathlib.Path, str],
+    links: dict[pathlib.Path, dict[str, Any]],
 ) -> dict[str, Any]:
     def _render_source_code_stat(stat: SourceCodeStat) -> dict[str, Any]:
         code = read_text_normalized(stat.path)
@@ -380,7 +385,6 @@ def render_source_code_stat_for_page(
             else None,
         }
 
-    stat = stats[path]
     data = _render_source_code_stat(stat)
     data["_pathExtension"] = path.suffix.lstrip(".")
     data["_verificationStatusIcon"] = stat.verification_status.name
@@ -388,15 +392,8 @@ def render_source_code_stat_for_page(
     if job.document_path:
         data["_document_path"] = job.document_path.as_posix()
 
-    def ext(path: pathlib.Path) -> dict[str, Any]:
-        return {
-            "path": path.as_posix(),
-            "title": page_title_dict[path],
-            "icon": stats[path].verification_status.name,
-        }
-
     def path_list(paths: Iterable[pathlib.Path]) -> list[dict[str, Any]]:
-        return [ext(path) for path in sorted(paths, key=str)]
+        return [links[path] for path in sorted(paths, key=str)]
 
     data["_extendedDependsOn"] = path_list(stat.depends_on)
     data["_extendedRequiredBy"] = path_list(stat.required_by)
