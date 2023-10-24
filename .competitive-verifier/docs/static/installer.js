@@ -421,7 +421,7 @@ docs-and-check:
           mkdir -p .competitive-verifier/
           mv "$SRCDIR" .competitive-verifier/bundled
         else
-          echo "$SRCDIR is not exists."
+          echo "$SRCDIR does not exist."
         fi
       env:
         SRCDIR: .artifacts/Bundled-\${{ runner.os }}
