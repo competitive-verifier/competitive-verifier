@@ -4,11 +4,11 @@
 <ul>
     {%- for item in dep.files -%}
     {%- if item.title -%}
-        {%- capture link_title -%}{{item.title}} <small>({{ item.path }})</small>{%- endcapture -%}
+        {%- capture link_title -%}{{item.title | xml_escape }} <small>({{ item.path | xml_escape }})</small>{%- endcapture -%}
     {%- else -%}
-        {%- capture link_title -%}{{item.path}}{%- endcapture -%}
+        {%- capture link_title -%}{{item.path | xml_escape }}{%- endcapture -%}
     {%- endif -%}
-    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}</a></li>
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title | xml_escape }}</a></li>
     {%- endfor -%}
 </ul>
 {%- endif -%}
@@ -42,12 +42,12 @@
     <tbody>
         {%- for case in page.data.testcases -%}
         <tr>
-            <td class="col col1">{{ case.environment }}</td>
-            <td class="col col2">{{ case.name }}</td>
+            <td class="col col1">{{ case.environment | xml_escape }}</td>
+            <td class="col col2">{{ case.name | xml_escape }}</td>
             {%- if case.status == "AC" -%}
             <td class="col col3">{{ site.icons.TEST_ACCEPTED }}&nbsp;AC</td>
             {%- else -%}
-            <td class="col col3">{{site.icons.TEST_WRONG_ANSWER}}&nbsp;{{ case.status }}</td>
+            <td class="col col3">{{site.icons.TEST_WRONG_ANSWER}}&nbsp;{{ case.status | xml_escape }}</td>
             {%- endif -%}
             <td class="col col4">{{ case.elapsed | times: 1000 | round }} ms</td>
             <td class="col col5">{{ case.memory | round }} MB</td>

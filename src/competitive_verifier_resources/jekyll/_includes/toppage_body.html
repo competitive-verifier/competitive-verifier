@@ -11,11 +11,11 @@
         {%- endif -%}
 
         {%- if item.title -%}
-            {%- capture link_title -%}{{item.title}} <small>({{ name }})</small>{%- endcapture -%}
+            {%- capture link_title -%}{{item.title | xml_escape }} <small>({{ name | xml_escape }})</small>{%- endcapture -%}
         {%- else -%}
-            {%- capture link_title -%}{{name}}{%- endcapture -%}
+            {%- capture link_title -%}{{name | xml_escape }}{%- endcapture -%}
         {%- endif -%}
-        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title }}</a></li>
+        <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title | xml_escape }}</a></li>
     {%- endfor -%}
 </ul>
 {%- endfor -%}
