@@ -32,7 +32,7 @@ colorama = "^0.4.6"
 pydantic = "^2.0.3"
 pyyaml = "^6.0"
 importlab = "^0.8"
-charset-normalizer = "^3.3.0"
+charset-normalizer = "^3.3.2"
 tomli = { version = "^2.0.1", python = "<3.11" }
 
 
