@@ -128,6 +128,7 @@ class InputContainer(ABC):
 class BaseVerifier(InputContainer):
     timeout: float
     default_tle: float
+    default_mle: float
     split_state: Optional[SplitState]
 
     _result: Optional[VerifyCommandResult]
@@ -138,6 +139,7 @@ class BaseVerifier(InputContainer):
         *,
         timeout: float,
         default_tle: float,
+        default_mle: float,
         prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
@@ -151,6 +153,7 @@ class BaseVerifier(InputContainer):
         self._input = input
         self.timeout = timeout
         self.default_tle = default_tle
+        self.default_mle = default_mle
         self._result = None
 
     @property
@@ -328,6 +331,7 @@ class Verifier(BaseVerifier):
         *,
         timeout: float,
         default_tle: float,
+        default_mle: float,
         prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
@@ -340,6 +344,7 @@ class Verifier(BaseVerifier):
             split_state=split_state,
             timeout=timeout,
             default_tle=default_tle,
+            default_mle=default_mle,
         )
         self.use_git_timestamp = use_git_timestamp
 

@@ -108,7 +108,7 @@ def test(
     url: str,
     command: str,
     tle: float,
-    mle: Optional[float],
+    mle: float,
     error: Optional[float],
 ) -> VerificationResult:
     directory = get_directory(url)
@@ -125,12 +125,12 @@ def test(
         "--print-input",
         "--tle",
         str(tle),
+        "--mle",
+        str(mle),
     ]
 
     if error:
         arg_list += ["-e", str(error)]
-    if mle:
-        arg_list += ["--mle", str(mle)]
 
     checker_path = directory / checker_exe_path
     if checker_path.exists():

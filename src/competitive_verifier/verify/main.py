@@ -26,6 +26,7 @@ def run_impl(
     prev_result: Optional[VerifyCommandResult],
     timeout: float = math.inf,
     default_tle: float = 60,
+    default_mle: float = math.inf,
     download: bool = True,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
@@ -43,6 +44,7 @@ def run_impl(
         use_git_timestamp=github.env.is_in_github_actions(),
         timeout=timeout,
         default_tle=default_tle,
+        default_mle=default_mle,
         prev_result=prev_result,
         split_state=split_state,
     )
@@ -88,6 +90,7 @@ def run(args: argparse.Namespace) -> bool:
         input,
         timeout=args.timeout,
         default_tle=args.default_tle,
+        default_mle=args.default_mle,
         prev_result=prev_result,
         download=args.download,
         split=args.split,
@@ -113,7 +116,14 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         dest="default_tle",
         type=float,
         default=60,
-        help="TLE threshold seconds",
+        help="Threshold seconds to be TLE",
+    )
+    parser.add_argument(
+        "--mle",
+        dest="default_mle",
+        type=float,
+        default=math.inf,
+        help="Threshold memory usage (MB) to be MLE",
     )
     parser.add_argument(
         "--prev-result",
