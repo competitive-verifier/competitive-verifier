@@ -79,18 +79,6 @@ class RenderForPage(RenderSourceCodeStat):
     verification_status: StatusIcon
     document_path: Optional[ForcePosixPath]
 
-    @classmethod
-    def from_source_code_stat(
-        cls,
-        parent: RenderSourceCodeStat,
-        *,
-        dependencies: list[Dependency],
-    ) -> "RenderForPage":
-        return RenderForPage(
-            dependencies=dependencies,
-            **parent.model_dump(),
-        )
-
 
 class RenderTopPage(BuilderBaseModel):
     top: list[TopPageFiles]
