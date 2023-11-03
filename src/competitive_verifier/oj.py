@@ -1,5 +1,4 @@
 import hashlib
-import os
 import pathlib
 import shutil
 import sys
@@ -10,7 +9,6 @@ from typing import Optional
 import onlinejudge._implementation.utils
 import onlinejudge.utils
 import onlinejudge_command.main
-import onlinejudge_command.subcommand.download
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
@@ -18,6 +16,7 @@ from onlinejudge.type import NotLoggedInError
 
 import competitive_verifier.config
 import competitive_verifier.exec
+import competitive_verifier.oj_download_command
 from competitive_verifier import log
 from competitive_verifier.models.result import TestcaseResult, VerificationResult
 from competitive_verifier.models.result_status import ResultStatus
@@ -64,7 +63,7 @@ def download(url: str, *, group_log: bool = False) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
-    logger.info("download[Start]: %s", url)
+    logger.info("download[Start]: %s into %s", url, test_directory)
     if not (test_directory).exists() or list((test_directory).iterdir()) == []:
         logger.info("download[Run]: %s", url)
 
@@ -76,28 +75,12 @@ def download(url: str, *, group_log: bool = False) -> bool:
             directory.mkdir(parents=True, exist_ok=True)
             # time.sleep(2)
 
-            arg_list: list[str] = [
-                "--cookie",
-                str(get_cache_directory() / "cookie.txt"),
-                "download",
-                "--system",
-                "-d",
-                str(test_directory),
-                "--silent",
-                url,
-            ]
-
-            YUKICODER_TOKEN = os.environ.get("YUKICODER_TOKEN")
-            if YUKICODER_TOKEN:
-                arg_list += ["--yukicoder-token", YUKICODER_TOKEN]
-            DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")
-            if DROPBOX_TOKEN:
-                arg_list += ["--dropbox-token", DROPBOX_TOKEN]
-
             try:
-                parser = onlinejudge_command.main.get_parser()
-                args = parser.parse_args(arg_list)
-                onlinejudge_command.subcommand.download.run(args)
+                competitive_verifier.oj_download_command.run(
+                    url=url,
+                    directory=test_directory,
+                    cookie=get_cache_directory() / "cookie.txt",
+                )
 
                 checker_path = get_checker_path(url)
                 if checker_path:

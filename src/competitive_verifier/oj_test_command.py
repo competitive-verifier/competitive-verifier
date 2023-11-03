@@ -2,19 +2,153 @@ import argparse
 import json
 import pathlib
 import platform
+import subprocess
 from logging import getLogger
-from typing import Optional
+from typing import Annotated, Any, Optional
 
 import onlinejudge_command.format_utils as fmtutils
+import onlinejudge_command.pretty_printers as pretty_printers
+import onlinejudge_command.subcommand.test as oj_test
 import onlinejudge_command.utils as utils
-from onlinejudge_command.subcommand.test import (
-    JudgeStatus,
-    check_gnu_time,
-    test_single_case,
-)
+from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
 from pydantic import BaseModel
+from pydantic.functional_validators import BeforeValidator
+
+IntOrAny = Annotated[
+    Optional[int], BeforeValidator(lambda v: v if isinstance(v, int) else None)
+]
 
 logger = getLogger(__name__)
+
+
+# flake8: noqa: C901
+def display_result(
+    proc: subprocess.Popen[Any],
+    answer: str,
+    memory: Optional[float],
+    test_input_path: pathlib.Path,
+    test_output_path: Optional[pathlib.Path],
+    *,
+    mle: Optional[float],
+    display_mode: DisplayMode,
+    compare_mode: oj_test.CompareMode,
+    does_print_input: bool,
+    silent: bool,
+    match_result: Optional[bool],
+) -> JudgeStatus:
+    """display_result prints the result of the test and its statistics.
+
+    This function prints many logs and does some I/O.
+    """
+
+    # prepare the function to print the input
+    is_input_printed = False
+
+    def print_input() -> None:
+        nonlocal is_input_printed
+        if does_print_input and not is_input_printed:
+            is_input_printed = True
+            with test_input_path.open("rb") as inf:
+                logger.info(
+                    utils.NO_HEADER + "input:\n%s",
+                    pretty_printers.make_pretty_large_file_content(
+                        inf.read(), limit=40, head=20, tail=10
+                    ),
+                )
+
+    # check TLE, RE or not
+    status = JudgeStatus.AC
+    if proc.returncode is None:
+        logger.info(utils.FAILURE + "" + utils.red("TLE"))
+        status = JudgeStatus.TLE
+        if not silent:
+            print_input()
+    elif memory is not None and mle is not None and memory > mle:
+        logger.info(utils.FAILURE + "" + utils.red("MLE"))
+        status = JudgeStatus.MLE
+        if not silent:
+            print_input()
+    elif proc.returncode != 0:
+        logger.info(
+            utils.FAILURE + "" + utils.red("RE") + ": return code %d", proc.returncode
+        )
+        status = JudgeStatus.RE
+        if not silent:
+            print_input()
+
+    # check WA or not
+    # 元の実装では TLE や RE でもこっちに来てしまうので elif に変更
+    elif match_result is not None and not match_result:
+        if status == JudgeStatus.AC:
+            logger.info(utils.FAILURE + "" + utils.red("WA"))
+        status = JudgeStatus.WA
+        if not silent:
+            print_input()
+            if test_output_path is not None:
+                with test_output_path.open("rb") as outf:
+                    expected = outf.read().decode()
+            else:
+                expected = ""
+            if display_mode == DisplayMode.SUMMARY:
+                logger.info(
+                    utils.NO_HEADER + "output:\n%s",
+                    pretty_printers.make_pretty_large_file_content(
+                        answer.encode(), limit=40, head=20, tail=10
+                    ),
+                )
+                logger.info(
+                    utils.NO_HEADER + "expected:\n%s",
+                    pretty_printers.make_pretty_large_file_content(
+                        expected.encode(), limit=40, head=20, tail=10
+                    ),
+                )
+            elif display_mode == DisplayMode.ALL:
+                logger.info(
+                    utils.NO_HEADER + "output:\n%s",
+                    pretty_printers.make_pretty_all(answer.encode()),
+                )
+                logger.info(
+                    utils.NO_HEADER + "expected:\n%s",
+                    pretty_printers.make_pretty_all(expected.encode()),
+                )
+            elif display_mode == DisplayMode.DIFF:
+                logger.info(
+                    utils.NO_HEADER
+                    + pretty_printers.make_pretty_diff(
+                        answer.encode(),
+                        expected=expected,
+                        compare_mode=compare_mode,
+                        limit=40,
+                    )
+                )
+            elif display_mode == DisplayMode.DIFF_ALL:
+                logger.info(
+                    utils.NO_HEADER
+                    + pretty_printers.make_pretty_diff(
+                        answer.encode(),
+                        expected=expected,
+                        compare_mode=compare_mode,
+                        limit=-1,
+                    )
+                )
+            else:
+                assert False
+    if match_result is None:
+        if not silent:
+            print_input()
+            logger.info(
+                utils.NO_HEADER + "output:\n%s",
+                pretty_printers.make_pretty_large_file_content(
+                    answer.encode(), limit=40, head=20, tail=10
+                ),
+            )
+    if status == JudgeStatus.AC:
+        logger.info(utils.SUCCESS + "" + utils.green("AC"))
+
+    return status
+
+
+oj_test.display_result = display_result
 
 
 class TestCase(BaseModel):
@@ -24,10 +158,10 @@ class TestCase(BaseModel):
 
 
 class OjTestcaseResult(BaseModel):
-    status: JudgeStatus
+    status: oj_test.JudgeStatus
     elapsed: float
     memory: Optional[float] = None
-    exitcode: int
+    exitcode: IntOrAny
     testcase: TestCase
 
 
@@ -63,7 +197,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
             args.gnu_time = "gtime"
         else:
             args.gnu_time = "time"
-    if not check_gnu_time(args.gnu_time):
+    if not oj_test.check_gnu_time(args.gnu_time):
         logger.warning("GNU time is not available: %s", args.gnu_time)
         if platform.system() == "Darwin":
             logger.info(
@@ -78,7 +212,9 @@ def run(args: "argparse.Namespace") -> OjTestResult:
     for name, paths in sorted(tests.items()):
         history.append(
             OjTestcaseResult.model_validate(
-                test_single_case(name, paths["in"], paths.get("out"), args=args),
+                oj_test.test_single_case(
+                    name, paths["in"], paths.get("out"), args=args
+                ),
             )
         )
 
@@ -91,7 +227,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
     ac_count = 0
     for result in history:
         elapsed += result.elapsed
-        if result.status == JudgeStatus.AC:
+        if result.status == oj_test.JudgeStatus.AC:
             ac_count += 1
         if slowest < result.elapsed:
             slowest = result.elapsed
