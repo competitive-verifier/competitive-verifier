@@ -5,6 +5,7 @@ import os
 import pathlib
 from typing import Any
 from unittest import mock
+from pydantic import BaseModel
 
 import pytest
 import yaml
@@ -23,34 +24,35 @@ DEFAULT_ARGS = [
     RESULT_FILE_PATH,
 ]
 
-MOCK_TIME = datetime.datetime(
-    2023,
-    12,
-    4,
-    5,
-    6,
-    7,
-    8910,
-    tzinfo=datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo"),
-)
+tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
+MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
 
-TARGETS: dict[str, dict[str, Any]] = {
-    f"{TARGETS_PATH}/encoding/cp932.txt.md": {},
-    f"{TARGETS_PATH}/encoding/EUC-KR.txt.md": {},
-    f"{TARGETS_PATH}/python/failure.wa.py.md": {},
-    f"{TARGETS_PATH}/python/lib_all_failure.py.md": {},
-    f"{TARGETS_PATH}/python/failure.re.py.md": {},
-    f"{TARGETS_PATH}/python/lib_skip.py.md": {},
-    f"{TARGETS_PATH}/python/failure.tle.py.md": {},
-    f"{TARGETS_PATH}/python/lib_some_failure.py.md": {},
-    f"{TARGETS_PATH}/python/success2.py.md": {},
-    f"{TARGETS_PATH}/python/lib_all_success.py.md": {},
-    f"{TARGETS_PATH}/python/skip.py.md": {},
-    f"{TARGETS_PATH}/python/failure.mle.py.md": {},
-    f"{TARGETS_PATH}/python/lib_some_skip_some_wa.py.md": {},
-    f"{TARGETS_PATH}/python/lib_some_skip.py.md": {},
-    f"{TARGETS_PATH}/python/success1.py.md": {},
-}
+
+class MarkdownData(BaseModel):
+    path: str
+    front_matter: dict[str, Any]
+    content: bytes = b""
+
+
+TARGETS: list[MarkdownData] = [
+    MarkdownData(path=f"{TARGETS_PATH}/encoding/EUC-KR.txt.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/encoding/cp932.txt.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/failure.mle.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/failure.re.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/failure.tle.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/failure.wa.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/lib_all_failure.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/lib_all_success.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/lib_skip.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/lib_some_failure.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/lib_some_skip.py.md", front_matter={}),
+    MarkdownData(
+        path=f"{TARGETS_PATH}/python/lib_some_skip_some_wa.py.md", front_matter={}
+    ),
+    MarkdownData(path=f"{TARGETS_PATH}/python/skip.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/success1.py.md", front_matter={}),
+    MarkdownData(path=f"{TARGETS_PATH}/python/success2.py.md", front_matter={}),
+]
 
 
 @pytest.fixture(scope="session")
@@ -70,13 +72,15 @@ def setup_docs(clean: Any):
 def check_common(destination: pathlib.Path):
     assert destination.is_dir()
 
-    targets = TARGETS.copy()
+    targets = {t.path: t for t in TARGETS}
 
     for target_file in filter(
         lambda p: p.is_file(),
         (destination / TARGETS_PATH).glob("**/*"),
     ):
         path_str = target_file.relative_to(destination).as_posix()
+        target_value = target_file.read_bytes().strip()
+        assert target_value.startswith(b"---\n")
         del targets[path_str]
 
     assert not targets
