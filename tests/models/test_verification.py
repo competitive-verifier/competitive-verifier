@@ -165,6 +165,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 22.0,
             "error": None,
+            "mle": None,
         },
     ),
     (
@@ -176,6 +177,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 22.0,
             "error": None,
+            "mle": None,
         },
     ),
     (
@@ -185,12 +187,14 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             problem="https://example.com",
             error=1e-6,
             tle=2,
+            mle=1.2,
         ),
         {
             "url": "https://example.com",
             "command": "ls ~",
             "tle": 2.0,
             "error": 1e-06,
+            "mle": 1.2,
         },
     ),
     (
@@ -206,6 +210,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 2.0,
             "error": 1e-06,
+            "mle": None,
         },
     ),
 ]
