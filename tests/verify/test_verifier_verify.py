@@ -41,6 +41,7 @@ class MockVerifier(BaseVerifier):
             prev_result=prev_result,
             split_state=split_state,
             default_tle=10,
+            default_mle=256,
             timeout=10,
         )
         self.mock_current_time = datetime.datetime(2006, 1, 2, 15, 4, 5)

@@ -21,6 +21,7 @@ from competitive_verifier.models import (
 @dataclass
 class DataVerificationParams:
     default_tle: float
+    default_mle: float
 
 
 test_command_union_json_params = [  # type: ignore
@@ -152,6 +153,7 @@ def test_run(obj: Verification, args: Sequence[Any], kwargs: dict[str, Any]):
         obj.run(
             DataVerificationParams(
                 default_tle=22,
+                default_mle=128,
             ),
         )
         patch.assert_called_once_with(*args, **kwargs)
@@ -165,6 +167,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 22.0,
             "error": None,
+            "mle": 128,
         },
     ),
     (
@@ -176,6 +179,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 22.0,
             "error": None,
+            "mle": 128,
         },
     ),
     (
@@ -185,12 +189,14 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             problem="https://example.com",
             error=1e-6,
             tle=2,
+            mle=1.2,
         ),
         {
             "url": "https://example.com",
             "command": "ls ~",
             "tle": 2.0,
             "error": 1e-06,
+            "mle": 1.2,
         },
     ),
     (
@@ -206,6 +212,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "command": "ls ~",
             "tle": 2.0,
             "error": 1e-06,
+            "mle": 128,
         },
     ),
 ]
@@ -217,7 +224,10 @@ def test_run_problem_command(obj: ProblemVerification, kwargs: dict[str, Any]):
         competitive_verifier.models.verification.oj, "test"
     ) as patch:
         obj.run(
-            DataVerificationParams(default_tle=22),
+            DataVerificationParams(
+                default_tle=22,
+                default_mle=128,
+            ),
         )
         patch.assert_called_once_with(**kwargs)
 
@@ -288,6 +298,7 @@ def test_run_compile(
         obj.run_compile_command(
             DataVerificationParams(
                 default_tle=22,
+                default_mle=128,
             ),
         )
         if args is None:

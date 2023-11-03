@@ -23,18 +23,13 @@ def test_oj_download(clear_env: Any):
     ) as patch:
         oj.download("http://example.com")
         mkdir.assert_called_once()
-        patch.assert_called_once()
-        args = patch.call_args[1]
-
-        assert isinstance(args, dict)
-        assert (
-            args["cookie"] == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
+        patch.assert_called_once_with(
+            cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
+            url="http://example.com",
+            directory=pathlib.Path(
+                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+            ),
         )
-        assert args["url"] == "http://example.com"
-        assert args["directory"] == pathlib.Path(
-            ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
-        )
-        assert "yukicoder_token" not in args
 
 
 def test_oj_download_yukicoder():
@@ -48,20 +43,13 @@ def test_oj_download_yukicoder():
             os.environ["YUKICODER_TOKEN"] = "YKTK"
             oj.download("http://example.com")
             mkdir.assert_called_once()
-            patch.assert_called_once()
-
-            args = patch.call_args[1]
-
-            assert isinstance(args, dict)
-            assert (
-                args["cookie"]
-                == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
+            patch.assert_called_once_with(
+                cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
+                url="http://example.com",
+                directory=pathlib.Path(
+                    ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+                ),
             )
-            assert args["url"] == "http://example.com"
-            assert args["directory"] == pathlib.Path(
-                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
-            )
-            assert "yukicoder_token" not in args
         finally:
             del os.environ["YUKICODER_TOKEN"]
 
@@ -71,7 +59,7 @@ def test_oj_test():
         "competitive_verifier.oj.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     ), mock.patch("competitive_verifier.oj.run_test") as patch:
-        oj.test(url="http://example.com", command="ls .", tle=2, error=None)
+        oj.test(url="http://example.com", command="ls .", tle=2, error=None, mle=128)
 
         patch.assert_called_once()
         args = patch.call_args[0][0]
@@ -81,6 +69,7 @@ def test_oj_test():
         assert args.print_input is True
         assert args.cookie == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
         assert args.tle == 2.0
+        assert args.mle == 128.0
         assert args.error is None
         assert args.command == "ls ."
         assert args.directory == pathlib.Path(

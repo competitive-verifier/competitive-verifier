@@ -12,6 +12,7 @@ from .result_status import ResultStatus
 
 class VerificationParams(Protocol):
     default_tle: float
+    default_mle: float
 
 
 class BaseVerification(BaseModel, ABC):
@@ -96,6 +97,7 @@ class ProblemVerification(BaseVerification):
 
     error: Optional[float] = None
     tle: Optional[float] = None
+    mle: Optional[float] = None
 
     def run(
         self,
@@ -109,6 +111,7 @@ class ProblemVerification(BaseVerification):
             command=self.command,
             tle=self.tle or params.default_tle,
             error=self.error,
+            mle=self.mle or params.default_mle,
         )
         result.verification_name = self.name
         return result

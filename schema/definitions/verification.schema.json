@@ -82,7 +82,15 @@
                                     "examples": [
                                         1800
                                     ],
-                                    "description": "TLE threshold seconds."
+                                    "description": "Threshold seconds to be TLE."
+                                },
+                                "mle": {
+                                    "type": "number",
+                                    "examples": [
+                                        1000,
+                                        256
+                                    ],
+                                    "description": "Threshold memory usage (MB) to be MLE."
                                 },
                                 "error": {
                                     "type": "number",

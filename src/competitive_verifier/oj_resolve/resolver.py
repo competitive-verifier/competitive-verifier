@@ -97,6 +97,9 @@ class OjResolver:
                 tle_str = attr.get("TLE")
                 tle = float(tle_str) if tle_str else None
 
+                mle_str = attr.get("MLE")
+                mle = float(mle_str) if mle_str else None
+
                 url = attr.get("PROBLEM")
 
                 if url:
@@ -112,6 +115,7 @@ class OjResolver:
                         problem=url,
                         error=error,
                         tle=tle,
+                        mle=mle,
                     )
 
                 unit_test_envvar = attr.get("UNITTEST")

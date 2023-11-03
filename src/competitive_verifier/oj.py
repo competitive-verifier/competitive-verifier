@@ -108,6 +108,7 @@ def test(
     url: str,
     command: str,
     tle: float,
+    mle: float,
     error: Optional[float],
 ) -> VerificationResult:
     directory = get_directory(url)
@@ -124,13 +125,16 @@ def test(
         "--print-input",
         "--tle",
         str(tle),
+        "--mle",
+        str(mle),
     ]
+
+    if error:
+        arg_list += ["-e", str(error)]
 
     checker_path = directory / checker_exe_path
     if checker_path.exists():
         arg_list += ["--judge-command", str(checker_path)]
-    if error:
-        arg_list += ["-e", str(error)]
 
     parser = onlinejudge_command.main.get_parser()
     args = parser.parse_args(arg_list)
