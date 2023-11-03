@@ -1,5 +1,4 @@
 import hashlib
-import os
 import pathlib
 import shutil
 import sys
@@ -10,7 +9,6 @@ from typing import Optional
 import onlinejudge._implementation.utils
 import onlinejudge.utils
 import onlinejudge_command.main
-import onlinejudge_command.subcommand.download
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
@@ -21,6 +19,7 @@ import competitive_verifier.exec
 from competitive_verifier import log
 from competitive_verifier.models.result import TestcaseResult, VerificationResult
 from competitive_verifier.models.result_status import ResultStatus
+from competitive_verifier.oj_download_command import run as run_download
 from competitive_verifier.oj_test_command import run as run_test
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
@@ -76,28 +75,12 @@ def download(url: str, *, group_log: bool = False) -> bool:
             directory.mkdir(parents=True, exist_ok=True)
             # time.sleep(2)
 
-            arg_list: list[str] = [
-                "--cookie",
-                str(get_cache_directory() / "cookie.txt"),
-                "download",
-                "--system",
-                "-d",
-                str(test_directory),
-                "--silent",
-                url,
-            ]
-
-            YUKICODER_TOKEN = os.environ.get("YUKICODER_TOKEN")
-            if YUKICODER_TOKEN:
-                arg_list += ["--yukicoder-token", YUKICODER_TOKEN]
-            DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")
-            if DROPBOX_TOKEN:
-                arg_list += ["--dropbox-token", DROPBOX_TOKEN]
-
             try:
-                parser = onlinejudge_command.main.get_parser()
-                args = parser.parse_args(arg_list)
-                onlinejudge_command.subcommand.download.run(args)
+                run_download(
+                    url=url,
+                    directory=test_directory,
+                    cookie=get_cache_directory() / "cookie.txt",
+                )
 
                 checker_path = get_checker_path(url)
                 if checker_path:
