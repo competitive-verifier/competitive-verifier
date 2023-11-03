@@ -63,7 +63,7 @@ def download(url: str, *, group_log: bool = False) -> bool:
     directory = get_directory(url)
     test_directory = directory / "test"
 
-    logger.info("download[Start]: %s", url)
+    logger.info("download[Start]: %s into %s", url, test_directory)
     if not (test_directory).exists() or list((test_directory).iterdir()) == []:
         logger.info("download[Run]: %s", url)
 
