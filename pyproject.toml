@@ -67,12 +67,17 @@ test = "pytest"
 [tool.poe.tasks.serve]
 [[tool.poe.tasks.serve.sequence]]
 default = "pass"
+switch = [{ case = "False", ref = "dev:docs" }]
+[tool.poe.tasks.serve.sequence.control]
+expr = "os.path.isdir('.competitive-verifier/_jekyll')"
+imports = ["os"]
+
+[[tool.poe.tasks.serve.sequence]]
+default = "pass"
+switch = [{ case = "False", ref = "jekyll:init" }]
 [tool.poe.tasks.serve.sequence.control]
 expr = "os.path.isdir('.competitive-verifier/_jekyll/.vendor')"
 imports = ["os"]
-[[tool.poe.tasks.serve.sequence.switch]]
-case = "False"
-ref = "jekyll:init"
 
 [[tool.poe.tasks.serve.sequence]]
 ref = "jekyll:serve"
