@@ -2,20 +2,16 @@ import argparse
 import json
 import pathlib
 import platform
-from logging import getLogger
 import subprocess
+from logging import getLogger
 from typing import Annotated, Any, Optional
 
 import onlinejudge_command.format_utils as fmtutils
-import onlinejudge_command.utils as utils
-import onlinejudge_command.subcommand.test as oj_test
-from onlinejudge_command.subcommand.test import JudgeStatus, DisplayMode
-from pydantic import BaseModel
-
-import onlinejudge_command.format_utils as fmtutils
 import onlinejudge_command.pretty_printers as pretty_printers
+import onlinejudge_command.subcommand.test as oj_test
 import onlinejudge_command.utils as utils
-
+from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
+from pydantic import BaseModel
 from pydantic.functional_validators import BeforeValidator
 
 IntOrAny = Annotated[
@@ -25,6 +21,7 @@ IntOrAny = Annotated[
 logger = getLogger(__name__)
 
 
+# flake8: noqa: C901
 def display_result(
     proc: subprocess.Popen[Any],
     answer: str,
