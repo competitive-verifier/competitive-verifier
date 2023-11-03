@@ -14,10 +14,6 @@ from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
 from pydantic import BaseModel
 from pydantic.functional_validators import BeforeValidator
 
-IntOrAny = Annotated[
-    Optional[int], BeforeValidator(lambda v: v if isinstance(v, int) else None)
-]
-
 logger = getLogger(__name__)
 
 
@@ -161,7 +157,9 @@ class OjTestcaseResult(BaseModel):
     status: oj_test.JudgeStatus
     elapsed: float
     memory: Optional[float] = None
-    exitcode: IntOrAny
+    exitcode: Annotated[
+        Optional[int], BeforeValidator(lambda v: v if isinstance(v, int) else None)
+    ]
     testcase: TestCase
 
 

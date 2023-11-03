@@ -4,7 +4,7 @@ import pathlib
 from os import PathLike
 from typing import Any, Callable, Iterator
 
-from charset_normalizer import from_path  # type: ignore
+from charset_normalizer import from_path  # pyright: ignore[reportUnknownVariableType]
 
 
 def glob_with_predicate(pred: Callable[[pathlib.Path], bool]) -> Iterator[pathlib.Path]:

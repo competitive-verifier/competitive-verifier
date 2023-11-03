@@ -42,7 +42,7 @@ class VerificationFile(BaseModel):
         if v is None:
             return []
         elif isinstance(v, list):
-            return v  # type: ignore
+            return v  # pyright: ignore[reportUnknownVariableType]
         return [v]
 
     def is_verification(self) -> bool:

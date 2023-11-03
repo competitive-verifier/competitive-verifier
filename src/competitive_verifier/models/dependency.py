@@ -65,7 +65,7 @@ class _VerificationStatusFlag(enum.Flag):
     @property
     def _conv_dict(cls) -> dict["_VerificationStatusFlag", VerificationStatus]:
         try:
-            d: dict["_VerificationStatusFlag", VerificationStatus] = cls._conv_dict_attr  # type: ignore
+            d: dict["_VerificationStatusFlag", VerificationStatus] = cls._conv_dict_attr
         except AttributeError:
             d = {
                 cls.LIBRARY_AC_WA_SKIP: VerificationStatus.LIBRARY_SOME_WA,

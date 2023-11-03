@@ -19,24 +19,24 @@ logger = getLogger(__name__)
 
 
 class CPlusPlusLanguageEnvironment(LanguageEnvironment):
-    CXX: pathlib.Path
-    CXXFLAGS: list[str]
+    cxx: pathlib.Path
+    cxx_flags: list[str]
 
     def __init__(self, *, CXX: pathlib.Path, CXXFLAGS: list[str]):
-        self.CXX = CXX  # type:ignore
-        self.CXXFLAGS = CXXFLAGS  # type:ignore
+        self.cxx = CXX
+        self.cxx_flags = CXXFLAGS
 
     @property
     def name(self) -> str:
-        return self.CXX.name
+        return self.cxx.name
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
         return shlex.join(
             [
-                str(self.CXX),
-                *self.CXXFLAGS,
+                str(self.cxx),
+                *self.cxx_flags,
                 "-I",
                 str(basedir),
                 "-o",
@@ -51,10 +51,10 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
         return str(tempdir / "a.out")
 
     def is_clang(self) -> bool:
-        return "clang++" in self.CXX.name
+        return "clang++" in self.cxx.name
 
     def is_gcc(self) -> bool:
-        return not self.is_clang() and "g++" in self.CXX.name
+        return not self.is_clang() and "g++" in self.cxx.name
 
 
 @functools.lru_cache(maxsize=None)
@@ -144,12 +144,13 @@ class CPlusPlusLanguage(Language):
                 CXX: Optional[str] = env.get("CXX")
                 if CXX is None:
                     raise RuntimeError("CXX is not specified")
-                CXXFLAGS: list[str] = env.get("CXXFLAGS", default_CXXFLAGS)
-                if not isinstance(CXXFLAGS, list):  # type:ignore
+                CXXFLAGS = env.get("CXXFLAGS", default_CXXFLAGS)
+                if not isinstance(CXXFLAGS, list):
                     raise RuntimeError("CXXFLAGS must ba a list")
                 envs.append(
                     CPlusPlusLanguageEnvironment(
-                        CXX=pathlib.Path(CXX), CXXFLAGS=CXXFLAGS
+                        CXX=pathlib.Path(CXX),
+                        CXXFLAGS=CXXFLAGS,  # pyright: ignore[reportUnknownArgumentType]
                     )
                 )
 
@@ -195,10 +196,10 @@ class CPlusPlusLanguage(Language):
             all_ignored = True
             for env in self._list_environments():
                 joined_CXXFLAGS = " ".join(
-                    map(shlex.quote, [*env.CXXFLAGS, "-I", str(basedir)])
+                    map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
                 )
                 macros = _cplusplus_list_defined_macros(
-                    path.resolve(), CXX=env.CXX, joined_CXXFLAGS=joined_CXXFLAGS
+                    path.resolve(), CXX=env.cxx, joined_CXXFLAGS=joined_CXXFLAGS
                 )
 
                 # convert macros to attributes
@@ -230,10 +231,10 @@ class CPlusPlusLanguage(Language):
     ) -> list[pathlib.Path]:
         env = self._list_environments()[0]
         joined_CXXFLAGS = " ".join(
-            map(shlex.quote, [*env.CXXFLAGS, "-I", str(basedir)])
+            map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
         )
         return _cplusplus_list_depending_files(
-            path.resolve(), CXX=env.CXX, joined_CXXFLAGS=joined_CXXFLAGS
+            path.resolve(), CXX=env.cxx, joined_CXXFLAGS=joined_CXXFLAGS
         )
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:

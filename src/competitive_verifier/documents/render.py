@@ -34,7 +34,7 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> Optional[dict[str, A
         try:
             user_config_yml = yaml.safe_load(env_config_yml)
             if isinstance(user_config_yml, dict):
-                return user_config_yml  # type:ignore
+                return user_config_yml  # pyright: ignore[reportUnknownVariableType]
             else:
                 logger.error("failed to parse $COMPETITIVE_VERIFY_DOCS_CONFIG_YML")
         except Exception as e:
@@ -48,7 +48,7 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> Optional[dict[str, A
         try:
             user_config_yml = yaml.safe_load(user_config_yml_path.read_bytes())
             if isinstance(user_config_yml, dict):
-                return user_config_yml  # type:ignore
+                return user_config_yml  # pyright: ignore[reportUnknownVariableType]
             else:
                 logger.error("failed to parse %s: %s", user_config_yml_path.as_posix())
         except Exception as e:

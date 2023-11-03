@@ -14,11 +14,11 @@ logger = getLogger(__name__)
 
 class NimLanguageEnvironment(LanguageEnvironment):
     compile_to: str
-    NIMFLAGS: list[str]
+    nim_flags: list[str]
 
     def __init__(self, *, compile_to: str, NIMFLAGS: list[str]):
         self.compile_to = compile_to
-        self.NIMFLAGS = NIMFLAGS  # type: ignore
+        self.nim_flags = NIMFLAGS
 
     @property
     def name(self) -> str:
@@ -35,7 +35,7 @@ class NimLanguageEnvironment(LanguageEnvironment):
                 f"-o:{str(tempdir /'a.out')}",
                 f"--nimcache:{str(tempdir)}",
             ]
-            + self.NIMFLAGS
+            + self.nim_flags
             + [str(path)]
         )
 
@@ -117,10 +117,13 @@ class NimLanguage(Language):
         else:
             for env in self.config["environments"]:
                 compile_to = env.get("compile_to", default_compile_to)
-                NIMFLAGS: list[str] = env.get("NIMFLAGS", default_NIMFLAGS)
-                if not isinstance(NIMFLAGS, list):  # type:ignore
+                NIMFLAGS = env.get("NIMFLAGS", default_NIMFLAGS)
+                if not isinstance(NIMFLAGS, list):
                     raise RuntimeError("NIMFLAGS must ba a list")
                 envs.append(
-                    NimLanguageEnvironment(compile_to=compile_to, NIMFLAGS=NIMFLAGS)
+                    NimLanguageEnvironment(
+                        compile_to=compile_to,
+                        NIMFLAGS=NIMFLAGS,  # pyright: ignore[reportUnknownArgumentType]
+                    )
                 )
         return envs
