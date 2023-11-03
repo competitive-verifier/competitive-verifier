@@ -16,10 +16,10 @@ from onlinejudge.type import NotLoggedInError
 
 import competitive_verifier.config
 import competitive_verifier.exec
+import competitive_verifier.oj_download_command
 from competitive_verifier import log
 from competitive_verifier.models.result import TestcaseResult, VerificationResult
 from competitive_verifier.models.result_status import ResultStatus
-from competitive_verifier.oj_download_command import run as run_download
 from competitive_verifier.oj_test_command import run as run_test
 
 _oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
@@ -76,7 +76,7 @@ def download(url: str, *, group_log: bool = False) -> bool:
             # time.sleep(2)
 
             try:
-                run_download(
+                competitive_verifier.oj_download_command.run(
                     url=url,
                     directory=test_directory,
                     cookie=get_cache_directory() / "cookie.txt",

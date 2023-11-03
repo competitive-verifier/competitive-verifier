@@ -19,21 +19,22 @@ def test_oj_download(clear_env: Any):
         "competitive_verifier.oj.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     ), mock.patch.object(pathlib.Path, "mkdir") as mkdir, mock.patch(
-        "onlinejudge_command.subcommand.download.run"
+        "competitive_verifier.oj_download_command.run"
     ) as patch:
         oj.download("http://example.com")
         mkdir.assert_called_once()
         patch.assert_called_once()
-        args = patch.call_args[0][0]
+        args = patch.call_args[1]
 
-        assert isinstance(args, argparse.Namespace)
-        assert args.subcommand == "download"
-        assert args.cookie == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
-        assert args.url == "http://example.com"
-        assert args.directory == pathlib.Path(
+        assert isinstance(args, dict)
+        assert (
+            args["cookie"] == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
+        )
+        assert args["url"] == "http://example.com"
+        assert args["directory"] == pathlib.Path(
             ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
         )
-        assert args.yukicoder_token is None
+        assert "yukicoder_token" not in args
 
 
 def test_oj_download_yukicoder():
@@ -41,26 +42,26 @@ def test_oj_download_yukicoder():
         "competitive_verifier.oj.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     ), mock.patch.object(pathlib.Path, "mkdir") as mkdir, mock.patch(
-        "onlinejudge_command.subcommand.download.run"
+        "competitive_verifier.oj_download_command.run"
     ) as patch:
         try:
             os.environ["YUKICODER_TOKEN"] = "YKTK"
             oj.download("http://example.com")
             mkdir.assert_called_once()
             patch.assert_called_once()
-            args = patch.call_args[0][0]
 
-            assert isinstance(args, argparse.Namespace)
-            assert args.subcommand == "download"
+            args = patch.call_args[1]
+
+            assert isinstance(args, dict)
             assert (
-                args.cookie
+                args["cookie"]
                 == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
             )
-            assert args.url == "http://example.com"
-            assert args.directory == pathlib.Path(
+            assert args["url"] == "http://example.com"
+            assert args["directory"] == pathlib.Path(
                 ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
             )
-            assert args.yukicoder_token == "YKTK"
+            assert "yukicoder_token" not in args
         finally:
             del os.environ["YUKICODER_TOKEN"]
 
