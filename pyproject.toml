@@ -82,6 +82,15 @@ imports = ["os"]
 [[tool.poe.tasks.serve.sequence]]
 ref = "jekyll:serve"
 
+[[tool.poe.tasks."test-docs:make-data"]]
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+shell = "competitive-verifier oj-resolve --config examples/config.toml --include testdata/targets > testdata/test-verify.json"
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+cmd = "competitive-verifier verify -o testdata/test-result.json"
+env = { COMPETITIVE_VERIFY_FILES_PATH = "testdata/test-verify.json" }
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+cmd = "python testdata/rewrite_result.py testdata/test-result.json"
+
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120

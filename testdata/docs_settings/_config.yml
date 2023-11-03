@@ -1,0 +1,7 @@
+highlightjs-style: vs2015
+filename-index: true
+icons:
+  TEST_ACCEPTED: ":100:"
+mathjax: 2
+theme: jekyll-theme-modernist
+description: "My description"
