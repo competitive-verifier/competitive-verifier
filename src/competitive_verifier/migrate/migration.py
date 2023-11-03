@@ -203,7 +203,9 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
         try:
             exclude = jekyll_config.get("exclude")
             if isinstance(exclude, list):
-                exclude = "\n".join(exclude)  # type: ignore
+                exclude = "\n".join(
+                    exclude  # pyright: ignore[reportUnknownArgumentType]
+                )
             if exclude:
                 d["exclude"] = exclude
         except Exception:

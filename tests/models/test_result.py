@@ -11,7 +11,9 @@ from competitive_verifier.models import (
     VerifyCommandResult,
 )
 
-test_parse_FileResult_params = [  # type: ignore
+test_parse_FileResult_params: list[
+    tuple[FileResult, dict[str, Any], dict[str, Any], str]
+] = [
     (
         FileResult(
             verifications=[
@@ -135,7 +137,7 @@ def test_parse_FileResult(
     assert obj.model_dump_json(exclude_none=True) == output_json
 
 
-test_file_result_need_verification_params = [  # type: ignore
+test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool]] = [
     (FileResult(verifications=[]), datetime(2016, 12, 24, 19, 0, 0), True),
     (
         FileResult(

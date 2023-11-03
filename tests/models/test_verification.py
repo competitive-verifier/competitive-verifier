@@ -24,7 +24,7 @@ class DataVerificationParams:
     default_mle: float
 
 
-test_command_union_json_params = [  # type: ignore
+test_command_union_json_params: list[tuple[Verification, str, str]] = [
     (
         ConstVerification(status=ResultStatus.SUCCESS),
         '{"type": "const","status":"success"}',
@@ -117,7 +117,7 @@ def test_const_verification():
         patch.assert_not_called()
 
 
-test_run_params = [  # type: ignore
+test_run_params: list[tuple[Verification, Sequence[str], dict[str, Any]]] = [
     (
         CommandVerification(command="ls ~"),
         ("ls ~",),
@@ -232,7 +232,9 @@ def test_run_problem_command(obj: ProblemVerification, kwargs: dict[str, Any]):
         patch.assert_called_once_with(**kwargs)
 
 
-test_run_compile_params = [  # type: ignore
+test_run_compile_params: list[
+    tuple[Verification, Optional[Sequence[str]], Optional[dict[str, Any]]]
+] = [
     (
         CommandVerification(command="ls ~"),
         None,
@@ -292,7 +294,7 @@ test_run_compile_params = [  # type: ignore
 
 @pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
 def test_run_compile(
-    obj: Verification, args: Optional[Sequence[Any]], kwargs: dict[str, Any]
+    obj: Verification, args: Optional[Sequence[Any]], kwargs: Optional[dict[str, Any]]
 ):
     with mock_exec_command() as patch:
         obj.run_compile_command(
@@ -304,10 +306,11 @@ def test_run_compile(
         if args is None:
             patch.assert_not_called()
         else:
+            assert kwargs
             patch.assert_called_once_with(*args, **kwargs)
 
 
-test_params_run_params = [  # type: ignore
+test_params_run_params: list[tuple[Verification, Optional[str]]] = [
     (ConstVerification(status=ResultStatus.SUCCESS), None),
     (CommandVerification(command="true"), None),
     (
@@ -318,7 +321,7 @@ test_params_run_params = [  # type: ignore
 
 
 @pytest.mark.parametrize("obj, error_message", test_params_run_params)
-def test_params_run(obj: Verification, error_message: str):
+def test_params_run(obj: Verification, error_message: Optional[str]):
     with mock_exec_command():
         if error_message:
             with pytest.raises(ValueError) as e:

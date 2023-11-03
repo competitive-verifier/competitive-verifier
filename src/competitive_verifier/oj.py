@@ -54,7 +54,7 @@ def get_checker_path(url: str) -> Optional[pathlib.Path]:
     checker_problem = get_checker_problem(url)
     if checker_problem:
         problem_dir = (
-            checker_problem._get_problem_directory_path()  # pyright: ignore reportPrivateUsage=false
+            checker_problem._get_problem_directory_path()  # pyright: ignore[reportPrivateUsage]
         )
         return problem_dir / checker_exe_path
 

@@ -22,7 +22,7 @@ _loaded_config: Optional[OjVerifyConfig] = None
 def load(config_path: pathlib.Path) -> Optional[OjVerifyConfig]:
     if config_path.exists():
         with config_path.open("rb") as fp:
-            return OjVerifyConfig(**tomli.load(fp))  # type:ignore
+            return OjVerifyConfig(**tomli.load(fp))
     return None
 
 

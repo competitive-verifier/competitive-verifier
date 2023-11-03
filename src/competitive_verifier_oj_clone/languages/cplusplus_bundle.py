@@ -238,7 +238,7 @@ class BundleErrorAt(BundleError):
         except ValueError:
             pass
         message = "{}: line {}: {}".format(str(path), line, message)
-        super().__init__(message, *args, **kwargs)  # type: ignore
+        super().__init__(message, *args, **kwargs)
 
 
 class Bundler:
@@ -491,7 +491,8 @@ class Bundler:
                 self.result_lines.append(line)
 
             # #if #endif の対応が壊れてたら諦める
-            last_index = i + 1  # pyright: ignore reportUnboundVariable=false
+            last_index = i + 1  # pyright: ignore[reportUnboundVariable]
+
             if preprocess_if_nest != 0:
                 raise BundleErrorAt(
                     path, last_index, "unmatched #if / #ifdef / #ifndef"

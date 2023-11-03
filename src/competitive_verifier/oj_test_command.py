@@ -14,7 +14,6 @@ from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
 from pydantic import BaseModel
 from pydantic.functional_validators import BeforeValidator
 
-
 logger = getLogger(__name__)
 
 
