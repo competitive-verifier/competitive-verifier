@@ -110,7 +110,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/python/sub/failure.mle.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: MLE 10\nimport sys\n\n\nimport testdata.targets.python.lib_all_failure\nfrom testdata.targets.python.lib_some_failure import MB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        sum([1] * 10 * MB)\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: MLE 10\nimport sys\n\nimport testdata.targets.python.lib_all_failure\nfrom testdata.targets.python.lib_some_failure import MB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        sum([1] * 10 * MB)\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -241,7 +241,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/failure.re.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\n\nimport testdata.targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    print(testdata.targets.python.lib_all_failure.aplusb(a // 0, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport testdata.targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    print(testdata.targets.python.lib_all_failure.aplusb(a // 0, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -373,7 +373,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/python/sub/failure.tle.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: TLE 0.09\nimport sys\nimport time\n\n\nimport testdata.targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        time.sleep(0.1)\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: TLE 0.09\nimport sys\nimport time\n\nimport testdata.targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        time.sleep(0.1)\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -398,7 +398,7 @@ TARGETS: list[MarkdownData] = [
                         "status": "TLE",
                     },
                     {
-                        "elapsed": 0,
+                        "elapsed": 0.0,
                         "environment": "Python",
                         "memory": 72.57,
                         "name": "random_00",
@@ -513,7 +513,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/failure.wa.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\n\nimport testdata.targets.python.lib_all_failure\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport testdata.targets.python.lib_all_failure\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(testdata.targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -947,7 +947,7 @@ TARGETS: list[MarkdownData] = [
                 ],
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: IGNORE\nimport sys\n\n\nimport testdata.targets.python.lib_skip\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    stderr()\n    a, b = map(int, input().split())\n    print(testdata.targets.python.lib_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: IGNORE\nimport sys\n\nimport testdata.targets.python.lib_skip\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    stderr()\n    a, b = map(int, input().split())\n    print(testdata.targets.python.lib_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -1000,7 +1000,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/python/docs_success1.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\n\nimport testdata.targets.python.lib_some_skip\nfrom testdata.targets.python.lib_some_failure import KB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if KB < 1000:\n        print("No")\n    print(testdata.targets.python.lib_some_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport testdata.targets.python.lib_some_skip\nfrom testdata.targets.python.lib_some_failure import KB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if KB < 1000:\n        print("No")\n    print(testdata.targets.python.lib_some_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
@@ -1139,7 +1139,7 @@ TARGETS: list[MarkdownData] = [
                 "documentPath": "testdata/targets/python/docs_success2.md",
                 "embedded": [
                     {
-                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\n\nimport testdata.targets.python.lib_all_success\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(testdata.targets.python.lib_all_success.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                        "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport testdata.targets.python.lib_all_success\nfrom testdata.targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(testdata.targets.python.lib_all_success.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                         "name": "default",
                     }
                 ],
