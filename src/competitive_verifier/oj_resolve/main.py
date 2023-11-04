@@ -4,6 +4,7 @@ import sys
 from typing import Optional
 
 import competitive_verifier_oj_clone.config
+from competitive_verifier.arg import add_include_exclude_argument
 
 from .resolver import OjResolver
 
@@ -36,20 +37,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument(
-        "--include",
-        nargs="*",
-        help="Included file",
-        default=[],
-        type=str,
-    )
-    parser.add_argument(
-        "--exclude",
-        nargs="*",
-        help="Excluded file",
-        default=[],
-        type=str,
-    )
+    add_include_exclude_argument(parser)
     parser.add_argument(
         "--no-bundle",
         dest="bundle",

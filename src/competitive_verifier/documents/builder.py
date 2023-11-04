@@ -5,6 +5,7 @@ from logging import getLogger
 from typing import Any, Iterable, Optional, Union
 
 import yaml
+from pydantic import BaseModel
 
 from competitive_verifier import git, github, log
 from competitive_verifier.models import (
@@ -74,23 +75,13 @@ class ExcludedPaths:
         return False
 
 
-class DocumentBuilder:
+class DocumentBuilder(BaseModel):
     input: VerificationInput
     result: VerifyCommandResult
     docs_dir: Optional[pathlib.Path]
     destination_dir: pathlib.Path
-
-    def __init__(
-        self,
-        input: VerificationInput,
-        result: VerifyCommandResult,
-        docs_dir: Optional[pathlib.Path],
-        destination_dir: pathlib.Path,
-    ) -> None:
-        self.input = input
-        self.result = result
-        self.docs_dir = docs_dir
-        self.destination_dir = destination_dir
+    include: Optional[list[str]]
+    exclude: Optional[list[str]]
 
     def build(self) -> bool:
         if not _working_directory_is_in_git_root():
@@ -142,9 +133,13 @@ class DocumentBuilder:
         )
         logger.debug("lender config=%s", config)
 
-        excluded_paths = ExcludedPaths(config.config_yml.get("exclude", []))
+        excluded_paths = ExcludedPaths(
+            config.config_yml.get("exclude", []) + (self.exclude or [])
+        )
         included_files = set(
-            f for f in git.ls_files() if not excluded_paths.is_excluded(f)
+            f
+            for f in git.ls_files(*(self.include or []))
+            if not excluded_paths.is_excluded(f)
         )
         logger.debug(
             "included_files=%s",

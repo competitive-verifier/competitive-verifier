@@ -1,10 +1,10 @@
 import datetime
 import filecmp
 import inspect
+import logging
 import os
 import pathlib
 from typing import Any
-from unittest import mock
 
 import pytest
 import yaml
@@ -27,9 +27,6 @@ DEFAULT_ARGS = [
     RESULT_FILE_PATH,
 ]
 
-tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
-MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
-
 
 @pytest.fixture(scope="session")
 def clean():
@@ -41,6 +38,13 @@ def clean():
 
 @pytest.fixture
 def setup_docs(clean: Any, mocker: MockerFixture):
+    tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
+    MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
+
+    mocker.patch(
+        "competitive_verifier.git.get_commit_time",
+        return_value=MOCK_TIME,
+    )
     mocker.patch.dict(
         os.environ,
         {
@@ -86,19 +90,15 @@ def test_with_config(subtests: SubTests):
     destination = DESTINATION_ROOT / inspect.stack()[0].function
     docs_settings_dir = pathlib.Path("testdata/docs_settings")
 
-    with mock.patch(
-        "competitive_verifier.git.get_commit_time",
-        return_value=MOCK_TIME,
-    ):
-        main(
-            [
-                "--docs",
-                docs_settings_dir.as_posix(),
-                "--destination",
-                destination.as_posix(),
-            ]
-            + DEFAULT_ARGS
-        )
+    main(
+        [
+            "--docs",
+            docs_settings_dir.as_posix(),
+            "--destination",
+            destination.as_posix(),
+        ]
+        + DEFAULT_ARGS
+    )
 
     check_common(destination, subtests=subtests)
 
@@ -146,19 +146,15 @@ def test_with_config(subtests: SubTests):
 def test_without_config(subtests: SubTests):
     destination = DESTINATION_ROOT / inspect.stack()[0].function
 
-    with mock.patch(
-        "competitive_verifier.git.get_commit_time",
-        return_value=MOCK_TIME,
-    ):
-        main(
-            [
-                "--docs",
-                "testdata/nothing",
-                "--destination",
-                destination.as_posix(),
-            ]
-            + DEFAULT_ARGS
-        )
+    main(
+        [
+            "--docs",
+            "testdata/nothing",
+            "--destination",
+            destination.as_posix(),
+        ]
+        + DEFAULT_ARGS
+    )
 
     check_common(destination, subtests=subtests)
 
@@ -197,3 +193,112 @@ def test_without_config(subtests: SubTests):
         assert filecmp.cmp(
             resource_file, destination / resource_file.relative_to(resource_dir)
         )
+
+
+@pytest.mark.usefixtures("setup_docs")
+def test_logging_default(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    destination = DESTINATION_ROOT / inspect.stack()[0].function
+
+    main(
+        [
+            "--docs",
+            "testdata/nothing",
+            "--destination",
+            destination.as_posix(),
+        ]
+        + DEFAULT_ARGS
+    )
+
+    check_common(destination, subtests=subtests)
+
+    def doc_path(record: logging.LogRecord):
+        assert isinstance(record.args, tuple)
+        p = record.args[0]
+        assert isinstance(p, str)
+        return p
+
+    assert sorted(
+        (
+            doc_path(r)
+            for r in caplog.records
+            if r.name == "competitive_verifier.documents.job"
+            and r.levelno == logging.WARNING
+            and r.msg == "the `documentation_of` path of %s is not target: %s"
+        ),
+        key=str.casefold,
+    ) == [
+        "examples/awk/aplusb2.md",
+        "examples/cpp/segment_tree.md",
+        "examples/external/sub/dummy.md",
+        "examples/tests/encoding/cp932.md",
+        "examples/tests/encoding/EUC-KR.md",
+    ]
+
+
+@pytest.mark.usefixtures("setup_docs")
+def test_logging_include(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    destination = DESTINATION_ROOT / inspect.stack()[0].function
+
+    main(
+        [
+            "--include",
+            TARGETS_PATH,
+            "--docs",
+            "testdata/nothing",
+            "--destination",
+            destination.as_posix(),
+        ]
+        + DEFAULT_ARGS
+    )
+
+    check_common(destination, subtests=subtests)
+
+    def doc_path(record: logging.LogRecord):
+        assert isinstance(record.args, tuple)
+        p = record.args[0]
+        assert isinstance(p, str)
+        return p
+
+    assert not [
+        doc_path(r)
+        for r in caplog.records
+        if r.name == "competitive_verifier.documents.job"
+        and r.levelno == logging.WARNING
+        and r.msg == "the `documentation_of` path of %s is not target: %s"
+    ]
+
+
+@pytest.mark.usefixtures("setup_docs")
+def test_logging_exclude(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    destination = DESTINATION_ROOT / inspect.stack()[0].function
+
+    main(
+        [
+            "--exclude",
+            "examples/",
+            "--docs",
+            "testdata/nothing",
+            "--destination",
+            destination.as_posix(),
+        ]
+        + DEFAULT_ARGS
+    )
+
+    check_common(destination, subtests=subtests)
+
+    def doc_path(record: logging.LogRecord):
+        assert isinstance(record.args, tuple)
+        p = record.args[0]
+        assert isinstance(p, str)
+        return p
+
+    assert not [
+        doc_path(r)
+        for r in caplog.records
+        if r.name == "competitive_verifier.documents.job"
+        and r.levelno == logging.WARNING
+        and r.msg == "the `documentation_of` path of %s is not target: %s"
+    ]

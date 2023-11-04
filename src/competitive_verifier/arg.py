@@ -44,3 +44,21 @@ def add_write_summary_argument(parser: argparse.ArgumentParser) -> argparse.Acti
         action="store_true",
         help="Write GitHub Actions summary",
     )
+
+
+def add_include_exclude_argument(
+    parser: argparse.ArgumentParser,
+) -> tuple[argparse.Action, argparse.Action]:
+    return parser.add_argument(
+        "--include",
+        nargs="*",
+        help="Included file",
+        default=[],
+        type=str,
+    ), parser.add_argument(
+        "--exclude",
+        nargs="*",
+        help="Excluded file",
+        default=[],
+        type=str,
+    )
