@@ -14,11 +14,14 @@ from .utils import md5_number
 
 @pytest.fixture(scope="session")
 def file_paths() -> FilePaths:
-    dest_root = pathlib.Path(__file__).parent / pathlib.Path("testdata/dst_dir")
+    root = pathlib.Path(__file__).parent / "testdata"
+    dest_root = root / "dst_dir"
     assert dest_root.parent.exists()
     if dest_root.is_dir():
         shutil.rmtree(dest_root)
+
     return FilePaths(
+        root=root,
         targets="targets",
         verify="dst_dir/test-verify.json",
         result="dst_dir/test-result.json",

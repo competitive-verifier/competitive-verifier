@@ -19,7 +19,7 @@ def setenv_resolve(mocker: MockerFixture):
     def python_get_execute_command(
         path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
-        return f"env PYTHONPATH=/dummy/ python {path.as_posix()}"
+        return f"env PYTHONPATH={basedir.resolve().as_posix()} python {path.as_posix()}"
 
     mocker.patch(
         "competitive_verifier_oj_clone.languages.python.PythonLanguageEnvironment.get_execute_command",
@@ -40,7 +40,7 @@ class _ArgsFunc(Protocol):
 
 
 @pytest.fixture
-def expected() -> dict[str, Any]:
+def expected(file_paths: FilePaths) -> dict[str, Any]:
     return dict(
         {
             "files": {
@@ -100,7 +100,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/success1.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/success1.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -120,7 +120,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/failure.wa.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.wa.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -140,7 +140,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/failure.mle.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.mle.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "mle": 10.0,
                         }
@@ -176,7 +176,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/success2.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/success2.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -201,7 +201,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/failure.re.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.re.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -226,7 +226,7 @@ def expected() -> dict[str, Any]:
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": "env PYTHONPATH=/dummy/ python targets/python/failure.tle.py",
+                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.tle.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "tle": 0.09,
                         }

@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import pathlib
 import random
 from typing import Any
@@ -116,6 +117,10 @@ class _MockVerifyCommandResult(verifier.VerifyCommandResult):
         )
 
 
+class VerifyData(FilePaths):
+    pass
+
+
 @pytest.fixture
 def mock_verification_dump(mocker: MockerFixture):
     mocker.patch(
@@ -124,18 +129,9 @@ def mock_verification_dump(mocker: MockerFixture):
     )
 
 
-class VerifyData(FilePaths):
-    pass
-
-
 @pytest.fixture
 def data(file_paths: FilePaths) -> VerifyData:
-    return VerifyData(
-        targets=file_paths.targets,
-        verify=file_paths.verify,
-        result=file_paths.result,
-        dest_root=file_paths.dest_root,
-    )
+    return VerifyData.model_validate(file_paths.model_dump())
 
 
 @pytest.mark.usefixtures("mock_verification_dump")
@@ -276,5 +272,6 @@ def test_mock_dump():
     scope="package",
 )
 @pytest.mark.usefixtures("mock_verification_dump")
-def test_verify(data: VerifyData):
+def test_verify(mocker: MockerFixture, data: VerifyData):
+    assert "" == " ".join(["--verify-json", data.verify, "--output", data.result])
     main.main(["--verify-json", data.verify, "--output", data.result])
