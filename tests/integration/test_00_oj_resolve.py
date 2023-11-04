@@ -269,6 +269,7 @@ def make_args() -> _ArgsFunc:
     return _make_args
 
 
+@pytest.mark.integration
 @pytest.mark.dependency(name="resolve_default", scope="package")
 @pytest.mark.usefixtures("setenv_resolve")
 def test_with_config_include(

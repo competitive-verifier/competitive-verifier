@@ -61,6 +61,7 @@ format = ["isort", "black", "pyright", "flake8"]
 "lint:black" = "black --diff --check src tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
+test-integration = "pytest -m integration"
 
 "dev:verify" = { cmd = "competitive-verifier verify -o .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
 "dev:docs" = { cmd = "competitive-verifier docs .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
@@ -126,3 +127,8 @@ exclude = [
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+markers = [
+    "integration",
+]
