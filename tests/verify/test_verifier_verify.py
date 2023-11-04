@@ -1,8 +1,7 @@
 # pyright: reportPrivateUsage=none
 import datetime
 from pathlib import Path
-from typing import Any, Optional
-from unittest.mock import patch
+from typing import Any, Callable, Optional
 
 import pytest
 
@@ -422,7 +421,10 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 
 
 @pytest.mark.parametrize("verifier, expected", test_verify_params)
-def test_verify(verifier: MockVerifier, expected: Any):
-    with patch.object(Path, "exists") as mock_exists:
-        mock_exists.return_value = True
-        assert verifier.verify() == VerifyCommandResult.model_validate(expected)
+def test_verify(
+    verifier: MockVerifier,
+    expected: Any,
+    mock_exists: Callable[[bool], Any],
+):
+    mock_exists(True)
+    assert verifier.verify() == VerifyCommandResult.model_validate(expected)

@@ -2,11 +2,11 @@ import datetime
 import pathlib
 from pathlib import Path
 from typing import Any, Generator, Iterable
-from unittest import mock
 
 import pytest
 from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel
+from pytest_mock import MockerFixture
 
 from competitive_verifier import git
 from competitive_verifier.documents.builder import (
@@ -409,17 +409,18 @@ def test_render_source_code_stat_for_page(
     input: Input_render_source_code_stat_for_page,
     content: str,
     expected: dict[str, Any],
+    mocker: MockerFixture,
 ):
-    with mock.patch(
+    mocker.patch(
         "competitive_verifier.documents.builder.read_text_normalized",
         return_value=content,
-    ):
-        result = render_source_code_stat_for_page(
-            job=input.job,
-            path=input.stat.path,
-            stat=input.stat,
-            links=input.links,
-        )
+    )
+    result = render_source_code_stat_for_page(
+        job=input.job,
+        path=input.stat.path,
+        stat=input.stat,
+        links=input.links,
+    )
     assert result == expected
 
 

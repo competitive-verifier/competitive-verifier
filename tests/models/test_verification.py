@@ -3,10 +3,11 @@ import pathlib
 import sys
 from dataclasses import dataclass
 from typing import Any, Optional, Sequence
-from unittest import mock
 
 import pytest
 from pydantic import RootModel
+from pytest_mock import MockerFixture
+from pytest_mock.plugin import MockType
 
 import competitive_verifier.models
 from competitive_verifier.models import (
@@ -105,16 +106,12 @@ def test_command_union_json(
     assert obj == VerificationUnion.model_validate_json(raw_json).root
 
 
-def mock_exec_command():
-    return mock.patch("subprocess.run")
-
-
-def test_const_verification():
+def test_const_verification(mock_exec_command: MockType):
     obj = ConstVerification(status=ResultStatus.SUCCESS)
-    with mock_exec_command() as patch:
-        assert obj.run() == ResultStatus.SUCCESS
-        assert obj.run_compile_command()
-        patch.assert_not_called()
+
+    assert obj.run() == ResultStatus.SUCCESS
+    assert obj.run_compile_command()
+    mock_exec_command.assert_not_called()
 
 
 test_run_params: list[tuple[Verification, Sequence[str], dict[str, Any]]] = [
@@ -146,17 +143,23 @@ test_run_params: list[tuple[Verification, Sequence[str], dict[str, Any]]] = [
 
 
 @pytest.mark.parametrize("obj, args, kwargs", test_run_params)
-def test_run(obj: Verification, args: Sequence[Any], kwargs: dict[str, Any]):
-    with mock.patch(
+def test_run(
+    obj: Verification,
+    args: Sequence[Any],
+    kwargs: dict[str, Any],
+    mock_exec_command: MockType,
+    mocker: MockerFixture,
+):
+    mocker.patch(
         "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
-    ), mock_exec_command() as patch:
-        obj.run(
-            DataVerificationParams(
-                default_tle=22,
-                default_mle=128,
-            ),
-        )
-        patch.assert_called_once_with(*args, **kwargs)
+    )
+    obj.run(
+        DataVerificationParams(
+            default_tle=22,
+            default_mle=128,
+        ),
+    )
+    mock_exec_command.assert_called_once_with(*args, **kwargs)
 
 
 test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]] = [
@@ -219,17 +222,16 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
 
 
 @pytest.mark.parametrize("obj, kwargs", test_run_problem_command_params)
-def test_run_problem_command(obj: ProblemVerification, kwargs: dict[str, Any]):
-    with mock.patch.object(
-        competitive_verifier.models.verification.oj, "test"
-    ) as patch:
-        obj.run(
-            DataVerificationParams(
-                default_tle=22,
-                default_mle=128,
-            ),
-        )
-        patch.assert_called_once_with(**kwargs)
+def test_run_problem_command(
+    obj: ProblemVerification,
+    kwargs: dict[str, Any],
+    mocker: MockerFixture,
+):
+    patch = mocker.patch.object(competitive_verifier.models.verification.oj, "test")
+    obj.run(
+        DataVerificationParams(default_tle=22, default_mle=128),
+    )
+    patch.assert_called_once_with(**kwargs)
 
 
 test_run_compile_params: list[
@@ -294,20 +296,22 @@ test_run_compile_params: list[
 
 @pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
 def test_run_compile(
-    obj: Verification, args: Optional[Sequence[Any]], kwargs: Optional[dict[str, Any]]
+    obj: Verification,
+    args: Optional[Sequence[Any]],
+    kwargs: Optional[dict[str, Any]],
+    mock_exec_command: MockType,
 ):
-    with mock_exec_command() as patch:
-        obj.run_compile_command(
-            DataVerificationParams(
-                default_tle=22,
-                default_mle=128,
-            ),
-        )
-        if args is None:
-            patch.assert_not_called()
-        else:
-            assert kwargs
-            patch.assert_called_once_with(*args, **kwargs)
+    obj.run_compile_command(
+        DataVerificationParams(
+            default_tle=22,
+            default_mle=128,
+        ),
+    )
+    if args is None:
+        mock_exec_command.assert_not_called()
+    else:
+        assert kwargs
+        mock_exec_command.assert_called_once_with(*args, **kwargs)
 
 
 test_params_run_params: list[tuple[Verification, Optional[str]]] = [
@@ -321,11 +325,14 @@ test_params_run_params: list[tuple[Verification, Optional[str]]] = [
 
 
 @pytest.mark.parametrize("obj, error_message", test_params_run_params)
-def test_params_run(obj: Verification, error_message: Optional[str]):
-    with mock_exec_command():
-        if error_message:
-            with pytest.raises(ValueError) as e:
-                obj.run()
-            assert e.value.args == (error_message,)
-        else:
+def test_params_run(
+    obj: Verification,
+    error_message: Optional[str],
+    mock_exec_command: MockType,
+):
+    if error_message:
+        with pytest.raises(ValueError) as e:
             obj.run()
+        assert e.value.args == (error_message,)
+    else:
+        obj.run()

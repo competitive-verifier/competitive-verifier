@@ -5,6 +5,7 @@ import pathlib
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
 
 import competitive_verifier.console.app as app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
@@ -15,12 +16,12 @@ def parse_args(args: list[str]) -> argparse.Namespace:
 
 
 @pytest.fixture
-def setenv():
-    os.environ[
-        COMPETITIVE_VERIFY_FILES_PATH
-    ] = ".competitive-verifier/verify_files.json"
-    yield
-    del os.environ[COMPETITIVE_VERIFY_FILES_PATH]
+def setenv(mocker: MockerFixture):
+    mocker.patch.dict(
+        os.environ,
+        {COMPETITIVE_VERIFY_FILES_PATH: ".competitive-verifier/verify_files.json"},
+        clear=True,
+    )
 
 
 def test_parse_args_default(setenv: Any):

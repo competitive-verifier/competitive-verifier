@@ -5,10 +5,11 @@ import os
 import pathlib
 from typing import Any
 from unittest import mock
-from pydantic import BaseModel
 
 import pytest
 import yaml
+from pydantic import BaseModel
+from pytest_mock import MockerFixture
 
 import competitive_verifier.documents.builder
 from competitive_verifier.documents.main import main
@@ -63,10 +64,15 @@ def clean():
         shutil.rmtree(DESTINATION_ROOT)
 
 
-@pytest.fixture(scope="session")
-def setup_docs(clean: Any):
-    os.environ["GITHUB_REF_NAME"] = "TESTING_GIT_REF"
-    os.environ["GITHUB_WORKFLOW"] = "TESTING_WORKFLOW"
+@pytest.fixture
+def setup_docs(clean: Any, mocker: MockerFixture):
+    mocker.patch.dict(
+        os.environ,
+        {
+            "GITHUB_REF_NAME": "TESTING_GIT_REF",
+            "GITHUB_WORKFLOW": "TESTING_WORKFLOW",
+        },
+    )
 
 
 def check_common(destination: pathlib.Path):
