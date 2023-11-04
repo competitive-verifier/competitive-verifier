@@ -16,29 +16,15 @@ class OjVerifyConfig(TypedDict):
     languages: dict[str, Any]
 
 
-_loaded_config: Optional[OjVerifyConfig] = None
-
-
-def load(config_path: pathlib.Path) -> Optional[OjVerifyConfig]:
-    if config_path.exists():
-        with config_path.open("rb") as fp:
-            return OjVerifyConfig(**tomli.load(fp))
-    return None
-
-
-def set_config_path(config_path: pathlib.Path) -> None:
-    global _loaded_config  # pylint: disable=invalid-name
-    _loaded_config = load(config_path)
-    if _loaded_config is None:
-        _loaded_config = OjVerifyConfig(languages={})
+def load(config_path: Optional[pathlib.Path]) -> OjVerifyConfig:
+    if config_path:
+        try:
+            with config_path.open("rb") as fp:
+                config = OjVerifyConfig(**tomli.load(fp))
+                if config:
+                    logger.info("config file loaded: %s: %s", str(config_path), config)
+                    return config
+        except Exception:
+            pass
         logger.info("no config file")
-    else:
-        logger.info("config file loaded: %s: %s", str(config_path), _loaded_config)
-
-
-def get_config() -> OjVerifyConfig:
-    global _loaded_config  # pylint: disable=invalid-name
-    if _loaded_config is None:
-        # Use default config
-        _loaded_config = OjVerifyConfig(languages={})
-    return _loaded_config
+    return OjVerifyConfig(languages={})

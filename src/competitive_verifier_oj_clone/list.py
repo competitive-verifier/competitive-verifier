@@ -1,16 +1,8 @@
-import pathlib
-from logging import getLogger
-from typing import Optional
-
-from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.models import Language
 
-logger = getLogger(__name__)
 
-_dict: Optional[dict[str, Language]] = None
-
-
-def _get_dict() -> dict[str, Language]:
+def get_dict(config: OjVerifyConfig) -> dict[str, Language]:
     from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
     from competitive_verifier_oj_clone.languages.go import GoLanguage
     from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
@@ -21,41 +13,34 @@ def _get_dict() -> dict[str, Language]:
     from competitive_verifier_oj_clone.languages.rust import RustLanguage
     from competitive_verifier_oj_clone.languages.user_defined import UserDefinedLanguage
 
-    global _dict  # pylint: disable=invalid-name
-    if _dict is None:
-        _dict = {}
-        _dict[".cpp"] = CPlusPlusLanguage()
-        _dict[".hpp"] = _dict[".cpp"]
-        _dict[".cc"] = _dict[".cpp"]
-        _dict[".h"] = _dict[".cpp"]
-        _dict[".nim"] = NimLanguage()
-        _dict[".py"] = PythonLanguage()
-        _dict[".hs"] = HaskellLanguage()
-        _dict[".ruby"] = RubyLanguage()
-        _dict[".go"] = GoLanguage()
-        _dict[".java"] = JavaLanguage()
-        _dict[".rs"] = RustLanguage()
+    d: dict[str, Language] = {}
+    d[".cpp"] = CPlusPlusLanguage(config=config)
+    d[".hpp"] = d[".cpp"]
+    d[".cc"] = d[".cpp"]
+    d[".h"] = d[".cpp"]
+    d[".nim"] = NimLanguage(config=config)
+    d[".py"] = PythonLanguage()
+    d[".hs"] = HaskellLanguage(config=config)
+    d[".ruby"] = RubyLanguage(config=config)
+    d[".go"] = GoLanguage(config=config)
+    d[".java"] = JavaLanguage(config=config)
+    d[".rs"] = RustLanguage(config=config)
 
-        for ext, config in get_config()["languages"].items():
-            if "." + ext in _dict:
-                if not isinstance(_dict["." + ext], UserDefinedLanguage):
-                    for key in (
-                        "compile",
-                        "execute",
-                        "bundle",
-                        "list_attributes",
-                        "list_dependencies",
-                    ):
-                        if key in config:
-                            raise RuntimeError(
-                                "You cannot overwrite existing language: .{}".format(
-                                    ext
-                                )
-                            )
-            else:
-                _dict["." + ext] = UserDefinedLanguage(extension=ext, config=config)
-    return _dict
+    for ext, lang_config in config["languages"].items():
+        if "." + ext in d:
+            if not isinstance(d["." + ext], UserDefinedLanguage):
+                for key in (
+                    "compile",
+                    "execute",
+                    "bundle",
+                    "list_attributes",
+                    "list_dependencies",
+                ):
+                    if key in lang_config:
+                        raise RuntimeError(
+                            "You cannot overwrite existing language: .{}".format(ext)
+                        )
+        else:
+            d["." + ext] = UserDefinedLanguage(extension=ext, config=lang_config)
 
-
-def get(path: pathlib.Path) -> Optional[Language]:
-    return _get_dict().get(path.suffix)
+    return d

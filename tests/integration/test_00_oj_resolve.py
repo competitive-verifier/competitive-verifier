@@ -6,12 +6,16 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier.oj_resolve.main import main
+from competitive_verifier_oj_clone.languages import special_comments
 
 from .data import TARGETS_PATH, VERIFY_FILE_PATH
 
 
 @pytest.fixture
 def setenv_resolve(mocker: MockerFixture):
+    special_comments.list_special_comments.cache_clear()
+    special_comments.list_embedded_urls.cache_clear()
+
     def python_get_execute_command(
         path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
@@ -349,6 +353,9 @@ def test_without_args(
     expected: dict[str, Any],
     capfd: pytest.CaptureFixture[str],
 ):
+    del expected["files"]["targets/encoding/EUC-KR.txt"]
+    del expected["files"]["targets/encoding/cp932.txt"]
+
     expected["files"]["dummy/dummy.py"] = {
         "additonal_sources": [],
         "dependencies": ["dummy/dummy.py"],

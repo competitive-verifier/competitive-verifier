@@ -11,7 +11,7 @@ def main() -> None:
     a, b = map(int, input().split())
     if KB < 1000:
         print("No")
-    print(testdata.targets.python.lib_some_skip.aplusb(a, b))
+    print(targets.python.lib_some_skip.aplusb(a, b))
 
 
 if __name__ == "__main__":

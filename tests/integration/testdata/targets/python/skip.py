@@ -11,7 +11,7 @@ input = sys.stdin.buffer.readline
 def main() -> None:
     stderr()
     a, b = map(int, input().split())
-    print(testdata.targets.python.lib_skip.aplusb(a, b))
+    print(targets.python.lib_skip.aplusb(a, b))
 
 
 if __name__ == "__main__":

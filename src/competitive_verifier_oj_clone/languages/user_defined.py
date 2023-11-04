@@ -3,11 +3,9 @@ import pathlib
 from logging import getLogger
 from typing import Optional, Sequence
 
+import competitive_verifier_oj_clone.languages.special_comments as special_comments
 import competitive_verifier_oj_clone.utils as utils
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
-from competitive_verifier_oj_clone.languages.special_comments import (
-    list_special_comments,
-)
 
 from .. import subprocess2 as subprocess
 
@@ -57,7 +55,7 @@ class UserDefinedLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, str]:
         if "list_attributes" not in self.config:
-            return dict(list_special_comments(path))
+            return dict(special_comments.list_special_comments(path))
         logger.warning(
             '"languages.*.list_attributes" field in .verify-helper/config.toml is now obsoleted'
         )

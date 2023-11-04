@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 import competitive_verifier_oj_clone.languages.special_comments as special_comments
 import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.cplusplus_bundle import Bundler
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
 
@@ -113,11 +113,8 @@ _ERROR = "ERROR"
 class CPlusPlusLanguage(Language):
     config: dict[str, Any]
 
-    def __init__(self, *, config: Optional[dict[str, Any]] = None):
-        if config is None:
-            self.config = get_config()["languages"].get("cpp", {})
-        else:
-            self.config = config
+    def __init__(self, *, config: OjVerifyConfig):
+        self.config = config["languages"].get("cpp", {})
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]

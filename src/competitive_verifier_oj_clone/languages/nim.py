@@ -2,10 +2,10 @@
 import functools
 import pathlib
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 
 import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
 from competitive_verifier_oj_clone.utils import read_text_normalized
 
@@ -80,11 +80,8 @@ def _list_direct_dependencies(
 class NimLanguage(Language):
     config: dict[str, Any]
 
-    def __init__(self, *, config: Optional[dict[str, Any]] = None):
-        if config is None:
-            self.config = get_config()["languages"].get("nim", {})
-        else:
-            self.config = config
+    def __init__(self, *, config: OjVerifyConfig):
+        self.config = config["languages"].get("nim", {})
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path

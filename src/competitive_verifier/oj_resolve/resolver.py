@@ -2,6 +2,7 @@ import fnmatch
 import os
 import pathlib
 import traceback
+from functools import cached_property
 from itertools import chain
 from logging import getLogger
 from typing import Generator
@@ -19,6 +20,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.models import LanguageEnvironment
 
 logger = getLogger(__name__)
@@ -31,6 +33,7 @@ def get_bundled_dir() -> pathlib.Path:
 class OjResolver:
     include: list[str]
     exclude: list[str]
+    config: OjVerifyConfig
     _match_exclude_cache: dict[pathlib.Path, bool]
 
     def __init__(
@@ -38,6 +41,7 @@ class OjResolver:
         *,
         include: list[str],
         exclude: list[str],
+        config: OjVerifyConfig,
     ) -> None:
         def _remove_slash(s: str):
             s = os.path.normpath(s)
@@ -47,6 +51,7 @@ class OjResolver:
 
         self.include = list(map(_remove_slash, include))
         self.exclude = list(map(_remove_slash, exclude))
+        self.config = config
         self._match_exclude_cache = {}
 
     def _match_exclude2(self, paths: list[pathlib.Path]) -> bool:
@@ -71,6 +76,10 @@ class OjResolver:
         paths.append(path)
         return self._match_exclude2(paths)
 
+    @cached_property
+    def _lang_dict(self):
+        return competitive_verifier_oj_clone.list.get_dict(self.config)
+
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
         basedir = pathlib.Path.cwd()
@@ -80,7 +89,7 @@ class OjResolver:
                 logger.debug("exclude=%s", path.as_posix())
                 continue
 
-            language = competitive_verifier_oj_clone.list.get(path)
+            language = self._lang_dict.get(path.suffix)
             if language is None:
                 continue
 

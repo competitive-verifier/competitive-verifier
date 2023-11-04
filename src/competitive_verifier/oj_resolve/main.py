@@ -15,12 +15,12 @@ def run_impl(
     config_path: Optional[pathlib.Path],
     enable_bundle: bool,
 ) -> bool:
-    if config_path:
-        competitive_verifier_oj_clone.config.set_config_path(config_path)
+    config = competitive_verifier_oj_clone.config.load(config_path)
 
     resolver = OjResolver(
         include=include,
         exclude=exclude,
+        config=config,
     )
     resolved = resolver.resolve(bundle=enable_bundle)
     print(resolved.model_dump_json(exclude_none=True))

@@ -10,7 +10,7 @@ input = sys.stdin.buffer.readline
 def main() -> None:
     a, b = map(int, input().split())
     stderr()
-    print(testdata.targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)
+    print(targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)
 
 
 if __name__ == "__main__":

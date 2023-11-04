@@ -12,7 +12,7 @@ def main() -> None:
     a, b = map(int, input().split())
     if a % 2 == 0:
         time.sleep(0.1)
-    print(testdata.targets.python.lib_all_failure.aplusb(a, b))
+    print(targets.python.lib_all_failure.aplusb(a, b))
 
 
 if __name__ == "__main__":
