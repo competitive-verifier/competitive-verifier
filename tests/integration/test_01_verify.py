@@ -3,19 +3,16 @@ import json
 import pathlib
 import random
 from typing import Any
+
 import pytest
 from pytest_mock import MockerFixture
-from competitive_verifier.models import (
-    ResultStatus,
-    TestcaseResult as _TestcaseResult,
-    FileResult,
-    JudgeStatus,
-    VerificationResult,
-)
 
-from competitive_verifier.verify import main
-from competitive_verifier.verify import verifier
+from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
+from competitive_verifier.models import TestcaseResult as _TestcaseResult
+from competitive_verifier.models import VerificationResult
+from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
+
 from .types import FilePaths
 
 

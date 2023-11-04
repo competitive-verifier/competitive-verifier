@@ -2,10 +2,10 @@ from .dependency import SourceCodeStat, VerificationStatus, resolve_dependency
 from .file import AddtionalSource, VerificationFile, VerificationInput
 from .result import (
     FileResult,
+    JudgeStatus,
     TestcaseResult,
     VerificationResult,
     VerifyCommandResult,
-    JudgeStatus,
 )
 from .result_status import ResultStatus
 from .verification import (
