@@ -8,16 +8,18 @@ from unittest import mock
 
 import pytest
 import yaml
-from pydantic import BaseModel
 from pytest_mock import MockerFixture
+from pytest_subtests import SubTests
 
-import competitive_verifier.documents.builder
 from competitive_verifier.documents.main import main
 
-TARGETS_PATH = "testdata/targets"
-VERIFY_FILE_PATH = "testdata/test-verify.json"
-RESULT_FILE_PATH = "testdata/test-result.json"
-DESTINATION_ROOT = pathlib.Path("testdata/dst_dir")
+from .data import (
+    DESTINATION_ROOT,
+    RESULT_FILE_PATH,
+    TARGETS,
+    TARGETS_PATH,
+    VERIFY_FILE_PATH,
+)
 
 DEFAULT_ARGS = [
     "--verify-json",
@@ -27,33 +29,6 @@ DEFAULT_ARGS = [
 
 tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
 MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
-
-
-class MarkdownData(BaseModel):
-    path: str
-    front_matter: dict[str, Any]
-    content: bytes = b""
-
-
-TARGETS: list[MarkdownData] = [
-    MarkdownData(path=f"{TARGETS_PATH}/encoding/EUC-KR.txt.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/encoding/cp932.txt.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/failure.mle.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/failure.re.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/failure.tle.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/failure.wa.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/lib_all_failure.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/lib_all_success.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/lib_skip.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/lib_some_failure.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/lib_some_skip.py.md", front_matter={}),
-    MarkdownData(
-        path=f"{TARGETS_PATH}/python/lib_some_skip_some_wa.py.md", front_matter={}
-    ),
-    MarkdownData(path=f"{TARGETS_PATH}/python/skip.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/success1.py.md", front_matter={}),
-    MarkdownData(path=f"{TARGETS_PATH}/python/success2.py.md", front_matter={}),
-]
 
 
 @pytest.fixture(scope="session")
@@ -75,7 +50,11 @@ def setup_docs(clean: Any, mocker: MockerFixture):
     )
 
 
-def check_common(destination: pathlib.Path):
+def check_common(
+    destination: pathlib.Path,
+    *,
+    subtests: SubTests,
+):
     assert destination.is_dir()
 
     targets = {t.path: t for t in TARGETS}
@@ -85,19 +64,25 @@ def check_common(destination: pathlib.Path):
         (destination / TARGETS_PATH).glob("**/*"),
     ):
         path_str = target_file.relative_to(destination).as_posix()
-        target_value = target_file.read_bytes().strip()
-        assert target_value.startswith(b"---\n")
+        with subtests.test(  # pyright: ignore[reportUnknownMemberType]
+            msg="Check testdata", path=path_str
+        ):
+            target_value = target_file.read_bytes().strip()
+            assert target_value.startswith(b"---\n")
+
+            front_matter_end = target_value.index(b"---", 4)
+            front_matter = yaml.safe_load(target_value[4:front_matter_end])
+            content = target_value[front_matter_end + 3 :].strip()
+
+            assert content == targets[path_str].content
+            assert front_matter == targets[path_str].front_matter
         del targets[path_str]
 
-    assert not targets
-
-
-class MockEnvTestcaseResult(competitive_verifier.documents.builder.EnvTestcaseResult):
-    pass
+    assert not list(targets.keys())
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_with_config():
+def test_with_config(subtests: SubTests):
     destination = DESTINATION_ROOT / inspect.stack()[0].function
     docs_settings_dir = pathlib.Path("testdata/docs_settings")
 
@@ -115,7 +100,7 @@ def test_with_config():
             + DEFAULT_ARGS
         )
 
-    check_common(destination)
+    check_common(destination, subtests=subtests)
 
     config_yml = yaml.safe_load((destination / "_config.yml").read_bytes())
     assert config_yml == {
@@ -158,7 +143,7 @@ def test_with_config():
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_without_config():
+def test_without_config(subtests: SubTests):
     destination = DESTINATION_ROOT / inspect.stack()[0].function
 
     with mock.patch(
@@ -175,7 +160,7 @@ def test_without_config():
             + DEFAULT_ARGS
         )
 
-    check_common(destination)
+    check_common(destination, subtests=subtests)
 
     config_yml = yaml.safe_load((destination / "_config.yml").read_bytes())
     assert config_yml == {

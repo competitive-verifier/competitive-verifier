@@ -13,6 +13,11 @@ StatusIcon = Annotated[
     PlainSerializer(lambda x: x.name, return_type=str, when_used="json"),
 ]
 
+SortedPathList = Annotated[
+    list[ForcePosixPath],
+    PlainSerializer(sorted, return_type=list[ForcePosixPath]),
+]
+
 
 class BuilderBaseModel(BaseModel):
     model_config = ConfigDict(
@@ -65,9 +70,9 @@ class RenderSourceCodeStat(BuilderBaseModel):
         datetime.datetime,
         PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
     ]
-    depends_on: list[ForcePosixPath]
-    required_by: list[ForcePosixPath]
-    verified_with: list[ForcePosixPath]
+    depends_on: SortedPathList
+    required_by: SortedPathList
+    verified_with: SortedPathList
     attributes: dict[str, Any]
     testcases: Optional[list[EnvTestcaseResult]]
 
