@@ -2,28 +2,28 @@ import contextlib
 import datetime
 import pathlib
 import shutil
-from hashlib import md5
 from typing import Iterable
 
 import pytest
 import requests
 from pytest_mock import MockerFixture
 
-
 from .types import FilePaths
-
-
-def md5_number(seed: bytes):
-    return int(md5(seed).hexdigest(), 16)
+from .utils import md5_number
 
 
 @pytest.fixture(scope="session")
-def dst_dir():
-    DESTINATION_ROOT = pathlib.Path(__file__).parent / pathlib.Path("testdata/dst_dir")
-    assert DESTINATION_ROOT.parent.exists()
-    if DESTINATION_ROOT.is_dir():
-        shutil.rmtree(DESTINATION_ROOT)
-    return DESTINATION_ROOT
+def file_paths() -> FilePaths:
+    dest_root = pathlib.Path(__file__).parent / pathlib.Path("testdata/dst_dir")
+    assert dest_root.parent.exists()
+    if dest_root.is_dir():
+        shutil.rmtree(dest_root)
+    return FilePaths(
+        targets="targets",
+        verify="dst_dir/test-verify.json",
+        result="dst_dir/test-result.json",
+        dest_root=dest_root,
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -52,13 +52,4 @@ def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     mocker.patch(
         "onlinejudge_command.utils.new_session_with_our_user_agent",
         side_effect=new_session_with_our_user_agent,
-    )
-
-
-@pytest.fixture
-def file_paths() -> FilePaths:
-    return FilePaths(
-        targets="targets",
-        verify="dst_dir/test-verify.json",
-        result="dst_dir/test-result.json",
     )

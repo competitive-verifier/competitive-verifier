@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+
 from pytest_mock import MockerFixture
 
 import competitive_verifier.oj as oj

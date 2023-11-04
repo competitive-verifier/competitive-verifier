@@ -12,6 +12,7 @@ from pytest_mock import MockerFixture
 from pytest_subtests import SubTests
 
 from competitive_verifier.documents.main import main
+
 from .types import FilePaths
 
 
@@ -32,6 +33,7 @@ def data(file_paths: FilePaths) -> DocsData:
         targets=file_paths.targets,
         verify=file_paths.verify,
         result=file_paths.result,
+        dest_root=file_paths.dest_root,
         default_args=[
             "--verify-json",
             file_paths.verify,
@@ -1274,8 +1276,8 @@ def data(file_paths: FilePaths) -> DocsData:
 
 
 @pytest.fixture
-def package_dst(dst_dir: pathlib.Path):
-    return dst_dir / "documents"
+def package_dst(file_paths: FilePaths):
+    return file_paths.dest_root / "documents"
 
 
 @pytest.fixture
@@ -1321,7 +1323,7 @@ def check_common(
     assert not list(targets.keys())
 
 
-@pytest.mark.dependency(depends=["resolve_default"], scope="package")
+@pytest.mark.dependency(depends=["resolve_default", "verify_default"], scope="package")
 @pytest.mark.integration
 @pytest.mark.usefixtures("setup_docs")
 def test_with_config(package_dst: pathlib.Path, data: DocsData, subtests: SubTests):
@@ -1380,7 +1382,7 @@ def test_with_config(package_dst: pathlib.Path, data: DocsData, subtests: SubTes
         )
 
 
-@pytest.mark.dependency(depends=["resolve_default"], scope="package")
+@pytest.mark.dependency(depends=["resolve_default", "verify_default"], scope="package")
 @pytest.mark.integration
 @pytest.mark.usefixtures("setup_docs")
 def test_without_config(package_dst: pathlib.Path, data: DocsData, subtests: SubTests):
@@ -1435,7 +1437,7 @@ def test_without_config(package_dst: pathlib.Path, data: DocsData, subtests: Sub
         )
 
 
-@pytest.mark.dependency(depends=["resolve_default"], scope="package")
+@pytest.mark.dependency(depends=["resolve_default", "verify_default"], scope="package")
 @pytest.mark.integration
 @pytest.mark.usefixtures("setup_docs")
 def test_logging_default(
@@ -1468,7 +1470,7 @@ def test_logging_default(
     ]
 
 
-@pytest.mark.dependency(depends=["resolve_default"], scope="package")
+@pytest.mark.dependency(depends=["resolve_default", "verify_default"], scope="package")
 @pytest.mark.integration
 @pytest.mark.usefixtures("setup_docs")
 def test_logging_include(
@@ -1497,7 +1499,7 @@ def test_logging_include(
     assert not caplog.record_tuples
 
 
-@pytest.mark.dependency(depends=["resolve_default"], scope="package")
+@pytest.mark.dependency(depends=["resolve_default", "verify_default"], scope="package")
 @pytest.mark.integration
 @pytest.mark.usefixtures("setup_docs")
 def test_logging_exclude(
