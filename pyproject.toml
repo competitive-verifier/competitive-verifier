@@ -61,6 +61,7 @@ format = ["isort", "black", "pyright", "flake8"]
 "lint:black" = "black --diff --check src tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
+test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
 
 "dev:verify" = { cmd = "competitive-verifier verify -o .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }

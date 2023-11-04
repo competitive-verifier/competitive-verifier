@@ -142,12 +142,12 @@ def expected(file_paths: FilePaths) -> dict[str, Any]:
                             "type": "problem",
                             "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.mle.py",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            "mle": 10.0,
+                            "mle": 100.0,
                         }
                     ],
                     "document_attributes": {
                         "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "MLE": "10",
+                        "MLE": "100",
                         "links": ["https://judge.yosupo.jp/problem/aplusb"],
                     },
                     "additonal_sources": [],

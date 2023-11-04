@@ -107,7 +107,7 @@ def data(file_paths: FilePaths) -> DocsData:
                     front_matter={
                         "data": {
                             "attributes": {
-                                "MLE": "10",
+                                "MLE": "100",
                                 "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
                                 "links": ["https://judge.yosupo.jp/problem/aplusb"],
                             },
@@ -138,7 +138,29 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/sub/failure.mle.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: MLE 10\nimport sys\n\nimport targets.python.lib_all_failure\nfrom targets.python.lib_some_failure import MB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        sum([1] * 10 * MB)\n    print(targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": "# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n"
+                                    "# competitive-verifier: MLE 100\n"
+                                    "import pathlib\n"
+                                    "import sys\n"
+                                    "\n"
+                                    "import targets.python.lib_all_failure\n"
+                                    "from targets.python.lib_some_failure import MB\n"
+                                    "\n"
+                                    "input = sys.stdin.buffer.readline\n"
+                                    "\n\ndef main() -> None:\n"
+                                    "    a, b = map(int, input().split())\n"
+                                    "    if a % 2 == 0:\n"
+                                    '        dir = pathlib.Path(__file__).parent.parent.parent / "dst_dir"\n'
+                                    "        dir.mkdir(exist_ok=True, parents=True)\n"
+                                    '        file = dir / "buffer.txt"\n'
+                                    '        file.write_bytes(b"a" * 100 * MB)\n'
+                                    "        file.unlink(missing_ok=True)\n"
+                                    "    print(targets.python.lib_all_failure.aplusb(a, b))\n"
+                                    "\n"
+                                    "\n"
+                                    'if __name__ == "__main__":\n'
+                                    "    main()\n"
+                                    "",
                                     "name": "default",
                                 }
                             ],
@@ -271,7 +293,8 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/failure.re.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    print(targets.python.lib_all_failure.aplusb(a // 0, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": "# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n"
+                                    'import sys\n\nimport targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    print(targets.python.lib_all_failure.aplusb(a // 0, b))\n\n\nif __name__ == "__main__":\n    main()\n',
                                     "name": "default",
                                 }
                             ],
