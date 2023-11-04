@@ -1,4 +1,3 @@
-import datetime
 import filecmp
 import inspect
 import logging
@@ -13,12 +12,7 @@ from pytest_subtests import SubTests
 
 from competitive_verifier.documents.main import main
 
-from .data import (
-    RESULT_FILE_PATH,
-    TARGETS_PATH,
-    VERIFY_FILE_PATH,
-)
-
+from .data import RESULT_FILE_PATH, TARGETS_PATH, VERIFY_FILE_PATH
 from .docs_data import TARGETS
 
 DEFAULT_ARGS = [
@@ -35,13 +29,6 @@ def package_dst(dst_dir: pathlib.Path):
 
 @pytest.fixture
 def setup_docs(mocker: MockerFixture, setenv: Any):
-    tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
-    MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
-
-    mocker.patch(
-        "competitive_verifier.git.get_commit_time",
-        return_value=MOCK_TIME,
-    )
     mocker.patch.dict(
         os.environ,
         {

@@ -1,6 +1,17 @@
+import contextlib
+import datetime
 import pathlib
 import shutil
+from hashlib import md5
+from typing import Iterable
+
 import pytest
+import requests
+from pytest_mock import MockerFixture
+
+
+def md5_number(seed: bytes):
+    return int(md5(seed).hexdigest(), 16)
 
 
 @pytest.fixture(scope="session")
@@ -13,27 +24,29 @@ def dst_dir():
 
 
 @pytest.fixture
-def setenv(monkeypatch: pytest.MonkeyPatch):
+def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(pathlib.Path(__file__).parent)
-    # mocker.patch.dict(
-    #     os.environ, {"YUKICODER_TOKEN": "YKTK", "DROPBOX_TOKEN": "DBTK"}, clear=True
-    # )
-    # mocker.patch(
-    #     "competitive_verifier.oj.get_cache_directory",
-    #     return_value=pathlib.Path("/bar/baz/online-judge-tools"),
-    # )
-    # mocker.patch(
-    #     "competitive_verifier.oj.get_checker_path",
-    #     return_value=None,
-    # )
 
-    # @contextlib.contextmanager
-    # def new_session_with_our_user_agent(*, path: pathlib.Path):
-    #     sess = requests.Session()
-    #     sess.headers = {}
-    #     yield sess
+    def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
+        md5 = md5_number(b"".join(sorted(f.as_posix().encode() for f in files)))
 
-    # mocker.patch(
-    #     "onlinejudge_command.utils.new_session_with_our_user_agent",
-    #     side_effect=new_session_with_our_user_agent,
-    # )
+        return datetime.datetime.fromtimestamp(
+            md5 % 300000000000 / 100,
+            tz=datetime.timezone(datetime.timedelta(hours=md5 % 25 - 12)),
+        )
+
+    mocker.patch(
+        "competitive_verifier.git.get_commit_time",
+        side_effect=get_commit_time,
+    )
+
+    @contextlib.contextmanager
+    def new_session_with_our_user_agent(*, path: pathlib.Path):
+        sess = requests.Session()
+        sess.headers = {}
+        yield sess
+
+    mocker.patch(
+        "onlinejudge_command.utils.new_session_with_our_user_agent",
+        side_effect=new_session_with_our_user_agent,
+    )

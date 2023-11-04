@@ -2,7 +2,6 @@
 # competitive-verifier: MLE 10
 import sys
 
-
 import testdata.targets.python.lib_all_failure
 from testdata.targets.python.lib_some_failure import MB
 
