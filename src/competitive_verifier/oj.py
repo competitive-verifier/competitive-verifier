@@ -34,8 +34,12 @@ def get_cache_directory() -> pathlib.Path:
     return _oj_cache_dir
 
 
+def get_problem_cache_dir() -> pathlib.Path:
+    return _problem_cache_dir
+
+
 def get_directory(url: str) -> pathlib.Path:
-    return _problem_cache_dir / hashlib.md5(url.encode()).hexdigest()
+    return get_problem_cache_dir() / hashlib.md5(url.encode()).hexdigest()
 
 
 def is_yukicoder(url: str) -> bool:
@@ -107,8 +111,8 @@ def test(
     *,
     url: str,
     command: str,
-    tle: float,
-    mle: float,
+    tle: Optional[float],
+    mle: Optional[float],
     error: Optional[float],
 ) -> VerificationResult:
     directory = get_directory(url)
@@ -123,12 +127,12 @@ def test(
         "-d",
         str(test_directory),
         "--print-input",
-        "--tle",
-        str(tle),
-        "--mle",
-        str(mle),
     ]
 
+    if tle:
+        arg_list += ["--tle", str(tle)]
+    if mle:
+        arg_list += ["--mle", str(mle)]
     if error:
         arg_list += ["-e", str(error)]
 

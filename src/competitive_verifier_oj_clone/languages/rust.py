@@ -11,7 +11,7 @@ from logging import getLogger
 from typing import Any, Optional, Sequence
 
 import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
 from competitive_verifier_oj_clone.utils import read_text_normalized
 
@@ -375,14 +375,13 @@ class RustLanguageEnvironment(LanguageEnvironment):
 class RustLanguage(Language):
     _list_dependencies_backend: _ListDependenciesBackend
 
-    def __init__(self, *, config: Optional[dict[str, Any]] = None):
-        if config is None:
-            config = get_config()["languages"].get("rust", {})
+    def __init__(self, *, config: OjVerifyConfig):
+        lang_confg = config["languages"].get("rust", {})
 
-        assert config is not None
+        assert lang_confg is not None
         # Parses `languages.rust.list_dependencies_backend`.
-        if "list_dependencies_backend" in config:
-            list_dependencies_backend = config["list_dependencies_backend"]
+        if "list_dependencies_backend" in lang_confg:
+            list_dependencies_backend = lang_confg["list_dependencies_backend"]
 
             if not isinstance(list_dependencies_backend, dict):
                 raise RuntimeError(

@@ -1,19 +1,16 @@
 # competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
-# competitive-verifier: TLE 0.09
 import sys
-import time
 
-
-import testdata.targets.python.lib_all_failure
+import targets.python.lib_all_failure
+from targets.python.lib_some_skip_some_wa import stderr
 
 input = sys.stdin.buffer.readline
 
 
 def main() -> None:
     a, b = map(int, input().split())
-    if a % 2 == 0:
-        time.sleep(0.1)
-    print(testdata.targets.python.lib_all_failure.aplusb(a, b))
+    stderr()
+    print(targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)
 
 
 if __name__ == "__main__":

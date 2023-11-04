@@ -1,17 +1,17 @@
 # competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
 import sys
 
-
-import testdata.targets.python.lib_all_success
-from testdata.targets.python.lib_some_skip_some_wa import stderr
+import targets.python.lib_some_skip
+from targets.python.lib_some_failure import KB
 
 input = sys.stdin.buffer.readline
 
 
 def main() -> None:
     a, b = map(int, input().split())
-    stderr()
-    print(testdata.targets.python.lib_all_success.aplusb(a, b))
+    if KB < 1000:
+        print("No")
+    print(targets.python.lib_some_skip.aplusb(a, b))
 
 
 if __name__ == "__main__":

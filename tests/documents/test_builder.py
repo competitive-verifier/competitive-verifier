@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any, Generator, Iterable
 
 import pytest
-from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel
 from pytest_mock import MockerFixture
 
@@ -26,6 +25,7 @@ from competitive_verifier.models.dependency import (
     VerificationStatus,
 )
 from competitive_verifier.models.file import VerificationFile
+from competitive_verifier.models.result import JudgeStatus
 from competitive_verifier.models.result import TestcaseResult as _TestcaseResult
 from competitive_verifier.models.result import VerificationResult
 from competitive_verifier.models.result_status import ResultStatus

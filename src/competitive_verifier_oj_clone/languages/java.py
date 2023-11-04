@@ -1,9 +1,9 @@
 import pathlib
 from logging import getLogger
-from typing import Any, Optional, Sequence
+from typing import Any, Sequence
 
 import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import get_config
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.models import LanguageEnvironment
 from competitive_verifier_oj_clone.languages.user_defined import UserDefinedLanguage
 
@@ -31,15 +31,14 @@ class JavaLanguageEnvironment(LanguageEnvironment):
 class JavaLanguage(UserDefinedLanguage):
     config: dict[str, Any]
 
-    def __init__(self, *, config: Optional[dict[str, Any]] = None):
-        if config is None:
-            config = get_config()["languages"].get("java", {})
-        assert config is not None
-        if "compile" in config:
+    def __init__(self, *, config: OjVerifyConfig):
+        lang_confg = config["languages"].get("java", {})
+        assert lang_confg is not None
+        if "compile" in lang_confg:
             raise RuntimeError('You cannot overwrite "compile" for Java language')
-        if "execute" in config:
+        if "execute" in lang_confg:
             raise RuntimeError('You cannot overwrite "execute" for Java language')
-        super().__init__(extension="java", config=config)
+        super().__init__(extension="java", config=lang_confg)
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

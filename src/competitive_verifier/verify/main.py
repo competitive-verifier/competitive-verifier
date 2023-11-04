@@ -25,8 +25,8 @@ def run_impl(
     *,
     prev_result: Optional[VerifyCommandResult],
     timeout: float = math.inf,
-    default_tle: float = 60,
-    default_mle: float = math.inf,
+    default_tle: Optional[float] = None,
+    default_mle: Optional[float] = None,
     download: bool = True,
     split: Optional[int] = None,
     split_index: Optional[int] = None,
@@ -115,14 +115,14 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         "--tle",
         dest="default_tle",
         type=float,
-        default=60,
+        default=None,
         help="Threshold seconds to be TLE",
     )
     parser.add_argument(
         "--mle",
         dest="default_mle",
         type=float,
-        default=math.inf,
+        default=None,
         help="Threshold memory usage (MB) to be MLE",
     )
     parser.add_argument(

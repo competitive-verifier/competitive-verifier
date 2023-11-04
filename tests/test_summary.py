@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 from io import StringIO
 
 import pytest
-from onlinejudge_command.subcommand.test import JudgeStatus
 
 import competitive_verifier.summary as summary
-from competitive_verifier.models.result import FileResult
+from competitive_verifier.models.result import FileResult, JudgeStatus
 from competitive_verifier.models.result import TestcaseResult as CaseResult
 from competitive_verifier.models.result import VerificationResult, VerifyCommandResult
 from competitive_verifier.models.result_status import ResultStatus

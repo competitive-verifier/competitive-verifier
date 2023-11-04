@@ -3,6 +3,7 @@ import functools
 import pathlib
 import re
 from logging import getLogger
+from typing import Iterable, Mapping
 
 from competitive_verifier_oj_clone.utils import read_text_normalized
 
@@ -11,7 +12,7 @@ logger = getLogger(__name__)
 
 # special comments like Vim and Python: see https://www.python.org/dev/peps/pep-0263/
 @functools.lru_cache(maxsize=None)
-def list_special_comments(path: pathlib.Path) -> dict[str, str]:
+def list_special_comments(path: pathlib.Path) -> Mapping[str, str]:
     pattern = re.compile(
         r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"
     )
@@ -26,7 +27,7 @@ def list_special_comments(path: pathlib.Path) -> dict[str, str]:
 
 
 @functools.lru_cache(maxsize=None)
-def list_embedded_urls(path: pathlib.Path) -> list[str]:
+def list_embedded_urls(path: pathlib.Path) -> Iterable[str]:
     pattern = re.compile(
         r"""['"`]?https?://\S*"""
     )  # use a broad pattern. There are no needs to make match strict.

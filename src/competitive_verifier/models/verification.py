@@ -11,8 +11,8 @@ from .result_status import ResultStatus
 
 
 class VerificationParams(Protocol):
-    default_tle: float
-    default_mle: float
+    default_tle: Optional[float]
+    default_mle: Optional[float]
 
 
 class BaseVerification(BaseModel, ABC):

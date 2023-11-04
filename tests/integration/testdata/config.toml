@@ -1,0 +1,11 @@
+[languages.awk]
+compile = "bash -c 'echo hello > {tempdir}/hello'"
+execute = "env AWKPATH={basedir} awk -f {path}"
+bundle = "false"
+list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
+
+[languages.txt]
+compile = "true"
+execute = "true"
+bundle = "normalizer {path} -m"
+list_dependencies = ""

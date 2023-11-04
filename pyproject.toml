@@ -34,12 +34,14 @@ pyyaml = "^6.0"
 importlab = "^0.8"
 charset-normalizer = "^3.3.2"
 tomli = { version = "^2.0.1", python = "<3.11" }
+poethepoet = "^0.24.2"
 
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
 pytest-mock = "^3.12.0"
 pytest-subtests = "^0.11.0"
+pytest-dependency = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = { version = "^6.0.0", extras = ["lint"] }
@@ -59,6 +61,8 @@ format = ["isort", "black", "pyright", "flake8"]
 "lint:black" = "black --diff --check src tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
+test-quick = "pytest -m 'not integration'"
+test-integration = "pytest -m integration"
 
 "dev:verify" = { cmd = "competitive-verifier verify -o .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
 "dev:docs" = { cmd = "competitive-verifier docs .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
@@ -84,15 +88,6 @@ imports = ["os"]
 [[tool.poe.tasks.serve.sequence]]
 ref = "jekyll:serve"
 
-[[tool.poe.tasks."test-docs:make-data"]]
-[[tool.poe.tasks."test-docs:make-data".sequence]]
-shell = "competitive-verifier oj-resolve --config examples/config.toml --include testdata/targets > testdata/test-verify.json"
-[[tool.poe.tasks."test-docs:make-data".sequence]]
-cmd = "competitive-verifier verify -o testdata/test-result.json"
-env = { COMPETITIVE_VERIFY_FILES_PATH = "testdata/test-verify.json" }
-[[tool.poe.tasks."test-docs:make-data".sequence]]
-cmd = "python testdata/rewrite_result.py testdata/test-result.json"
-
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
@@ -114,14 +109,27 @@ include_trailing_comma = true
 [tool.flake8]
 max-line-length = 500
 max-complexity = 18
-exclude = "examples,src/competitive_verifier_oj_clone/languages,src/competitive_verifier_resources/jekyll,"
-ignore = "E203,E266,W503,"
-per-file-ignores = ["tests/documents/data.py: E501"]
+exclude = [
+    "examples",
+    "src/competitive_verifier_oj_clone/languages",
+    "src/competitive_verifier_resources/jekyll",
+    "tests/integration/testdata",
+]
+ignore = ["E203", "E266", "W503"]
+per-file-ignores = ["tests/integration/test_05_docs.py: E501"]
 
 [tool.pyright]
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
-exclude = ["src/competitive_verifier_resources/jekyll"]
+exclude = [
+    "src/competitive_verifier_resources/jekyll",
+    "tests/integration/testdata",
+]
 reportMissingImports = true
 reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+markers = [
+    "integration",
+]

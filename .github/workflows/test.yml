@@ -34,5 +34,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with test
 
+      - name: GNU time
+        if: runner.os == 'macOS'
+        run: brew install gnu-time
+
       - name: Run test
-        run: poetry run pytest -v
+        run: poetry run pytest -vv

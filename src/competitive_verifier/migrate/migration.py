@@ -10,6 +10,7 @@ import yaml
 import competitive_verifier.git as git
 from competitive_verifier.documents.job import resolve_documentation_of
 from competitive_verifier.exec import exec_command
+from competitive_verifier_oj_clone.config import OjVerifyConfig
 from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
 from competitive_verifier_oj_clone.languages.go import GoLanguage
 from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
@@ -19,7 +20,7 @@ from competitive_verifier_oj_clone.languages.nim import NimLanguage
 from competitive_verifier_oj_clone.languages.python import PythonLanguage
 from competitive_verifier_oj_clone.languages.ruby import RubyLanguage
 from competitive_verifier_oj_clone.languages.rust import RustLanguage
-from competitive_verifier_oj_clone.list import get as get_lang
+from competitive_verifier_oj_clone.list import get_dict as get_lang_dict
 
 logger = getLogger(__name__)
 
@@ -217,9 +218,10 @@ def main(dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
 
     languages = set[str]()
+    lang_dict = get_lang_dict(OjVerifyConfig(languages={}))
 
     for path in git.ls_files():
-        lang = get_lang(path)
+        lang = lang_dict.get(path.suffix)
         if isinstance(lang, CPlusPlusLanguage):
             migrate_cpp_annotations(path, dry_run=dry_run)
         lang_str = _lang_type_to_str(lang)

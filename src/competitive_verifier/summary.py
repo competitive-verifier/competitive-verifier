@@ -7,10 +7,8 @@ from collections import Counter
 from itertools import chain
 from typing import Optional, TextIO
 
-from onlinejudge_command.subcommand.test import JudgeStatus
-
 from competitive_verifier.models import FileResult, ResultStatus, VerifyCommandResult
-from competitive_verifier.models.result import TestcaseResult
+from competitive_verifier.models.result import JudgeStatus, TestcaseResult
 
 SUCCESS = ResultStatus.SUCCESS
 FAILURE = ResultStatus.FAILURE
