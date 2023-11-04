@@ -6,6 +6,10 @@ import competitive_verifier.oj as oj
 
 
 def test_oj_test(mocker: MockerFixture):
+    mocker.patch(
+        "competitive_verifier.oj.get_cache_directory",
+        return_value=pathlib.Path("/bar/baz/online-judge-tools"),
+    )
     run = mocker.patch("competitive_verifier.oj.run_test")
 
     oj.test(url="http://example.com", command="ls .", tle=2, error=None, mle=128)

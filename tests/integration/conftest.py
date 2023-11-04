@@ -10,6 +10,9 @@ import requests
 from pytest_mock import MockerFixture
 
 
+from .types import FilePaths
+
+
 def md5_number(seed: bytes):
     return int(md5(seed).hexdigest(), 16)
 
@@ -49,4 +52,13 @@ def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     mocker.patch(
         "onlinejudge_command.utils.new_session_with_our_user_agent",
         side_effect=new_session_with_our_user_agent,
+    )
+
+
+@pytest.fixture
+def file_paths() -> FilePaths:
+    return FilePaths(
+        targets="targets",
+        verify="dst_dir/test-verify.json",
+        result="dst_dir/test-result.json",
     )

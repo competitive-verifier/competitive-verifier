@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj_resolve.main import main
 from competitive_verifier_oj_clone.languages import special_comments
 
-from .data import TARGETS_PATH, VERIFY_FILE_PATH
+from .types import FilePaths
 
 
 @pytest.fixture
@@ -276,9 +276,10 @@ def test_with_config_include(
     make_args: _ArgsFunc,
     expected: dict[str, Any],
     capfd: pytest.CaptureFixture[str],
+    file_paths: FilePaths,
 ):
     args = make_args(
-        include=[TARGETS_PATH],
+        include=[file_paths.targets],
         config="config.toml",
         bundle=True,
     )
@@ -300,8 +301,8 @@ def test_with_config_include(
     )
     assert resolved == expected
 
-    pathlib.Path(VERIFY_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
-    pathlib.Path(VERIFY_FILE_PATH).write_text(stdout)
+    pathlib.Path(file_paths.verify).parent.mkdir(parents=True, exist_ok=True)
+    pathlib.Path(file_paths.verify).write_text(stdout)
 
 
 @pytest.mark.usefixtures("setenv_resolve")
@@ -309,12 +310,13 @@ def test_with_config_include_nobundle(
     make_args: _ArgsFunc,
     expected: dict[str, Any],
     capfd: pytest.CaptureFixture[str],
+    file_paths: FilePaths,
 ):
     expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = []
     expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = []
 
     args = make_args(
-        include=[TARGETS_PATH],
+        include=[file_paths.targets],
         config="config.toml",
         bundle=False,
     )
