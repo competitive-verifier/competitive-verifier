@@ -8,6 +8,7 @@ from typing import Optional
 import competitive_verifier.merge_result.main as merge_result
 from competitive_verifier.arg import (
     add_ignore_error_argument,
+    add_include_exclude_argument,
     add_result_json_argument,
     add_verify_files_json_argument,
     add_write_summary_argument,
@@ -27,10 +28,19 @@ def run_impl(
     result: VerifyCommandResult,
     docs_dir: Optional[pathlib.Path],
     destination_dir: pathlib.Path,
+    include: Optional[list[str]],
+    exclude: Optional[list[str]],
 ) -> bool:
     logger.debug("input=%s", input.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
-    builder = DocumentBuilder(input, result, docs_dir, destination_dir)
+    builder = DocumentBuilder(
+        input=input,
+        result=result,
+        docs_dir=docs_dir,
+        destination_dir=destination_dir,
+        include=include,
+        exclude=exclude,
+    )
     return builder.build()
 
 
@@ -44,7 +54,17 @@ def run(args: argparse.Namespace) -> bool:
         *args.result_json,
         write_summary=args.write_summary,
     )
-    return run_impl(input, result, args.docs, args.destination) or args.ignore_error
+    return (
+        run_impl(
+            input,
+            result,
+            args.docs,
+            args.destination,
+            args.include,
+            args.exclude,
+        )
+        or args.ignore_error
+    )
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -52,6 +72,8 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
     add_write_summary_argument(parser)
+    add_include_exclude_argument(parser)
+
     destination = config_dir / "_jekyll"
     parser.add_argument(
         "--docs",
