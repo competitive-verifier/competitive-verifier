@@ -1,15 +1,20 @@
 import datetime
 import enum
 import pathlib
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer
 
 from competitive_verifier import git
 from competitive_verifier.models.path import ForcePosixPath
 
 from .file import VerificationFile, VerificationInput
 from .result import ResultStatus, VerificationResult, VerifyCommandResult
+
+SortedPathSet = Annotated[
+    set[ForcePosixPath],
+    PlainSerializer(sorted, return_type=list[ForcePosixPath], when_used="json"),
+]
 
 
 class VerificationStatus(enum.Enum):
@@ -101,9 +106,9 @@ class SourceCodeStatSlim(BaseModel):
 class SourceCodeStat(SourceCodeStatSlim):
     file_input: VerificationFile
     timestamp: datetime.datetime
-    depends_on: set[ForcePosixPath]
-    required_by: set[ForcePosixPath]
-    verified_with: set[ForcePosixPath]
+    depends_on: SortedPathSet
+    required_by: SortedPathSet
+    verified_with: SortedPathSet
     verification_results: Optional[list[VerificationResult]] = None
 
 

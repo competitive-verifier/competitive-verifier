@@ -18,7 +18,7 @@ class TestcaseResult(BaseModel):
     name: str
     status: JudgeStatus
     elapsed: float
-    memory: Optional[float]
+    memory: Optional[float] = None
 
 
 class VerificationResult(BaseModel):

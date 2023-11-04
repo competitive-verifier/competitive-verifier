@@ -27,12 +27,11 @@ def run_impl(
     result: VerifyCommandResult,
     docs_dir: Optional[pathlib.Path],
     destination_dir: pathlib.Path,
-    ignore_error: bool,
 ) -> bool:
     logger.debug("input=%s", input.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
     builder = DocumentBuilder(input, result, docs_dir, destination_dir)
-    return builder.build() or ignore_error
+    return builder.build()
 
 
 def run(args: argparse.Namespace) -> bool:
@@ -45,7 +44,7 @@ def run(args: argparse.Namespace) -> bool:
         *args.result_json,
         write_summary=args.write_summary,
     )
-    return run_impl(input, result, args.docs, args.destination, args.ignore_error)
+    return run_impl(input, result, args.docs, args.destination) or args.ignore_error
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

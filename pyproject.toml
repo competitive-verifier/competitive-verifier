@@ -38,6 +38,8 @@ tomli = { version = "^2.0.1", python = "<3.11" }
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
+pytest-mock = "^3.12.0"
+pytest-subtests = "^0.11.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = { version = "^6.0.0", extras = ["lint"] }
@@ -67,15 +69,29 @@ test = "pytest"
 [tool.poe.tasks.serve]
 [[tool.poe.tasks.serve.sequence]]
 default = "pass"
+switch = [{ case = "False", ref = "dev:docs" }]
+[tool.poe.tasks.serve.sequence.control]
+expr = "os.path.isdir('.competitive-verifier/_jekyll')"
+imports = ["os"]
+
+[[tool.poe.tasks.serve.sequence]]
+default = "pass"
+switch = [{ case = "False", ref = "jekyll:init" }]
 [tool.poe.tasks.serve.sequence.control]
 expr = "os.path.isdir('.competitive-verifier/_jekyll/.vendor')"
 imports = ["os"]
-[[tool.poe.tasks.serve.sequence.switch]]
-case = "False"
-ref = "jekyll:init"
 
 [[tool.poe.tasks.serve.sequence]]
 ref = "jekyll:serve"
+
+[[tool.poe.tasks."test-docs:make-data"]]
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+shell = "competitive-verifier oj-resolve --config examples/config.toml --include testdata/targets > testdata/test-verify.json"
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+cmd = "competitive-verifier verify -o testdata/test-result.json"
+env = { COMPETITIVE_VERIFY_FILES_PATH = "testdata/test-verify.json" }
+[[tool.poe.tasks."test-docs:make-data".sequence]]
+cmd = "python testdata/rewrite_result.py testdata/test-result.json"
 
 
 [tool.pylint.'MESSAGES CONTROL']
@@ -100,6 +116,7 @@ max-line-length = 500
 max-complexity = 18
 exclude = "examples,src/competitive_verifier_oj_clone/languages,src/competitive_verifier_resources/jekyll,"
 ignore = "E203,E266,W503,"
+per-file-ignores = ["tests/documents/data.py: E501"]
 
 [tool.pyright]
 pythonVersion = "3.9"
