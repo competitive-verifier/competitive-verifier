@@ -4,7 +4,6 @@ import inspect
 import logging
 import os
 import pathlib
-from typing import Any
 
 import pytest
 import yaml
@@ -14,7 +13,6 @@ from pytest_subtests import SubTests
 from competitive_verifier.documents.main import main
 
 from .data import (
-    DESTINATION_ROOT,
     RESULT_FILE_PATH,
     TARGETS,
     TARGETS_PATH,
@@ -28,16 +26,13 @@ DEFAULT_ARGS = [
 ]
 
 
-@pytest.fixture(scope="session")
-def clean():
-    import shutil
-
-    if DESTINATION_ROOT.is_dir():
-        shutil.rmtree(DESTINATION_ROOT)
+@pytest.fixture
+def package_dst(dst_dir: pathlib.Path):
+    return dst_dir / "documents"
 
 
 @pytest.fixture
-def setup_docs(clean: Any, mocker: MockerFixture):
+def setup_docs(mocker: MockerFixture):
     tzinfo = datetime.timezone(datetime.timedelta(hours=9), name="Asia/Tokyo")
     MOCK_TIME = datetime.datetime(2023, 12, 4, 5, 6, 7, 8910, tzinfo=tzinfo)
 
@@ -86,8 +81,8 @@ def check_common(
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_with_config(subtests: SubTests):
-    destination = DESTINATION_ROOT / inspect.stack()[0].function
+def test_with_config(package_dst: pathlib.Path, subtests: SubTests):
+    destination = package_dst / inspect.stack()[0].function
     docs_settings_dir = pathlib.Path("testdata/docs_settings")
 
     main(
@@ -143,8 +138,8 @@ def test_with_config(subtests: SubTests):
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_without_config(subtests: SubTests):
-    destination = DESTINATION_ROOT / inspect.stack()[0].function
+def test_without_config(package_dst: pathlib.Path, subtests: SubTests):
+    destination = package_dst / inspect.stack()[0].function
 
     main(
         [
@@ -196,9 +191,11 @@ def test_without_config(subtests: SubTests):
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_logging_default(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+def test_logging_default(
+    package_dst: pathlib.Path, subtests: SubTests, caplog: pytest.LogCaptureFixture
+):
     caplog.set_level(logging.WARNING)
-    destination = DESTINATION_ROOT / inspect.stack()[0].function
+    destination = package_dst / inspect.stack()[0].function
 
     main(
         [
@@ -237,9 +234,11 @@ def test_logging_default(subtests: SubTests, caplog: pytest.LogCaptureFixture):
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_logging_include(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+def test_logging_include(
+    package_dst: pathlib.Path, subtests: SubTests, caplog: pytest.LogCaptureFixture
+):
     caplog.set_level(logging.WARNING)
-    destination = DESTINATION_ROOT / inspect.stack()[0].function
+    destination = package_dst / inspect.stack()[0].function
 
     main(
         [
@@ -271,9 +270,11 @@ def test_logging_include(subtests: SubTests, caplog: pytest.LogCaptureFixture):
 
 
 @pytest.mark.usefixtures("setup_docs")
-def test_logging_exclude(subtests: SubTests, caplog: pytest.LogCaptureFixture):
+def test_logging_exclude(
+    package_dst: pathlib.Path, subtests: SubTests, caplog: pytest.LogCaptureFixture
+):
     caplog.set_level(logging.WARNING)
-    destination = DESTINATION_ROOT / inspect.stack()[0].function
+    destination = package_dst / inspect.stack()[0].function
 
     main(
         [

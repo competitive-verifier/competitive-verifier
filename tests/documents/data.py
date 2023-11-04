@@ -1,4 +1,3 @@
-import pathlib
 from typing import Any
 
 from pydantic import BaseModel
@@ -6,7 +5,6 @@ from pydantic import BaseModel
 TARGETS_PATH = "testdata/targets"
 VERIFY_FILE_PATH = "testdata/test-verify.json"
 RESULT_FILE_PATH = "testdata/test-result.json"
-DESTINATION_ROOT = pathlib.Path("testdata/dst_dir")
 
 
 class MarkdownData(BaseModel):
