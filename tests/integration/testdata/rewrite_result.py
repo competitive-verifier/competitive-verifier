@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 import sys
 from hashlib import md5
@@ -26,6 +27,11 @@ def rewriteTestcaseResult(seed: bytes, case: TestcaseResult):
 def rewriteVerificationResult(seed: bytes, verification: VerificationResult):
     seed += (verification.verification_name or "").encode()
     seed += verification.status.name.encode()
+
+    verification.last_execution_time = datetime.datetime.fromtimestamp(
+        md5_number(seed + b"last_execution_time") % 3000000000,
+        verification.last_execution_time.tzinfo,
+    )
 
     verification.elapsed = md5_number(seed + b"elapsed") % 10000
 

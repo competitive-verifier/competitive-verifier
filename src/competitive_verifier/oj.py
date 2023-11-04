@@ -34,8 +34,12 @@ def get_cache_directory() -> pathlib.Path:
     return _oj_cache_dir
 
 
+def get_problem_cache_dir() -> pathlib.Path:
+    return _problem_cache_dir
+
+
 def get_directory(url: str) -> pathlib.Path:
-    return _problem_cache_dir / hashlib.md5(url.encode()).hexdigest()
+    return get_problem_cache_dir() / hashlib.md5(url.encode()).hexdigest()
 
 
 def is_yukicoder(url: str) -> bool:

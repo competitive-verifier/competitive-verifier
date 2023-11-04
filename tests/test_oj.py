@@ -13,7 +13,8 @@ import competitive_verifier.oj as oj
 
 
 @pytest.fixture
-def setenv(mocker: MockerFixture):
+def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.chdir(pathlib.Path(__file__).parent)
     mocker.patch.dict(
         os.environ, {"YUKICODER_TOKEN": "YKTK", "DROPBOX_TOKEN": "DBTK"}, clear=True
     )
