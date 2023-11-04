@@ -5,17 +5,12 @@ from pydantic import BaseModel, ConfigDict, PlainSerializer, computed_field
 from pydantic.alias_generators import to_camel
 
 from competitive_verifier.models.dependency import VerificationStatus
-from competitive_verifier.models.path import ForcePosixPath
+from competitive_verifier.models.path import ForcePosixPath, SortedPathList
 from competitive_verifier.models.result import TestcaseResult
 
 StatusIcon = Annotated[
     VerificationStatus,
     PlainSerializer(lambda x: x.name, return_type=str, when_used="json"),
-]
-
-SortedPathList = Annotated[
-    list[ForcePosixPath],
-    PlainSerializer(sorted, return_type=list[ForcePosixPath]),
 ]
 
 

@@ -5,7 +5,7 @@ from typing import Any, Union
 
 from pydantic import BaseModel, Field, field_validator
 
-from competitive_verifier.models.path import ForcePosixPath
+from competitive_verifier.models.path import ForcePosixPath, SortedPathSet
 from competitive_verifier.models.result import FileResult
 from competitive_verifier.util import to_relative
 
@@ -27,7 +27,7 @@ class AddtionalSource(BaseModel):
 
 
 class VerificationFile(BaseModel):
-    dependencies: set[ForcePosixPath] = Field(default_factory=set)
+    dependencies: SortedPathSet = Field(default_factory=set)
     verification: list[Verification] = Field(default_factory=list)
     document_attributes: dict[str, Any] = Field(default_factory=dict)
     """Attributes for documentation
