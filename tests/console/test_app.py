@@ -31,7 +31,8 @@ def test_parse_args_default(setenv: Any):
         ".competitive-verifier/verify_files.json"
     )
     assert parsed.timeout == math.inf
-    assert parsed.default_tle == 60.0
+    assert parsed.default_tle is None
+    assert parsed.default_mle is None
     assert parsed.prev_result is None
     assert parsed.split is None
     assert parsed.split_index is None

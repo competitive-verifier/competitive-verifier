@@ -179,6 +179,17 @@ class OjTestResult(BaseModel):
     testcases: list[OjTestcaseResult]
 
 
+def get_gnu_time_command() -> str:
+    if platform.system() == "Darwin":
+        return "gtime"
+    else:
+        return "time"
+
+
+def check_gnu_time(gnu_time: Optional[str] = None) -> bool:
+    return oj_test.check_gnu_time(gnu_time or get_gnu_time_command())
+
+
 def run(args: "argparse.Namespace") -> OjTestResult:
     # list tests
     if not args.test:

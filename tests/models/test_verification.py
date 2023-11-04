@@ -21,8 +21,8 @@ from competitive_verifier.models import (
 
 @dataclass
 class DataVerificationParams:
-    default_tle: float
-    default_mle: float
+    default_tle: Optional[float]
+    default_mle: Optional[float]
 
 
 test_command_union_json_params: list[tuple[Verification, str, str]] = [

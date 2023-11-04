@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.models import VerificationResult
+from competitive_verifier.oj_test_command import check_gnu_time
 from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
 
@@ -280,83 +281,89 @@ def test_verify(mocker: MockerFixture, data: VerifyData):
                         "verification_name": "Python",
                         "status": "failure",
                         "elapsed": 961.0,
-                        "slowest": 96.0,
-                        "heaviest": 751.0,
-                        "testcases": [
-                            {
-                                "name": "example_00",
-                                "status": "MLE",
-                                "elapsed": 6.26,
-                                "memory": 60.26,
-                            },
-                            {
-                                "name": "example_01",
-                                "status": "MLE",
-                                "elapsed": 2.4,
-                                "memory": 59.44,
-                            },
-                            {
-                                "name": "random_00",
-                                "status": "MLE",
-                                "elapsed": 6.48,
-                                "memory": 7.31,
-                            },
-                            {
-                                "name": "random_01",
-                                "status": "AC",
-                                "elapsed": 9.73,
-                                "memory": 24.23,
-                            },
-                            {
-                                "name": "random_02",
-                                "status": "AC",
-                                "elapsed": 4.88,
-                                "memory": 52.64,
-                            },
-                            {
-                                "name": "random_03",
-                                "status": "MLE",
-                                "elapsed": 0.47,
-                                "memory": 29.96,
-                            },
-                            {
-                                "name": "random_04",
-                                "status": "AC",
-                                "elapsed": 7.88,
-                                "memory": 34.93,
-                            },
-                            {
-                                "name": "random_05",
-                                "status": "AC",
-                                "elapsed": 8.89,
-                                "memory": 71.35,
-                            },
-                            {
-                                "name": "random_06",
-                                "status": "AC",
-                                "elapsed": 7.13,
-                                "memory": 38.93,
-                            },
-                            {
-                                "name": "random_07",
-                                "status": "MLE",
-                                "elapsed": 5.77,
-                                "memory": 84.25,
-                            },
-                            {
-                                "name": "random_08",
-                                "status": "AC",
-                                "elapsed": 4.06,
-                                "memory": 42.35,
-                            },
-                            {
-                                "name": "random_09",
-                                "status": "MLE",
-                                "elapsed": 1.99,
-                                "memory": 10.53,
-                            },
-                        ],
                         "last_execution_time": "1986-01-16T01:09:24.400000+03:00",
+                        **(
+                            {
+                                "slowest": 96.0,
+                                "heaviest": 751.0,
+                                "testcases": [
+                                    {
+                                        "name": "example_00",
+                                        "status": "MLE",
+                                        "elapsed": 6.26,
+                                        "memory": 60.26,
+                                    },
+                                    {
+                                        "name": "example_01",
+                                        "status": "MLE",
+                                        "elapsed": 2.4,
+                                        "memory": 59.44,
+                                    },
+                                    {
+                                        "name": "random_00",
+                                        "status": "MLE",
+                                        "elapsed": 6.48,
+                                        "memory": 7.31,
+                                    },
+                                    {
+                                        "name": "random_01",
+                                        "status": "AC",
+                                        "elapsed": 9.73,
+                                        "memory": 24.23,
+                                    },
+                                    {
+                                        "name": "random_02",
+                                        "status": "AC",
+                                        "elapsed": 4.88,
+                                        "memory": 52.64,
+                                    },
+                                    {
+                                        "name": "random_03",
+                                        "status": "MLE",
+                                        "elapsed": 0.47,
+                                        "memory": 29.96,
+                                    },
+                                    {
+                                        "name": "random_04",
+                                        "status": "AC",
+                                        "elapsed": 7.88,
+                                        "memory": 34.93,
+                                    },
+                                    {
+                                        "name": "random_05",
+                                        "status": "AC",
+                                        "elapsed": 8.89,
+                                        "memory": 71.35,
+                                    },
+                                    {
+                                        "name": "random_06",
+                                        "status": "AC",
+                                        "elapsed": 7.13,
+                                        "memory": 38.93,
+                                    },
+                                    {
+                                        "name": "random_07",
+                                        "status": "MLE",
+                                        "elapsed": 5.77,
+                                        "memory": 84.25,
+                                    },
+                                    {
+                                        "name": "random_08",
+                                        "status": "AC",
+                                        "elapsed": 4.06,
+                                        "memory": 42.35,
+                                    },
+                                    {
+                                        "name": "random_09",
+                                        "status": "MLE",
+                                        "elapsed": 1.99,
+                                        "memory": 10.53,
+                                    },
+                                ],
+                            }
+                            if check_gnu_time()
+                            else {}
+                        ),
                     }
                 ],
                 "newest": True,

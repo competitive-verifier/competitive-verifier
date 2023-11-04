@@ -111,8 +111,8 @@ def test(
     *,
     url: str,
     command: str,
-    tle: float,
-    mle: float,
+    tle: Optional[float],
+    mle: Optional[float],
     error: Optional[float],
 ) -> VerificationResult:
     directory = get_directory(url)
@@ -127,12 +127,12 @@ def test(
         "-d",
         str(test_directory),
         "--print-input",
-        "--tle",
-        str(tle),
-        "--mle",
-        str(mle),
     ]
 
+    if tle:
+        arg_list += ["--tle", str(tle)]
+    if mle:
+        arg_list += ["--mle", str(mle)]
     if error:
         arg_list += ["-e", str(error)]
 

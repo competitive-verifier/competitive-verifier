@@ -127,8 +127,8 @@ class InputContainer(ABC):
 
 class BaseVerifier(InputContainer):
     timeout: float
-    default_tle: float
-    default_mle: float
+    default_tle: Optional[float]
+    default_mle: Optional[float]
     split_state: Optional[SplitState]
 
     _result: Optional[VerifyCommandResult]
@@ -138,8 +138,8 @@ class BaseVerifier(InputContainer):
         input: VerificationInput,
         *,
         timeout: float,
-        default_tle: float,
-        default_mle: float,
+        default_tle: Optional[float],
+        default_mle: Optional[float],
         prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
@@ -330,8 +330,8 @@ class Verifier(BaseVerifier):
         input: VerificationInput,
         *,
         timeout: float,
-        default_tle: float,
-        default_mle: float,
+        default_tle: Optional[float],
+        default_mle: Optional[float],
         prev_result: Optional[VerifyCommandResult],
         split_state: Optional[SplitState],
         verification_time: Optional[datetime.datetime] = None,
