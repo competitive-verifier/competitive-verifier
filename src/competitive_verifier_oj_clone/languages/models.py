@@ -35,7 +35,7 @@ class Language:
         :throws Exception:
         """
 
-        attributes: dict[str, Any] = special_comments.list_special_comments(path)
+        attributes: dict[str, Any] = dict(special_comments.list_special_comments(path))
         attributes.setdefault("links", [])
         attributes["links"].extend(special_comments.list_embedded_urls(path))
         return attributes

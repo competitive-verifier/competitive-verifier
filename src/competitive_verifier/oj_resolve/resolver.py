@@ -39,8 +39,14 @@ class OjResolver:
         include: list[str],
         exclude: list[str],
     ) -> None:
-        self.include = include
-        self.exclude = exclude
+        def _remove_slash(s: str):
+            s = os.path.normpath(s)
+            while len(s) > 1 and s[-1] == os.sep:
+                s = s[:-1]
+            return s
+
+        self.include = list(map(_remove_slash, include))
+        self.exclude = list(map(_remove_slash, exclude))
         self._match_exclude_cache = {}
 
     def _match_exclude2(self, paths: list[pathlib.Path]) -> bool:

@@ -57,7 +57,7 @@ class UserDefinedLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, str]:
         if "list_attributes" not in self.config:
-            return list_special_comments(path)
+            return dict(list_special_comments(path))
         logger.warning(
             '"languages.*.list_attributes" field in .verify-helper/config.toml is now obsoleted'
         )
