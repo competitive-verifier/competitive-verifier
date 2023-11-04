@@ -1,4 +1,4 @@
 ---
-documentation_of: python/failure.re.py
+documentation_of: ./python/failure.re.py
 title: Failure-RE
 ---

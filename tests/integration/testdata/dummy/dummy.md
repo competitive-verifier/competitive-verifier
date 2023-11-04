@@ -1,4 +1,4 @@
 ---
-documentation_of: ../dummy.py
+documentation_of: ./dummy.py
 ---
 # Dummy for testing

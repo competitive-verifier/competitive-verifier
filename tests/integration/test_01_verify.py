@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 import pathlib
 import random
 from typing import Any
@@ -273,5 +272,542 @@ def test_mock_dump():
 )
 @pytest.mark.usefixtures("mock_verification_dump")
 def test_verify(mocker: MockerFixture, data: VerifyData):
-    assert "" == " ".join(["--verify-json", data.verify, "--output", data.result])
     main.main(["--verify-json", data.verify, "--output", data.result])
+
+    assert json.loads(pathlib.Path(data.result).read_bytes()) == {
+        "total_seconds": 8719.92,
+        "files": {
+            "targets/python/failure.mle.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "failure",
+                        "elapsed": 961.0,
+                        "slowest": 96.0,
+                        "heaviest": 751.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "MLE",
+                                "elapsed": 6.26,
+                                "memory": 60.26,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "MLE",
+                                "elapsed": 2.4,
+                                "memory": 59.44,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "MLE",
+                                "elapsed": 6.48,
+                                "memory": 7.31,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "AC",
+                                "elapsed": 9.73,
+                                "memory": 24.23,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "AC",
+                                "elapsed": 4.88,
+                                "memory": 52.64,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "MLE",
+                                "elapsed": 0.47,
+                                "memory": 29.96,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "AC",
+                                "elapsed": 7.88,
+                                "memory": 34.93,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "AC",
+                                "elapsed": 8.89,
+                                "memory": 71.35,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "AC",
+                                "elapsed": 7.13,
+                                "memory": 38.93,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "MLE",
+                                "elapsed": 5.77,
+                                "memory": 84.25,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "AC",
+                                "elapsed": 4.06,
+                                "memory": 42.35,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "MLE",
+                                "elapsed": 1.99,
+                                "memory": 10.53,
+                            },
+                        ],
+                        "last_execution_time": "1986-01-16T01:09:24.400000+03:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/failure.wa.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "failure",
+                        "elapsed": 101.0,
+                        "slowest": 10.0,
+                        "heaviest": 892.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "AC",
+                                "elapsed": 8.82,
+                                "memory": 90.49,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "AC",
+                                "elapsed": 8.18,
+                                "memory": 77.99,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "AC",
+                                "elapsed": 4.75,
+                                "memory": 27.37,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "WA",
+                                "elapsed": 0.06,
+                                "memory": 86.57,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "WA",
+                                "elapsed": 9.79,
+                                "memory": 4.53,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "AC",
+                                "elapsed": 4.02,
+                                "memory": 71.02,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "WA",
+                                "elapsed": 9.75,
+                                "memory": 55.4,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "WA",
+                                "elapsed": 3.46,
+                                "memory": 7.43,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "AC",
+                                "elapsed": 5.18,
+                                "memory": 8.11,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "AC",
+                                "elapsed": 3.66,
+                                "memory": 31.86,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "WA",
+                                "elapsed": 3.82,
+                                "memory": 5.56,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "WA",
+                                "elapsed": 7.69,
+                                "memory": 38.28,
+                            },
+                        ],
+                        "last_execution_time": "2013-12-07T21:38:54.760000-11:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/failure.tle.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "failure",
+                        "elapsed": 4292.0,
+                        "slowest": 429.0,
+                        "heaviest": 661.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "TLE",
+                                "elapsed": 2.47,
+                                "memory": 24.08,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "TLE",
+                                "elapsed": 2.36,
+                                "memory": 24.77,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "TLE",
+                                "elapsed": 0.77,
+                                "memory": 29.84,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "AC",
+                                "elapsed": 6.54,
+                                "memory": 11.57,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "AC",
+                                "elapsed": 4.54,
+                                "memory": 0.66,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "TLE",
+                                "elapsed": 8.33,
+                                "memory": 30.81,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "AC",
+                                "elapsed": 4.31,
+                                "memory": 79.42,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "AC",
+                                "elapsed": 8.44,
+                                "memory": 12.32,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "AC",
+                                "elapsed": 6.78,
+                                "memory": 26.53,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "TLE",
+                                "elapsed": 3.21,
+                                "memory": 99.15,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "AC",
+                                "elapsed": 3.22,
+                                "memory": 55.38,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "TLE",
+                                "elapsed": 9.95,
+                                "memory": 28.66,
+                            },
+                        ],
+                        "last_execution_time": "2022-03-07T23:17:35.390000+02:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/success1.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "success",
+                        "elapsed": 1560.0,
+                        "slowest": 156.0,
+                        "heaviest": 933.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "AC",
+                                "elapsed": 1.43,
+                                "memory": 64.25,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "AC",
+                                "elapsed": 9.2,
+                                "memory": 70.28,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "AC",
+                                "elapsed": 2.39,
+                                "memory": 86.29,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "AC",
+                                "elapsed": 2.65,
+                                "memory": 90.22,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "AC",
+                                "elapsed": 1.69,
+                                "memory": 5.04,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "AC",
+                                "elapsed": 3.85,
+                                "memory": 9.68,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "AC",
+                                "elapsed": 5.36,
+                                "memory": 72.4,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "AC",
+                                "elapsed": 4.56,
+                                "memory": 66.47,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "AC",
+                                "elapsed": 8.28,
+                                "memory": 36.75,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "AC",
+                                "elapsed": 6.04,
+                                "memory": 47.31,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "AC",
+                                "elapsed": 7.93,
+                                "memory": 35.68,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "AC",
+                                "elapsed": 5.7,
+                                "memory": 21.75,
+                            },
+                        ],
+                        "last_execution_time": "2038-04-29T10:29:30.730000+11:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/success2.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "success",
+                        "elapsed": 5224.0,
+                        "slowest": 522.0,
+                        "heaviest": 525.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "AC",
+                                "elapsed": 6.73,
+                                "memory": 11.63,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "AC",
+                                "elapsed": 1.64,
+                                "memory": 89.38,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "AC",
+                                "elapsed": 6.05,
+                                "memory": 66.15,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "AC",
+                                "elapsed": 3.86,
+                                "memory": 41.39,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "AC",
+                                "elapsed": 5.8,
+                                "memory": 62.2,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "AC",
+                                "elapsed": 3.92,
+                                "memory": 99.71,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "AC",
+                                "elapsed": 4.85,
+                                "memory": 71.44,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "AC",
+                                "elapsed": 0.4,
+                                "memory": 92.24,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "AC",
+                                "elapsed": 4.64,
+                                "memory": 21.41,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "AC",
+                                "elapsed": 4.51,
+                                "memory": 24.87,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "AC",
+                                "elapsed": 4.97,
+                                "memory": 49.86,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "AC",
+                                "elapsed": 0.74,
+                                "memory": 77.54,
+                            },
+                        ],
+                        "last_execution_time": "2010-11-21T16:32:46.970000+10:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/failure.re.py": {
+                "verifications": [
+                    {
+                        "verification_name": "Python",
+                        "status": "failure",
+                        "elapsed": 6846.0,
+                        "slowest": 684.0,
+                        "heaviest": 84.0,
+                        "testcases": [
+                            {
+                                "name": "example_00",
+                                "status": "RE",
+                                "elapsed": 9.89,
+                                "memory": 58.09,
+                            },
+                            {
+                                "name": "example_01",
+                                "status": "RE",
+                                "elapsed": 1.1,
+                                "memory": 96.01,
+                            },
+                            {
+                                "name": "random_00",
+                                "status": "RE",
+                                "elapsed": 2.24,
+                                "memory": 41.05,
+                            },
+                            {
+                                "name": "random_01",
+                                "status": "RE",
+                                "elapsed": 9.27,
+                                "memory": 38.67,
+                            },
+                            {
+                                "name": "random_02",
+                                "status": "RE",
+                                "elapsed": 1.62,
+                                "memory": 28.54,
+                            },
+                            {
+                                "name": "random_03",
+                                "status": "RE",
+                                "elapsed": 1.36,
+                                "memory": 51.34,
+                            },
+                            {
+                                "name": "random_04",
+                                "status": "RE",
+                                "elapsed": 2.44,
+                                "memory": 26.1,
+                            },
+                            {
+                                "name": "random_05",
+                                "status": "RE",
+                                "elapsed": 2.89,
+                                "memory": 26.67,
+                            },
+                            {
+                                "name": "random_06",
+                                "status": "RE",
+                                "elapsed": 8.76,
+                                "memory": 41.03,
+                            },
+                            {
+                                "name": "random_07",
+                                "status": "RE",
+                                "elapsed": 0.86,
+                                "memory": 29.6,
+                            },
+                            {
+                                "name": "random_08",
+                                "status": "RE",
+                                "elapsed": 1.56,
+                                "memory": 46.89,
+                            },
+                            {
+                                "name": "random_09",
+                                "status": "RE",
+                                "elapsed": 0.32,
+                                "memory": 94.85,
+                            },
+                        ],
+                        "last_execution_time": "2024-07-16T08:47:19.270000-10:00",
+                    }
+                ],
+                "newest": True,
+            },
+            "targets/python/skip.py": {
+                "verifications": [
+                    {
+                        "status": "skipped",
+                        "elapsed": 9827.0,
+                        "last_execution_time": "1986-11-01T05:11:16.750000-12:00",
+                    }
+                ],
+                "newest": True,
+            },
+        },
+    }
