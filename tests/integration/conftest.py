@@ -23,9 +23,9 @@ def dst_dir():
     return DESTINATION_ROOT
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.chdir(pathlib.Path(__file__).parent)
+    monkeypatch.chdir(pathlib.Path(__file__).parent / "testdata")
 
     def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
         md5 = md5_number(b"".join(sorted(f.as_posix().encode() for f in files)))

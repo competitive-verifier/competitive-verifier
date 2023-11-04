@@ -3,7 +3,7 @@
 import sys
 import time
 
-import testdata.targets.python.lib_all_failure
+import targets.python.lib_all_failure
 
 input = sys.stdin.buffer.readline
 

@@ -28,7 +28,6 @@ def load(config_path: pathlib.Path) -> Optional[OjVerifyConfig]:
 
 def set_config_path(config_path: pathlib.Path) -> None:
     global _loaded_config  # pylint: disable=invalid-name
-    assert _loaded_config is None
     _loaded_config = load(config_path)
     if _loaded_config is None:
         _loaded_config = OjVerifyConfig(languages={})

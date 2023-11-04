@@ -1,7 +1,7 @@
 # competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
 import sys
 
-import testdata.targets.python.lib_all_failure
+import targets.python.lib_all_failure
 
 input = sys.stdin.buffer.readline
 

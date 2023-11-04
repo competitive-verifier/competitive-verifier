@@ -7,5 +7,5 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 [languages.txt]
 compile = "true"
 execute = "true"
-bundle = "false"
+bundle = "normalizer {path} -m"
 list_dependencies = ""

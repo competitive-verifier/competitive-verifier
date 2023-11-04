@@ -1,8 +1,8 @@
 # competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
 import sys
 
-import testdata.targets.python.lib_some_skip
-from testdata.targets.python.lib_some_failure import KB
+import targets.python.lib_some_skip
+from targets.python.lib_some_failure import KB
 
 input = sys.stdin.buffer.readline
 

@@ -114,6 +114,9 @@ per-file-ignores = ["tests/documents/data.py: E501"]
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
-exclude = ["src/competitive_verifier_resources/jekyll"]
+exclude = [
+    "src/competitive_verifier_resources/jekyll",
+    "tests/integration/testdata",
+]
 reportMissingImports = true
 reportMissingTypeStubs = false

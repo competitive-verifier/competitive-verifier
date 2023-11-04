@@ -2,8 +2,8 @@
 # competitive-verifier: IGNORE
 import sys
 
-import testdata.targets.python.lib_skip
-from testdata.targets.python.lib_some_skip_some_wa import stderr
+import targets.python.lib_skip
+from targets.python.lib_some_skip_some_wa import stderr
 
 input = sys.stdin.buffer.readline
 

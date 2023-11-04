@@ -1,8 +1,8 @@
 # competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
 import sys
 
-import testdata.targets.python.lib_all_success
-from testdata.targets.python.lib_some_skip_some_wa import stderr
+import targets.python.lib_all_success
+from targets.python.lib_some_skip_some_wa import stderr
 
 input = sys.stdin.buffer.readline
 
