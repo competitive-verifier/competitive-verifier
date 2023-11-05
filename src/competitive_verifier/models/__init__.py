@@ -20,6 +20,7 @@ from .verification import (
     ConstVerification,
     ProblemVerification,
     ShellCommand,
+    ShellCommandLike,
     Verification,
     VerificationParams,
 )
@@ -43,6 +44,7 @@ __all__ = [
     "JudgeStatus",
     "BaseVerification",
     "ShellCommand",
+    "ShellCommandLike",
     "CommandVerification",
     "ConstVerification",
     "ProblemVerification",
