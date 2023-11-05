@@ -224,7 +224,9 @@ def expected(file_paths: FilePaths) -> dict[str, Any]:
                     "document_attributes": {
                         "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                         "TLE": "0.1",
-                        "links": ["https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"],
+                        "links": [
+                            "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                        ],
                     },
                     "additonal_sources": [],
                 },
@@ -259,115 +261,119 @@ def make_args() -> _ArgsFunc:
     return _make_args
 
 
-@pytest.mark.integration
-@pytest.mark.dependency(name="resolve_default", scope="package")
-@pytest.mark.usefixtures("setenv_resolve")
-def test_with_config_include(
-    make_args: _ArgsFunc,
-    expected: dict[str, Any],
-    capfd: pytest.CaptureFixture[str],
-    file_paths: FilePaths,
-    config_dir: ConfigDirFunc,
-):
-    config_dir("integration")
+@pytest.mark.order(-1000)
+class TestCommandOjResolve:
+    @pytest.mark.integration
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_config_include(
+        self,
+        make_args: _ArgsFunc,
+        expected: dict[str, Any],
+        capfd: pytest.CaptureFixture[str],
+        file_paths: FilePaths,
+        config_dir: ConfigDirFunc,
+    ):
+        config_dir("integration")
 
-    args = make_args(
-        include=[file_paths.targets],
-        config="config.toml",
-        bundle=True,
-    )
-    main(args)
+        args = make_args(
+            include=[file_paths.targets],
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
 
-    bundle_euc_ke_path = (
-        file_paths.dest_root / "config.integration/bundled/targets/encoding/EUC-KR.txt"
-    )
-    bundle_cp932_path = (
-        file_paths.dest_root / "config.integration/bundled/targets/encoding/cp932.txt"
-    )
+        bundle_euc_ke_path = (
+            file_paths.dest_root
+            / "config.integration/bundled/targets/encoding/EUC-KR.txt"
+        )
+        bundle_cp932_path = (
+            file_paths.dest_root
+            / "config.integration/bundled/targets/encoding/cp932.txt"
+        )
 
-    expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = [
-        {
-            "name": "bundled",
-            "path": bundle_euc_ke_path.as_posix(),
+        expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = [
+            {
+                "name": "bundled",
+                "path": bundle_euc_ke_path.as_posix(),
+            }
+        ]
+        expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = [
+            {
+                "name": "bundled",
+                "path": bundle_cp932_path.as_posix(),
+            }
+        ]
+
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == expected
+        assert bundle_euc_ke_path.read_bytes().strip() == b"cp949"
+        assert bundle_cp932_path.read_bytes().strip() == b"cp932"
+
+        pathlib.Path(file_paths.verify).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(file_paths.verify).write_text(stdout)
+
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_config_include_nobundle(
+        self,
+        make_args: _ArgsFunc,
+        expected: dict[str, Any],
+        capfd: pytest.CaptureFixture[str],
+        file_paths: FilePaths,
+    ):
+        args = make_args(
+            include=[file_paths.targets],
+            config="config.toml",
+            bundle=False,
+        )
+        main(args)
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == expected
+
+    @pytest.mark.parametrize(
+        "exclude",
+        [
+            ["dummy/"],
+            ["dummy/dummy.py"],
+        ],
+    )
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_without_with_exclude_dir(
+        self,
+        exclude: list[str],
+        make_args: _ArgsFunc,
+        expected: dict[str, Any],
+        capfd: pytest.CaptureFixture[str],
+    ):
+        del expected["files"]["targets/encoding/EUC-KR.txt"]
+        del expected["files"]["targets/encoding/cp932.txt"]
+
+        args = make_args(exclude=exclude)
+        main(args)
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == expected
+
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_without_args(
+        self,
+        make_args: _ArgsFunc,
+        expected: dict[str, Any],
+        capfd: pytest.CaptureFixture[str],
+    ):
+        del expected["files"]["targets/encoding/EUC-KR.txt"]
+        del expected["files"]["targets/encoding/cp932.txt"]
+
+        expected["files"]["dummy/dummy.py"] = {
+            "additonal_sources": [],
+            "dependencies": ["dummy/dummy.py"],
+            "document_attributes": {"links": []},
+            "verification": [],
         }
-    ]
-    expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = [
-        {
-            "name": "bundled",
-            "path": bundle_cp932_path.as_posix(),
-        }
-    ]
 
-    stdout = capfd.readouterr().out
-    resolved = json.loads(stdout)
-    assert resolved == expected
-    assert bundle_euc_ke_path.read_bytes().strip() == b"cp949"
-    assert bundle_cp932_path.read_bytes().strip() == b"cp932"
-
-    pathlib.Path(file_paths.verify).parent.mkdir(parents=True, exist_ok=True)
-    pathlib.Path(file_paths.verify).write_text(stdout)
-
-
-@pytest.mark.usefixtures("setenv_resolve")
-def test_with_config_include_nobundle(
-    make_args: _ArgsFunc,
-    expected: dict[str, Any],
-    capfd: pytest.CaptureFixture[str],
-    file_paths: FilePaths,
-):
-    args = make_args(
-        include=[file_paths.targets],
-        config="config.toml",
-        bundle=False,
-    )
-    main(args)
-    stdout = capfd.readouterr().out
-    resolved = json.loads(stdout)
-    assert resolved == expected
-
-
-@pytest.mark.parametrize(
-    "exclude",
-    [
-        ["dummy/"],
-        ["dummy/dummy.py"],
-    ],
-)
-@pytest.mark.usefixtures("setenv_resolve")
-def test_without_with_exclude_dir(
-    exclude: list[str],
-    make_args: _ArgsFunc,
-    expected: dict[str, Any],
-    capfd: pytest.CaptureFixture[str],
-):
-    del expected["files"]["targets/encoding/EUC-KR.txt"]
-    del expected["files"]["targets/encoding/cp932.txt"]
-
-    args = make_args(exclude=exclude)
-    main(args)
-    stdout = capfd.readouterr().out
-    resolved = json.loads(stdout)
-    assert resolved == expected
-
-
-@pytest.mark.usefixtures("setenv_resolve")
-def test_without_args(
-    make_args: _ArgsFunc,
-    expected: dict[str, Any],
-    capfd: pytest.CaptureFixture[str],
-):
-    del expected["files"]["targets/encoding/EUC-KR.txt"]
-    del expected["files"]["targets/encoding/cp932.txt"]
-
-    expected["files"]["dummy/dummy.py"] = {
-        "additonal_sources": [],
-        "dependencies": ["dummy/dummy.py"],
-        "document_attributes": {"links": []},
-        "verification": [],
-    }
-
-    args = make_args()
-    main(args)
-    stdout = capfd.readouterr().out
-    resolved = json.loads(stdout)
-    assert resolved == expected
+        args = make_args()
+        main(args)
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == expected
