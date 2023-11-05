@@ -20,10 +20,6 @@ def file_paths() -> FilePaths:
     if dest_root.is_dir():
         shutil.rmtree(dest_root)
 
-    tmp_dir = root / ".competitive-verifier"
-    if tmp_dir.is_dir():
-        shutil.rmtree(tmp_dir)
-
     return FilePaths(
         root=root,
         targets="targets",
@@ -31,6 +27,13 @@ def file_paths() -> FilePaths:
         result="dst_dir/test-result.json",
         dest_root=dest_root,
     )
+
+
+@pytest.fixture
+def clear_tmp_dir(file_paths: FilePaths):
+    tmp_dir = file_paths.root / ".competitive-verifier"
+    if tmp_dir.is_dir():
+        shutil.rmtree(tmp_dir)
 
 
 @pytest.fixture(autouse=True)
