@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
 import competitive_verifier.models
+import competitive_verifier.oj.tools.test_command
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
@@ -18,6 +19,8 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
+
+from competitive_verifier.oj.tools.test_command import OjTestArguments
 
 
 @dataclass
@@ -115,7 +118,9 @@ def test_const_verification(mock_exec_command: MockType):
     mock_exec_command.assert_not_called()
 
 
-test_run_params: list[tuple[Verification, Sequence[str], dict[str, Any]]] = [
+test_run_params: list[
+    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any]]
+] = [
     (
         CommandVerification(command="ls ~"),
         ("ls ~",),
@@ -136,6 +141,46 @@ test_run_params: list[tuple[Verification, Sequence[str], dict[str, Any]]] = [
             "text": True,
             "check": False,
             "env": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        CommandVerification(command=["ls", "~"]),
+        (["ls", "~"],),
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        CommandVerification(
+            command=ShellCommand(command="ls ~", env={"TOKEN": "DUMMY"}),
+        ),
+        ("ls ~",),
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": {"TOKEN": "DUMMY"},
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        CommandVerification(
+            command=ShellCommand(command=["ls", "~"], env={"TOKEN": "DUMMY"}),
+        ),
+        (["ls", "~"],),
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": {"TOKEN": "DUMMY"},
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -163,30 +208,34 @@ def test_run(
     mock_exec_command.assert_called_once_with(*args, **kwargs)
 
 
-test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]] = [
+test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments]] = [
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
-        {
-            "url": "https://example.com",
-            "command": "ls ~",
-            "tle": 22.0,
-            "error": None,
-            "mle": 128,
-            "env": None,
-        },
+        OjTestArguments(
+            cookie=pathlib.Path("/any/cache/cookie.txt"),
+            directory=pathlib.Path("/any/test"),
+            judge=None,
+            command="ls ~",
+            tle=22.0,
+            error=None,
+            mle=128,
+            env=None,
+        ),
     ),
     (
         ProblemVerification(
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
-        {
-            "url": "https://example.com",
-            "command": "ls ~",
-            "tle": 22.0,
-            "error": None,
-            "mle": 128,
-            "env": None,
-        },
+        OjTestArguments(
+            cookie=pathlib.Path("/any/cache/cookie.txt"),
+            directory=pathlib.Path("/any/test"),
+            judge=None,
+            command="ls ~",
+            tle=22.0,
+            error=None,
+            mle=128,
+            env=None,
+        ),
     ),
     (
         ProblemVerification(
@@ -197,31 +246,16 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             tle=2,
             mle=1.2,
         ),
-        {
-            "url": "https://example.com",
-            "command": "ls ~",
-            "tle": 2.0,
-            "error": 1e-06,
-            "mle": 1.2,
-            "env": None,
-        },
-    ),
-    (
-        ProblemVerification(
-            compile="cat LICENSE",
+        OjTestArguments(
+            cookie=pathlib.Path("/any/cache/cookie.txt"),
+            directory=pathlib.Path("/any/test"),
+            judge=None,
             command="ls ~",
-            problem="https://judge.yosupo.jp/problem/aplusb",
-            error=1e-6,
-            tle=2,
+            tle=2.0,
+            error=1e-06,
+            mle=1.2,
+            env=None,
         ),
-        {
-            "url": "https://judge.yosupo.jp/problem/aplusb",
-            "command": "ls ~",
-            "tle": 2.0,
-            "error": 1e-06,
-            "mle": 128,
-            "env": None,
-        },
     ),
     (
         ProblemVerification(
@@ -231,29 +265,60 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             error=1e-6,
             tle=2,
         ),
-        {
-            "url": "https://judge.yosupo.jp/problem/aplusb",
-            "command": "ls ~",
-            "tle": 2.0,
-            "error": 1e-06,
-            "mle": 128,
-            "env": {"ARG": "VAR"},
-        },
+        OjTestArguments(
+            cookie=pathlib.Path("/any/cache/cookie.txt"),
+            directory=pathlib.Path("/any/test"),
+            judge=None,
+            command="ls ~",
+            tle=2.0,
+            error=1e-06,
+            mle=128,
+            env=None,
+        ),
+    ),
+    (
+        ProblemVerification(
+            compile="cat LICENSE",
+            command=ShellCommand(command="ls ~", env={"ARG": "VAR"}),
+            problem="https://judge.yosupo.jp/problem/aplusb",
+            error=1e-6,
+            tle=2,
+        ),
+        OjTestArguments(
+            cookie=pathlib.Path("/any/cache/cookie.txt"),
+            directory=pathlib.Path("/any/test"),
+            judge=None,
+            command="ls ~",
+            tle=2.0,
+            error=1e-06,
+            mle=128,
+            env={"ARG": "VAR"},
+        ),
     ),
 ]
 
 
-@pytest.mark.parametrize("obj, kwargs", test_run_problem_command_params)
+@pytest.mark.parametrize("obj, args", test_run_problem_command_params)
 def test_run_problem_command(
     obj: ProblemVerification,
-    kwargs: dict[str, Any],
+    args: OjTestArguments,
     mocker: MockerFixture,
 ):
-    patch = mocker.patch.object(competitive_verifier.models.verification.oj, "test")
+    patch = mocker.patch.object(competitive_verifier.oj.tools.test_command, "run")
+
+    mocker.patch(
+        "competitive_verifier.oj.tools.test_command.get_cache_directory",
+        return_value=pathlib.Path("/any/cache"),
+    )
+    mocker.patch(
+        "competitive_verifier.oj.tools.test_command.get_directory",
+        return_value=pathlib.Path("/any/"),
+    )
+
     obj.run(
         DataVerificationParams(default_tle=22, default_mle=128),
     )
-    patch.assert_called_once_with(**kwargs)
+    patch.assert_called_once_with(args)
 
 
 test_run_compile_params: list[

@@ -124,6 +124,7 @@ class ProblemVerification(BaseVerification):
         params: Optional[VerificationParams] = None,
     ) -> VerificationResult:
         import competitive_verifier.oj as oj
+
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 

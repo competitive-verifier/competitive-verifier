@@ -25,13 +25,12 @@ from .verification import (
 )
 
 __all__ = [
-
     "ForcePosixPath",
     "SortedPathSet",
     "SortedPathList",
     "SourceCodeStat",
     "SourceCodeStatSlim",
-            "SourceCodeStat",
+    "SourceCodeStat",
     "VerificationStatus",
     "resolve_dependency",
     "VerificationFile",

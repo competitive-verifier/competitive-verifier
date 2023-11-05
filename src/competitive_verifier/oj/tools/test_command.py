@@ -1,18 +1,30 @@
-import argparse
+import contextlib
 import json
+import os
 import pathlib
 import platform
+import shlex
+import signal
 import subprocess
 from logging import getLogger
-from typing import Annotated, Any, Optional
+import sys
+import tempfile
+import threading
+import time
+from typing import Annotated, Any, BinaryIO, Optional, Union
 
 import onlinejudge_command.format_utils as fmtutils
-import onlinejudge_command.main
 import onlinejudge_command.pretty_printers as pretty_printers
-import onlinejudge_command.subcommand.test as oj_test
+from onlinejudge_command.subcommand.test import (
+    JudgeStatus,
+    CompareMode,
+    check_gnu_time as orig_check_gnu_time,
+    build_match_function,
+    run_checking_output,
+)
 import onlinejudge_command.utils as utils
 from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 
 from competitive_verifier.models import ResultStatus, TestcaseResult, VerificationResult
@@ -22,9 +34,117 @@ from .func import checker_exe_name, get_cache_directory, get_directory
 logger = getLogger(__name__)
 
 
+class OjTestArguments(BaseModel):
+    """onlinejudge_command.subcommand.test.add_subparser"""
+
+    command: Union[str, list[str]]
+    cookie: pathlib.Path
+    env: Optional[dict[str, str]] = None
+    directory: pathlib.Path
+    judge: Optional[pathlib.Path]
+    tle: Optional[float]
+    mle: Optional[float]
+    error: Optional[float]
+    print_input: bool = True
+    format: str = "%s.%e"
+    test: list[pathlib.Path] = Field(default_factory=list)
+    gnu_time: Optional[str] = None
+    log_file: Optional[pathlib.Path] = None
+    silent: bool = False
+    ignore_backup: bool = True
+    display_mode: DisplayMode = DisplayMode.SUMMARY
+    compare_mode: CompareMode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
+
+
+class OjExecInfo(BaseModel):
+    answer: Optional[bytes]
+    elapsed: float
+    memory: Optional[float]
+
+
+def oj_exec_command(
+    command: Union[str, list[str]],
+    *,
+    env: Optional[dict[str, str]],
+    stdin: Optional[BinaryIO] = None,
+    input: Optional[bytes] = None,
+    timeout: Optional[float] = None,
+    gnu_time: Optional[str] = None,
+) -> tuple[OjExecInfo, subprocess.Popen[bytes]]:
+    if input is not None:
+        assert stdin is None
+        stdin = subprocess.PIPE  # type: ignore
+    if gnu_time is not None:
+        context: Any = tempfile.NamedTemporaryFile(delete=True)
+    else:
+        context = contextlib.nullcontext()
+    with context as fh:
+        if isinstance(command, str):
+            command_str = command
+            command = shlex.split(command)
+            if gnu_time is not None:
+                command = [gnu_time, "-f", "%M", "-o", fh.name, "--"] + command
+            if sys.platform == "win32":
+                # HACK: without this encoding and decoding, something randomly fails with multithreading; see https://github.com/kmyk/online-judge-tools/issues/468
+                command = command_str.encode().decode()  # type: ignore
+        begin = time.perf_counter()
+
+        # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
+        preexec_fn = None
+        if gnu_time is not None and os.name == "posix":
+            preexec_fn = os.setsid
+
+        try:
+            proc = subprocess.Popen(
+                command,
+                env=env,
+                stdin=stdin,
+                stdout=subprocess.PIPE,
+                stderr=sys.stderr,
+                preexec_fn=preexec_fn,
+            )  # pylint: disable=subprocess-popen-preexec-fn
+        except FileNotFoundError:
+            logger.error("No such file or directory: %s", command)
+            sys.exit(1)
+        except PermissionError:
+            logger.error("Permission denied: %s", command)
+            sys.exit(1)
+        answer: Optional[bytes] = None
+        try:
+            answer, _ = proc.communicate(input=input, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            pass
+        finally:
+            if preexec_fn is not None:
+                try:
+                    if sys.platform != "win32":
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+            else:
+                proc.terminate()
+
+        end = time.perf_counter()
+        memory: Optional[float] = None
+        if gnu_time is not None:
+            with open(fh.name) as fh1:
+                reported = fh1.read()
+            logger.debug("GNU time says:\n%s", reported)
+            if reported.strip() and reported.splitlines()[-1].isdigit():
+                memory = int(reported.splitlines()[-1]) / 1000
+    return (
+        OjExecInfo(
+            answer=answer,
+            memory=memory,
+            elapsed=end - begin,
+        ),
+        proc,
+    )
+
+
 # flake8: noqa: C901
 def display_result(
-    proc: subprocess.Popen[Any],
+    proc: subprocess.Popen[bytes],
     answer: str,
     memory: Optional[float],
     test_input_path: pathlib.Path,
@@ -32,7 +152,7 @@ def display_result(
     *,
     mle: Optional[float],
     display_mode: DisplayMode,
-    compare_mode: oj_test.CompareMode,
+    compare_mode: CompareMode,
     does_print_input: bool,
     silent: bool,
     match_result: Optional[bool],
@@ -149,9 +269,6 @@ def display_result(
     return status
 
 
-oj_test.display_result = display_result
-
-
 class TestCase(BaseModel):
     name: str
     input: pathlib.Path
@@ -159,7 +276,7 @@ class TestCase(BaseModel):
 
 
 class OjTestcaseResult(BaseModel):
-    status: oj_test.JudgeStatus
+    status: JudgeStatus
     elapsed: float
     memory: Optional[float] = None
     exitcode: Annotated[
@@ -192,10 +309,91 @@ def get_gnu_time_command() -> str:
 
 
 def check_gnu_time(gnu_time: Optional[str] = None) -> bool:
-    return oj_test.check_gnu_time(gnu_time or get_gnu_time_command())
+    return orig_check_gnu_time(gnu_time or get_gnu_time_command())
 
 
-def run(args: "argparse.Namespace") -> OjTestResult:
+def test_single_case(
+    test_name: str,
+    test_input_path: pathlib.Path,
+    test_output_path: Optional[pathlib.Path],
+    *,
+    lock: Optional[threading.Lock] = None,
+    args: OjTestArguments,
+) -> dict[str, Any]:
+    # print the header earlier if not in parallel
+    if lock is None:
+        logger.info("")
+        logger.info("%s", test_name)
+
+    # run the binary
+    with test_input_path.open("rb") as inf:
+        info, proc = oj_exec_command(
+            args.command,
+            env=args.env,
+            stdin=inf,
+            timeout=args.tle,
+            gnu_time=args.gnu_time,
+        )
+        # TODO: the `answer` should be bytes, not str
+        answer: str = (info.answer or b"").decode(errors="replace")
+        elapsed: float = info.elapsed
+        memory: Optional[float] = info.memory
+
+    # lock is require to avoid mixing logs if in parallel
+    with lock or contextlib.nullcontext():
+        if lock is not None:
+            logger.info("")
+            logger.info("%s", test_name)
+        logger.info("time: %f sec", elapsed)
+        if memory:
+            logger.info("memory: %f MB", memory)
+
+        match_function = build_match_function(
+            compare_mode=CompareMode(args.compare_mode),
+            error=args.error,
+            judge_command=str(args.judge) if args.judge else None,
+            silent=args.silent,
+            test_input_path=test_input_path,
+            test_output_path=test_output_path,
+        )
+        match_result = run_checking_output(
+            answer=answer.encode(),
+            test_output_path=test_output_path,
+            is_special_judge=args.judge is not None,
+            match_function=match_function,
+        )
+        status = display_result(
+            proc,
+            answer,
+            memory,
+            test_input_path,
+            test_output_path,
+            mle=args.mle,
+            display_mode=DisplayMode(args.display_mode),
+            compare_mode=CompareMode(args.compare_mode),
+            does_print_input=args.print_input,
+            silent=args.silent,
+            match_result=match_result,
+        )
+
+    # return the result
+    testcase = {
+        "name": test_name,
+        "input": str(test_input_path.resolve()),
+    }
+    if test_output_path:
+        testcase["output"] = str(test_output_path.resolve())
+    return {
+        "status": status.value,
+        "testcase": testcase,
+        "output": answer,
+        "exitcode": proc.returncode,
+        "elapsed": elapsed,
+        "memory": memory,
+    }
+
+
+def run(args: OjTestArguments) -> OjTestResult:
     # list tests
     if not args.test:
         args.test = fmtutils.glob_with_format(args.directory, args.format)  # by default
@@ -211,7 +409,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
             args.gnu_time = "gtime"
         else:
             args.gnu_time = "time"
-    if not oj_test.check_gnu_time(args.gnu_time):
+    if not check_gnu_time(args.gnu_time):
         logger.warning("GNU time is not available: %s", args.gnu_time)
         if platform.system() == "Darwin":
             logger.info(
@@ -226,9 +424,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
     for name, paths in sorted(tests.items()):
         history.append(
             OjTestcaseResult.model_validate(
-                oj_test.test_single_case(
-                    name, paths["in"], paths.get("out"), args=args
-                ),
+                test_single_case(name, paths["in"], paths.get("out"), args=args),
             )
         )
 
@@ -241,7 +437,7 @@ def run(args: "argparse.Namespace") -> OjTestResult:
     ac_count = 0
     for result in history:
         elapsed += result.elapsed
-        if result.status == oj_test.JudgeStatus.AC:
+        if result.status == JudgeStatus.AC:
             ac_count += 1
         if slowest < result.elapsed:
             slowest = result.elapsed
@@ -283,7 +479,8 @@ def run(args: "argparse.Namespace") -> OjTestResult:
 def run_wrapper(
     *,
     url: str,
-    command: str,
+    command: Union[str, list[str]],
+    env: Optional[dict[str, str]],
     tle: Optional[float],
     mle: Optional[float],
     error: Optional[float],
@@ -291,30 +488,21 @@ def run_wrapper(
     directory = get_directory(url)
     test_directory = directory / "test"
 
-    arg_list: list[str] = [
-        "--cookie",
-        str(get_cache_directory() / "cookie.txt"),
-        "test",
-        "-c",
-        command,
-        "-d",
-        str(test_directory),
-        "--print-input",
-    ]
+    checker_path: Optional[pathlib.Path] = directory / checker_exe_name
+    if not checker_path.exists():
+        checker_path = None
 
-    if tle:
-        arg_list += ["--tle", str(tle)]
-    if mle:
-        arg_list += ["--mle", str(mle)]
-    if error:
-        arg_list += ["-e", str(error)]
-
-    checker_path = directory / checker_exe_name
-    if checker_path.exists():
-        arg_list += ["--judge-command", str(checker_path)]
-
-    parser = onlinejudge_command.main.get_parser()
-    args = parser.parse_args(arg_list)
+    args = OjTestArguments(
+        command=command,
+        env=env,
+        cookie=get_cache_directory() / "cookie.txt",
+        directory=test_directory,
+        tle=tle,
+        mle=mle,
+        error=error,
+        print_input=True,
+        judge=checker_path,
+    )
     result = run(args)
 
     return VerificationResult(
