@@ -4,9 +4,12 @@ from typing import Annotated, Any, Optional
 from pydantic import BaseModel, ConfigDict, PlainSerializer, computed_field
 from pydantic.alias_generators import to_camel
 
-from competitive_verifier.models.dependency import VerificationStatus
-from competitive_verifier.models.path import ForcePosixPath, SortedPathList
-from competitive_verifier.models.result import TestcaseResult
+from competitive_verifier.models import (
+    ForcePosixPath,
+    SortedPathList,
+    TestcaseResult,
+    VerificationStatus,
+)
 
 StatusIcon = Annotated[
     VerificationStatus,

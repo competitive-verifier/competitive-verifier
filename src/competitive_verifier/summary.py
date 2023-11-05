@@ -7,8 +7,13 @@ from collections import Counter
 from itertools import chain
 from typing import Optional, TextIO
 
-from competitive_verifier.models import FileResult, ResultStatus, VerifyCommandResult
-from competitive_verifier.models.result import JudgeStatus, TestcaseResult
+from competitive_verifier.models import (
+    FileResult,
+    JudgeStatus,
+    ResultStatus,
+    TestcaseResult,
+    VerifyCommandResult,
+)
 
 SUCCESS = ResultStatus.SUCCESS
 FAILURE = ResultStatus.FAILURE

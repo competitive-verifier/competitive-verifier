@@ -7,12 +7,17 @@ from logging import getLogger
 from typing import Annotated, Any, Optional
 
 import onlinejudge_command.format_utils as fmtutils
+import onlinejudge_command.main
 import onlinejudge_command.pretty_printers as pretty_printers
 import onlinejudge_command.subcommand.test as oj_test
 import onlinejudge_command.utils as utils
 from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
 from pydantic import BaseModel
 from pydantic.functional_validators import BeforeValidator
+
+from competitive_verifier.models import ResultStatus, TestcaseResult, VerificationResult
+
+from .func import checker_exe_name, get_cache_directory, get_directory
 
 logger = getLogger(__name__)
 
@@ -272,4 +277,58 @@ def run(args: "argparse.Namespace") -> OjTestResult:
         elapsed=elapsed,
         heaviest=heaviest,
         testcases=history,
+    )
+
+
+def run_wrapper(
+    *,
+    url: str,
+    command: str,
+    tle: Optional[float],
+    mle: Optional[float],
+    error: Optional[float],
+) -> VerificationResult:
+    directory = get_directory(url)
+    test_directory = directory / "test"
+
+    arg_list: list[str] = [
+        "--cookie",
+        str(get_cache_directory() / "cookie.txt"),
+        "test",
+        "-c",
+        command,
+        "-d",
+        str(test_directory),
+        "--print-input",
+    ]
+
+    if tle:
+        arg_list += ["--tle", str(tle)]
+    if mle:
+        arg_list += ["--mle", str(mle)]
+    if error:
+        arg_list += ["-e", str(error)]
+
+    checker_path = directory / checker_exe_name
+    if checker_path.exists():
+        arg_list += ["--judge-command", str(checker_path)]
+
+    parser = onlinejudge_command.main.get_parser()
+    args = parser.parse_args(arg_list)
+    result = run(args)
+
+    return VerificationResult(
+        status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,
+        elapsed=result.elapsed,
+        slowest=result.slowest,
+        heaviest=result.heaviest,
+        testcases=[
+            TestcaseResult(
+                name=case.testcase.name,
+                elapsed=case.elapsed,
+                memory=case.memory,
+                status=case.status,
+            )
+            for case in result.testcases
+        ],
     )

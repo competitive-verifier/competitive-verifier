@@ -3,7 +3,7 @@ import abc
 import pathlib
 from typing import Any, Optional, Sequence
 
-import competitive_verifier_oj_clone.languages.special_comments as special_comments
+import competitive_verifier.oj.verify.languages.special_comments as special_comments
 
 
 class LanguageEnvironment(abc.ABC):

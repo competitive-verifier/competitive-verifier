@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
 import competitive_verifier.models
+import competitive_verifier.oj
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
@@ -227,7 +228,7 @@ def test_run_problem_command(
     kwargs: dict[str, Any],
     mocker: MockerFixture,
 ):
-    patch = mocker.patch.object(competitive_verifier.models.verification.oj, "test")
+    patch = mocker.patch.object(competitive_verifier.oj, "test")
     obj.run(
         DataVerificationParams(default_tle=22, default_mle=128),
     )

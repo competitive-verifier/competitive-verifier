@@ -12,7 +12,7 @@ from pytest_mock import MockerFixture
 from pytest_subtests import SubTests
 
 from competitive_verifier.documents.main import main
-from competitive_verifier.oj_test_command import check_gnu_time
+from competitive_verifier.oj import check_gnu_time
 
 from .types import FilePaths
 

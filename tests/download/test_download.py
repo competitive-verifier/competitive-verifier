@@ -27,11 +27,11 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
         os.environ, {"YUKICODER_TOKEN": "YKTK", "DROPBOX_TOKEN": "DBTK"}, clear=True
     )
     mocker.patch(
-        "competitive_verifier.oj.get_cache_directory",
+        "competitive_verifier.oj.tools.test_command.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     )
     mocker.patch(
-        "competitive_verifier.oj.get_checker_path",
+        "competitive_verifier.oj.tools.download_command.get_checker_path",
         return_value=None,
     )
 

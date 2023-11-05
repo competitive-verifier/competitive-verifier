@@ -3,10 +3,9 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
-from competitive_verifier.models.result import VerificationResult
+from competitive_verifier.exec import exec_command
 
-from .. import oj
-from ..exec import exec_command
+from .result import VerificationResult
 from .result_status import ResultStatus
 
 
@@ -103,6 +102,8 @@ class ProblemVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
     ) -> VerificationResult:
+        import competitive_verifier.oj as oj
+
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 

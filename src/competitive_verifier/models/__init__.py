@@ -1,5 +1,11 @@
-from .dependency import SourceCodeStat, VerificationStatus, resolve_dependency
+from .dependency import (
+    SourceCodeStat,
+    SourceCodeStatSlim,
+    VerificationStatus,
+    resolve_dependency,
+)
 from .file import AddtionalSource, VerificationFile, VerificationInput
+from .path import ForcePosixPath, SortedPathList, SortedPathSet
 from .result import (
     FileResult,
     JudgeStatus,
@@ -18,7 +24,11 @@ from .verification import (
 )
 
 __all__ = [
+    "ForcePosixPath",
+    "SortedPathSet",
+    "SortedPathList",
     "SourceCodeStat",
+    "SourceCodeStatSlim",
     "VerificationStatus",
     "resolve_dependency",
     "VerificationFile",

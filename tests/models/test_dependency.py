@@ -611,7 +611,7 @@ def test_resolve_dependency(
     expected_obj: Any,
 ):
     with mock.patch(
-        "competitive_verifier.models.dependency.git.get_commit_time",
+        "competitive_verifier.git.get_commit_time",
         return_value=datetime.datetime(2010, 2, 15),
     ):
         dep_input = VerificationInput.model_validate(dep_input_obj)

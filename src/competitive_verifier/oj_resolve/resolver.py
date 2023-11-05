@@ -10,7 +10,7 @@ from typing import Generator
 import competitive_verifier.config as config
 import competitive_verifier.git as git
 import competitive_verifier.oj as oj
-import competitive_verifier_oj_clone.list
+import competitive_verifier.oj.verify.list
 from competitive_verifier.models import (
     AddtionalSource,
     ConstVerification,
@@ -20,8 +20,8 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
-from competitive_verifier_oj_clone.config import OjVerifyConfig
-from competitive_verifier_oj_clone.languages.models import LanguageEnvironment
+from competitive_verifier.oj.verify.config import OjVerifyConfig
+from competitive_verifier.oj.verify.languages.models import LanguageEnvironment
 
 logger = getLogger(__name__)
 
@@ -78,7 +78,7 @@ class OjResolver:
 
     @cached_property
     def _lang_dict(self):
-        return competitive_verifier_oj_clone.list.get_dict(self.config)
+        return competitive_verifier.oj.verify.list.get_dict(self.config)
 
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}

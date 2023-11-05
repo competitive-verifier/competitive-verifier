@@ -3,9 +3,12 @@ import pathlib
 from logging import getLogger
 from typing import Optional, Sequence
 
-import competitive_verifier_oj_clone.languages.special_comments as special_comments
-import competitive_verifier_oj_clone.utils as utils
-from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
+import competitive_verifier.oj.verify.languages.special_comments as special_comments
+import competitive_verifier.oj.verify.utils as utils
+from competitive_verifier.oj.verify.languages.models import (
+    Language,
+    LanguageEnvironment,
+)
 
 from .. import subprocess2 as subprocess
 

@@ -5,7 +5,7 @@ import re
 from logging import getLogger
 from typing import Iterable, Mapping
 
-from competitive_verifier_oj_clone.utils import read_text_normalized
+from competitive_verifier.oj.verify.utils import read_text_normalized
 
 logger = getLogger(__name__)
 

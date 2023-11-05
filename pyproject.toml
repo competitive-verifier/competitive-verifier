@@ -13,7 +13,6 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include = "competitive_verifier_oj_clone", from = "src" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -119,7 +118,7 @@ max-line-length = 500
 max-complexity = 18
 exclude = [
     "examples",
-    "src/competitive_verifier_oj_clone/languages",
+    "src/competitive_verifier/oj/verify/languages",
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
 ]

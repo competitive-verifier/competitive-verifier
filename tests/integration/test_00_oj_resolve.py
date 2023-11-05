@@ -5,8 +5,8 @@ from typing import Any, Optional, Protocol
 import pytest
 from pytest_mock import MockerFixture
 
+from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
-from competitive_verifier_oj_clone.languages import special_comments
 
 from .types import ConfigDirFunc, FilePaths
 
@@ -22,7 +22,7 @@ def setenv_resolve(mocker: MockerFixture):
         return f"env PYTHONPATH={basedir.resolve().as_posix()} python {path.as_posix()}"
 
     mocker.patch(
-        "competitive_verifier_oj_clone.languages.python.PythonLanguageEnvironment.get_execute_command",
+        "competitive_verifier.oj.verify.languages.python.PythonLanguageEnvironment.get_execute_command",
         side_effect=python_get_execute_command,
     )
 
