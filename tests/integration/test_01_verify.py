@@ -2,14 +2,17 @@ import datetime
 import json
 import pathlib
 import random
+import shutil
 from typing import Any, Generator, List
 
 import onlinejudge.dispatch
 import onlinejudge.service.library_checker as library_checker
 import pytest
+import requests
 from onlinejudge.type import TestCase as OjTestCase
 from pytest_mock import MockerFixture
 
+import competitive_verifier.config as config
 from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.models import VerificationResult
@@ -129,7 +132,21 @@ class _MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
         assert False
 
     def _update_cloned_repository(self) -> None:
-        library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
+        zip_path = config.get_cache_dir() / "library-checker-problems.zip"
+        if not zip_path.exists():
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            res = requests.get(
+                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.zip"
+            )
+            with zip_path.open("wb") as fp:
+                fp.write(res.content)
+            shutil.unpack_archive(zip_path, config.get_cache_dir())
+            shutil.move(
+                config.get_cache_dir() / "library-checker-problems-master",
+                config.get_cache_dir() / "library-checker-problems",
+            )
+
+        # library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
 
     def _mock_cases(self) -> Generator[OjTestCase, Any, Any]:
         if self.problem_id == "aplusb":

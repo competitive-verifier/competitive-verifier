@@ -203,11 +203,11 @@ class BaseVerifier(InputContainer):
                 try:
                     if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
-                except BaseException:
+                except BaseException as e:
                     verifications.append(
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
-                    logger.error("Failed to download")
+                    logger.exception("Failed to download", e)
                     return verifications
 
                 for ve in f.verification:

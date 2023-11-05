@@ -6,8 +6,6 @@ from contextlib import nullcontext
 from logging import getLogger
 from typing import Optional
 
-import onlinejudge._implementation.utils
-import onlinejudge.utils
 import onlinejudge_command.main
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
@@ -28,9 +26,7 @@ checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"
 
 
 def get_cache_directory() -> pathlib.Path:
-    oj_cache_dir = config.get_cache_dir().resolve() / "online-judge-tools"
-    onlinejudge._implementation.utils.user_cache_dir = oj_cache_dir
-    return oj_cache_dir
+    return config.get_cache_dir().resolve() / "online-judge-tools"
 
 
 def get_problem_cache_dir() -> pathlib.Path:
@@ -84,7 +80,6 @@ def download(url: str, *, group_log: bool = False) -> bool:
                     directory=test_directory,
                     cookie=get_cache_directory() / "cookie.txt",
                 )
-
                 checker_path = get_checker_path(url)
                 if checker_path and checker_path.exists():
                     try:
@@ -99,7 +94,7 @@ def download(url: str, *, group_log: bool = False) -> bool:
                 elif isinstance(e, NotLoggedInError) and is_atcoder(url):
                     logger.error("Required: $DROPBOX_TOKEN environment variable")
                 else:
-                    logger.exception("Failed to download", e)
+                    logger.exception("Failed to download: %s", e)
                 return False
     else:
         logger.info("download:already exists: %s", url)
