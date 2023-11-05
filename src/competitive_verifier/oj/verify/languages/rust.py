@@ -61,7 +61,7 @@ class _CargoUdeps(_ListDependenciesBackend):
 
 
 @functools.lru_cache(maxsize=None)
-def _list_dependencies_by_crate(
+def _list_dependencies_by_crate(  # noqa: C901
     path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: Optional[str]
 ) -> list[pathlib.Path]:
     """The `list_dependencies` implementation for `_NoBackend` and `CargoUdeps`.
