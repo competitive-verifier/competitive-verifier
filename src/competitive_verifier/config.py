@@ -1,8 +1,13 @@
+import os
 import pathlib
 
 
+COMPETITIVE_VERIFY_CONFIG_PATH = "COMPETITIVE_VERIFY_CONFIG_PATH"
+
+
 def get_config_dir():
-    return pathlib.Path(".competitive-verifier")
+    p = os.getenv(COMPETITIVE_VERIFY_CONFIG_PATH, ".competitive-verifier")
+    return pathlib.Path(p)
 
 
 def get_cache_dir():
