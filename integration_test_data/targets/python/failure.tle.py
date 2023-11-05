@@ -1,5 +1,5 @@
-# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
-# competitive-verifier: TLE 0.09
+# competitive-verifier: PROBLEM https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A
+# competitive-verifier: TLE 0.1
 import sys
 import time
 
@@ -9,10 +9,8 @@ input = sys.stdin.buffer.readline
 
 
 def main() -> None:
-    a, b = map(int, input().split())
-    if a % 2 == 0:
-        time.sleep(0.1)
-    print(targets.python.lib_all_failure.aplusb(a, b))
+    time.sleep(2)
+    print(targets.python.lib_all_failure.aplusb(1, 2))
 
 
 if __name__ == "__main__":
