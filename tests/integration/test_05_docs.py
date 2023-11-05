@@ -139,29 +139,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/sub/failure.mle.md",
                             "embedded": [
                                 {
-                                    "code": "# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n"
-                                    "# competitive-verifier: MLE 100\n"
-                                    "import pathlib\n"
-                                    "import sys\n"
-                                    "\n"
-                                    "import targets.python.lib_all_failure\n"
-                                    "from targets.python.lib_some_failure import MB\n"
-                                    "\n"
-                                    "input = sys.stdin.buffer.readline\n"
-                                    "\n\ndef main() -> None:\n"
-                                    "    a, b = map(int, input().split())\n"
-                                    "    if a % 2 == 0:\n"
-                                    '        dir = pathlib.Path(__file__).parent.parent.parent / "dst_dir"\n'
-                                    "        dir.mkdir(exist_ok=True, parents=True)\n"
-                                    '        file = dir / "buffer.txt"\n'
-                                    '        file.write_bytes(b"a" * 100 * MB)\n'
-                                    "        file.unlink(missing_ok=True)\n"
-                                    "    print(targets.python.lib_all_failure.aplusb(a, b))\n"
-                                    "\n"
-                                    "\n"
-                                    'if __name__ == "__main__":\n'
-                                    "    main()\n"
-                                    "",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.mle.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -296,8 +276,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/failure.re.md",
                             "embedded": [
                                 {
-                                    "code": "# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n"
-                                    'import sys\n\nimport targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    print(targets.python.lib_all_failure.aplusb(a // 0, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.re.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -431,7 +412,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/sub/failure.tle.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: TLE 0.09\nimport sys\nimport time\n\nimport targets.python.lib_all_failure\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if a % 2 == 0:\n        time.sleep(0.1)\n    print(targets.python.lib_all_failure.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.tle.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -570,7 +553,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/failure.wa.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport targets.python.lib_all_failure\nfrom targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(targets.python.lib_all_failure.aplusb(a, b) // 2 * 2)\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.wa.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -717,7 +702,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_all_failure.md",
                             "embedded": [
                                 {
-                                    "code": "def aplusb(a: int, b: int):\n    return a + b\n",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_all_failure.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -765,7 +752,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_all_success.md",
                             "embedded": [
                                 {
-                                    "code": "def aplusb(a: int, b: int):\n    return a + b\n",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_all_success.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -809,7 +798,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_skip.md",
                             "embedded": [
                                 {
-                                    "code": "def aplusb(a: int, b: int):\n    return a + b\n",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -856,7 +847,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": "KB = 1024\nMB = 1024 * 1024\n",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_failure.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -900,7 +893,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": "def aplusb(a: int, b: int):\n    return a + b\n",
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -954,7 +949,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": 'import sys\n\n\ndef stderr():\n    print("Debug", file=sys.stderr)\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_skip_some_wa.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1011,7 +1008,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             ],
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\n# competitive-verifier: IGNORE\nimport sys\n\nimport targets.python.lib_skip\nfrom targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    stderr()\n    a, b = map(int, input().split())\n    print(targets.python.lib_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1064,7 +1063,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_success1.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport targets.python.lib_some_skip\nfrom targets.python.lib_some_failure import KB\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    if KB < 1000:\n        print("No")\n    print(targets.python.lib_some_skip.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/success1.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1203,7 +1204,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_success2.md",
                             "embedded": [
                                 {
-                                    "code": '# competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb\nimport sys\n\nimport targets.python.lib_all_success\nfrom targets.python.lib_some_skip_some_wa import stderr\n\ninput = sys.stdin.buffer.readline\n\n\ndef main() -> None:\n    a, b = map(int, input().split())\n    stderr()\n    print(targets.python.lib_all_success.aplusb(a, b))\n\n\nif __name__ == "__main__":\n    main()\n',
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/success2.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],

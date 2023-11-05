@@ -1,6 +1,42 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
     "definitions": {
+        "shell_command_types": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Shell command"
+                },
+                {
+                    "type": "array",
+                    "minLength": 1,
+                    "description": "Shell command with args"
+                }
+            ]
+        },
+        "command_types": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "command": {
+                            "$ref": "#/definitions/shell_command_types"
+                        },
+                        "env": {
+                            "type": "object",
+                            "description": "Envitonment variables for command"
+                        }
+                    },
+                    "required": [
+                        "command"
+                    ],
+                    "description": "Shell command with data"
+                },
+                {
+                    "$ref": "#/definitions/shell_command_types"
+                }
+            ]
+        },
         "verification_types": {
             "type": "object",
             "description": "Verification definition",
@@ -47,11 +83,11 @@
                                     "const": "command"
                                 },
                                 "command": {
-                                    "type": "string",
+                                    "$ref": "#/definitions/command_types",
                                     "description": "unittest command"
                                 },
                                 "compile": {
-                                    "type": "string",
+                                    "$ref": "#/definitions/command_types",
                                     "description": "Compile command"
                                 }
                             },
@@ -66,11 +102,11 @@
                                     "const": "problem"
                                 },
                                 "command": {
-                                    "type": "string",
+                                    "$ref": "#/definitions/command_types",
                                     "description": "problem solving command"
                                 },
                                 "compile": {
-                                    "type": "string",
+                                    "$ref": "#/definitions/command_types",
                                     "description": "Compile command"
                                 },
                                 "problem": {

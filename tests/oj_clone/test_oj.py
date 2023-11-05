@@ -1,37 +1,76 @@
-import argparse
 import pathlib
+from typing import Any
 
+import pytest
 from pytest_mock import MockerFixture
 
 import competitive_verifier.oj as oj
+from competitive_verifier.oj.tools.test_command import OjTestArguments
+
+test_oj_test_params: list[tuple[dict[str, Any], OjTestArguments]] = [
+    (
+        {
+            "url": "http://example.com",
+            "command": "ls .",
+            "tle": 2,
+            "error": None,
+            "mle": 128,
+            "env": None,
+        },
+        OjTestArguments(
+            command="ls .",
+            tle=2,
+            cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
+            print_input=True,
+            mle=128,
+            error=None,
+            directory=pathlib.Path(
+                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+            ),
+            judge=None,
+        ),
+    ),
+    (
+        {
+            "url": "http://example.com",
+            "command": ["ls", "."],
+            "tle": 30,
+            "error": None,
+            "mle": 256,
+            "env": {"TOKEN": "Dummy"},
+        },
+        OjTestArguments(
+            command=["ls", "."],
+            tle=30,
+            cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
+            print_input=True,
+            mle=256,
+            error=None,
+            directory=pathlib.Path(
+                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+            ),
+            judge=None,
+            env={"TOKEN": "Dummy"},
+        ),
+    ),
+]
 
 
-def test_oj_test(mocker: MockerFixture):
+@pytest.mark.parametrize(
+    "input, expected",
+    test_oj_test_params,
+)
+def test_oj_test(
+    mocker: MockerFixture,
+    input: dict[str, Any],
+    expected: OjTestArguments,
+):
     mocker.patch(
         "competitive_verifier.oj.tools.test_command.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     )
     run = mocker.patch("competitive_verifier.oj.tools.test_command.run")
 
-    oj.test(
-        url="http://example.com",
-        command="ls .",
-        tle=2,
-        error=None,
-        mle=128,
-    )
+    oj.test(**input)
 
-    run.assert_called_once()
-    args = run.call_args[0][0]
-
-    assert isinstance(args, argparse.Namespace)
-    assert args.subcommand == "test"
-    assert args.print_input is True
-    assert args.cookie == pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt"
-    assert args.tle == 2.0
-    assert args.mle == 128.0
-    assert args.error is None
-    assert args.command == "ls ."
-    assert args.directory == pathlib.Path(
-        ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
-    )
+    run.assert_called_once_with(expected)
