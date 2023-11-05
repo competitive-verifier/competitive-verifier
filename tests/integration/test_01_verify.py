@@ -17,7 +17,7 @@ from competitive_verifier.oj_test_command import check_gnu_time
 from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
 
-from .types import FilePaths
+from .types import ConfigDirFunc, FilePaths
 
 
 class _MockVerifyCommandResult(verifier.VerifyCommandResult):
@@ -122,10 +122,33 @@ class _MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
         super().__init__(problem_id=problem_id)
 
     def download_system_cases(self, *, session: Any = None) -> List[OjTestCase]:
+        self._update_cloned_repository()
         return list(self._mock_cases())
 
     def download_sample_cases(self, *, session: Any = None) -> List[OjTestCase]:
         assert False
+
+    def _update_cloned_repository(self) -> None:
+        library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
+        # path = library_checker.LibraryCheckerService._get_cloned_repository_path()
+
+        # if sys.version_info < (3, 6):
+        #     logger.warning("generate.py may not work on Python 3.5 or older")
+        # if os.name == "nt":
+        #     logger.warning("generate.py may not work on Windows")
+
+        # problem_spec = str(self._get_problem_directory_path() / "info.toml")
+        # command = [sys.executable, str(path / "generate.py"), problem_spec]
+        # if compile_checker:
+        #     command.append("--compile-checker")
+        # logger.info("$ %s", " ".join(command))
+        # try:
+        #     subprocess.check_call(command, stdout=sys.stderr, stderr=sys.stderr)
+        # except subprocess.CalledProcessError:
+        #     logger.error(
+        #         "the generate.py failed: check https://github.com/yosupo06/library-checker-problems/issues"
+        #     )
+        #     raise
 
     def _mock_cases(self) -> Generator[OjTestCase, Any, Any]:
         if self.problem_id == "aplusb":
@@ -320,7 +343,11 @@ def test_mock_dump():
     scope="package",
 )
 @pytest.mark.usefixtures("mock_verification")
-def test_verify(data: VerifyData):
+def test_verify(
+    data: VerifyData,
+    config_dir: ConfigDirFunc,
+):
+    config_dir("integration")
     main.main(["--verify-json", data.verify, "--output", data.result])
     assert json.loads(pathlib.Path(data.result).read_bytes())["files"][
         "targets/python/failure.mle.py"

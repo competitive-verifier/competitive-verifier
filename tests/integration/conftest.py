@@ -1,5 +1,7 @@
 import contextlib
 import datetime
+import inspect
+import os
 import pathlib
 import shutil
 from typing import Iterable
@@ -8,7 +10,7 @@ import pytest
 import requests
 from pytest_mock import MockerFixture
 
-from .types import FilePaths
+from .types import ConfigDirFunc, FilePaths
 from .utils import md5_number
 
 
@@ -30,10 +32,17 @@ def file_paths() -> FilePaths:
 
 
 @pytest.fixture
-def clear_tmp_dir(file_paths: FilePaths):
-    tmp_dir = file_paths.root / ".competitive-verifier"
-    if tmp_dir.is_dir():
-        shutil.rmtree(tmp_dir)
+def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
+    def _config_dir(name: str):
+        d = file_paths.dest_root / f"config.{name or inspect.stack()[1].function}"
+
+        mocker.patch.dict(
+            os.environ,
+            {"COMPETITIVE_VERIFY_CONFIG_PATH": d.as_posix()},
+        )
+        return d
+
+    return _config_dir
 
 
 @pytest.fixture(autouse=True)

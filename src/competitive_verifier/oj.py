@@ -22,20 +22,20 @@ from competitive_verifier.models.result import TestcaseResult, VerificationResul
 from competitive_verifier.models.result_status import ResultStatus
 from competitive_verifier.oj_test_command import run as run_test
 
-_oj_cache_dir = config.get_cache_dir().resolve() / "online-judge-tools"
-_problem_cache_dir = config.get_cache_dir() / "problems"
-onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
+
 logger = getLogger(__name__)
 
 checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"
 
 
 def get_cache_directory() -> pathlib.Path:
-    return _oj_cache_dir
+    oj_cache_dir = config.get_cache_dir().resolve() / "online-judge-tools"
+    onlinejudge._implementation.utils.user_cache_dir = oj_cache_dir
+    return oj_cache_dir
 
 
 def get_problem_cache_dir() -> pathlib.Path:
-    return _problem_cache_dir
+    return config.get_cache_dir() / "problems"
 
 
 def get_directory(url: str) -> pathlib.Path:
@@ -87,7 +87,7 @@ def download(url: str, *, group_log: bool = False) -> bool:
                 )
 
                 checker_path = get_checker_path(url)
-                if checker_path:
+                if checker_path and checker_path.exists():
                     try:
                         shutil.copy2(checker_path, directory)
                     except Exception as e:
