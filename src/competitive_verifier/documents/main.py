@@ -26,8 +26,8 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     result: VerifyCommandResult,
-    docs_dir: Optional[pathlib.Path],
     destination_dir: pathlib.Path,
+    docs_dir: Optional[pathlib.Path],
     include: Optional[list[str]],
     exclude: Optional[list[str]],
 ) -> bool:
