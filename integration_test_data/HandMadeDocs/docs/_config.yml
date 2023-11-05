@@ -1,0 +1,6 @@
+remote_theme: vaibhavvikas/jekyll-theme-minimalistic
+icons:
+  LIBRARY_ALL_AC: ':100:'
+additional-data: "`code`"
+coordinate:
+- coordinate/q/

@@ -1,5 +1,5 @@
 from .file import AddtionalSource, VerificationFile, VerificationInput
-from .path import ForcePosixPath, SortedPathList, SortedPathSet
+from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
 from .result import (
     FileResult,
     JudgeStatus,
@@ -22,6 +22,7 @@ __all__ = [
     "ForcePosixPath",
     "SortedPathSet",
     "SortedPathList",
+    "RelativeDirectoryPath",
     "VerificationFile",
     "VerificationInput",
     "AddtionalSource",

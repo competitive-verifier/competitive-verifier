@@ -6,10 +6,7 @@ from unittest import mock
 import pytest
 from pydantic import RootModel
 
-from competitive_verifier.documents.builder_type import (
-    SourceCodeStat,
-    VerificationStatus,
-)
+from competitive_verifier.documents.render import SourceCodeStat, StatusIcon
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 Parser = RootModel[dict[Path, SourceCodeStat]]
@@ -61,7 +58,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_status": StatusIcon.TEST_ACCEPTED,
                 "verification_results": [
                     {
                         "status": "success",
@@ -78,7 +75,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b1.py",
                 "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "verification_status": StatusIcon.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
                 "required_by": {"c1/b2.py"},
@@ -88,7 +85,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b2.py",
                 "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "verification_status": StatusIcon.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": {"c1/b1.py"},
@@ -98,7 +95,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/a.py",
                 "file_input": {},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "verification_status": StatusIcon.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
@@ -152,7 +149,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "verification_status": StatusIcon.TEST_WRONG_ANSWER,
                 "verification_results": [
                     {
                         "status": "failure",
@@ -169,7 +166,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b1.py",
                 "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "verification_status": StatusIcon.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
                 "required_by": {"c1/b2.py"},
@@ -179,7 +176,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b2.py",
                 "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "verification_status": StatusIcon.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": {"c1/b1.py"},
@@ -189,7 +186,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/a.py",
                 "file_input": {},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_WA,
+                "verification_status": StatusIcon.LIBRARY_ALL_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
@@ -261,7 +258,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_status": StatusIcon.TEST_ACCEPTED,
                 "verification_results": [
                     {
                         "status": "success",
@@ -286,7 +283,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_WAITING_JUDGE,
+                "verification_status": StatusIcon.TEST_WAITING_JUDGE,
                 "verification_results": [
                     {
                         "status": "skipped",
@@ -303,7 +300,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b1.py",
                 "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "verification_status": StatusIcon.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
                 "required_by": {"c1/b2.py"},
@@ -313,7 +310,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b2.py",
                 "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "verification_status": StatusIcon.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": {"c1/b1.py"},
@@ -323,7 +320,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/a.py",
                 "file_input": {},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_PARTIAL_AC,
+                "verification_status": StatusIcon.LIBRARY_PARTIAL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
@@ -395,7 +392,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_status": StatusIcon.TEST_ACCEPTED,
                 "verification_results": [
                     {
                         "status": "success",
@@ -420,7 +417,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_WRONG_ANSWER,
+                "verification_status": StatusIcon.TEST_WRONG_ANSWER,
                 "verification_results": [
                     {
                         "status": "failure",
@@ -437,7 +434,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b1.py",
                 "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "verification_status": StatusIcon.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
                 "required_by": {"c1/b2.py"},
@@ -447,7 +444,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b2.py",
                 "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "verification_status": StatusIcon.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": {"c1/b1.py"},
@@ -457,7 +454,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/a.py",
                 "file_input": {},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_SOME_WA,
+                "verification_status": StatusIcon.LIBRARY_SOME_WA,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
@@ -494,7 +491,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b1.py",
                 "file_input": {"dependencies": ["c1/a.py", "c1/b2.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "verification_status": StatusIcon.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b2.py", "c1/a.py"},
                 "required_by": {"c1/b2.py"},
@@ -504,7 +501,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/b2.py",
                 "file_input": {"dependencies": ["c1/b1.py"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "verification_status": StatusIcon.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/b1.py"},
                 "required_by": {"c1/b1.py"},
@@ -514,7 +511,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/a.py",
                 "file_input": {},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_NO_TESTS,
+                "verification_status": StatusIcon.LIBRARY_NO_TESTS,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": set(),
                 "required_by": {"c1/b1.py"},
@@ -560,7 +557,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                 "path": "c1/hello.java",
                 "file_input": {"dependencies": ["c1/hello.java", "c1/hello_test.java"]},
                 "is_verification": False,
-                "verification_status": VerificationStatus.LIBRARY_ALL_AC,
+                "verification_status": StatusIcon.LIBRARY_ALL_AC,
                 "timestamp": datetime.datetime(2010, 2, 15, 0, 0),
                 "depends_on": {"c1/hello_test.java"},
                 "required_by": set(),
@@ -578,7 +575,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
                     ],
                 },
                 "is_verification": True,
-                "verification_status": VerificationStatus.TEST_ACCEPTED,
+                "verification_status": StatusIcon.TEST_ACCEPTED,
                 "verification_results": [
                     {
                         "status": "success",
@@ -624,24 +621,24 @@ def test_resolve_dependency(
         assert resolved == expected
 
 
-test_VerificationStatus_is_success_params: list[tuple[VerificationStatus, bool]] = [
-    (VerificationStatus.LIBRARY_ALL_AC, True),
-    (VerificationStatus.LIBRARY_PARTIAL_AC, True),
-    (VerificationStatus.LIBRARY_SOME_WA, False),
-    (VerificationStatus.LIBRARY_ALL_WA, False),
-    (VerificationStatus.LIBRARY_NO_TESTS, True),
-    (VerificationStatus.TEST_ACCEPTED, True),
-    (VerificationStatus.TEST_WRONG_ANSWER, False),
-    (VerificationStatus.TEST_WAITING_JUDGE, True),
+test_StatusIcon_is_success_params: list[tuple[StatusIcon, bool]] = [
+    (StatusIcon.LIBRARY_ALL_AC, True),
+    (StatusIcon.LIBRARY_PARTIAL_AC, True),
+    (StatusIcon.LIBRARY_SOME_WA, False),
+    (StatusIcon.LIBRARY_ALL_WA, False),
+    (StatusIcon.LIBRARY_NO_TESTS, True),
+    (StatusIcon.TEST_ACCEPTED, True),
+    (StatusIcon.TEST_WRONG_ANSWER, False),
+    (StatusIcon.TEST_WAITING_JUDGE, True),
 ]
 
 
 @pytest.mark.parametrize(
     "status, is_success",
-    test_VerificationStatus_is_success_params,
+    test_StatusIcon_is_success_params,
 )
-def test_VerificationStatus_is_success(
-    status: VerificationStatus,
+def test_StatusIcon_is_success(
+    status: StatusIcon,
     is_success: bool,
 ):
     assert status.is_success == is_success

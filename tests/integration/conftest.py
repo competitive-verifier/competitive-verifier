@@ -1,10 +1,9 @@
 import contextlib
-import datetime
 import inspect
 import os
 import pathlib
 import shutil
-from typing import Iterable, Optional
+from typing import Optional
 
 import pytest
 import requests
@@ -17,7 +16,7 @@ from .data.java import JavaData
 from .data.rust import RustWithoutConfigData
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
-from .utils import md5_number
+from .utils import dummy_commit_time
 
 
 @pytest.fixture(scope="session")
@@ -83,17 +82,9 @@ def setenv(
 ):
     monkeypatch.chdir(file_paths.root)
 
-    def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
-        md5 = md5_number(b"".join(sorted(f.as_posix().encode() for f in files)))
-
-        return datetime.datetime.fromtimestamp(
-            md5 % 300000000000 / 100,
-            tz=datetime.timezone(datetime.timedelta(hours=md5 % 25 - 12)),
-        )
-
     mocker.patch(
         "competitive_verifier.git.get_commit_time",
-        side_effect=get_commit_time,
+        side_effect=dummy_commit_time,
     )
 
     @contextlib.contextmanager
