@@ -13,7 +13,6 @@ import importlab.environment
 import importlab.fs
 import importlab.graph
 
-from competitive_verifier.models.verification import ShellCommand
 from competitive_verifier.oj.verify.languages.models import (
     Language,
     LanguageEnvironment,
@@ -29,16 +28,13 @@ class PythonLanguageEnvironment(LanguageEnvironment):
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> ShellCommand:
+    ) -> str:
         python_path = os.getenv("PYTHONPATH")
         if python_path:
             python_path = basedir.resolve().as_posix() + os.pathsep + python_path
         else:
             python_path = basedir.resolve().as_posix()
-        return ShellCommand(
-            command=f"python {path}",
-            env={"PYTHONPATH": python_path},
-        )
+        return f"env PYTHONPATH={python_path} python {path}"
 
 
 @functools.lru_cache(maxsize=None)

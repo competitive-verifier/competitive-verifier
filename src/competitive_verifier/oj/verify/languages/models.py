@@ -4,7 +4,6 @@ import pathlib
 from typing import Any, Optional, Sequence
 
 import competitive_verifier.oj.verify.languages.special_comments as special_comments
-from competitive_verifier.models.verification import ShellCommandLike
 
 
 class LanguageEnvironment(abc.ABC):
@@ -24,7 +23,7 @@ class LanguageEnvironment(abc.ABC):
     @abc.abstractmethod
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> ShellCommandLike:
+    ) -> str:
         raise NotImplementedError
 
 
