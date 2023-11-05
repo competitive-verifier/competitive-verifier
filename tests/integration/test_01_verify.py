@@ -2,11 +2,17 @@ import datetime
 import json
 import pathlib
 import random
-from typing import Any
+import shutil
+from typing import Any, Generator, List
 
+import onlinejudge.dispatch
+import onlinejudge.service.library_checker as library_checker
 import pytest
+import requests
+from onlinejudge.type import TestCase as OjTestCase
 from pytest_mock import MockerFixture
 
+import competitive_verifier.config as config
 from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.models import VerificationResult
@@ -14,7 +20,7 @@ from competitive_verifier.oj_test_command import check_gnu_time
 from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
 
-from .types import FilePaths
+from .types import ConfigDirFunc, FilePaths
 
 
 class _MockVerifyCommandResult(verifier.VerifyCommandResult):
@@ -114,15 +120,81 @@ class _MockVerifyCommandResult(verifier.VerifyCommandResult):
         )
 
 
+class _MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
+    def __init__(self, *, problem_id: str):
+        super().__init__(problem_id=problem_id)
+
+    def download_system_cases(self, *, session: Any = None) -> List[OjTestCase]:
+        self._update_cloned_repository()
+        return list(self._mock_cases())
+
+    def download_sample_cases(self, *, session: Any = None) -> List[OjTestCase]:
+        assert False
+
+    def _update_cloned_repository(self) -> None:
+        zip_path = config.get_cache_dir() / "library-checker-problems.zip"
+        if not zip_path.exists():
+            zip_path.parent.mkdir(parents=True, exist_ok=True)
+            res = requests.get(
+                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.zip"
+            )
+            with zip_path.open("wb") as fp:
+                fp.write(res.content)
+            shutil.unpack_archive(zip_path, config.get_cache_dir())
+            shutil.move(
+                config.get_cache_dir() / "library-checker-problems-master",
+                config.get_cache_dir() / "library-checker-problems",
+            )
+
+        # library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
+
+    def _mock_cases(self) -> Generator[OjTestCase, Any, Any]:
+        if self.problem_id == "aplusb":
+            for name, a, b in [
+                ("example_00", 1000, 10),
+                ("example_01", 1002, 20),
+                ("random_00", 1000, 130),
+                ("random_01", 1003, 140),
+                ("random_02", 1005, 150),
+                ("random_03", 1000, 160),
+                ("random_04", 1005, 170),
+                ("random_05", 1007, 180),
+                ("random_06", 1009, 191),
+                ("random_07", 1008, 200),
+                ("random_08", 1005, 214),
+                ("random_09", 1008, 225),
+            ]:
+                yield OjTestCase(
+                    name=name,
+                    input_name=f"{name}.in",
+                    output_name=f"{name}.out",
+                    input_data=f"{a} {b}\n".encode(),
+                    output_data=f"{a+b}\n".encode(),
+                )
+        else:
+            raise NotImplementedError()
+
+
 class VerifyData(FilePaths):
     pass
 
 
 @pytest.fixture
-def mock_verification_dump(mocker: MockerFixture):
+def mock_verification(mocker: MockerFixture):
     mocker.patch(
         "competitive_verifier.verify.verifier.VerifyCommandResult",
         side_effect=_MockVerifyCommandResult,
+    )
+
+    mocker.patch.object(
+        onlinejudge.dispatch,
+        "problems",
+        new=[
+            _MockLibraryCheckerProblem
+            if p == library_checker.LibraryCheckerProblem
+            else p
+            for p in onlinejudge.dispatch.problems
+        ],
     )
 
 
@@ -131,7 +203,7 @@ def data(file_paths: FilePaths) -> VerifyData:
     return VerifyData.model_validate(file_paths.model_dump())
 
 
-@pytest.mark.usefixtures("mock_verification_dump")
+@pytest.mark.usefixtures("mock_verification")
 def test_mock_dump():
     for _ in range(20):
         command_result = verifier.VerifyCommandResult(
@@ -268,10 +340,13 @@ def test_mock_dump():
     depends=["resolve_default"],
     scope="package",
 )
-@pytest.mark.usefixtures("mock_verification_dump")
-def test_verify(mocker: MockerFixture, data: VerifyData):
+@pytest.mark.usefixtures("mock_verification")
+def test_verify(
+    data: VerifyData,
+    config_dir: ConfigDirFunc,
+):
+    config_dir("integration")
     main.main(["--verify-json", data.verify, "--output", data.result])
-
     assert json.loads(pathlib.Path(data.result).read_bytes()) == {
         "total_seconds": 8719.92,
         "files": {

@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj_resolve.main import main
 from competitive_verifier_oj_clone.languages import special_comments
 
-from .types import FilePaths
+from .types import ConfigDirFunc, FilePaths
 
 
 @pytest.fixture
@@ -48,23 +48,13 @@ def expected(file_paths: FilePaths) -> dict[str, Any]:
                     "dependencies": ["targets/encoding/EUC-KR.txt"],
                     "verification": [],
                     "document_attributes": {},
-                    "additonal_sources": [
-                        {
-                            "name": "bundled",
-                            "path": ".competitive-verifier/bundled/targets/encoding/EUC-KR.txt",
-                        }
-                    ],
+                    "additonal_sources": [],
                 },
                 "targets/encoding/cp932.txt": {
                     "dependencies": ["targets/encoding/cp932.txt"],
                     "verification": [],
                     "document_attributes": {},
-                    "additonal_sources": [
-                        {
-                            "name": "bundled",
-                            "path": ".competitive-verifier/bundled/targets/encoding/cp932.txt",
-                        }
-                    ],
+                    "additonal_sources": [],
                 },
                 "targets/python/lib_all_failure.py": {
                     "dependencies": ["targets/python/lib_all_failure.py"],
@@ -247,7 +237,7 @@ def expected(file_paths: FilePaths) -> dict[str, Any]:
 def make_args() -> _ArgsFunc:
     def _make_args(
         *,
-        bundle: bool = True,
+        bundle: bool = False,
         include: Optional[list[str]] = None,
         exclude: Optional[list[str]] = None,
         config: Optional[str] = None,
@@ -277,7 +267,10 @@ def test_with_config_include(
     expected: dict[str, Any],
     capfd: pytest.CaptureFixture[str],
     file_paths: FilePaths,
+    config_dir: ConfigDirFunc,
 ):
+    config_dir("integration")
+
     args = make_args(
         include=[file_paths.targets],
         config="config.toml",
@@ -285,21 +278,31 @@ def test_with_config_include(
     )
     main(args)
 
+    bundle_euc_ke_path = (
+        file_paths.dest_root / "config.integration/bundled/targets/encoding/EUC-KR.txt"
+    )
+    bundle_cp932_path = (
+        file_paths.dest_root / "config.integration/bundled/targets/encoding/cp932.txt"
+    )
+
+    expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = [
+        {
+            "name": "bundled",
+            "path": bundle_euc_ke_path.as_posix(),
+        }
+    ]
+    expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = [
+        {
+            "name": "bundled",
+            "path": bundle_cp932_path.as_posix(),
+        }
+    ]
+
     stdout = capfd.readouterr().out
     resolved = json.loads(stdout)
-    assert (
-        pathlib.Path(".competitive-verifier/bundled/targets/encoding/EUC-KR.txt")
-        .read_bytes()
-        .strip()
-        == b"cp949"
-    )
-    assert (
-        pathlib.Path(".competitive-verifier/bundled/targets/encoding/cp932.txt")
-        .read_bytes()
-        .strip()
-        == b"cp932"
-    )
     assert resolved == expected
+    assert bundle_euc_ke_path.read_bytes().strip() == b"cp949"
+    assert bundle_cp932_path.read_bytes().strip() == b"cp932"
 
     pathlib.Path(file_paths.verify).parent.mkdir(parents=True, exist_ok=True)
     pathlib.Path(file_paths.verify).write_text(stdout)
@@ -312,9 +315,6 @@ def test_with_config_include_nobundle(
     capfd: pytest.CaptureFixture[str],
     file_paths: FilePaths,
 ):
-    expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = []
-    expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = []
-
     args = make_args(
         include=[file_paths.targets],
         config="config.toml",

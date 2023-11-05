@@ -17,10 +17,10 @@ _CONFIG_YML_PATH = "_config.yml"
 COMPETITIVE_VERIFY_DOCS_CONFIG_YML = "COMPETITIVE_VERIFY_DOCS_CONFIG_YML"
 
 logger = getLogger(__name__)
-default_docs_dir = conf.config_dir / "docs"
 
 
-def _get_default_docs_dir() -> pathlib.Path:
+def get_default_docs_dir() -> pathlib.Path:
+    default_docs_dir = conf.get_config_dir() / "docs"
     oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
     if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
         return oj_verify_docs_dir
@@ -71,7 +71,7 @@ def load_render_config(
 
     config_yml: dict[str, Any] = default_config_yml
     if not docs_dir:
-        docs_dir = _get_default_docs_dir()
+        docs_dir = get_default_docs_dir()
 
     logger.info("docs_dir=%s", docs_dir.as_posix())
     user_config_yml = _load_user_render_config_yml(docs_dir)

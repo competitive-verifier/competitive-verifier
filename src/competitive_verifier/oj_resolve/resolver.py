@@ -27,7 +27,7 @@ logger = getLogger(__name__)
 
 
 def get_bundled_dir() -> pathlib.Path:
-    return config.config_dir / "bundled"
+    return config.get_config_dir() / "bundled"
 
 
 class OjResolver:

@@ -5,6 +5,7 @@ import sys
 from logging import getLogger
 from typing import Optional
 
+import competitive_verifier.config as config
 import competitive_verifier.merge_result.main as merge_result
 from competitive_verifier.arg import (
     add_ignore_error_argument,
@@ -13,12 +14,11 @@ from competitive_verifier.arg import (
     add_verify_files_json_argument,
     add_write_summary_argument,
 )
-from competitive_verifier.config import config_dir
 from competitive_verifier.log import configure_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .builder import DocumentBuilder
-from .render import default_docs_dir
+from .render import get_default_docs_dir
 
 logger = getLogger(__name__)
 
@@ -74,11 +74,11 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     add_write_summary_argument(parser)
     add_include_exclude_argument(parser)
 
-    destination = config_dir / "_jekyll"
+    destination = config.get_config_dir() / "_jekyll"
     parser.add_argument(
         "--docs",
         type=pathlib.Path,
-        help=f"Document settings directory. default: {default_docs_dir.as_posix()}",
+        help=f"Document settings directory. default: {get_default_docs_dir().as_posix()}",
     )
     parser.add_argument(
         "--destination",

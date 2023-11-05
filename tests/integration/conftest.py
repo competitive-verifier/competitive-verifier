@@ -1,5 +1,7 @@
 import contextlib
 import datetime
+import inspect
+import os
 import pathlib
 import shutil
 from typing import Iterable
@@ -8,15 +10,15 @@ import pytest
 import requests
 from pytest_mock import MockerFixture
 
-from .types import FilePaths
+from .types import ConfigDirFunc, FilePaths
 from .utils import md5_number
 
 
 @pytest.fixture(scope="session")
 def file_paths() -> FilePaths:
-    root = pathlib.Path(__file__).parent / "testdata"
+    root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
-    assert dest_root.parent.exists()
+    assert root.exists()
     if dest_root.is_dir():
         shutil.rmtree(dest_root)
 
@@ -29,9 +31,27 @@ def file_paths() -> FilePaths:
     )
 
 
+@pytest.fixture
+def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
+    def _config_dir(name: str):
+        d = file_paths.dest_root / f"config.{name or inspect.stack()[1].function}"
+
+        mocker.patch.dict(
+            os.environ,
+            {"COMPETITIVE_VERIFY_CONFIG_PATH": d.as_posix()},
+        )
+        return d
+
+    return _config_dir
+
+
 @pytest.fixture(autouse=True)
-def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.chdir(pathlib.Path(__file__).parent / "testdata")
+def setenv(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+):
+    monkeypatch.chdir(file_paths.root)
 
     def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
         md5 = md5_number(b"".join(sorted(f.as_posix().encode() for f in files)))
