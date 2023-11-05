@@ -65,7 +65,7 @@ def expected(file_paths: FilePaths) -> dict[str, Any]:
                 "targets/python/lib_some_failure.py": {
                     "dependencies": ["targets/python/lib_some_failure.py"],
                     "verification": [],
-                    "document_attributes": {"links": []},
+                    "document_attributes": {"TITLE": "Units📏", "links": []},
                     "additonal_sources": [],
                 },
                 "targets/python/lib_skip.py": {

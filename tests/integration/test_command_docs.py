@@ -123,6 +123,7 @@ def data(file_paths: FilePaths) -> DocsData:
                                         },
                                         {
                                             "filename": "lib_some_failure.py",
+                                            "title": "Units📏",
                                             "icon": "LIBRARY_SOME_WA",
                                             "path": f"{file_paths.targets}/python/lib_some_failure.py",
                                         },
@@ -747,7 +748,7 @@ def data(file_paths: FilePaths) -> DocsData:
                     path=f"{file_paths.targets}/python/lib_some_failure.py.md",
                     front_matter={
                         "data": {
-                            "attributes": {"links": []},
+                            "attributes": {"TITLE": "Units📏", "links": []},
                             "dependencies": [
                                 {"files": [], "type": "Depends on"},
                                 {"files": [], "type": "Required by"},
@@ -792,7 +793,7 @@ def data(file_paths: FilePaths) -> DocsData:
                         },
                         "documentation_of": f"{file_paths.targets}/python/lib_some_failure.py",
                         "layout": "document",
-                        "title": f"{file_paths.targets}/python/lib_some_failure.py",
+                        "title": "Units📏",
                     },
                 ),
                 MarkdownData(
@@ -967,6 +968,7 @@ def data(file_paths: FilePaths) -> DocsData:
                                     "files": [
                                         {
                                             "filename": "lib_some_failure.py",
+                                            "title": "Units📏",
                                             "icon": "LIBRARY_SOME_WA",
                                             "path": f"{file_paths.targets}/python/lib_some_failure.py",
                                         },
