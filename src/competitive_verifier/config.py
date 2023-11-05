@@ -1,4 +1,9 @@
 import pathlib
 
-config_dir = pathlib.Path(".competitive-verifier")
-cache_dir = config_dir / "cache"
+
+def get_config_dir():
+    return pathlib.Path(".competitive-verifier")
+
+
+def get_cache_dir():
+    return get_config_dir() / "cache"

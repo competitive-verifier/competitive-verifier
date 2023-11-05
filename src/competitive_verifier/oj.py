@@ -14,7 +14,7 @@ from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 from onlinejudge.type import NotLoggedInError
 
-import competitive_verifier.config
+import competitive_verifier.config as config
 import competitive_verifier.exec
 import competitive_verifier.oj_download_command
 from competitive_verifier import log
@@ -22,8 +22,8 @@ from competitive_verifier.models.result import TestcaseResult, VerificationResul
 from competitive_verifier.models.result_status import ResultStatus
 from competitive_verifier.oj_test_command import run as run_test
 
-_oj_cache_dir = competitive_verifier.config.cache_dir.resolve() / "online-judge-tools"
-_problem_cache_dir = competitive_verifier.config.cache_dir / "problems"
+_oj_cache_dir = config.get_cache_dir().resolve() / "online-judge-tools"
+_problem_cache_dir = config.get_cache_dir() / "problems"
 onlinejudge._implementation.utils.user_cache_dir = _oj_cache_dir
 logger = getLogger(__name__)
 
