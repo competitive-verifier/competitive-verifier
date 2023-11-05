@@ -130,25 +130,6 @@ class _MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
 
     def _update_cloned_repository(self) -> None:
         library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
-        # path = library_checker.LibraryCheckerService._get_cloned_repository_path()
-
-        # if sys.version_info < (3, 6):
-        #     logger.warning("generate.py may not work on Python 3.5 or older")
-        # if os.name == "nt":
-        #     logger.warning("generate.py may not work on Windows")
-
-        # problem_spec = str(self._get_problem_directory_path() / "info.toml")
-        # command = [sys.executable, str(path / "generate.py"), problem_spec]
-        # if compile_checker:
-        #     command.append("--compile-checker")
-        # logger.info("$ %s", " ".join(command))
-        # try:
-        #     subprocess.check_call(command, stdout=sys.stderr, stderr=sys.stderr)
-        # except subprocess.CalledProcessError:
-        #     logger.error(
-        #         "the generate.py failed: check https://github.com/yosupo06/library-checker-problems/issues"
-        #     )
-        #     raise
 
     def _mock_cases(self) -> Generator[OjTestCase, Any, Any]:
         if self.problem_id == "aplusb":
@@ -349,98 +330,6 @@ def test_verify(
 ):
     config_dir("integration")
     main.main(["--verify-json", data.verify, "--output", data.result])
-    assert json.loads(pathlib.Path(data.result).read_bytes())["files"][
-        "targets/python/failure.mle.py"
-    ]["verifications"] == [
-        {
-            "verification_name": "Python",
-            "status": "failure",
-            "elapsed": 961.0,
-            "last_execution_time": "1986-01-16T01:09:24.400000+03:00",
-            **(
-                {
-                    "slowest": 96.0,
-                    "heaviest": 751.0,
-                    "testcases": [
-                        {
-                            "name": "example_00",
-                            "status": "MLE",
-                            "elapsed": 6.26,
-                            "memory": 60.26,
-                        },
-                        {
-                            "name": "example_01",
-                            "status": "MLE",
-                            "elapsed": 2.4,
-                            "memory": 59.44,
-                        },
-                        {
-                            "name": "random_00",
-                            "status": "MLE",
-                            "elapsed": 6.48,
-                            "memory": 7.31,
-                        },
-                        {
-                            "name": "random_01",
-                            "status": "AC",
-                            "elapsed": 9.73,
-                            "memory": 24.23,
-                        },
-                        {
-                            "name": "random_02",
-                            "status": "AC",
-                            "elapsed": 4.88,
-                            "memory": 52.64,
-                        },
-                        {
-                            "name": "random_03",
-                            "status": "MLE",
-                            "elapsed": 0.47,
-                            "memory": 29.96,
-                        },
-                        {
-                            "name": "random_04",
-                            "status": "AC",
-                            "elapsed": 7.88,
-                            "memory": 34.93,
-                        },
-                        {
-                            "name": "random_05",
-                            "status": "AC",
-                            "elapsed": 8.89,
-                            "memory": 71.35,
-                        },
-                        {
-                            "name": "random_06",
-                            "status": "AC",
-                            "elapsed": 7.13,
-                            "memory": 38.93,
-                        },
-                        {
-                            "name": "random_07",
-                            "status": "MLE",
-                            "elapsed": 5.77,
-                            "memory": 84.25,
-                        },
-                        {
-                            "name": "random_08",
-                            "status": "AC",
-                            "elapsed": 4.06,
-                            "memory": 42.35,
-                        },
-                        {
-                            "name": "random_09",
-                            "status": "MLE",
-                            "elapsed": 1.99,
-                            "memory": 10.53,
-                        },
-                    ],
-                }
-                if check_gnu_time()
-                else {}
-            ),
-        }
-    ]
     assert json.loads(pathlib.Path(data.result).read_bytes()) == {
         "total_seconds": 8719.92,
         "files": {
