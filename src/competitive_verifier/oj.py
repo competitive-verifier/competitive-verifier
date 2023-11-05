@@ -22,7 +22,6 @@ from competitive_verifier.models.result import TestcaseResult, VerificationResul
 from competitive_verifier.models.result_status import ResultStatus
 from competitive_verifier.oj_test_command import run as run_test
 
-
 logger = getLogger(__name__)
 
 checker_exe_path = "checker.exe" if sys.platform == "win32" else "checker"

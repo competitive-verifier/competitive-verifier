@@ -130,6 +130,5 @@ reportMissingImports = true
 reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
-markers = [
-    "integration",
-]
+testpaths = "tests/"
+markers = ["integration"]

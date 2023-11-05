@@ -16,7 +16,7 @@ from .utils import md5_number
 
 @pytest.fixture(scope="session")
 def file_paths() -> FilePaths:
-    root = pathlib.Path(__file__).parent / "testdata"
+    root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
     assert root.exists()
     if dest_root.is_dir():
@@ -46,8 +46,12 @@ def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
 
 
 @pytest.fixture(autouse=True)
-def setenv(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.chdir(pathlib.Path(__file__).parent / "testdata")
+def setenv(
+    mocker: MockerFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+):
+    monkeypatch.chdir(file_paths.root)
 
     def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
         md5 = md5_number(b"".join(sorted(f.as_posix().encode() for f in files)))

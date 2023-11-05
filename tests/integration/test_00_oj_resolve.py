@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj_resolve.main import main
 from competitive_verifier_oj_clone.languages import special_comments
 
-from .types import FilePaths, ConfigDirFunc
+from .types import ConfigDirFunc, FilePaths
 
 
 @pytest.fixture
