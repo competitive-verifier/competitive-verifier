@@ -26,6 +26,7 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     result: VerifyCommandResult,
+    *,
     destination_dir: pathlib.Path,
     docs_dir: Optional[pathlib.Path],
     include: Optional[list[str]],
@@ -33,6 +34,7 @@ def run_impl(
 ) -> bool:
     logger.debug("input=%s", input.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
+    print(docs_dir)
     builder = DocumentBuilder(
         input=input,
         result=result,
@@ -58,10 +60,10 @@ def run(args: argparse.Namespace) -> bool:
         run_impl(
             input,
             result,
-            args.docs,
-            args.destination,
-            args.include,
-            args.exclude,
+            docs_dir=args.docs,
+            destination_dir=args.destination,
+            include=args.include,
+            exclude=args.exclude,
         )
         or args.ignore_error
     )
