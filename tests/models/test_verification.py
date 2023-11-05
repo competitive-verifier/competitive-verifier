@@ -2,7 +2,7 @@
 import pathlib
 import sys
 from dataclasses import dataclass
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Union
 
 import pytest
 from pydantic import RootModel
@@ -10,12 +10,12 @@ from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
 import competitive_verifier.models
-import competitive_verifier.oj
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
     ProblemVerification,
     ResultStatus,
+    ShellCommand,
     Verification,
 )
 
@@ -172,6 +172,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "tle": 22.0,
             "error": None,
             "mle": 128,
+            "env": None,
         },
     ),
     (
@@ -184,6 +185,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "tle": 22.0,
             "error": None,
             "mle": 128,
+            "env": None,
         },
     ),
     (
@@ -201,6 +203,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "tle": 2.0,
             "error": 1e-06,
             "mle": 1.2,
+            "env": None,
         },
     ),
     (
@@ -217,6 +220,24 @@ test_run_problem_command_params: list[tuple[ProblemVerification, dict[str, Any]]
             "tle": 2.0,
             "error": 1e-06,
             "mle": 128,
+            "env": None,
+        },
+    ),
+    (
+        ProblemVerification(
+            compile=ShellCommand(command="cat LICENSE", env={"ARG": "VAR"}),
+            command="ls ~",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+            error=1e-6,
+            tle=2,
+        ),
+        {
+            "url": "https://judge.yosupo.jp/problem/aplusb",
+            "command": "ls ~",
+            "tle": 2.0,
+            "error": 1e-06,
+            "mle": 128,
+            "env": {"ARG": "VAR"},
         },
     ),
 ]
@@ -228,7 +249,7 @@ def test_run_problem_command(
     kwargs: dict[str, Any],
     mocker: MockerFixture,
 ):
-    patch = mocker.patch.object(competitive_verifier.oj, "test")
+    patch = mocker.patch.object(competitive_verifier.models.verification.oj, "test")
     obj.run(
         DataVerificationParams(default_tle=22, default_mle=128),
     )
@@ -236,7 +257,7 @@ def test_run_problem_command(
 
 
 test_run_compile_params: list[
-    tuple[Verification, Optional[Sequence[str]], Optional[dict[str, Any]]]
+    tuple[Verification, Optional[Union[str, list[str]]], Optional[dict[str, Any]]]
 ] = [
     (
         CommandVerification(command="ls ~"),
@@ -245,7 +266,7 @@ test_run_compile_params: list[
     ),
     (
         CommandVerification(compile="cat LICENSE", command="ls ~"),
-        ("cat LICENSE",),
+        "cat LICENSE",
         {
             "shell": True,
             "text": True,
@@ -264,7 +285,7 @@ test_run_compile_params: list[
         ProblemVerification(
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
-        ("cat LICENSE",),
+        "cat LICENSE",
         {
             "shell": True,
             "text": True,
@@ -282,12 +303,66 @@ test_run_compile_params: list[
             error=1e-6,
             tle=2,
         ),
-        ("cat LICENSE",),
+        "cat LICENSE",
         {
             "shell": True,
             "text": True,
             "check": False,
             "env": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        ProblemVerification(
+            compile=["cat", "LICENSE"],
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        ["cat", "LICENSE"],
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        ProblemVerification(
+            compile=ShellCommand(command="cat LICENSE", env={"ARGS": "DUMMY"}),
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        "cat LICENSE",
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "env": {"ARGS": "DUMMY"},
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        ProblemVerification(
+            compile=ShellCommand(command=["cat", "LICENSE"], env={"TOKEN": "DUMMY"}),
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        ["cat", "LICENSE"],
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": {"TOKEN": "DUMMY"},
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -312,7 +387,7 @@ def test_run_compile(
         mock_exec_command.assert_not_called()
     else:
         assert kwargs
-        mock_exec_command.assert_called_once_with(*args, **kwargs)
+        mock_exec_command.assert_called_once_with(args, **kwargs)
 
 
 test_params_run_params: list[tuple[Verification, Optional[str]]] = [

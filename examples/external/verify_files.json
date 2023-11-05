@@ -1,6 +1,69 @@
 {
     "$schema": "../../schema/verify_files.schema.json",
     "files": {
+        "examples/external/hello.py": {
+            "verification": [
+                {
+                    "name": "array in object",
+                    "type": "problem",
+                    "command": {
+                        "command": [
+                            "python",
+                            "examples/external/hello.py"
+                        ],
+                        "env": {
+                            "PYTHONPATH": "."
+                        }
+                    },
+                    "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                },
+                {
+                    "name": "str in object",
+                    "type": "problem",
+                    "command": {
+                        "command": "python examples/external/hello.py",
+                        "env": {
+                            "PYTHONPATH": "."
+                        }
+                    },
+                    "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                },
+                {
+                    "name": "array only in object",
+                    "type": "problem",
+                    "command": {
+                        "command": [
+                            "env",
+                            "PYTHONPATH=.",
+                            "python",
+                            "examples/external/hello.py"
+                        ]
+                    },
+                    "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                },
+                {
+                    "name": "array",
+                    "type": "problem",
+                    "command": [
+                        "env",
+                        "PYTHONPATH=.",
+                        "python",
+                        "examples/external/hello.py"
+                    ],
+                    "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                },
+                {
+                    "name": "str",
+                    "type": "problem",
+                    "command": "env PYTHONPATH=. python examples/external/hello.py",
+                    "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+                }
+            ],
+            "document_attributes": {
+                "TITLE": "Hello world ex",
+                "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
+            }
+        },
         "examples/external/aplusb.test.bash": {
             "verification": [
                 {

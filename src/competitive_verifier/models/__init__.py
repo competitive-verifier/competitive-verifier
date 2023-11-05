@@ -19,16 +19,19 @@ from .verification import (
     CommandVerification,
     ConstVerification,
     ProblemVerification,
+    ShellCommand,
     Verification,
     VerificationParams,
 )
 
 __all__ = [
+
     "ForcePosixPath",
     "SortedPathSet",
     "SortedPathList",
     "SourceCodeStat",
     "SourceCodeStatSlim",
+            "SourceCodeStat",
     "VerificationStatus",
     "resolve_dependency",
     "VerificationFile",
@@ -40,6 +43,7 @@ __all__ = [
     "TestcaseResult",
     "JudgeStatus",
     "BaseVerification",
+    "ShellCommand",
     "CommandVerification",
     "ConstVerification",
     "ProblemVerification",
