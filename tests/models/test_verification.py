@@ -19,7 +19,6 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
-
 from competitive_verifier.oj.tools.test_command import OjTestArguments
 
 

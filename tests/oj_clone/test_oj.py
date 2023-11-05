@@ -1,7 +1,7 @@
 import pathlib
 from typing import Any
-import pytest
 
+import pytest
 from pytest_mock import MockerFixture
 
 import competitive_verifier.oj as oj

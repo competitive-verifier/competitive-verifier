@@ -6,24 +6,24 @@ import platform
 import shlex
 import signal
 import subprocess
-from logging import getLogger
 import sys
 import tempfile
 import threading
 import time
+from logging import getLogger
 from typing import Annotated, Any, BinaryIO, Optional, Union
 
 import onlinejudge_command.format_utils as fmtutils
 import onlinejudge_command.pretty_printers as pretty_printers
-from onlinejudge_command.subcommand.test import (
-    JudgeStatus,
-    CompareMode,
-    check_gnu_time as orig_check_gnu_time,
-    build_match_function,
-    run_checking_output,
-)
 import onlinejudge_command.utils as utils
-from onlinejudge_command.subcommand.test import DisplayMode, JudgeStatus
+from onlinejudge_command.subcommand.test import (
+    CompareMode,
+    DisplayMode,
+    JudgeStatus,
+    build_match_function,
+)
+from onlinejudge_command.subcommand.test import check_gnu_time as orig_check_gnu_time
+from onlinejudge_command.subcommand.test import run_checking_output
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 

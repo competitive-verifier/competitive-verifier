@@ -103,9 +103,6 @@ def data(file_paths: FilePaths) -> DocsData:
                         "title": f"{file_paths.targets}/encoding/cp932.txt",
                     },
                 ),
-
-
-
                 MarkdownData(
                     path=f"{file_paths.targets}/python/failure.mle.py.md",
                     front_matter={
@@ -142,7 +139,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/sub/failure.mle.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/failure.mle.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.mle.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -277,7 +276,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/failure.re.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/failure.re.py").read_text(encoding="utf-8")                                    ,
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.re.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -411,7 +412,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/sub/failure.tle.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/failure.tle.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.tle.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -550,7 +553,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/failure.wa.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/failure.wa.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/failure.wa.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -697,7 +702,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_all_failure.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_all_failure.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_all_failure.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -745,7 +752,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_all_success.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_all_success.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_all_success.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -789,7 +798,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_lib_skip.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_skip.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -836,7 +847,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_some_failure.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_failure.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -880,7 +893,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_some_skip.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -934,7 +949,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "dependsOn": [],
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/lib_some_skip_some_wa.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/lib_some_skip_some_wa.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -991,7 +1008,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             ],
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/skip.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/skip.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1044,7 +1063,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_success1.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/success1.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/success1.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1183,7 +1204,9 @@ def data(file_paths: FilePaths) -> DocsData:
                             "documentPath": f"{file_paths.targets}/python/docs_success2.md",
                             "embedded": [
                                 {
-                                    "code": pathlib.Path( f"{file_paths.targets}/python/success2.py").read_text(encoding="utf-8"),
+                                    "code": pathlib.Path(
+                                        f"{file_paths.targets}/python/success2.py"
+                                    ).read_text(encoding="utf-8"),
                                     "name": "default",
                                 }
                             ],
@@ -1287,7 +1310,6 @@ def data(file_paths: FilePaths) -> DocsData:
                         "title": "Success2",
                     },
                 ),
-                
             ],
         }
     )
