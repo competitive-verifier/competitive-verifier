@@ -16,9 +16,13 @@ from .utils import md5_number
 def file_paths() -> FilePaths:
     root = pathlib.Path(__file__).parent / "testdata"
     dest_root = root / "dst_dir"
-    assert dest_root.parent.exists()
+    assert root.exists()
     if dest_root.is_dir():
         shutil.rmtree(dest_root)
+
+    tmp_dir = root / ".competitive-verifier"
+    if tmp_dir.is_dir():
+        shutil.rmtree(tmp_dir)
 
     return FilePaths(
         root=root,
