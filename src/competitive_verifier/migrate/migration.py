@@ -10,17 +10,17 @@ import yaml
 import competitive_verifier.git as git
 from competitive_verifier.documents.job import resolve_documentation_of
 from competitive_verifier.exec import exec_command
-from competitive_verifier_oj_clone.config import OjVerifyConfig
-from competitive_verifier_oj_clone.languages.cplusplus import CPlusPlusLanguage
-from competitive_verifier_oj_clone.languages.go import GoLanguage
-from competitive_verifier_oj_clone.languages.haskell import HaskellLanguage
-from competitive_verifier_oj_clone.languages.java import JavaLanguage
-from competitive_verifier_oj_clone.languages.models import Language
-from competitive_verifier_oj_clone.languages.nim import NimLanguage
-from competitive_verifier_oj_clone.languages.python import PythonLanguage
-from competitive_verifier_oj_clone.languages.ruby import RubyLanguage
-from competitive_verifier_oj_clone.languages.rust import RustLanguage
-from competitive_verifier_oj_clone.list import get_dict as get_lang_dict
+from competitive_verifier.oj.verify.config import OjVerifyConfig
+from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
+from competitive_verifier.oj.verify.languages.go import GoLanguage
+from competitive_verifier.oj.verify.languages.haskell import HaskellLanguage
+from competitive_verifier.oj.verify.languages.java import JavaLanguage
+from competitive_verifier.oj.verify.languages.models import Language
+from competitive_verifier.oj.verify.languages.nim import NimLanguage
+from competitive_verifier.oj.verify.languages.python import PythonLanguage
+from competitive_verifier.oj.verify.languages.ruby import RubyLanguage
+from competitive_verifier.oj.verify.languages.rust import RustLanguage
+from competitive_verifier.oj.verify.list import get_dict as get_lang_dict
 
 logger = getLogger(__name__)
 

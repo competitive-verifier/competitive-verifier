@@ -6,9 +6,9 @@ from typing import Any, Optional, Union
 from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel, Field, field_validator
 
-from competitive_verifier.models.path import ForcePosixPath
 from competitive_verifier.util import to_relative
 
+from .path import ForcePosixPath
 from .result_status import ResultStatus
 
 logger = getLogger(__name__)

@@ -19,16 +19,18 @@ from competitive_verifier.documents.type import (
     PageRenderJob,
     SiteRenderConfig,
 )
-from competitive_verifier.models.dependency import (
+from competitive_verifier.models import (
+    JudgeStatus,
+    ResultStatus,
     SourceCodeStat,
     SourceCodeStatSlim,
+)
+from competitive_verifier.models import TestcaseResult as _TestcaseResult
+from competitive_verifier.models import (
+    VerificationFile,
+    VerificationResult,
     VerificationStatus,
 )
-from competitive_verifier.models.file import VerificationFile
-from competitive_verifier.models.result import JudgeStatus
-from competitive_verifier.models.result import TestcaseResult as _TestcaseResult
-from competitive_verifier.models.result import VerificationResult
-from competitive_verifier.models.result_status import ResultStatus
 
 STATIC_FILES_PATH = "src/competitive_verifier_resources/jekyll"
 # For windows test

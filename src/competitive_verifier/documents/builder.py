@@ -11,11 +11,11 @@ from competitive_verifier import git, github, log
 from competitive_verifier.models import (
     ProblemVerification,
     SourceCodeStat,
+    SourceCodeStatSlim,
     VerificationInput,
     VerifyCommandResult,
     resolve_dependency,
 )
-from competitive_verifier.models.dependency import SourceCodeStatSlim
 from competitive_verifier.util import read_text_normalized
 
 from .builder_type import (

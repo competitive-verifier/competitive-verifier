@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "**/examples/go/**/*.go": "text",
         "**/_includes/**/*.html": "jekyll",
         "**/_layouts/**/*.html": "jekyll"
     },

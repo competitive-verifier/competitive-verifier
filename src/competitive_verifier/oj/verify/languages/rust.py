@@ -10,10 +10,13 @@ from enum import Enum
 from logging import getLogger
 from typing import Any, Optional, Sequence
 
-import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import OjVerifyConfig
-from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
-from competitive_verifier_oj_clone.utils import read_text_normalized
+import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.oj.verify.config import OjVerifyConfig
+from competitive_verifier.oj.verify.languages.models import (
+    Language,
+    LanguageEnvironment,
+)
+from competitive_verifier.oj.verify.utils import read_text_normalized
 
 from .. import subprocess2 as subprocess
 

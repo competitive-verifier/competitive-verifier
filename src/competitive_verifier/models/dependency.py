@@ -5,10 +5,10 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from competitive_verifier import git
-from competitive_verifier.models.path import ForcePosixPath, SortedPathSet
+import competitive_verifier.git as git
 
 from .file import VerificationFile, VerificationInput
+from .path import ForcePosixPath, SortedPathSet
 from .result import ResultStatus, VerificationResult, VerifyCommandResult
 
 

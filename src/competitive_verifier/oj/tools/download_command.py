@@ -1,18 +1,31 @@
 import os
 import pathlib
+import shutil
 import textwrap
+from contextlib import nullcontext
 from logging import getLogger
 from typing import Iterator, Optional
 
 import onlinejudge.dispatch as dispatch
 import onlinejudge_command.download_history
 import onlinejudge_command.format_utils as format_utils
+import onlinejudge_command.main
 import onlinejudge_command.pretty_printers as pretty_printers
 import onlinejudge_command.utils as utils
 import requests.exceptions
 from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
-from onlinejudge.type import SampleParseError, TestCase
+from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
+
+from competitive_verifier import log
+
+from .func import (
+    get_cache_directory,
+    get_checker_path,
+    get_directory,
+    is_atcoder,
+    is_yukicoder,
+)
 
 logger = getLogger(__name__)
 
@@ -149,4 +162,47 @@ def run(
                     fh.write(data)
                 logger.info(utils.SUCCESS + "saved to: %s", path)
 
+    return True
+
+
+def run_wrapper(url: str, *, group_log: bool = False) -> bool:
+    directory = get_directory(url)
+    test_directory = directory / "test"
+
+    logger.info("download[Start]: %s into %s", url, test_directory)
+    if not (test_directory).exists() or list((test_directory).iterdir()) == []:
+        logger.info("download[Run]: %s", url)
+
+        if group_log:
+            cm = log.group(f"download[Run]: {url}")
+        else:
+            cm = nullcontext()
+        with cm:
+            directory.mkdir(parents=True, exist_ok=True)
+            # time.sleep(2)
+
+            try:
+                run(
+                    url=url,
+                    directory=test_directory,
+                    cookie=get_cache_directory() / "cookie.txt",
+                )
+                checker_path = get_checker_path(url)
+                if checker_path and checker_path.exists():
+                    try:
+                        shutil.copy2(checker_path, directory)
+                    except Exception as e:
+                        logger.exception("Failed to copy checker %s", e)
+                        shutil.rmtree(directory)
+                        return False
+            except Exception as e:
+                if isinstance(e, NotLoggedInError) and is_yukicoder(url):
+                    logger.error("Required: $YUKICODER_TOKEN environment variable")
+                elif isinstance(e, NotLoggedInError) and is_atcoder(url):
+                    logger.error("Required: $DROPBOX_TOKEN environment variable")
+                else:
+                    logger.exception("Failed to download: %s", e)
+                return False
+    else:
+        logger.info("download:already exists: %s", url)
     return True

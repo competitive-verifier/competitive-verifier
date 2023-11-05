@@ -8,12 +8,18 @@ import competitive_verifier.oj as oj
 
 def test_oj_test(mocker: MockerFixture):
     mocker.patch(
-        "competitive_verifier.oj.get_cache_directory",
+        "competitive_verifier.oj.tools.test_command.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     )
-    run = mocker.patch("competitive_verifier.oj.run_test")
+    run = mocker.patch("competitive_verifier.oj.tools.test_command.run")
 
-    oj.test(url="http://example.com", command="ls .", tle=2, error=None, mle=128)
+    oj.test(
+        url="http://example.com",
+        command="ls .",
+        tle=2,
+        error=None,
+        mle=128,
+    )
 
     run.assert_called_once()
     args = run.call_args[0][0]

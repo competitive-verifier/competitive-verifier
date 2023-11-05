@@ -13,7 +13,6 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include = "competitive_verifier_oj_clone", from = "src" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -22,7 +21,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-competitive-verifier = "competitive_verifier.console.app:main"
+competitive-verifier = "competitive_verifier.app:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
@@ -64,11 +63,19 @@ test = "pytest"
 test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
 
-"dev:verify" = { cmd = "competitive-verifier verify -o .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
-"dev:docs" = { cmd = "competitive-verifier docs .competitive-verifier/tmp/result.json", env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" } }
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
+
+
+[tool.poe.tasks."dev:verify"]
+script = "competitive_verifier.verify.main:main(['--output', '.competitive-verifier/tmp/result.json'])"
+env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
+
+
+[tool.poe.tasks."dev:docs"]
+script = "competitive_verifier.docs.main:main(['.competitive-verifier/tmp/result.json'])"
+env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
 
 [tool.poe.tasks.serve]
 [[tool.poe.tasks.serve.sequence]]
@@ -111,7 +118,7 @@ max-line-length = 500
 max-complexity = 18
 exclude = [
     "examples",
-    "src/competitive_verifier_oj_clone/languages",
+    "src/competitive_verifier/oj/verify/languages",
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
 ]

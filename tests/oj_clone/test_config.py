@@ -1,6 +1,6 @@
 import pathlib
 
-import competitive_verifier_oj_clone.config as config
+import competitive_verifier.oj.verify.config as config
 
 
 def test_oj_resolve_config_load():

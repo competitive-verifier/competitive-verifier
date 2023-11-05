@@ -6,7 +6,7 @@ from logging import getLogger
 from typing import Iterable, Optional
 
 from competitive_verifier.log import configure_stderr_logging
-from competitive_verifier.models.file import VerificationInput
+from competitive_verifier.models import VerificationInput
 
 logger = getLogger(__name__)
 

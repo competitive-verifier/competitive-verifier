@@ -16,7 +16,7 @@ import competitive_verifier.config as config
 from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.models import VerificationResult
-from competitive_verifier.oj_test_command import check_gnu_time
+from competitive_verifier.oj import check_gnu_time
 from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
 

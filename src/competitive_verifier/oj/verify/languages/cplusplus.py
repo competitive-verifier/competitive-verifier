@@ -7,11 +7,14 @@ import shutil
 from logging import getLogger
 from typing import Any, Optional
 
-import competitive_verifier_oj_clone.languages.special_comments as special_comments
-import competitive_verifier_oj_clone.shlex2 as shlex
-from competitive_verifier_oj_clone.config import OjVerifyConfig
-from competitive_verifier_oj_clone.languages.cplusplus_bundle import Bundler
-from competitive_verifier_oj_clone.languages.models import Language, LanguageEnvironment
+import competitive_verifier.oj.verify.languages.special_comments as special_comments
+import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.oj.verify.config import OjVerifyConfig
+from competitive_verifier.oj.verify.languages.cplusplus_bundle import Bundler
+from competitive_verifier.oj.verify.languages.models import (
+    Language,
+    LanguageEnvironment,
+)
 
 from .. import subprocess2 as subprocess
 

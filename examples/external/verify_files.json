@@ -6,7 +6,10 @@
                 {
                     "name": "bash",
                     "type": "problem",
-                    "command": "bash examples/external/aplusb.test.bash",
+                    "command": [
+                        "bash",
+                        "examples/external/aplusb.test.bash"
+                    ],
                     "problem": "https://judge.yosupo.jp/problem/aplusb"
                 }
             ],

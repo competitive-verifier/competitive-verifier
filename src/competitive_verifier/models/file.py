@@ -1,16 +1,18 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from pydantic import BaseModel, Field, field_validator
 
-from competitive_verifier.models.path import ForcePosixPath, SortedPathSet
-from competitive_verifier.models.result import FileResult
 from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
+from .path import ForcePosixPath, SortedPathSet
 from .verification import Verification
+
+if TYPE_CHECKING:
+    from .result import FileResult
 
 logger = getLogger(__name__)
 
@@ -188,7 +190,7 @@ class VerificationInput(BaseModel):
             d = self._verified_with
         return d
 
-    def filterd_files(self, files: dict[ForcePosixPath, FileResult]):
+    def filterd_files(self, files: dict[ForcePosixPath, "FileResult"]):
         for k, v in files.items():
             if k in self.files:
                 yield k, v
