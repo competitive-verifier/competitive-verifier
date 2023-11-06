@@ -1,14 +1,20 @@
-from typing import Any
+from typing import Optional
 
-from competitive_verifier.oj.verify.config import OjVerifyConfig
+from pydantic import Field
+
+from competitive_verifier.models import ShellCommand, ShellCommandLike
 from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
+from competitive_verifier.oj.verify.models import OjVerifyUserDefinedConfig
+
+
+class OjVerifyHaskellConfig(OjVerifyUserDefinedConfig):
+    execute: ShellCommandLike = Field(
+        default_factory=lambda: ShellCommand(
+            command=["runghc", "{basedir}/{path}"],
+        ),
+    )
 
 
 class HaskellLanguage(UserDefinedLanguage):
-    config: dict[str, Any]
-
-    def __init__(self, *, config: OjVerifyConfig):
-        lang_confg = config["languages"].get("haskell", {})
-        assert lang_confg is not None
-        lang_confg.setdefault("execute", "runghc {basedir}/{path}")
-        super().__init__(extension="hs", config=lang_confg)
+    def __init__(self, *, config: Optional[OjVerifyHaskellConfig]):
+        super().__init__(extension="hs", config=config or OjVerifyHaskellConfig())

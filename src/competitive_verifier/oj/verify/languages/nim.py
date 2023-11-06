@@ -2,17 +2,28 @@
 import functools
 import pathlib
 from logging import getLogger
-from typing import Any
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.config import OjVerifyConfig
-from competitive_verifier.oj.verify.languages.models import (
+from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
+    OjVerifyLanguageConfig,
 )
 from competitive_verifier.oj.verify.utils import read_text_normalized
 
 logger = getLogger(__name__)
+
+
+class OjVerifyNimConfigEnv(BaseModel):
+    compile_to: Optional[str]
+    NIMFLAGS: Optional[list[str]]
+
+
+class OjVerifyNimConfig(OjVerifyLanguageConfig):
+    environments: list[OjVerifyNimConfigEnv] = Field(default_factory=list)
 
 
 class NimLanguageEnvironment(LanguageEnvironment):
@@ -81,10 +92,10 @@ def _list_direct_dependencies(
 
 
 class NimLanguage(Language):
-    config: dict[str, Any]
+    config: OjVerifyNimConfig
 
-    def __init__(self, *, config: OjVerifyConfig):
-        self.config = config["languages"].get("nim", {})
+    def __init__(self, *, config: Optional[OjVerifyNimConfig]):
+        self.config = config or OjVerifyNimConfig()
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
@@ -107,23 +118,18 @@ class NimLanguage(Language):
     ) -> list[NimLanguageEnvironment]:
         default_compile_to = "cpp"
         default_NIMFLAGS = ["-d:release", "--opt:speed"]
-        envs: list[NimLanguageEnvironment] = []
-        if "environments" not in self.config:
-            envs.append(
+        if self.config.environments:
+            return [
                 NimLanguageEnvironment(
-                    compile_to=default_compile_to, NIMFLAGS=default_NIMFLAGS
+                    compile_to=default_compile_to,
+                    NIMFLAGS=default_NIMFLAGS,
                 )
-            )
+            ]
         else:
-            for env in self.config["environments"]:
-                compile_to = env.get("compile_to", default_compile_to)
-                NIMFLAGS = env.get("NIMFLAGS", default_NIMFLAGS)
-                if not isinstance(NIMFLAGS, list):
-                    raise RuntimeError("NIMFLAGS must ba a list")
-                envs.append(
-                    NimLanguageEnvironment(
-                        compile_to=compile_to,
-                        NIMFLAGS=NIMFLAGS,  # pyright: ignore[reportUnknownArgumentType]
-                    )
+            return [
+                NimLanguageEnvironment(
+                    compile_to=env.compile_to or default_compile_to,
+                    NIMFLAGS=env.NIMFLAGS or default_NIMFLAGS,
                 )
-        return envs
+                for env in self.config.environments
+            ]

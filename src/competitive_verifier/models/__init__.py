@@ -14,12 +14,12 @@ from .result import (
     VerifyCommandResult,
 )
 from .result_status import ResultStatus
+from .shell import ShellCommand, ShellCommandLike
 from .verification import (
     BaseVerification,
     CommandVerification,
     ConstVerification,
     ProblemVerification,
-    ShellCommand,
     Verification,
     VerificationParams,
 )
@@ -43,6 +43,7 @@ __all__ = [
     "JudgeStatus",
     "BaseVerification",
     "ShellCommand",
+    "ShellCommandLike",
     "CommandVerification",
     "ConstVerification",
     "ProblemVerification",

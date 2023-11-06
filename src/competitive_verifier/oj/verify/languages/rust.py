@@ -8,24 +8,34 @@ import shutil
 from collections import defaultdict
 from enum import Enum
 from logging import getLogger
-from typing import Any, Optional, Sequence
+from typing import Any, Literal, Optional, Sequence
+
+from pydantic import BaseModel
 
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.config import OjVerifyConfig
-from competitive_verifier.oj.verify.languages.models import (
+from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
+    OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import read_text_normalized
-
-from .. import subprocess2 as subprocess
+from competitive_verifier.oj.verify.utils import exec_command, read_text_normalized
 
 logger = getLogger(__name__)
+
 _metadata_by_manifest_path: dict[pathlib.Path, dict[str, Any]] = {}
 _cargo_checked_workspaces: set[pathlib.Path] = set()
 _related_source_files_by_workspace: dict[
     pathlib.Path, dict[pathlib.Path, frozenset[pathlib.Path]]
 ] = {}
+
+
+class OjVerifyRustListDependenciesBackend(BaseModel):
+    kind: Literal["none", "cargo-udeps"]
+    toolchain: Optional[str] = None
+
+
+class OjVerifyRustConfig(OjVerifyLanguageConfig):
+    list_dependencies_backend: Optional[OjVerifyRustListDependenciesBackend] = None
 
 
 class _ListDependenciesBackend:
@@ -144,7 +154,7 @@ def _list_dependencies_by_crate(  # noqa: C901
             *_target_option(main_target),
         ]
         unused_deps = json.loads(
-            subprocess.run(
+            exec_command(
                 args,
                 cwd=metadata["workspace_root"],
                 check=False,
@@ -238,7 +248,7 @@ def _related_source_files(
 
     # Runs `cargo check` to generate `$target_directory/debug/deps/*.d`.
     if pathlib.Path(metadata["workspace_root"]) not in _cargo_checked_workspaces:
-        subprocess.run(
+        exec_command(
             [
                 "cargo",
                 "check",
@@ -378,42 +388,16 @@ class RustLanguageEnvironment(LanguageEnvironment):
 class RustLanguage(Language):
     _list_dependencies_backend: _ListDependenciesBackend
 
-    def __init__(self, *, config: OjVerifyConfig):
-        lang_confg = config["languages"].get("rust", {})
+    def __init__(self, *, config: Optional[OjVerifyRustConfig]):
+        if config and config.list_dependencies_backend:
+            list_dependencies_backend = config.list_dependencies_backend
 
-        assert lang_confg is not None
-        # Parses `languages.rust.list_dependencies_backend`.
-        if "list_dependencies_backend" in lang_confg:
-            list_dependencies_backend = lang_confg["list_dependencies_backend"]
-
-            if not isinstance(list_dependencies_backend, dict):
-                raise RuntimeError(
-                    "`languages.rust.list_dependencies_backend` must be `dict`"
-                )
-            if "kind" not in list_dependencies_backend:
-                raise RuntimeError(
-                    "missing `languages.rust.list_dependencies_backend.kind`"
-                )
-
-            list_dependencies_backend_kind: Any = list_dependencies_backend["kind"]
-
-            if not isinstance(list_dependencies_backend_kind, str):
-                raise RuntimeError(
-                    "`languages.rust.list_dependencies_backend.kind` must be `str`"
-                )
-
-            if list_dependencies_backend_kind == "none":
+            if list_dependencies_backend.kind == "none":
                 self._list_dependencies_backend = _NoBackend()
-            elif list_dependencies_backend_kind == "cargo-udeps":
-                if "toolchain" not in list_dependencies_backend:
-                    toolchain = None
-                elif isinstance(list_dependencies_backend["toolchain"], str):
-                    toolchain = list_dependencies_backend["toolchain"]
-                else:
-                    raise RuntimeError(
-                        "`languages.rust.list_dependencies_backend.toolchain` must be `str`"
-                    )
-                self._list_dependencies_backend = _CargoUdeps(toolchain=toolchain)
+            elif list_dependencies_backend.kind == "cargo-udeps":
+                self._list_dependencies_backend = _CargoUdeps(
+                    toolchain=list_dependencies_backend.toolchain,
+                )
             else:
                 raise RuntimeError(
                     "expected 'none' or 'cargo-udeps' for `languages.rust.list_dependencies_backend.kind`"
@@ -492,7 +476,7 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
     :returns: Output of `cargo metadata` command
     """
     return json.loads(
-        subprocess.run(
+        exec_command(
             [
                 "cargo",
                 "metadata",

@@ -1,21 +1,37 @@
 import argparse
 import pathlib
 import sys
-from typing import Optional
+from logging import getLogger
+from typing import Optional, Union
 
-import competitive_verifier.oj.verify.config
+from pydantic import ValidationError
+
 from competitive_verifier.arg import add_include_exclude_argument
+from competitive_verifier.oj.verify.list import OjVerifyConfig
 
 from .resolver import OjResolver
+
+logger = getLogger(__name__)
 
 
 def run_impl(
     include: list[str],
     exclude: list[str],
-    config_path: Optional[pathlib.Path],
+    config: Union[pathlib.Path, OjVerifyConfig, None],
     enable_bundle: bool,
 ) -> bool:
-    config = competitive_verifier.oj.verify.config.load(config_path)
+    if config is None:
+        logger.info("no config file")
+        config = OjVerifyConfig()
+    elif not isinstance(config, OjVerifyConfig):
+        try:
+            config_path = config
+            with pathlib.Path(config_path).open("rb") as fp:
+                config = OjVerifyConfig.load(fp)
+                logger.info("config file loaded: %s: %s", str(config_path), config)
+        except ValidationError as e:
+            logger.error("config file validation error: %s", e)
+            config = OjVerifyConfig()
 
     resolver = OjResolver(
         include=include,
@@ -31,7 +47,7 @@ def run(args: argparse.Namespace) -> bool:
     return run_impl(
         include=args.include,
         exclude=args.exclude,
-        config_path=args.config,
+        config=args.config,
         enable_bundle=args.bundle,
     )
 

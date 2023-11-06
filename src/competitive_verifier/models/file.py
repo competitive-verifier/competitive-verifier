@@ -1,7 +1,7 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Union
+from typing import Any, Union
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -9,10 +9,8 @@ from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
 from .path import ForcePosixPath, SortedPathSet
+from .result import FileResult
 from .verification import Verification
-
-if TYPE_CHECKING:
-    from .result import FileResult
 
 logger = getLogger(__name__)
 

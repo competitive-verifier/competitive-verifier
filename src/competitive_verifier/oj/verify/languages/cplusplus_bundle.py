@@ -8,7 +8,7 @@ import shutil
 from logging import getLogger
 from typing import Any, Optional
 
-from .. import subprocess2 as subprocess
+from competitive_verifier.oj.verify.utils import exec_command
 
 logger = getLogger(__name__)
 
@@ -167,7 +167,7 @@ TR1_LIBS = {
 @functools.lru_cache(maxsize=None)
 def _check_compiler(compiler: str) -> str:
     # Executables named "g++" are not always g++, due to the fake g++ of macOS
-    version = subprocess.run([compiler, "--version"], text=False).stdout.decode()
+    version = exec_command([compiler, "--version"]).stdout.decode()
     if "clang" in version.lower() or "Apple LLVM".lower() in version.lower():
         return "clang"
     if "g++" in version.lower():
@@ -201,7 +201,7 @@ def _get_uncommented_code(
         "-E",
         str(path),
     ]
-    return subprocess.run(command, text=False).stdout
+    return exec_command(command).stdout
 
 
 def get_uncommented_code(

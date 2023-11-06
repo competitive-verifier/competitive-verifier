@@ -3,7 +3,10 @@ import abc
 import pathlib
 from typing import Any, Optional, Sequence
 
-import competitive_verifier.oj.verify.languages.special_comments as special_comments
+from pydantic import BaseModel, ConfigDict
+
+from competitive_verifier.models import ShellCommandLike
+from competitive_verifier.oj.verify.languages import special_comments
 
 
 class LanguageEnvironment(abc.ABC):
@@ -14,7 +17,7 @@ class LanguageEnvironment(abc.ABC):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[str]:
+    ) -> Optional[ShellCommandLike]:
         """
         :throws Exception:
         """
@@ -23,7 +26,7 @@ class LanguageEnvironment(abc.ABC):
     @abc.abstractmethod
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
+    ) -> ShellCommandLike:
         raise NotImplementedError
 
 
@@ -61,3 +64,15 @@ class Language:
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> Sequence[LanguageEnvironment]:
         raise NotImplementedError
+
+
+class OjVerifyLanguageConfig(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+class OjVerifyUserDefinedConfig(OjVerifyLanguageConfig):
+    execute: ShellCommandLike
+    compile: Optional[ShellCommandLike] = None
+    bundle: Optional[ShellCommandLike] = None
+    list_attributes: Optional[ShellCommandLike] = None
+    list_dependencies: Optional[ShellCommandLike] = None

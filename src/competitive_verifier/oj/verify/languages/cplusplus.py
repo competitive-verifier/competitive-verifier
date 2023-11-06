@@ -7,18 +7,28 @@ import shutil
 from logging import getLogger
 from typing import Any, Optional
 
+from pydantic import BaseModel
+
 import competitive_verifier.oj.verify.languages.special_comments as special_comments
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.config import OjVerifyConfig
 from competitive_verifier.oj.verify.languages.cplusplus_bundle import Bundler
-from competitive_verifier.oj.verify.languages.models import (
+from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
+    OjVerifyLanguageConfig,
 )
-
-from .. import subprocess2 as subprocess
+from competitive_verifier.oj.verify.utils import exec_command
 
 logger = getLogger(__name__)
+
+
+class OjVerifyCPlusPlusConfigEnv(BaseModel):
+    CXX: str
+    CXXFLAGS: Optional[list[str]] = None
+
+
+class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
+    environments: Optional[list[OjVerifyCPlusPlusConfigEnv]] = None
 
 
 class CPlusPlusLanguageEnvironment(LanguageEnvironment):
@@ -67,7 +77,7 @@ def _cplusplus_list_depending_files(
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
     try:
-        data = subprocess.run(command, text=False).stdout
+        data = exec_command(command).stdout
     except Exception:
         logger.error(
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies. The paths must exist, must not contain '\\', and must be case-sensitive.)",
@@ -88,7 +98,7 @@ def _cplusplus_list_defined_macros(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> dict[str, str]:
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-dM", "-E", str(path)]
-    data = subprocess.run(command, text=False).stdout
+    data = exec_command(command).stdout
     define: dict[str, str] = {}
     for line in data.decode().splitlines():
         assert line.startswith("#define ")
@@ -114,10 +124,10 @@ _ERROR = "ERROR"
 #     CXX = "g++"
 #     CXXFALGS = ["-std=c++17", "-Wall"]
 class CPlusPlusLanguage(Language):
-    config: dict[str, Any]
+    config: OjVerifyCPlusPlusConfig
 
-    def __init__(self, *, config: OjVerifyConfig):
-        self.config = config["languages"].get("cpp", {})
+    def __init__(self, *, config: Optional[OjVerifyCPlusPlusConfig]):
+        self.config = config or OjVerifyCPlusPlusConfig()
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]
@@ -131,26 +141,21 @@ class CPlusPlusLanguage(Language):
         ):
             default_CXXFLAGS.append("-fsplit-stack")
 
-        if "CXXFLAGS" in os.environ and "environments" not in self.config:
+        if "CXXFLAGS" in os.environ and not self.config.environments:
             logger.warning(
                 "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
             )
             default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])
 
         envs: list[CPlusPlusLanguageEnvironment] = []
-        if "environments" in self.config:
+        if self.config.environments:
             # configured: use specified CXX & CXXFLAGS
-            for env in self.config["environments"]:
-                CXX: Optional[str] = env.get("CXX")
-                if CXX is None:
-                    raise RuntimeError("CXX is not specified")
-                CXXFLAGS = env.get("CXXFLAGS", default_CXXFLAGS)
-                if not isinstance(CXXFLAGS, list):
-                    raise RuntimeError("CXXFLAGS must ba a list")
+            for env in self.config.environments:
+                CXX = env.CXX
                 envs.append(
                     CPlusPlusLanguageEnvironment(
                         CXX=pathlib.Path(CXX),
-                        CXXFLAGS=CXXFLAGS,  # pyright: ignore[reportUnknownArgumentType]
+                        CXXFLAGS=env.CXXFLAGS or default_CXXFLAGS,
                     )
                 )
 

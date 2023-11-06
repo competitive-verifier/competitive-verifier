@@ -1,14 +1,21 @@
-from typing import Any
+from typing import Optional
 
-from competitive_verifier.oj.verify.config import OjVerifyConfig
+from pydantic import Field
+
+from competitive_verifier.models import ShellCommand, ShellCommandLike
 from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
+from competitive_verifier.oj.verify.models import OjVerifyUserDefinedConfig
+
+
+class OjVerifyGoConfig(OjVerifyUserDefinedConfig):
+    execute: ShellCommandLike = Field(
+        default_factory=lambda: ShellCommand(
+            command=["go", "run", "{basedir}/{path}"],
+            env={"GO111MODULE": "off"},
+        ),
+    )
 
 
 class GoLanguage(UserDefinedLanguage):
-    config: dict[str, Any]
-
-    def __init__(self, *, config: OjVerifyConfig):
-        lang_config = config["languages"].get("go", {})
-        assert lang_config is not None
-        lang_config.setdefault("execute", "env GO111MODULE=off go run {basedir}/{path}")
-        super().__init__(extension="go", config=lang_config)
+    def __init__(self, *, config: Optional[OjVerifyGoConfig]):
+        super().__init__(extension="go", config=config or OjVerifyGoConfig())

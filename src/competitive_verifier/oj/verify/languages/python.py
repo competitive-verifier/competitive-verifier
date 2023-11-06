@@ -13,10 +13,7 @@ import importlab.environment
 import importlab.fs
 import importlab.graph
 
-from competitive_verifier.oj.verify.languages.models import (
-    Language,
-    LanguageEnvironment,
-)
+from competitive_verifier.oj.verify.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 
