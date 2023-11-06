@@ -10,6 +10,7 @@ import competitive_verifier.oj as oj
 from .types import ConfigDirSetter
 
 
+@pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-1)
 class TestCommandDownload:
     @pytest.mark.integration

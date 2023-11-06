@@ -147,7 +147,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
                     "---\n\n",
                 ]
             if not dry_run:
-                doc_path.write_text("".join(docs_lines))
+                doc_path.write_text("".join(docs_lines), encoding="utf-8")
 
     if hit:
         if not dry_run:

@@ -1336,6 +1336,7 @@ def check_common(
     assert not list(targets.keys())
 
 
+@pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-100)
 class TestCommandDocuments:
     @pytest.mark.integration

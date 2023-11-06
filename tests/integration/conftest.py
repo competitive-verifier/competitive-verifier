@@ -4,7 +4,7 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Generator, Iterable
+from typing import Generator, Iterable, Optional
 
 import pytest
 import requests
@@ -14,6 +14,32 @@ from .data.integration_data import IntegrationData
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
+
+
+@pytest.fixture(scope="session")
+def check_necessary_commands() -> Optional[str]:
+    git_path = shutil.which("git")
+    if not git_path:
+        raise Exception("The integration test needs command")
+    if shutil.which("env"):
+        return None
+    if os.name != "nt":
+        raise Exception("The integration test needs env command")
+
+    for git_dir in pathlib.Path(git_path).parents:
+        search = git_dir / "usr/bin"
+        if search.is_dir():
+            return str(search)
+    raise Exception("The integration test needs env command")
+
+
+@pytest.fixture()
+def additional_path(
+    monkeypatch: pytest.MonkeyPatch,
+    check_necessary_commands: Optional[str],
+):
+    if check_necessary_commands:
+        monkeypatch.setenv("PATH", check_necessary_commands, prepend=os.pathsep)
 
 
 @pytest.fixture(scope="session")

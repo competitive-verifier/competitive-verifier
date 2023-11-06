@@ -176,7 +176,7 @@ class OjResolver:
                     dest_path = dest_dir / path
                     dest_path.parent.mkdir(parents=True, exist_ok=True)
                     logger.info("bundle_path=%s", dest_path.as_posix())
-                    dest_path.write_text(bundled_code)
+                    dest_path.write_text(bundled_code, encoding="utf-8")
                     additonal_sources.append(
                         AddtionalSource(name="bundle error", path=dest_path)
                     )
