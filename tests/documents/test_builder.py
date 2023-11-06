@@ -546,6 +546,7 @@ test_render_source_code_stats_for_top_page_params: list[
 @pytest.mark.parametrize(
     "input, expected",
     test_render_source_code_stats_for_top_page_params,
+    ids=range(len(test_render_source_code_stats_for_top_page_params)),
 )
 def test_render_source_code_stats_for_top_page(
     input: Input_render_source_code_stats_for_top_page,

@@ -25,6 +25,7 @@ test_to_human_str_seconds_params: list[tuple[timedelta, str]] = [
 @pytest.mark.parametrize(
     "td, expected",
     test_to_human_str_seconds_params,
+    ids=str,
 )
 def test_to_human_str_seconds(td: timedelta, expected: str):
     assert summary.to_human_str_seconds(td.total_seconds()) == expected

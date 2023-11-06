@@ -192,7 +192,11 @@ test_run_params: list[
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", test_run_params)
+@pytest.mark.parametrize(
+    "obj, args, kwargs",
+    test_run_params,
+    ids=range(len(test_run_params)),
+)
 def test_run(
     obj: Verification,
     args: Sequence[Any],
@@ -302,7 +306,11 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
 ]
 
 
-@pytest.mark.parametrize("obj, args", test_run_problem_command_params)
+@pytest.mark.parametrize(
+    "obj, args",
+    test_run_problem_command_params,
+    ids=range(len(test_run_problem_command_params)),
+)
 def test_run_problem_command(
     obj: ProblemVerification,
     args: OjTestArguments,
@@ -445,7 +453,11 @@ test_run_compile_params: list[
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
+@pytest.mark.parametrize(
+    "obj, args, kwargs",
+    test_run_compile_params,
+    ids=range(len(test_run_compile_params)),
+)
 def test_run_compile(
     obj: Verification,
     args: Optional[Sequence[Any]],
@@ -475,7 +487,11 @@ test_params_run_params: list[tuple[Verification, Optional[str]]] = [
 ]
 
 
-@pytest.mark.parametrize("obj, error_message", test_params_run_params)
+@pytest.mark.parametrize(
+    "obj, error_message",
+    test_params_run_params,
+    ids=range(len(test_params_run_params)),
+)
 def test_params_run(
     obj: Verification,
     error_message: Optional[str],
