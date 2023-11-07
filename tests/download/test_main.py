@@ -13,8 +13,13 @@ def get_problem_command(url: str) -> ProblemVerification:
 _SomeUrlOrVerificationFile = Union[
     UrlOrVerificationFile, Iterable[UrlOrVerificationFile]
 ]
-test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
-    ("http://example.com", ["http://example.com"]),
+test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
+    (
+        "http://example.com",
+        {
+            "http://example.com",
+        },
+    ),
     (
         VerificationFile(
             verification=[
@@ -24,12 +29,12 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
                 get_problem_command("http://example.com/delta"),
             ]
         ),
-        [
+        {
             "http://example.com/alpha",
             "http://example.com/beta",
             "http://example.com/gamma",
             "http://example.com/delta",
-        ],
+        },
     ),
     (
         [
@@ -50,7 +55,7 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
                 ]
             ),
         ],
-        [
+        {
             "http://example.com/alpha",
             "http://example.com/beta",
             "http://example.com/gamma",
@@ -59,7 +64,7 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
             "https://example.com/beta",
             "https://example.com/gamma",
             "https://example.com/delta",
-        ],
+        },
     ),
     (
         [
@@ -69,14 +74,16 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
                     get_problem_command("http://example.com/beta"),
                     get_problem_command("http://example.com/gamma"),
                     get_problem_command("http://example.com/delta"),
+                    get_problem_command("https://example.com/alpha"),
                 ]
             ),
             "https://example.com/alpha",
             "https://example.com/beta",
+            "https://example.com/beta",
             "https://example.com/gamma",
             "https://example.com/delta",
         ],
-        [
+        {
             "http://example.com/alpha",
             "http://example.com/beta",
             "http://example.com/gamma",
@@ -85,7 +92,7 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
             "https://example.com/beta",
             "https://example.com/gamma",
             "https://example.com/delta",
-        ],
+        },
     ),
 ]
 
@@ -93,6 +100,6 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, list[str]]] = [
 @pytest.mark.parametrize("input, expected", test_parse_urls_params)
 def test_parse_urls(
     input: _SomeUrlOrVerificationFile,
-    expected: list[str],
+    expected: set[str],
 ):
-    assert list(parse_urls(input)) == expected
+    assert set(parse_urls(input)) == expected

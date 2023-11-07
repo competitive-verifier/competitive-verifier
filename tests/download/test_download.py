@@ -79,21 +79,22 @@ def test_oj_download(
     download(
         input=[
             "https://judge.yosupo.jp/problem/aplusb",
+            "https://judge.yosupo.jp/problem/aplusb",
             "https://yukicoder.me/problems/no/3040",
             "https://atcoder.jp/contests/abc322/tasks/abc322_a",
         ]
     )
 
     assert mkdir.call_count == 3
-    assert [call[0][0] for call in mkdir.call_args_list] == [
-        pathlib.Path(
-            ".competitive-verifier/cache/problems/8e3916c7805235eb07ec2a58660d89c6"
-        ),
+    assert sorted(call[0][0] for call in mkdir.call_args_list) == [
         pathlib.Path(
             ".competitive-verifier/cache/problems/20c21841818196666af22f1bfb3dbd3e"
         ),
         pathlib.Path(
             ".competitive-verifier/cache/problems/84d0ff7b028fc0f8cf7973b22fee1634"
+        ),
+        pathlib.Path(
+            ".competitive-verifier/cache/problems/8e3916c7805235eb07ec2a58660d89c6"
         ),
     ]
 

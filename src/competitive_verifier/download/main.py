@@ -23,7 +23,7 @@ UrlOrVerificationFile = Union[str, VerificationFile]
 
 def parse_urls(
     input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]]
-) -> Iterable[str]:
+) -> set[str]:
     def parse_single(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
         if isinstance(url_or_file, str):
             return (url_or_file,)
@@ -31,8 +31,9 @@ def parse_urls(
             return enumerate_urls(url_or_file)
 
     if isinstance(input, (str, VerificationFile)):
-        return parse_single(input)
-    return chain.from_iterable(parse_single(uf) for uf in input)
+        return set(parse_single(input))
+
+    return set(chain.from_iterable(map(parse_single, input)))
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
