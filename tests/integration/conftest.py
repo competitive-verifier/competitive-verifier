@@ -15,11 +15,12 @@ from .utils import md5_number
 
 
 @pytest.fixture(scope="session")
-def file_paths() -> FilePaths:
+def file_paths(request: pytest.FixtureRequest) -> FilePaths:
     root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
     assert root.exists()
-    if dest_root.is_dir():
+
+    if dest_root.is_dir() and not request.config.getoption("--use-prev-dest"):
         shutil.rmtree(dest_root)
 
     return FilePaths(
