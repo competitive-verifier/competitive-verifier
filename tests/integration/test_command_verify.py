@@ -20,7 +20,8 @@ from competitive_verifier.oj import check_gnu_time
 from competitive_verifier.verify import main, verifier
 from tests.integration.utils import md5_number
 
-from .types import ConfigDirSetter, FilePaths
+from .data.integration_data import IntegrationData
+from .types import FilePaths
 
 
 class _MockVerifyCommandResult(verifier.VerifyCommandResult):
@@ -339,11 +340,10 @@ class TestCommandVerfy:
     @pytest.mark.usefixtures("mock_verification")
     def test_verify(
         self,
-        set_config_dir: ConfigDirSetter,
+        integration_data: IntegrationData,
     ):
-        conf = set_config_dir("user_defined_and_python")
-        verify = conf / "verify.json"
-        result = conf / "result.json"
+        verify = integration_data.conf_path / "verify.json"
+        result = integration_data.conf_path / "result.json"
         main.main(["--verify-json", str(verify), "--output", str(result)])
         assert json.loads(pathlib.Path(result).read_bytes()) == {
             "total_seconds": 8719.92,

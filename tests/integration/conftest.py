@@ -4,12 +4,14 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Iterable
+from typing import Generator, Iterable
 
 import pytest
 import requests
 from pytest_mock import MockerFixture
 
+from .data.integration_data import IntegrationData
+from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
 
@@ -75,3 +77,20 @@ def setenv(
         "onlinejudge_command.utils.new_session_with_our_user_agent",
         side_effect=new_session_with_our_user_agent,
     )
+
+
+@pytest.fixture
+def integration_data(
+    file_paths: FilePaths,
+    set_config_dir: ConfigDirSetter,
+) -> Generator[IntegrationData, None, None]:
+    yield UserDefinedAndPythonData(set_config_dir, file_paths)
+
+
+@pytest.fixture
+def user_defined_and_python_data(
+    integration_data: IntegrationData,
+) -> UserDefinedAndPythonData:
+    if isinstance(integration_data, UserDefinedAndPythonData):
+        return integration_data
+    assert False

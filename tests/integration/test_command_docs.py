@@ -14,7 +14,8 @@ from pytest_subtests import SubTests
 from competitive_verifier.documents.main import main
 from competitive_verifier.oj import check_gnu_time
 
-from .types import ConfigDirSetter, FilePaths
+from .data.user_defined_and_python import UserDefinedAndPythonData
+from .types import FilePaths
 
 
 class MarkdownData(BaseModel):
@@ -31,9 +32,9 @@ class DocsData(FilePaths):
 @pytest.fixture
 def data(
     file_paths: FilePaths,
-    set_config_dir: ConfigDirSetter,
+    user_defined_and_python_data: UserDefinedAndPythonData,
 ) -> DocsData:
-    conf = set_config_dir("user_defined_and_python")
+    conf = user_defined_and_python_data.conf_path
     verify = conf / "verify.json"
     result = conf / "result.json"
     return DocsData.model_validate(

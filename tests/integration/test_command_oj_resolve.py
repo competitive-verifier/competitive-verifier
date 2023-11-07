@@ -1,6 +1,6 @@
 import json
 import pathlib
-from typing import Any, Optional, Protocol
+from typing import Optional, Protocol
 
 import pytest
 from pytest_mock import MockerFixture
@@ -8,7 +8,9 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
 
-from .types import ConfigDirSetter, FilePaths
+from .data.integration_data import IntegrationData
+from .data.user_defined_and_python import UserDefinedAndPythonData
+from .types import FilePaths
 
 
 @pytest.fixture
@@ -37,202 +39,6 @@ class _ArgsFunc(Protocol):
         config: Optional[str] = None,
     ) -> list[str]:
         ...
-
-
-@pytest.fixture
-def expected(file_paths: FilePaths) -> dict[str, Any]:
-    return dict(
-        {
-            "files": {
-                "targets/encoding/EUC-KR.txt": {
-                    "dependencies": ["targets/encoding/EUC-KR.txt"],
-                    "verification": [],
-                    "document_attributes": {},
-                    "additonal_sources": [],
-                },
-                "targets/encoding/cp932.txt": {
-                    "dependencies": ["targets/encoding/cp932.txt"],
-                    "verification": [],
-                    "document_attributes": {},
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_all_failure.py": {
-                    "dependencies": ["targets/python/lib_all_failure.py"],
-                    "verification": [],
-                    "document_attributes": {"links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_some_failure.py": {
-                    "dependencies": ["targets/python/lib_some_failure.py"],
-                    "verification": [],
-                    "document_attributes": {"TITLE": "Units📏", "links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_skip.py": {
-                    "dependencies": ["targets/python/lib_skip.py"],
-                    "verification": [],
-                    "document_attributes": {"links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_some_skip_some_wa.py": {
-                    "dependencies": ["targets/python/lib_some_skip_some_wa.py"],
-                    "verification": [],
-                    "document_attributes": {"links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/success1.py": {
-                    "dependencies": [
-                        "targets/python/lib_some_failure.py",
-                        "targets/python/lib_some_skip.py",
-                        "targets/python/success1.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/success1.py",
-                            "problem": "https://judge.yosupo.jp/problem/aplusb",
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/failure.wa.py": {
-                    "dependencies": [
-                        "targets/python/failure.wa.py",
-                        "targets/python/lib_all_failure.py",
-                        "targets/python/lib_some_skip_some_wa.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.wa.py",
-                            "problem": "https://judge.yosupo.jp/problem/aplusb",
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/failure.mle.py": {
-                    "dependencies": [
-                        "targets/python/failure.mle.py",
-                        "targets/python/lib_all_failure.py",
-                        "targets/python/lib_some_failure.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.mle.py",
-                            "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            "mle": 100.0,
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "MLE": "100",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/skip.py": {
-                    "dependencies": [
-                        "targets/python/lib_skip.py",
-                        "targets/python/lib_some_skip_some_wa.py",
-                        "targets/python/skip.py",
-                    ],
-                    "verification": [{"type": "const", "status": "skipped"}],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "IGNORE": "",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/success2.py": {
-                    "dependencies": [
-                        "targets/python/lib_all_success.py",
-                        "targets/python/lib_some_skip_some_wa.py",
-                        "targets/python/success2.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/success2.py",
-                            "problem": "https://judge.yosupo.jp/problem/aplusb",
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_all_success.py": {
-                    "dependencies": ["targets/python/lib_all_success.py"],
-                    "verification": [],
-                    "document_attributes": {"links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/failure.re.py": {
-                    "dependencies": [
-                        "targets/python/failure.re.py",
-                        "targets/python/lib_all_failure.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.re.py",
-                            "problem": "https://judge.yosupo.jp/problem/aplusb",
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                    },
-                    "additonal_sources": [],
-                },
-                "targets/python/lib_some_skip.py": {
-                    "dependencies": ["targets/python/lib_some_skip.py"],
-                    "verification": [],
-                    "document_attributes": {"links": []},
-                    "additonal_sources": [],
-                },
-                "targets/python/failure.tle.py": {
-                    "dependencies": [
-                        "targets/python/failure.tle.py",
-                        "targets/python/lib_all_failure.py",
-                    ],
-                    "verification": [
-                        {
-                            "name": "Python",
-                            "type": "problem",
-                            "command": f"env PYTHONPATH={file_paths.root.as_posix()} python targets/python/failure.tle.py",
-                            "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                            "tle": 0.1,
-                        }
-                    ],
-                    "document_attributes": {
-                        "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                        "TLE": "0.1",
-                        "links": [
-                            "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
-                        ],
-                    },
-                    "additonal_sources": [],
-                },
-            }
-        }
-    )
 
 
 @pytest.fixture
@@ -268,13 +74,11 @@ class TestCommandOjResolve:
     def test_with_config_include(
         self,
         make_args: _ArgsFunc,
-        expected: dict[str, Any],
+        integration_data: IntegrationData,
         capfd: pytest.CaptureFixture[str],
         file_paths: FilePaths,
-        set_config_dir: ConfigDirSetter,
     ):
-        conf = set_config_dir("user_defined_and_python")
-
+        expected = integration_data.expected()
         args = make_args(
             include=[file_paths.targets],
             config="config.toml",
@@ -282,35 +86,11 @@ class TestCommandOjResolve:
         )
         main(args)
 
-        bundle_euc_ke_path = (
-            file_paths.dest_root
-            / "config/user_defined_and_python/bundled/targets/encoding/EUC-KR.txt"
-        )
-        bundle_cp932_path = (
-            file_paths.dest_root
-            / "config/user_defined_and_python/bundled/targets/encoding/cp932.txt"
-        )
-
-        expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = [
-            {
-                "name": "bundled",
-                "path": bundle_euc_ke_path.as_posix(),
-            }
-        ]
-        expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = [
-            {
-                "name": "bundled",
-                "path": bundle_cp932_path.as_posix(),
-            }
-        ]
-
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == expected
-        assert bundle_euc_ke_path.read_bytes().strip() == b"cp949"
-        assert bundle_cp932_path.read_bytes().strip() == b"cp932"
 
-        verify = conf / "verify.json"
+        verify = integration_data.conf_path / "verify.json"
         verify.parent.mkdir(parents=True, exist_ok=True)
         verify.write_text(stdout)
 
@@ -318,10 +98,13 @@ class TestCommandOjResolve:
     def test_with_config_include_nobundle(
         self,
         make_args: _ArgsFunc,
-        expected: dict[str, Any],
+        user_defined_and_python_data: UserDefinedAndPythonData,
         capfd: pytest.CaptureFixture[str],
         file_paths: FilePaths,
     ):
+        expected = user_defined_and_python_data.expected()
+        expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = []
+        expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = []
         args = make_args(
             include=[file_paths.targets],
             config="config.toml",
@@ -332,25 +115,48 @@ class TestCommandOjResolve:
         resolved = json.loads(stdout)
         assert resolved == expected
 
-    @pytest.mark.parametrize(
-        "exclude",
-        [
-            ["dummy/"],
+    test_with_include_exclude_param: list[tuple[list[str], list[str]]] = [
+        (
+            ["targets/**/*.py", "**/*.awk", "**/*.txt"],
+            [],
+        ),
+        (
+            ["targets/"],
             ["dummy/dummy.py"],
-        ],
+        ),
+        (
+            ["targets/encoding", "targets/awk", "targets/python"],
+            ["dummy/"],
+        ),
+        (
+            ["targets/encoding", "targets/awk", "targets/python"],
+            [],
+        ),
+        (
+            ["**/*.py", "**/*.awk", "**/*.txt"],
+            ["dummy/"],
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "include, exclude",
+        test_with_include_exclude_param,
+        ids=range(len(test_with_include_exclude_param)),
     )
     @pytest.mark.usefixtures("setenv_resolve")
-    def test_without_with_exclude_dir(
+    def test_with_include_exclude(
         self,
+        include: list[str],
         exclude: list[str],
         make_args: _ArgsFunc,
-        expected: dict[str, Any],
+        user_defined_and_python_data: UserDefinedAndPythonData,
         capfd: pytest.CaptureFixture[str],
     ):
+        expected = user_defined_and_python_data.expected()
         del expected["files"]["targets/encoding/EUC-KR.txt"]
         del expected["files"]["targets/encoding/cp932.txt"]
 
-        args = make_args(exclude=exclude)
+        args = make_args(include=include, exclude=exclude)
         main(args)
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -360,9 +166,10 @@ class TestCommandOjResolve:
     def test_without_args(
         self,
         make_args: _ArgsFunc,
-        expected: dict[str, Any],
+        user_defined_and_python_data: UserDefinedAndPythonData,
         capfd: pytest.CaptureFixture[str],
     ):
+        expected = user_defined_and_python_data.expected()
         del expected["files"]["targets/encoding/EUC-KR.txt"]
         del expected["files"]["targets/encoding/cp932.txt"]
 
