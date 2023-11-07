@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
 
-from .types import ConfigDirFunc, FilePaths
+from .types import ConfigDirSetter, FilePaths
 
 
 @pytest.fixture
@@ -271,9 +271,9 @@ class TestCommandOjResolve:
         expected: dict[str, Any],
         capfd: pytest.CaptureFixture[str],
         file_paths: FilePaths,
-        config_dir: ConfigDirFunc,
+        set_config_dir: ConfigDirSetter,
     ):
-        config_dir("integration")
+        conf = set_config_dir("user_defined_and_python")
 
         args = make_args(
             include=[file_paths.targets],
@@ -284,11 +284,11 @@ class TestCommandOjResolve:
 
         bundle_euc_ke_path = (
             file_paths.dest_root
-            / "config.integration/bundled/targets/encoding/EUC-KR.txt"
+            / "config/user_defined_and_python/bundled/targets/encoding/EUC-KR.txt"
         )
         bundle_cp932_path = (
             file_paths.dest_root
-            / "config.integration/bundled/targets/encoding/cp932.txt"
+            / "config/user_defined_and_python/bundled/targets/encoding/cp932.txt"
         )
 
         expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = [
@@ -310,8 +310,9 @@ class TestCommandOjResolve:
         assert bundle_euc_ke_path.read_bytes().strip() == b"cp949"
         assert bundle_cp932_path.read_bytes().strip() == b"cp932"
 
-        pathlib.Path(file_paths.verify).parent.mkdir(parents=True, exist_ok=True)
-        pathlib.Path(file_paths.verify).write_text(stdout)
+        verify = conf / "verify.json"
+        verify.parent.mkdir(parents=True, exist_ok=True)
+        verify.write_text(stdout)
 
     @pytest.mark.usefixtures("setenv_resolve")
     def test_with_config_include_nobundle(

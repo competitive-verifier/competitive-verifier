@@ -10,7 +10,7 @@ import pytest
 import requests
 from pytest_mock import MockerFixture
 
-from .types import ConfigDirFunc, FilePaths
+from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
 
 
@@ -25,16 +25,14 @@ def file_paths() -> FilePaths:
     return FilePaths(
         root=root,
         targets="targets",
-        verify="dst_dir/test-verify.json",
-        result="dst_dir/test-result.json",
         dest_root=dest_root,
     )
 
 
 @pytest.fixture
-def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
-    def _config_dir(name: str):
-        d = file_paths.dest_root / f"config.{name or inspect.stack()[1].function}"
+def set_config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirSetter:
+    def _set_config_dir(name: str):
+        d = file_paths.dest_root / "config" / (name or inspect.stack()[1].function)
 
         mocker.patch.dict(
             os.environ,
@@ -42,7 +40,7 @@ def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
         )
         return d
 
-    return _config_dir
+    return _set_config_dir
 
 
 @pytest.fixture(autouse=True)
