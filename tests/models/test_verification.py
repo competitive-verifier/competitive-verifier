@@ -450,6 +450,29 @@ test_run_compile_params: list[
             "encoding": sys.stdout.encoding,
         },
     ),
+    (
+        ProblemVerification(
+            compile=ShellCommand(
+                command=["cat", "LICENSE"],
+                env={"TOKEN": "DUMMY"},
+                cwd=pathlib.Path("~/foo"),
+            ),
+            command="ls ~",
+            problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        ["cat", "LICENSE"],
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": {"TOKEN": "DUMMY"},
+            "cwd": pathlib.Path("~/foo"),
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
 ]
 
 

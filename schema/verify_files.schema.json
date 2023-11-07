@@ -1,58 +1,528 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "type": "object",
-    "properties": {
-        "files": {
-            "type": "object",
-            "description": "File path key which relative to git root",
-            "patternProperties": {
-                ".*": {
-                    "type": "object",
-                    "properties": {
-                        "additonal_sources": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "description": "Addtional source codes",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "Source type"
-                                    },
-                                    "path": {
-                                        "type": "string",
-                                        "description": "Source file path"
-                                    }
-                                }
-                            }
-                        },
-                        "dependencies": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "description": "dependent file path which relative to git root"
-                            }
-                        },
-                        "verification": {
-                            "oneOf": [
-                                {
-                                    "$ref": "definitions/verification.schema.json#/definitions/verification_types"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "definitions/verification.schema.json#/definitions/verification_types"
-                                    }
-                                }
-                            ]
-                        },
-                        "document_attributes": {
-                            "type": "object",
-                            "description": "Attributes for documentation"
-                        }
-                    }
-                }
-            }
+  "$defs": {
+    "AddtionalSource": {
+      "properties": {
+        "name": {
+          "description": "The name of source file.",
+          "examples": [
+            "source_name"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "path": {
+          "description": "The path source file.",
+          "examples": [
+            "relative_path_of_directory/file_name.cpp"
+          ],
+          "format": "path",
+          "title": "Path",
+          "type": "string"
         }
+      },
+      "required": [
+        "name",
+        "path"
+      ],
+      "title": "AddtionalSource",
+      "type": "object"
+    },
+    "CommandVerification": {
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "type": {
+          "const": "command",
+          "default": "command",
+          "title": "Type"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellCommand"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The shell command for verification.",
+          "examples": [
+            "command",
+            [
+              "command",
+              "arg1",
+              "arg2"
+            ],
+            {
+              "command": [
+                "command",
+                "arg1",
+                "arg2"
+              ],
+              "cwd": "/tmp",
+              "env": {
+                "ENVVAR": "DUMMY"
+              }
+            },
+            {
+              "command": "command",
+              "cwd": "/tmp",
+              "env": {
+                "ENVVAR": "DUMMY"
+              }
+            }
+          ],
+          "title": "Command"
+        },
+        "compile": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ShellCommand"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "examples": [
+                "command",
+                [
+                  "command",
+                  "arg1",
+                  "arg2"
+                ],
+                {
+                  "command": [
+                    "command",
+                    "arg1",
+                    "arg2"
+                  ],
+                  "cwd": "/tmp",
+                  "env": {
+                    "ENVVAR": "DUMMY"
+                  }
+                },
+                {
+                  "command": "command",
+                  "cwd": "/tmp",
+                  "env": {
+                    "ENVVAR": "DUMMY"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The shell command for compile.",
+          "title": "Compile"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "title": "CommandVerification",
+      "type": "object"
+    },
+    "ConstVerification": {
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "type": {
+          "const": "const",
+          "default": "const",
+          "title": "Type"
+        },
+        "status": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResultStatus"
+            }
+          ],
+          "description": "The pre-defined result."
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ConstVerification",
+      "type": "object"
+    },
+    "ProblemVerification": {
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "type": {
+          "const": "problem",
+          "default": "problem",
+          "title": "Type"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellCommand"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "The shell command for verification.",
+          "examples": [
+            "command",
+            [
+              "command",
+              "arg1",
+              "arg2"
+            ],
+            {
+              "command": [
+                "command",
+                "arg1",
+                "arg2"
+              ],
+              "cwd": "/tmp",
+              "env": {
+                "ENVVAR": "DUMMY"
+              }
+            },
+            {
+              "command": "command",
+              "cwd": "/tmp",
+              "env": {
+                "ENVVAR": "DUMMY"
+              }
+            }
+          ],
+          "title": "Command"
+        },
+        "compile": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ShellCommand"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "examples": [
+                "command",
+                [
+                  "command",
+                  "arg1",
+                  "arg2"
+                ],
+                {
+                  "command": [
+                    "command",
+                    "arg1",
+                    "arg2"
+                  ],
+                  "cwd": "/tmp",
+                  "env": {
+                    "ENVVAR": "DUMMY"
+                  }
+                },
+                {
+                  "command": "command",
+                  "cwd": "/tmp",
+                  "env": {
+                    "ENVVAR": "DUMMY"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The shell command for compile.",
+          "title": "Compile"
+        },
+        "problem": {
+          "description": "The URL of problem.",
+          "title": "Problem",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The absolute or relative error to be considered as correct.",
+          "examples": [
+            1e-09
+          ],
+          "title": "Error"
+        },
+        "tle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The TLE time in seconds.",
+          "examples": [
+            10
+          ],
+          "title": "Tle"
+        },
+        "mle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The MLE memory size in megabytes.",
+          "examples": [
+            64
+          ],
+          "title": "Mle"
+        }
+      },
+      "required": [
+        "command",
+        "problem"
+      ],
+      "title": "ProblemVerification",
+      "type": "object"
+    },
+    "ResultStatus": {
+      "enum": [
+        "success",
+        "failure",
+        "skipped"
+      ],
+      "title": "ResultStatus",
+      "type": "string"
+    },
+    "ShellCommand": {
+      "properties": {
+        "command": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Shell command",
+          "title": "Command"
+        },
+        "env": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Envitonment variables for command",
+          "title": "Env"
+        },
+        "cwd": {
+          "anyOf": [
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The working directory of child process.",
+          "title": "Cwd"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "title": "ShellCommand",
+      "type": "object"
+    },
+    "VerificationFile": {
+      "properties": {
+        "dependencies": {
+          "description": "The list of dependent files as paths relative to root.",
+          "items": {
+            "format": "path",
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "verification": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "command": "#/$defs/CommandVerification",
+                    "const": "#/$defs/ConstVerification",
+                    "problem": "#/$defs/ProblemVerification"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/ConstVerification"
+                  },
+                  {
+                    "$ref": "#/$defs/CommandVerification"
+                  },
+                  {
+                    "$ref": "#/$defs/ProblemVerification"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "discriminator": {
+                "mapping": {
+                  "command": "#/$defs/CommandVerification",
+                  "const": "#/$defs/ConstVerification",
+                  "problem": "#/$defs/ProblemVerification"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ConstVerification"
+                },
+                {
+                  "$ref": "#/$defs/CommandVerification"
+                },
+                {
+                  "$ref": "#/$defs/ProblemVerification"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Verification"
+        },
+        "document_attributes": {
+          "description": "The attributes for documentation.",
+          "title": "Document Attributes",
+          "type": "object"
+        },
+        "additonal_sources": {
+          "description": "The addtional source paths.",
+          "examples": [
+            [
+              {
+                "name": "source_name",
+                "path": "relative_path_of_directory/file_name.cpp"
+              }
+            ]
+          ],
+          "items": {
+            "$ref": "#/$defs/AddtionalSource"
+          },
+          "title": "Additonal Sources",
+          "type": "array"
+        }
+      },
+      "title": "VerificationFile",
+      "type": "object"
     }
+  },
+  "properties": {
+    "files": {
+      "additionalProperties": {
+        "$ref": "#/$defs/VerificationFile"
+      },
+      "description": "The key is relative path from the root.",
+      "title": "Files",
+      "type": "object"
+    }
+  },
+  "title": "VerificationInput",
+  "type": "object"
 }

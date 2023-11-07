@@ -37,7 +37,7 @@ def parse_urls(
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
-    for v in file.verification:
+    for v in file.verification_list:
         if isinstance(v, ProblemVerification):
             yield v.problem
 

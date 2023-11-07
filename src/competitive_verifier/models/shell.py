@@ -1,21 +1,31 @@
+import pathlib
 import subprocess
-from typing import TYPE_CHECKING, Literal, Optional, Union, overload
+from typing import Annotated, Literal, Optional, Union, overload
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import exec_command
 
-if TYPE_CHECKING:
-    from _typeshed import StrOrBytesPath
-
 
 class ShellCommand(BaseModel):
-    command: Union[list[str], str]
+    command: Union[list[str], str] = Field(
+        description="Shell command",
+    )
     """Shell command
     """
 
-    env: Optional[dict[str, str]] = None
+    env: Optional[dict[str, str]] = Field(
+        default=None,
+        description="Envitonment variables for command",
+    )
     """Envitonment variables for command
+    """
+
+    cwd: Optional[pathlib.Path] = Field(
+        default=None,
+        description="The working directory of child process.",
+    )
+    """The working directory of child process.
     """
 
     @overload
@@ -24,7 +34,6 @@ class ShellCommand(BaseModel):
         text: Literal[False] = False,
         check: bool = False,
         capture_output: bool = False,
-        cwd: Optional["StrOrBytesPath"] = None,
         group_log: bool = False,
     ) -> subprocess.CompletedProcess[bytes]:
         ...
@@ -35,7 +44,6 @@ class ShellCommand(BaseModel):
         text: Literal[True] = True,
         check: bool = False,
         capture_output: bool = False,
-        cwd: Optional["StrOrBytesPath"] = None,
         group_log: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         ...
@@ -45,7 +53,6 @@ class ShellCommand(BaseModel):
         text: bool = False,
         check: bool = False,
         capture_output: bool = False,
-        cwd: Optional["StrOrBytesPath"] = None,
         group_log: bool = False,
     ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
         return exec_command(
@@ -54,7 +61,7 @@ class ShellCommand(BaseModel):
             text=text,
             check=check,
             capture_output=capture_output,
-            cwd=cwd,
+            cwd=self.cwd,
             group_log=group_log,
         )
 
@@ -65,4 +72,22 @@ class ShellCommand(BaseModel):
         return cmd
 
 
-ShellCommandLike = Union[ShellCommand, Union[list[str], str]]
+ShellCommandLike = Annotated[
+    Union[ShellCommand, Union[list[str], str]],
+    Field(
+        examples=[
+            "command",
+            ["command", "arg1", "arg2"],
+            ShellCommand(
+                command=["command", "arg1", "arg2"],
+                env={"ENVVAR": "DUMMY"},
+                cwd=pathlib.Path("/tmp"),
+            ),
+            ShellCommand(
+                command="command",
+                env={"ENVVAR": "DUMMY"},
+                cwd=pathlib.Path("/tmp"),
+            ),
+        ]
+    ),
+]

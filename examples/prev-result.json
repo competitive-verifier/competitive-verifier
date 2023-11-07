@@ -1,4 +1,5 @@
 {
+    "$schema": "..//schema/verify_result.schema.json",
     "total_seconds": 10,
     "files": {
         ".not-exist.yml": {

@@ -40,7 +40,9 @@ class BaseVerification(BaseModel, ABC):
 
 class ConstVerification(BaseVerification):
     type: Literal["const"] = "const"
-    status: ResultStatus
+    status: ResultStatus = Field(description="The pre-defined result.")
+    """The pre-defined result.
+    """
 
     @property
     def is_skippable(self) -> bool:
@@ -62,8 +64,15 @@ class ConstVerification(BaseVerification):
 class CommandVerification(BaseVerification):
     type: Literal["command"] = "command"
 
-    command: ShellCommandLike
-    compile: Optional[ShellCommandLike] = None
+    command: ShellCommandLike = Field(description="The shell command for verification.")
+    """The shell command for verification.
+    """
+    compile: Optional[ShellCommandLike] = Field(
+        default=None,
+        description="The shell command for compile.",
+    )
+    """The shell command for compile.
+    """
 
     def run(
         self,
@@ -87,17 +96,44 @@ class CommandVerification(BaseVerification):
 class ProblemVerification(BaseVerification):
     type: Literal["problem"] = "problem"
 
-    command: ShellCommandLike
-    compile: Optional[ShellCommandLike] = None
+    command: ShellCommandLike = Field(description="The shell command for verification.")
+    """The shell command for verification.
+    """
+    compile: Optional[ShellCommandLike] = Field(
+        default=None,
+        description="The shell command for compile.",
+    )
+    """The shell command for compile.
+    """
 
-    problem: str
+    problem: str = Field(
+        description="The URL of problem.",
+    )
     """
     problem: URL of problem
     """
 
-    error: Optional[float] = None
-    tle: Optional[float] = None
-    mle: Optional[float] = None
+    error: Optional[float] = Field(
+        default=None,
+        examples=[1e-9],
+        description="The absolute or relative error to be considered as correct.",
+    )
+    """The absolute or relative error to be considered as correct.
+    """
+    tle: Optional[float] = Field(
+        default=None,
+        examples=[10],
+        description="The TLE time in seconds.",
+    )
+    """The TLE time in seconds.
+    """
+    mle: Optional[float] = Field(
+        default=None,
+        examples=[64],
+        description="The MLE memory size in megabytes.",
+    )
+    """The MLE memory size in megabytes.
+    """
 
     def run(
         self,

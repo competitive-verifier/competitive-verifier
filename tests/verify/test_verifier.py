@@ -89,13 +89,13 @@ test_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[ConstVerification(status=SUCCESS)]
+                verification=ConstVerification(status=SUCCESS),
             ),
             Path("bar"): VerificationFile(
-                verification=[ConstVerification(status=SUCCESS)]
+                verification=ConstVerification(status=SUCCESS),
             ),
             Path("baz"): VerificationFile(
-                verification=[ConstVerification(status=SUCCESS)]
+                verification=ConstVerification(status=SUCCESS),
             ),
         },
     ),
@@ -121,10 +121,10 @@ test_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[ConstVerification(status=SUCCESS)]
+                verification=ConstVerification(status=SUCCESS),
             ),
             Path("baz"): VerificationFile(
-                verification=[ConstVerification(status=SUCCESS)]
+                verification=ConstVerification(status=SUCCESS),
             ),
         },
     ),
@@ -342,10 +342,10 @@ test_remaining_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("baz"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -384,7 +384,7 @@ test_remaining_verification_files_params: list[
         ),
         {
             Path("foo"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -410,13 +410,13 @@ test_current_verification_files_params: list[
         0,
         {
             Path("bar/0.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("bar/1.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("bar/2.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -424,13 +424,13 @@ test_current_verification_files_params: list[
         1,
         {
             Path("bar/3.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("baz/0.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("baz/1.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -438,13 +438,13 @@ test_current_verification_files_params: list[
         2,
         {
             Path("baz/2.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("baz/3.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("foo/0.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -452,13 +452,13 @@ test_current_verification_files_params: list[
         3,
         {
             Path("foo/1.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("foo/2.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
             Path("foo/3.py"): VerificationFile(
-                verification=[CommandVerification(command="true")],
+                verification=CommandVerification(command="true"),
             ),
         },
     ),
@@ -501,40 +501,40 @@ def test_current_verification_files(index: int, expected: dict[Path, Verificatio
     )
     remaining_verification_files = {
         Path("foo/0.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("bar/0.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("baz/0.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("foo/1.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("bar/1.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("baz/1.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("foo/2.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("bar/2.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("baz/2.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("foo/3.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("bar/3.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
         Path("baz/3.py"): VerificationFile(
-            verification=[CommandVerification(command="true")],
+            verification=CommandVerification(command="true"),
         ),
     }
     assert resolver.remaining_verification_files == remaining_verification_files
