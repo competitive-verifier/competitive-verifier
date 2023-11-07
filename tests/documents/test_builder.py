@@ -13,24 +13,20 @@ from competitive_verifier.documents.builder import (
     render_source_code_stat_for_page,
     render_source_code_stats_for_top_page,
 )
-from competitive_verifier.documents.builder_type import RenderPage
+from competitive_verifier.documents.builder_type import (
+    RenderPage,
+    SourceCodeStat,
+    SourceCodeStatSlim,
+    VerificationStatus,
+)
 from competitive_verifier.documents.type import (
     FrontMatter,
     PageRenderJob,
     SiteRenderConfig,
 )
-from competitive_verifier.models import (
-    JudgeStatus,
-    ResultStatus,
-    SourceCodeStat,
-    SourceCodeStatSlim,
-)
+from competitive_verifier.models import JudgeStatus, ResultStatus
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
-from competitive_verifier.models import (
-    VerificationFile,
-    VerificationResult,
-    VerificationStatus,
-)
+from competitive_verifier.models import VerificationFile, VerificationResult
 
 STATIC_FILES_PATH = "src/competitive_verifier_resources/jekyll"
 # For windows test

@@ -10,11 +10,8 @@ from pydantic import BaseModel
 from competitive_verifier import git, github, log
 from competitive_verifier.models import (
     ProblemVerification,
-    SourceCodeStat,
-    SourceCodeStatSlim,
     VerificationInput,
     VerifyCommandResult,
-    resolve_dependency,
 )
 from competitive_verifier.util import read_text_normalized
 
@@ -26,6 +23,8 @@ from .builder_type import (
     RenderPage,
     RenderSourceCodeStat,
     RenderTopPage,
+    SourceCodeStat,
+    SourceCodeStatSlim,
     TopPageCategory,
     TopPageFiles,
 )
@@ -150,7 +149,7 @@ class DocumentBuilder(BaseModel):
 
         logger.info("render %s files...", len(render_jobs))
         with log.group("Resolve dependency"):
-            stats = resolve_dependency(
+            stats = SourceCodeStat.resolve_dependency(
                 input=self.input,
                 result=self.result,
                 included_files=included_files,
@@ -362,7 +361,7 @@ def _render_source_code_stat(stat: SourceCodeStat) -> RenderSourceCodeStat:
     problem = next(
         (
             v.problem
-            for v in stat.file_input.verification
+            for v in stat.file_input.verification_list
             if isinstance(v, ProblemVerification)
         ),
         None,
