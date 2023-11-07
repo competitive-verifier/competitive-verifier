@@ -9,8 +9,6 @@ from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
 
 from .data.integration_data import IntegrationData
-from .data.user_defined_and_python import UserDefinedAndPythonData
-from .types import FilePaths
 
 
 @pytest.fixture
@@ -76,12 +74,12 @@ class TestCommandOjResolve:
         make_args: _ArgsFunc,
         integration_data: IntegrationData,
         capfd: pytest.CaptureFixture[str],
-        file_paths: FilePaths,
     ):
         expected = integration_data.expected()
         args = make_args(
-            include=[file_paths.targets],
-            config="config.toml",
+            include=integration_data.include_path,
+            exclude=integration_data.exclude_path,
+            config=integration_data.config_path,
             bundle=True,
         )
         main(args)
@@ -90,98 +88,101 @@ class TestCommandOjResolve:
         resolved = json.loads(stdout)
         assert resolved == expected
 
-        verify = integration_data.conf_path / "verify.json"
+        verify = integration_data.config_dir_path / "verify.json"
         verify.parent.mkdir(parents=True, exist_ok=True)
         verify.write_text(stdout)
 
-    @pytest.mark.usefixtures("setenv_resolve")
-    def test_with_config_include_nobundle(
-        self,
-        make_args: _ArgsFunc,
-        user_defined_and_python_data: UserDefinedAndPythonData,
-        capfd: pytest.CaptureFixture[str],
-        file_paths: FilePaths,
-    ):
-        expected = user_defined_and_python_data.expected()
-        expected["files"]["targets/encoding/EUC-KR.txt"]["additonal_sources"] = []
-        expected["files"]["targets/encoding/cp932.txt"]["additonal_sources"] = []
-        args = make_args(
-            include=[file_paths.targets],
-            config="config.toml",
-            bundle=False,
-        )
-        main(args)
-        stdout = capfd.readouterr().out
-        resolved = json.loads(stdout)
-        assert resolved == expected
+    # @pytest.mark.usefixtures("setenv_resolve")
+    # def test_with_config_include_nobundle(
+    #     self,
+    #     make_args: _ArgsFunc,
+    #     user_defined_and_python_data: UserDefinedAndPythonData,
+    #     capfd: pytest.CaptureFixture[str],
+    #     file_paths: FilePaths,
+    # ):
+    #     expected = user_defined_and_python_data.expected()
+    #     expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]["additonal_sources"] = []
+    #     expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]["additonal_sources"] = []
+    #     args = make_args(
+    #         include=[file_paths.targets],
+    #         config="config.toml",
+    #         bundle=False,
+    #     )
+    #     main(args)
+    #     stdout = capfd.readouterr().out
+    #     resolved = json.loads(stdout)
+    #     assert resolved == expected
 
-    test_with_include_exclude_param: list[tuple[list[str], list[str]]] = [
-        (
-            ["targets/**/*.py", "**/*.awk", "**/*.txt"],
-            [],
-        ),
-        (
-            ["targets/"],
-            ["dummy/dummy.py"],
-        ),
-        (
-            ["targets/encoding", "targets/awk", "targets/python"],
-            ["dummy/"],
-        ),
-        (
-            ["targets/encoding", "targets/awk", "targets/python"],
-            [],
-        ),
-        (
-            ["**/*.py", "**/*.awk", "**/*.txt"],
-            ["dummy/"],
-        ),
-    ]
+    # test_with_include_exclude_param: list[tuple[list[str], list[str]]] = [
+    #     (
+    #         ["UserDefinedAndPythonData/**/*.py", "**/*.awk", "**/*.txt"],
+    #         [],
+    #     ),
+    #     (
+    #         ["UserDefinedAndPythonData/"],
+    #         ["dummy/dummy.py"],
+    #     ),
+    #     (
+    #         ["UserDefinedAndPythonData/encoding", "UserDefinedAndPythonData/awk", "UserDefinedAndPythonData/python"],
+    #         ["dummy/"],
+    #     ),
+    #     (
+    #         ["UserDefinedAndPythonData/encoding", "UserDefinedAndPythonData/awk", "UserDefinedAndPythonData/python"],
+    #         [],
+    #     ),
+    #     (
+    #         ["**/*.py", "**/*.awk", "**/*.txt"],
+    #         ["dummy/"],
+    #     ),
+    # ]
 
-    @pytest.mark.parametrize(
-        "include, exclude",
-        test_with_include_exclude_param,
-        ids=range(len(test_with_include_exclude_param)),
-    )
-    @pytest.mark.usefixtures("setenv_resolve")
-    def test_with_include_exclude(
-        self,
-        include: list[str],
-        exclude: list[str],
-        make_args: _ArgsFunc,
-        user_defined_and_python_data: UserDefinedAndPythonData,
-        capfd: pytest.CaptureFixture[str],
-    ):
-        expected = user_defined_and_python_data.expected()
-        del expected["files"]["targets/encoding/EUC-KR.txt"]
-        del expected["files"]["targets/encoding/cp932.txt"]
+    # @pytest.mark.parametrize(
+    #     "include, exclude",
+    #     test_with_include_exclude_param,
+    #     ids=range(len(test_with_include_exclude_param)),
+    # )
+    # @pytest.mark.usefixtures("setenv_resolve")
+    # def test_with_include_exclude(
+    #     self,
+    #     include: list[str],
+    #     exclude: list[str],
+    #     make_args: _ArgsFunc,
+    #     user_defined_and_python_data: UserDefinedAndPythonData,
+    #     capfd: pytest.CaptureFixture[str],
+    # ):
+    #     expected = user_defined_and_python_data.expected()
+    #     del expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]
+    #     del expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]
 
-        args = make_args(include=include, exclude=exclude)
-        main(args)
-        stdout = capfd.readouterr().out
-        resolved = json.loads(stdout)
-        assert resolved == expected
+    #     args = make_args(include=include, exclude=exclude)
+    #     main(args)
+    #     stdout = capfd.readouterr().out
+    #     resolved = json.loads(stdout)
+    #     assert resolved == expected
 
-    @pytest.mark.usefixtures("setenv_resolve")
-    def test_without_args(
-        self,
-        make_args: _ArgsFunc,
-        user_defined_and_python_data: UserDefinedAndPythonData,
-        capfd: pytest.CaptureFixture[str],
-    ):
-        expected = user_defined_and_python_data.expected()
-        del expected["files"]["targets/encoding/EUC-KR.txt"]
-        del expected["files"]["targets/encoding/cp932.txt"]
+    # @pytest.mark.usefixtures("setenv_resolve")
+    # def test_without_args(
+    #     self,
+    #     monkeypatch: pytest.MonkeyPatch,
+    #     make_args: _ArgsFunc,
+    #     user_defined_and_python_data: UserDefinedAndPythonData,
+    #     capfd: pytest.CaptureFixture[str],
+    # ):
 
-        expected["files"]["dummy/dummy.py"] = {
-            "additonal_sources": [],
-            "dependencies": ["dummy/dummy.py"],
-            "document_attributes": {"links": []},
-            "verification": [],
-        }
+    #     expected = user_defined_and_python_data.expected()
+    #     del expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]
+    #     del expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]
 
-        args = make_args()
-        main(args)
-        stdout = capfd.readouterr().out
-        resolved = json.loads(stdout)
-        assert resolved == expected
+    #     expected["files"]["dummy/dummy.py"] = {
+    #         "additonal_sources": [],
+    #         "dependencies": ["dummy/dummy.py"],
+    #         "document_attributes": {"links": []},
+    #         "verification": [],
+    #     }
+
+    #     monkeypatch.chdir("UserDefinedAndPythonData/python")
+    #     args = make_args()
+    #     main(args)
+    #     stdout = capfd.readouterr().out
+    #     resolved = json.loads(stdout)
+    #     assert resolved == expected

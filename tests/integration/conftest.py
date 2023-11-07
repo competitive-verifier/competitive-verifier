@@ -27,7 +27,6 @@ def file_paths(request: pytest.FixtureRequest) -> FilePaths:
 
     return FilePaths(
         root=root,
-        targets="targets",
         dest_root=dest_root,
     )
 
@@ -81,10 +80,11 @@ def setenv(
 
 @pytest.fixture
 def integration_data(
+    monkeypatch: pytest.MonkeyPatch,
     file_paths: FilePaths,
     set_config_dir: ConfigDirSetter,
 ) -> Generator[IntegrationData, None, None]:
-    yield UserDefinedAndPythonData(set_config_dir, file_paths)
+    yield UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
 
 
 @pytest.fixture

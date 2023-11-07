@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 class FilePaths(BaseModel):
     root: pathlib.Path
-    targets: str
     dest_root: pathlib.Path
 
 

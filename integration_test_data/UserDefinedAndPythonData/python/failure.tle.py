@@ -3,14 +3,14 @@
 import sys
 import time
 
-import targets.python.lib_all_failure
+import python.lib_all_failure
 
 input = sys.stdin.buffer.readline
 
 
 def main() -> None:
     time.sleep(2)
-    print(targets.python.lib_all_failure.aplusb(1, 2))
+    print(python.lib_all_failure.aplusb(1, 2))
 
 
 if __name__ == "__main__":
