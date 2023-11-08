@@ -37,7 +37,7 @@ class PathContainer(BaseModel):
             command.command = self._format(command.command)
 
         if command.env:
-            command.env = {k: self._format(v) for k, v in command.env}
+            command.env = {k: self._format(v) for k, v in command.env.items()}
 
         return command
 

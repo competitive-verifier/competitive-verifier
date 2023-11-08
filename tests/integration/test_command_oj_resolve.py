@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
 
+from .types import FilePaths
 from .data.integration_data import IntegrationData
 
 
@@ -94,7 +95,24 @@ class TestCommandOjResolve:
         verify.parent.mkdir(parents=True, exist_ok=True)
         verify.write_text(stdout, encoding="utf-8")
 
-    # @pytest.mark.usefixtures("setenv_resolve")
+    @pytest.mark.usefixtures("setenv_resolve")
+    def text_without_include_exclude(
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "IncludeExclude")
+        args = make_args(
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
+
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {}
+
     # def test_with_config_include_nobundle(
     #     self,
     #     make_args: _ArgsFunc,

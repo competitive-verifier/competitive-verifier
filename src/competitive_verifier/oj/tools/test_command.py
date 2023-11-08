@@ -95,6 +95,8 @@ def oj_exec_command(
             preexec_fn = os.setsid
 
         try:
+            if env:
+                env = os.environ | env
             proc = Popen(
                 command,
                 env=env,
