@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import sys
 from logging import getLogger
@@ -6,7 +7,8 @@ from typing import Optional, Union
 
 from pydantic import ValidationError
 
-from competitive_verifier.arg import add_include_exclude_argument
+from competitive_verifier.arg import add_include_exclude_argument, add_verbose_argument
+from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.oj.verify.list import OjVerifyConfig
 
 from .resolver import OjResolver
@@ -44,6 +46,11 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     return run_impl(
         include=args.include,
         exclude=args.exclude,
@@ -53,6 +60,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     add_include_exclude_argument(parser)
     parser.add_argument(
         "--no-bundle",

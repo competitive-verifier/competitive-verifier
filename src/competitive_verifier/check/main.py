@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import sys
 from collections import Counter
@@ -6,7 +7,7 @@ from functools import reduce
 from logging import getLogger
 from typing import Iterable, Optional
 
-from competitive_verifier.arg import add_result_json_argument
+from competitive_verifier.arg import add_result_json_argument, add_verbose_argument
 from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import ResultStatus, VerifyCommandResult
 
@@ -36,10 +37,16 @@ def run_impl(*result_json: pathlib.Path) -> bool:
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     return run_impl(*args.result_json)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     add_result_json_argument(parser)
     return parser
 

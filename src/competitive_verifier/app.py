@@ -1,7 +1,7 @@
 import argparse
 import importlib.metadata
 import sys
-from logging import DEBUG, INFO, getLogger
+from logging import getLogger
 from typing import Callable, Optional
 
 logger = getLogger(__name__)
@@ -18,7 +18,6 @@ def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.verify.main as verify
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument(
         "--version",
         action="store_true",
@@ -78,9 +77,9 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def select_logging_runner(
+def select_runner(
     subcommand: str,
-) -> tuple[Callable[[int], None], Optional[Callable[[argparse.Namespace], bool]]]:
+) -> Optional[Callable[[argparse.Namespace], bool]]:
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
@@ -89,28 +88,27 @@ def select_logging_runner(
     import competitive_verifier.migrate.main as migrate
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
-    from competitive_verifier.log import configure_logging, configure_stderr_logging
 
     # Use sys.stdout for result
     if subcommand == "merge-result":
-        return configure_stderr_logging, merge_result.run
+        return merge_result.run
     if subcommand == "merge-input":
-        return configure_stderr_logging, merge_input.run
+        return merge_input.run
     if subcommand == "oj-resolve":
-        return configure_stderr_logging, oj_resolve.run
+        return oj_resolve.run
     if subcommand == "check":
-        return configure_stderr_logging, check.run
+        return check.run
     if subcommand == "migrate":
-        return configure_stderr_logging, migrate.run
+        return migrate.run
 
     # Use sys.stdout for logging
     if subcommand == "download":
-        return configure_logging, download.run
+        return download.run
     if subcommand == "verify":
-        return configure_logging, verify.run
+        return verify.run
     if subcommand == "docs":
-        return configure_logging, docs.run
-    return configure_logging, None
+        return docs.run
+    return None
 
 
 def main(args: Optional[list[str]] = None):
@@ -121,13 +119,7 @@ def main(args: Optional[list[str]] = None):
         print(importlib.metadata.version("competitive-verifier"))
         sys.exit(0)
 
-    default_level = INFO
-    if parsed.verbose:
-        default_level = DEBUG
-
-    configure_log, runner = select_logging_runner(parsed.subcommand)
-
-    configure_log(default_level)
+    runner = select_runner(parsed.subcommand)
     if runner:
         sys.exit(0 if runner(parsed) else 1)
     else:

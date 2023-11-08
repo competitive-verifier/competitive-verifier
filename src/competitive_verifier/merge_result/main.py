@@ -1,4 +1,5 @@
 import argparse
+import logging
 import pathlib
 import sys
 from functools import reduce
@@ -8,6 +9,7 @@ from typing import Iterable, Optional
 from competitive_verifier import github, summary
 from competitive_verifier.arg import (
     add_result_json_argument,
+    add_verbose_argument,
     add_write_summary_argument,
 )
 from competitive_verifier.log import configure_stderr_logging
@@ -37,12 +39,18 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     merged = run_impl(*args.result_json, write_summary=args.write_summary)
     print(merged.model_dump_json(exclude_none=True))
     return True
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     add_result_json_argument(parser)
     add_write_summary_argument(parser)
     return parser
