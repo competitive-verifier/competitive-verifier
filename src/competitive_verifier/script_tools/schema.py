@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-import competitive_verifier.models
 import json
+
+from pydantic import BaseModel
+
+import competitive_verifier.models
 
 
 def dump_json_schema(cls: type[BaseModel]):
