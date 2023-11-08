@@ -10,6 +10,7 @@ import pytest
 import requests
 from pytest_mock import MockerFixture
 
+from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
 from .data.integration_data import IntegrationData
 from .data.java import JavaData
@@ -121,6 +122,8 @@ def user_defined_and_python_data(
         GoWithConfigData,
         GoWithoutConfigData,
         JavaData,
+        CppWithConfigData,
+        CppWithoutConfigData,
     ]
 )
 def integration_data(
