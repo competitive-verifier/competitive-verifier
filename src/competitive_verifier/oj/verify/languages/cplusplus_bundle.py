@@ -290,7 +290,7 @@ class Bundler:
                 return (dir_ / path).resolve()
         raise BundleErrorAt(path, -1, "no such header")
 
-    def update(self, path: pathlib.Path) -> None:
+    def update(self, path: pathlib.Path) -> None:  # noqa: C901
         if path.resolve() in self.pragma_once:
             logger.debug(
                 "%s: skipped since this file is included once with include guard",

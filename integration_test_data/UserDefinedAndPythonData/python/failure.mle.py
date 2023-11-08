@@ -3,8 +3,8 @@
 import pathlib
 import sys
 
-import targets.python.lib_all_failure
-from targets.python.lib_some_failure import MB
+import python.lib_all_failure
+from python.lib_some_failure import MB
 
 input = sys.stdin.buffer.readline
 
@@ -17,7 +17,7 @@ def main() -> None:
         file = dir / "buffer.txt"
         file.write_bytes(b"a" * 100 * MB)
         file.unlink(missing_ok=True)
-    print(targets.python.lib_all_failure.aplusb(a, b))
+    print(python.lib_all_failure.aplusb(a, b))
 
 
 if __name__ == "__main__":

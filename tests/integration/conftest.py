@@ -4,37 +4,37 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Iterable
+from typing import Generator, Iterable
 
 import pytest
 import requests
 from pytest_mock import MockerFixture
 
-from .types import ConfigDirFunc, FilePaths
+from .data.integration_data import IntegrationData
+from .data.user_defined_and_python import UserDefinedAndPythonData
+from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
 
 
 @pytest.fixture(scope="session")
-def file_paths() -> FilePaths:
+def file_paths(request: pytest.FixtureRequest) -> FilePaths:
     root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
     assert root.exists()
-    if dest_root.is_dir():
+
+    if dest_root.is_dir() and not request.config.getoption("--use-prev-dest"):
         shutil.rmtree(dest_root)
 
     return FilePaths(
         root=root,
-        targets="targets",
-        verify="dst_dir/test-verify.json",
-        result="dst_dir/test-result.json",
         dest_root=dest_root,
     )
 
 
 @pytest.fixture
-def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
-    def _config_dir(name: str):
-        d = file_paths.dest_root / f"config.{name or inspect.stack()[1].function}"
+def set_config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirSetter:
+    def _set_config_dir(name: str):
+        d = file_paths.dest_root / "config" / (name or inspect.stack()[1].function)
 
         mocker.patch.dict(
             os.environ,
@@ -42,7 +42,7 @@ def config_dir(mocker: MockerFixture, file_paths: FilePaths) -> ConfigDirFunc:
         )
         return d
 
-    return _config_dir
+    return _set_config_dir
 
 
 @pytest.fixture(autouse=True)
@@ -76,3 +76,21 @@ def setenv(
         "onlinejudge_command.utils.new_session_with_our_user_agent",
         side_effect=new_session_with_our_user_agent,
     )
+
+
+@pytest.fixture
+def integration_data(
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+    set_config_dir: ConfigDirSetter,
+) -> Generator[IntegrationData, None, None]:
+    yield UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
+
+
+@pytest.fixture
+def user_defined_and_python_data(
+    integration_data: IntegrationData,
+) -> UserDefinedAndPythonData:
+    if isinstance(integration_data, UserDefinedAndPythonData):
+        return integration_data
+    assert False
