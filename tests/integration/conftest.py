@@ -14,6 +14,7 @@ from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
 from .data.integration_data import IntegrationData
 from .data.java import JavaData
+from .data.rust import RustWithoutConfigData
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
@@ -124,6 +125,7 @@ def user_defined_and_python_data(
         JavaData,
         CppWithConfigData,
         CppWithoutConfigData,
+        RustWithoutConfigData,
     ]
 )
 def integration_data(
