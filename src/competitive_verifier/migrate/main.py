@@ -4,7 +4,8 @@ import sys
 from logging import getLogger
 from typing import Optional
 
-from competitive_verifier.log import configure_logging
+from competitive_verifier.arg import add_verbose_argument
+from competitive_verifier.log import configure_stderr_logging
 
 from . import migration
 
@@ -16,11 +17,17 @@ def run_impl(dry_run: bool) -> bool:
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     logger.debug("arguments=%s", vars(args))
     return run_impl(args.dry_run)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     parser.add_argument(
         "--dry-run",
         "-n",
@@ -33,7 +40,6 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        configure_logging(logging.INFO)
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)

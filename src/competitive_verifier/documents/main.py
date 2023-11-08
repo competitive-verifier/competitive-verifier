@@ -11,10 +11,11 @@ from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_include_exclude_argument,
     add_result_json_argument,
+    add_verbose_argument,
     add_verify_files_json_argument,
     add_write_summary_argument,
 )
-from competitive_verifier.log import configure_logging
+from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .builder import DocumentBuilder
@@ -47,6 +48,11 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     logger.info("result_json=%s", [str(p) for p in args.result_json])
@@ -70,6 +76,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     add_verify_files_json_argument(parser)
     add_result_json_argument(parser)
     add_ignore_error_argument(parser)
@@ -93,7 +100,6 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        configure_logging(logging.INFO)
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)

@@ -56,8 +56,12 @@ class UserDefinedAndPythonData(IntegrationData):
                         },
                         "verification": [
                             {
-                                "command": f"env AWKPATH={self.targets_path} awk -f {pathlib.Path('awk/aplusb.test.awk')}",
-                                "compile": f"ls {self.config_dir_path/'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                                "command": {
+                                    "command": f"env AWKPATH={self.targets_path} awk -f {pathlib.Path('awk/aplusb.test.awk')}",
+                                },
+                                "compile": {
+                                    "command": f"ls {self.config_dir_path/'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                                },
                                 "name": "awk",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
                                 "type": "problem",
@@ -72,8 +76,12 @@ class UserDefinedAndPythonData(IntegrationData):
                         },
                         "verification": [
                             {
-                                "command": f"env AWKPATH={self.targets_path} awk -f {pathlib.Path('awk/aplusb_direct.awk')}",
-                                "compile": f"ls {self.config_dir_path/'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                                "command": {
+                                    "command": f"env AWKPATH={self.targets_path} awk -f {pathlib.Path('awk/aplusb_direct.awk')}",
+                                },
+                                "compile": {
+                                    "command": f"ls {self.config_dir_path/'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                                },
                                 "name": "awk",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
                                 "type": "problem",

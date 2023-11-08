@@ -129,6 +129,10 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
 ]
 
 
-@pytest.mark.parametrize("inputs, expected", test_merge_params)
+@pytest.mark.parametrize(
+    "inputs, expected",
+    test_merge_params,
+    ids=range(len(test_merge_params)),
+)
 def test_merge(inputs: list[VerificationInput], expected: VerificationInput):
     assert competitive_verifier.merge_input.main.merge(inputs) == expected

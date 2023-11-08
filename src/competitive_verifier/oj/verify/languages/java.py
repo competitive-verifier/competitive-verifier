@@ -1,13 +1,28 @@
 import pathlib
 from logging import getLogger
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
+
+from pydantic import ValidationInfo, field_validator
 
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.config import OjVerifyConfig
-from competitive_verifier.oj.verify.languages.models import LanguageEnvironment
 from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
+from competitive_verifier.oj.verify.models import (
+    LanguageEnvironment,
+    OjVerifyUserDefinedConfig,
+)
 
 logger = getLogger(__name__)
+
+
+class OjVerifyJavaConfig(OjVerifyUserDefinedConfig):
+    execute: None = None  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @field_validator("execute", "compile", mode="before")
+    @classmethod
+    def name_must_contain_space(cls, v: Any, info: ValidationInfo) -> None:
+        if v is None:
+            return None
+        raise ValueError(f'You cannot overwrite "{info.field_name}" for Java language')
 
 
 class JavaLanguageEnvironment(LanguageEnvironment):
@@ -29,16 +44,8 @@ class JavaLanguageEnvironment(LanguageEnvironment):
 
 
 class JavaLanguage(UserDefinedLanguage):
-    config: dict[str, Any]
-
-    def __init__(self, *, config: OjVerifyConfig):
-        lang_confg = config["languages"].get("java", {})
-        assert lang_confg is not None
-        if "compile" in lang_confg:
-            raise RuntimeError('You cannot overwrite "compile" for Java language')
-        if "execute" in lang_confg:
-            raise RuntimeError('You cannot overwrite "execute" for Java language')
-        super().__init__(extension="java", config=lang_confg)
+    def __init__(self, *, config: Optional[OjVerifyJavaConfig]):
+        super().__init__(extension="java", config=config or OjVerifyJavaConfig())
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

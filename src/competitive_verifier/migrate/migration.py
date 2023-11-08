@@ -10,17 +10,16 @@ import yaml
 import competitive_verifier.git as git
 from competitive_verifier.documents.job import resolve_documentation_of
 from competitive_verifier.exec import exec_command
-from competitive_verifier.oj.verify.config import OjVerifyConfig
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
 from competitive_verifier.oj.verify.languages.go import GoLanguage
 from competitive_verifier.oj.verify.languages.haskell import HaskellLanguage
 from competitive_verifier.oj.verify.languages.java import JavaLanguage
-from competitive_verifier.oj.verify.languages.models import Language
 from competitive_verifier.oj.verify.languages.nim import NimLanguage
 from competitive_verifier.oj.verify.languages.python import PythonLanguage
 from competitive_verifier.oj.verify.languages.ruby import RubyLanguage
 from competitive_verifier.oj.verify.languages.rust import RustLanguage
-from competitive_verifier.oj.verify.list import get_dict as get_lang_dict
+from competitive_verifier.oj.verify.list import OjVerifyConfig
+from competitive_verifier.oj.verify.models import Language
 
 logger = getLogger(__name__)
 
@@ -218,7 +217,7 @@ def main(dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
 
     languages = set[str]()
-    lang_dict = get_lang_dict(OjVerifyConfig(languages={}))
+    lang_dict = OjVerifyConfig().get_dict()
 
     for path in git.ls_files():
         lang = lang_dict.get(path.suffix)

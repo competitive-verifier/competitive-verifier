@@ -56,6 +56,7 @@ test_merge_FrontMatter_params: list[tuple[FrontMatter, FrontMatter, FrontMatter]
 @pytest.mark.parametrize(
     "obj, other, merged",
     test_merge_FrontMatter_params,
+    ids=range(len(test_merge_FrontMatter_params)),
 )
 def test_merge_FrontMatter(
     obj: FrontMatter,
@@ -178,6 +179,7 @@ test_merge_PageRenderJob_params: list[
 @pytest.mark.parametrize(
     "obj, other, merged",
     test_merge_PageRenderJob_params,
+    ids=range(len(test_merge_PageRenderJob_params)),
 )
 def test_merge_PageRenderJob(
     obj: PageRenderJob,

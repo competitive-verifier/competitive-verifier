@@ -1,4 +1,4 @@
-name: lint
+name: format
 
 on:
   push:
@@ -30,3 +30,11 @@ jobs:
 
       - name: Run linter
         run: poetry run poe lint
+
+      - name: Dump schema
+        run: |
+          poetry run poe -q schema-verify_files > schema/verify_files.schema.json
+          poetry run poe -q schema-verify_result > schema/verify_result.schema.json
+
+      - name: Git diff
+        run: git diff --exit-code

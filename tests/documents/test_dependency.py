@@ -6,13 +6,11 @@ from unittest import mock
 import pytest
 from pydantic import RootModel
 
-from competitive_verifier.models import (
+from competitive_verifier.documents.builder_type import (
     SourceCodeStat,
-    VerificationInput,
     VerificationStatus,
-    VerifyCommandResult,
-    resolve_dependency,
 )
+from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 Parser = RootModel[dict[Path, SourceCodeStat]]
 
@@ -617,7 +615,7 @@ def test_resolve_dependency(
         dep_input = VerificationInput.model_validate(dep_input_obj)
         dep_result = VerifyCommandResult.model_validate(dep_result_obj)
 
-        resolved = resolve_dependency(
+        resolved = SourceCodeStat.resolve_dependency(
             input=dep_input,
             result=dep_result,
             included_files=set(Path(s) for s in included_files_str),

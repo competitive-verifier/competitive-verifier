@@ -21,7 +21,7 @@ test_get_split_state_params = [
 @pytest.mark.parametrize(
     "size, index, expected",
     test_get_split_state_params,
-    ids=list(f"{tup[1]}/{tup[0]}" for tup in test_get_split_state_params),
+    ids=range(len(test_get_split_state_params)),
 )
 def test_get_split_state(
     size: Optional[int],
@@ -58,7 +58,7 @@ get_split_state_error_params = {
 @pytest.mark.parametrize(
     "args, message",
     get_split_state_error_params.values(),
-    ids=list(get_split_state_error_params.keys()),
+    ids=get_split_state_error_params.keys(),
 )
 def test_get_split_state_error(args: list[str], message: str):
     parser = argument_verify(argparse.ArgumentParser())

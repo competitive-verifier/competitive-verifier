@@ -420,7 +420,11 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 ]
 
 
-@pytest.mark.parametrize("verifier, expected", test_verify_params)
+@pytest.mark.parametrize(
+    "verifier, expected",
+    test_verify_params,
+    ids=range(len(test_verify_params)),
+)
 def test_verify(
     verifier: MockVerifier,
     expected: Any,

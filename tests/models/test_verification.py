@@ -127,6 +127,7 @@ test_run_params: list[
             "shell": True,
             "text": True,
             "check": False,
+            "cwd": None,
             "env": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
@@ -139,6 +140,7 @@ test_run_params: list[
             "shell": True,
             "text": True,
             "check": False,
+            "cwd": None,
             "env": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
@@ -151,6 +153,20 @@ test_run_params: list[
             "shell": False,
             "text": True,
             "check": False,
+            "cwd": None,
+            "env": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        CommandVerification(command=["ls", "~"]),
+        (["ls", "~"],),
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "cwd": None,
             "env": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
@@ -158,28 +174,30 @@ test_run_params: list[
     ),
     (
         CommandVerification(
-            command=ShellCommand(command="ls ~", env={"TOKEN": "DUMMY"}),
+            command=ShellCommand(command="ls ~", cwd=pathlib.Path("/foo")),
         ),
         ("ls ~",),
         {
             "shell": True,
             "text": True,
             "check": False,
-            "env": {"TOKEN": "DUMMY"},
+            "cwd": pathlib.Path("/foo"),
+            "env": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
     ),
     (
         CommandVerification(
-            command=ShellCommand(command=["ls", "~"], env={"TOKEN": "DUMMY"}),
+            command=ShellCommand(command=["ls", "~"], cwd=pathlib.Path("~")),
         ),
         (["ls", "~"],),
         {
             "shell": False,
             "text": True,
             "check": False,
-            "env": {"TOKEN": "DUMMY"},
+            "cwd": pathlib.Path("~"),
+            "env": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -187,7 +205,11 @@ test_run_params: list[
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", test_run_params)
+@pytest.mark.parametrize(
+    "obj, args, kwargs",
+    test_run_params,
+    ids=range(len(test_run_params)),
+)
 def test_run(
     obj: Verification,
     args: Sequence[Any],
@@ -205,6 +227,74 @@ def test_run(
         ),
     )
     mock_exec_command.assert_called_once_with(*args, **kwargs)
+
+
+test_run_with_env_params: list[
+    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any], dict[str, str]]
+] = [
+    (
+        CommandVerification(
+            command=ShellCommand(command="ls ~", env={"TOKEN": "DUMMY"}),
+        ),
+        ("ls ~",),
+        {
+            "shell": True,
+            "text": True,
+            "check": False,
+            "cwd": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+        {"TOKEN": "DUMMY"},
+    ),
+    (
+        CommandVerification(
+            command=ShellCommand(command=["ls", "~"], env={"TOKEN": "DUMMY"}),
+        ),
+        (["ls", "~"],),
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "cwd": None,
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+        {"TOKEN": "DUMMY"},
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "obj, args, kwargs, env",
+    test_run_with_env_params,
+    ids=range(len(test_run_with_env_params)),
+)
+def test_run_with_env(
+    obj: Verification,
+    args: Sequence[Any],
+    kwargs: dict[str, Any],
+    env: dict[str, str],
+    mock_exec_command: MockType,
+    mocker: MockerFixture,
+):
+    mocker.patch(
+        "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
+    )
+    obj.run(
+        DataVerificationParams(
+            default_tle=22,
+            default_mle=128,
+        ),
+    )
+    mock_exec_command.assert_called_once()
+    assert mock_exec_command.call_args[0] == args
+
+    call_kwargs: dict[str, Any] = mock_exec_command.call_args[1]
+    assert dict(call_kwargs["env"].items() & env.items()) == env
+    assert len(call_kwargs["env"]) > len(env)
+    del call_kwargs["env"]
+    assert call_kwargs == kwargs
 
 
 test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments]] = [
@@ -297,7 +387,11 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
 ]
 
 
-@pytest.mark.parametrize("obj, args", test_run_problem_command_params)
+@pytest.mark.parametrize(
+    "obj, args",
+    test_run_problem_command_params,
+    ids=range(len(test_run_problem_command_params)),
+)
 def test_run_problem_command(
     obj: ProblemVerification,
     args: OjTestArguments,
@@ -336,6 +430,7 @@ test_run_compile_params: list[
             "text": True,
             "check": False,
             "env": None,
+            "cwd": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -355,6 +450,7 @@ test_run_compile_params: list[
             "text": True,
             "check": False,
             "env": None,
+            "cwd": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -373,6 +469,7 @@ test_run_compile_params: list[
             "text": True,
             "check": False,
             "env": None,
+            "cwd": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -391,31 +488,17 @@ test_run_compile_params: list[
             "text": True,
             "check": False,
             "env": None,
+            "cwd": None,
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
     ),
     (
         ProblemVerification(
-            compile=ShellCommand(command="cat LICENSE", env={"ARGS": "DUMMY"}),
-            command="ls ~",
-            problem="https://example.com",
-            error=1e-6,
-            tle=2,
-        ),
-        "cat LICENSE",
-        {
-            "shell": True,
-            "text": True,
-            "check": False,
-            "env": {"ARGS": "DUMMY"},
-            "capture_output": False,
-            "encoding": sys.stdout.encoding,
-        },
-    ),
-    (
-        ProblemVerification(
-            compile=ShellCommand(command=["cat", "LICENSE"], env={"TOKEN": "DUMMY"}),
+            compile=ShellCommand(
+                command=["cat", "LICENSE"],
+                cwd=pathlib.Path("~/foo"),
+            ),
             command="ls ~",
             problem="https://example.com",
             error=1e-6,
@@ -426,7 +509,8 @@ test_run_compile_params: list[
             "shell": False,
             "text": True,
             "check": False,
-            "env": {"TOKEN": "DUMMY"},
+            "env": None,
+            "cwd": pathlib.Path("~/foo"),
             "capture_output": False,
             "encoding": sys.stdout.encoding,
         },
@@ -434,7 +518,11 @@ test_run_compile_params: list[
 ]
 
 
-@pytest.mark.parametrize("obj, args, kwargs", test_run_compile_params)
+@pytest.mark.parametrize(
+    "obj, args, kwargs",
+    test_run_compile_params,
+    ids=range(len(test_run_compile_params)),
+)
 def test_run_compile(
     obj: Verification,
     args: Optional[Sequence[Any]],
@@ -464,7 +552,11 @@ test_params_run_params: list[tuple[Verification, Optional[str]]] = [
 ]
 
 
-@pytest.mark.parametrize("obj, error_message", test_params_run_params)
+@pytest.mark.parametrize(
+    "obj, error_message",
+    test_params_run_params,
+    ids=range(len(test_params_run_params)),
+)
 def test_params_run(
     obj: Verification,
     error_message: Optional[str],

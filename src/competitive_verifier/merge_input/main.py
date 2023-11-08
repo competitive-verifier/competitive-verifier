@@ -1,10 +1,12 @@
 import argparse
+import logging
 import pathlib
 import sys
 from functools import reduce
 from logging import getLogger
 from typing import Iterable, Optional
 
+from competitive_verifier.arg import add_verbose_argument
 from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerificationInput
 
@@ -24,12 +26,18 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     merged = run_impl(*args.verify_files_json)
     print(merged.model_dump_json(exclude_none=True))
     return True
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     parser.add_argument(
         "verify_files_json",
         nargs="+",

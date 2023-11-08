@@ -7,8 +7,8 @@ from pytest_mock import MockerFixture
 import competitive_verifier.oj as oj
 from competitive_verifier.oj.tools.test_command import OjTestArguments
 
-test_oj_test_params: list[tuple[dict[str, Any], OjTestArguments]] = [
-    (
+test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
+    "default": (
         {
             "url": "http://example.com",
             "command": "ls .",
@@ -30,7 +30,7 @@ test_oj_test_params: list[tuple[dict[str, Any], OjTestArguments]] = [
             judge=None,
         ),
     ),
-    (
+    "with_env": (
         {
             "url": "http://example.com",
             "command": ["ls", "."],
@@ -53,12 +53,13 @@ test_oj_test_params: list[tuple[dict[str, Any], OjTestArguments]] = [
             env={"TOKEN": "Dummy"},
         ),
     ),
-]
+}
 
 
 @pytest.mark.parametrize(
     "input, expected",
-    test_oj_test_params,
+    test_oj_test_params.values(),
+    ids=test_oj_test_params.keys(),
 )
 def test_oj_test(
     mocker: MockerFixture,

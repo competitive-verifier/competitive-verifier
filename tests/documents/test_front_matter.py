@@ -26,6 +26,7 @@ String $A + B$""",
 @pytest.mark.parametrize(
     "content, front_matter, markdown_content",
     test_split_FrontMatter_params,
+    ids=range(len(test_split_FrontMatter_params)),
 )
 def test_split_FrontMatter(
     content: bytes,
@@ -57,6 +58,7 @@ String $A + B$""",
 @pytest.mark.parametrize(
     "front_matter, markdown_content, expected",
     test_merge_FrontMatter_params,
+    ids=range(len(test_merge_FrontMatter_params)),
 )
 def test_merge_FrontMatter(
     front_matter: FrontMatter,

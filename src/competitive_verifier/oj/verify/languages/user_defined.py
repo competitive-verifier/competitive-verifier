@@ -3,23 +3,50 @@ import pathlib
 from logging import getLogger
 from typing import Optional, Sequence
 
+from pydantic import BaseModel
+
 import competitive_verifier.oj.verify.languages.special_comments as special_comments
 import competitive_verifier.oj.verify.utils as utils
-from competitive_verifier.oj.verify.languages.models import (
+from competitive_verifier.models import ShellCommand, ShellCommandLike
+from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
+    OjVerifyUserDefinedConfig,
 )
-
-from .. import subprocess2 as subprocess
 
 logger = getLogger(__name__)
 
 
+class PathContainer(BaseModel):
+    path: pathlib.Path
+    basedir: pathlib.Path
+    tempdir: Optional[pathlib.Path] = None
+
+    def _format(self, input: str):
+        return input.format(
+            path=str(self.path),
+            basedir=str(self.basedir),
+            **({"tempdir": str(self.tempdir)} if self.tempdir else {}),
+        )
+
+    def parse_command(self, command: ShellCommandLike) -> ShellCommand:
+        command = ShellCommand.parse_command_like(command)
+        if isinstance(command.command, list):
+            command.command = list(map(self._format, command.command))
+        else:
+            command.command = self._format(command.command)
+
+        if command.env:
+            command.env = {k: self._format(v) for k, v in command.env.items()}
+
+        return command
+
+
 class UserDefinedLanguageEnvironment(LanguageEnvironment):
-    config: dict[str, str]
+    config: OjVerifyUserDefinedConfig
     _name: str
 
-    def __init__(self, *, name: str, config: dict[str, str]):
+    def __init__(self, *, name: str, config: OjVerifyUserDefinedConfig):
         self.config = config
         self._name = name
 
@@ -29,44 +56,41 @@ class UserDefinedLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[str]:
-        compile = self.config.get("compile")
-        if compile:
-            return compile.format(
-                path=str(path), basedir=str(basedir), tempdir=str(tempdir)
-            )
+    ) -> Optional[ShellCommandLike]:
+        if self.config.compile:
+            return PathContainer(
+                path=path, basedir=basedir, tempdir=tempdir
+            ).parse_command(self.config.compile)
         return None
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        assert "execute" in self.config
-        return self.config["execute"].format(
-            path=str(path), basedir=str(basedir), tempdir=str(tempdir)
+    ) -> ShellCommandLike:
+        return PathContainer(path=path, basedir=basedir, tempdir=tempdir).parse_command(
+            self.config.execute
         )
 
 
 class UserDefinedLanguage(Language):
     extension: str
-    config: dict[str, str]
+    config: OjVerifyUserDefinedConfig
 
-    def __init__(self, *, extension: str, config: dict[str, str]):
+    def __init__(self, *, extension: str, config: OjVerifyUserDefinedConfig):
         self.extension = extension
         self.config = config
 
     def list_attributes(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, str]:
-        if "list_attributes" not in self.config:
+        if self.config.list_attributes is None:
             return dict(special_comments.list_special_comments(path))
-        logger.warning(
-            '"languages.*.list_attributes" field in .verify-helper/config.toml is now obsoleted'
-        )
 
-        command = self.config["list_attributes"].format(
-            path=str(path), basedir=str(basedir)
+        text = (
+            PathContainer(path=path, basedir=basedir)
+            .parse_command(self.config.list_attributes)
+            .exec_command(text=False, capture_output=True)
+            .stdout
         )
-        text = subprocess.run(command, text=False).stdout
         attributes: dict[str, str] = {}
         for line in text.splitlines():
             key, _, value = line.decode().partition(" ")
@@ -76,7 +100,7 @@ class UserDefinedLanguage(Language):
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
-        if "list_dependencies" not in self.config:
+        if self.config.list_dependencies is None:
             logger.warning(
                 "The functionality to list dependencies of .%s file is not implemented yet.",
                 self.extension,
@@ -87,21 +111,26 @@ class UserDefinedLanguage(Language):
                 )
             )
 
-        command = self.config["list_dependencies"].format(
-            path=path.as_posix(), basedir=basedir.as_posix()
+        text = (
+            PathContainer(path=path, basedir=basedir)
+            .parse_command(self.config.list_dependencies)
+            .exec_command(text=False, capture_output=True)
+            .stdout
         )
-        text = subprocess.run(command, text=False).stdout
         dependencies = [path]
         for line in text.splitlines():
             dependencies.append(pathlib.Path(line.decode()))
         return dependencies
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
-        if "bundle" not in self.config:
+        if self.config.bundle is None:
             return None
-        command = self.config["bundle"].format(path=str(path), basedir=str(basedir))
-        logger.info("$ %s", command)
-        return subprocess.run(command, text=False).stdout
+        return (
+            PathContainer(path=path, basedir=basedir)
+            .parse_command(self.config.bundle)
+            .exec_command(text=False, capture_output=True)
+            .stdout
+        )
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

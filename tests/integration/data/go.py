@@ -40,7 +40,14 @@ class GoWithoutConfigData(IntegrationData):
                         },
                         "verification": [
                             {
-                                "command": f"env GO111MODULE=off go run {self.targets_path}/helloworld.aoj.go",
+                                "command": {
+                                    "command": [
+                                        "go",
+                                        "run",
+                                        f"{self.targets_path}/helloworld.aoj.go",
+                                    ],
+                                    "env": {"GO111MODULE": "off"},
+                                },
                                 "name": "go",
                                 "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                                 "type": "problem",
@@ -144,8 +151,12 @@ class GoWithConfigData(GoWithoutConfigData):
                         },
                         "verification": [
                             {
-                                "command": f"{self.config_dir_path/'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go",
-                                "compile": f"env GO111MODULE=off go build -o {self.config_dir_path/'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
+                                "command": {
+                                    "command": f"{self.config_dir_path/'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go",
+                                },
+                                "compile": {
+                                    "command": f"env GO111MODULE=off go build -o {self.config_dir_path/'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
+                                },
                                 "name": "go",
                                 "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                                 "type": "problem",

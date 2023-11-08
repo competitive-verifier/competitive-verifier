@@ -6,9 +6,12 @@ from logging import getLogger
 from typing import Iterable, Optional, Union
 
 from competitive_verifier import oj
-from competitive_verifier.arg import add_verify_files_json_argument
+from competitive_verifier.arg import (
+    add_verbose_argument,
+    add_verify_files_json_argument,
+)
 from competitive_verifier.error import VerifierError
-from competitive_verifier.log import configure_logging
+from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import (
     ProblemVerification,
     VerificationFile,
@@ -37,7 +40,7 @@ def parse_urls(
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
-    for v in file.verification:
+    for v in file.verification_list:
         if isinstance(v, ProblemVerification):
             yield v.problem
 
@@ -62,6 +65,11 @@ def run_impl(
 
 
 def run(args: argparse.Namespace) -> bool:
+    default_level = logging.INFO
+    if args.verbose:
+        default_level = logging.DEBUG
+    configure_stderr_logging(default_level)
+
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     logger.info("urls=%s", args.urls)
@@ -74,6 +82,7 @@ def run(args: argparse.Namespace) -> bool:
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    add_verbose_argument(parser)
     add_verify_files_json_argument(parser, required=False)
     parser.add_argument(
         "urls",
@@ -85,7 +94,6 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 def main(args: Optional[list[str]] = None) -> None:
     try:
-        configure_logging(logging.INFO)
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):
             sys.exit(1)

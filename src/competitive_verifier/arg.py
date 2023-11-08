@@ -5,6 +5,14 @@ import pathlib
 COMPETITIVE_VERIFY_FILES_PATH = "COMPETITIVE_VERIFY_FILES_PATH"
 
 
+def add_verbose_argument(
+    parser: argparse.ArgumentParser,
+) -> argparse.Action:
+    return parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Show debug level log."
+    )
+
+
 def add_verify_files_json_argument(
     parser: argparse.ArgumentParser,
     required: bool = True,

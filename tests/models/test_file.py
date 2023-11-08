@@ -100,10 +100,12 @@ test_parse_VerificationFile_params: list[
             verification=[ConstVerification(status=ResultStatus.SUCCESS)],
         ),
         {
-            "verification": {
-                "type": "const",
-                "status": "success",
-            },
+            "verification": [
+                {
+                    "type": "const",
+                    "status": "success",
+                }
+            ],
         },
         {
             "dependencies": set(),
@@ -141,6 +143,7 @@ test_parse_VerificationFile_params: list[
 @pytest.mark.parametrize(
     "obj, raw_dict, output_dict",
     test_parse_VerificationFile_params,
+    ids=range(len(test_parse_VerificationFile_params)),
 )
 def test_parse_VerificationFile(
     obj: VerificationFile,
@@ -197,7 +200,9 @@ test_is_verification_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, is_verification, is_skippable_verification", test_is_verification_params
+    "obj, is_verification, is_skippable_verification",
+    test_is_verification_params,
+    ids=range(len(test_is_verification_params)),
 )
 def test_is_verification(
     obj: VerificationFile,

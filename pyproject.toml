@@ -65,24 +65,26 @@ test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
 test-each-language-integration = "pytest -m each_language_integration"
 
-
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
 
+[tool.poe.tasks."schema-verify_files"]
+script = "competitive_verifier.script_tools.schema:show_verify_json_schema"
+[tool.poe.tasks."schema-verify_result"]
+script = "competitive_verifier.script_tools.schema:show_result_json_schema"
 
-[tool.poe.tasks."dev:verify"]
-script = "competitive_verifier.verify.main:main(['--output', '.competitive-verifier/tmp/result.json'])"
+[tool.poe.tasks."dev-verify"]
+shell = "competitive-verifier verify --output .competitive-verifier/tmp/result.json"
 env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
 
-
-[tool.poe.tasks."dev:docs"]
-script = "competitive_verifier.docs.main:main(['.competitive-verifier/tmp/result.json'])"
+[tool.poe.tasks."dev-docs"]
+shell = "competitive-verifier docs .competitive-verifier/tmp/result.json --include examples/external"
 env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
 
 [tool.poe.tasks.serve]
 [[tool.poe.tasks.serve.sequence]]
 default = "pass"
-switch = [{ case = "False", ref = "dev:docs" }]
+switch = [{ case = "False", ref = "dev-docs" }]
 [tool.poe.tasks.serve.sequence.control]
 expr = "os.path.isdir('.competitive-verifier/_jekyll')"
 imports = ["os"]

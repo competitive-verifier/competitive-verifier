@@ -210,7 +210,7 @@ class BaseVerifier(InputContainer):
                     logger.exception("Failed to download", e)
                     return verifications
 
-                for ve in f.verification:
+                for ve in f.verification_list:
                     logger.debug("command=%s", repr(ve))
                     prev_time = self.now()
                     if (prev_time - start_time).total_seconds() > self.timeout:
@@ -292,7 +292,7 @@ class BaseVerifier(InputContainer):
                 verifications = list[VerificationResult]()
                 prev_time = self.now()
 
-                for v in f.verification:
+                for v in f.verification_list:
                     rs = self.run_verification(v)[0]
                     verifications.append(
                         self.create_command_result(rs, prev_time, name=v.name)

@@ -15,33 +15,78 @@ logger = getLogger(__name__)
 
 
 class TestcaseResult(BaseModel):
-    name: str
-    status: JudgeStatus
-    elapsed: float
-    memory: Optional[float] = None
+    name: str = Field(
+        description="The name of test case.",
+    )
+    """The name of test case.
+    """
+
+    status: JudgeStatus = Field(
+        description="The result status of the test case.",
+    )
+    """The result status of the test case.
+    """
+
+    elapsed: float = Field(
+        description="Number of seconds elapsed for the test case.",
+    )
+    """Number of seconds elapsed for the test case.
+    """
+
+    memory: Optional[float] = Field(
+        default=None,
+        description="The size of memory used in megabytes.",
+    )
+    """The size of memory used in megabytes.
+    """
 
 
 class VerificationResult(BaseModel):
-    verification_name: Optional[str] = None
-    status: ResultStatus
-    elapsed: float
+    verification_name: Optional[str] = Field(
+        default=None,
+        description="The name of verification.",
+    )
+    """The name of verification.
     """
-    Elapsed seconds
-    """
-    slowest: Optional[float] = None
-    """
-    slowest seconds
-    """
-    heaviest: Optional[float] = None
-    """
-    heaviest MB
+    status: ResultStatus = Field(
+        description="The result status of verification.",
+    )
+    """The result status of verification.
     """
 
-    testcases: Optional[list[TestcaseResult]] = None
+    elapsed: float = Field(
+        description="Total number of seconds elapsed for all test cases.",
+    )
+    """Total number of seconds elapsed for all test cases.
+    """
+
+    slowest: Optional[float] = Field(
+        default=None,
+        description="Maximum number of seconds elapsed for each test cases.",
+    )
+    """Maximum number of seconds elapsed for each test cases.
+    """
+
+    heaviest: Optional[float] = Field(
+        default=None,
+        description="Maximum size of memory used in megabytes.",
+    )
+    """Maximum size of memory used in megabytes.
+    """
+
+    testcases: Optional[list[TestcaseResult]] = Field(
+        default=None,
+        description="The results of each test case.",
+    )
+    """The results of each test case.
+    """
 
     last_execution_time: datetime.datetime = Field(
-        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
+        description="The time at which the last validation was performed.",
     )
+    """The time at which the last validation was performed.
+    """
 
     @field_validator("status", mode="before")
     @classmethod
@@ -58,8 +103,19 @@ class VerificationResult(BaseModel):
 
 
 class FileResult(BaseModel):
-    verifications: list[VerificationResult] = Field(default_factory=list)
-    newest: bool = True
+    verifications: list[VerificationResult] = Field(
+        default_factory=list,
+        description="The results of each verification.",
+    )
+    """The results of each verification.
+    """
+
+    newest: bool = Field(
+        default=True,
+        description="Whether the verification was performed on the most recent run.",
+    )
+    """Whether the verification was performed on the most recent run.
+    """
 
     def need_verification(self, base_time: datetime.datetime) -> bool:
         if len(self.verifications) == 0:
@@ -74,8 +130,18 @@ class FileResult(BaseModel):
 
 
 class VerifyCommandResult(BaseModel):
-    total_seconds: float
-    files: dict[ForcePosixPath, FileResult] = Field(default_factory=dict)
+    total_seconds: float = Field(
+        description="Total number of seconds elapsed for all verification.",
+    )
+    """Total number of seconds elapsed for all verification.
+    """
+
+    files: dict[ForcePosixPath, FileResult] = Field(
+        default_factory=dict,
+        description="The files to be verified.",
+    )
+    """The files to be verified.
+    """
 
     @classmethod
     def parse_file_relative(

@@ -3,29 +3,9 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
-from competitive_verifier.exec import exec_command
-
 from .result import VerificationResult
 from .result_status import ResultStatus
-
-
-class ShellCommand(BaseModel):
-    command: Union[list[str], str]
-    """Shell command
-    """
-
-    env: Optional[dict[str, str]] = None
-    """Envitonment variables for command
-    """
-
-
-ShellCommandLike = Union[ShellCommand, Union[list[str], str]]
-
-
-def parse_command_like(cmd: ShellCommandLike) -> ShellCommand:
-    if isinstance(cmd, str) or isinstance(cmd, list):
-        return ShellCommand(command=cmd)
-    return cmd
+from .shell import ShellCommand, ShellCommandLike
 
 
 class VerificationParams(Protocol):
@@ -60,7 +40,9 @@ class BaseVerification(BaseModel, ABC):
 
 class ConstVerification(BaseVerification):
     type: Literal["const"] = "const"
-    status: ResultStatus
+    status: ResultStatus = Field(description="The pre-defined result.")
+    """The pre-defined result.
+    """
 
     @property
     def is_skippable(self) -> bool:
@@ -82,15 +64,22 @@ class ConstVerification(BaseVerification):
 class CommandVerification(BaseVerification):
     type: Literal["command"] = "command"
 
-    command: ShellCommandLike
-    compile: Optional[ShellCommandLike] = None
+    command: ShellCommandLike = Field(description="The shell command for verification.")
+    """The shell command for verification.
+    """
+    compile: Optional[ShellCommandLike] = Field(
+        default=None,
+        description="The shell command for compile.",
+    )
+    """The shell command for compile.
+    """
 
     def run(
         self,
         params: Optional[VerificationParams] = None,
     ) -> ResultStatus:
-        c = parse_command_like(self.command)
-        if exec_command(c.command, env=c.env, text=True).returncode == 0:
+        c = ShellCommand.parse_command_like(self.command)
+        if c.exec_command(text=True).returncode == 0:
             return ResultStatus.SUCCESS
         return ResultStatus.FAILURE
 
@@ -99,25 +88,52 @@ class CommandVerification(BaseVerification):
         params: Optional[VerificationParams] = None,
     ) -> bool:
         if self.compile:
-            c = parse_command_like(self.compile)
-            return exec_command(c.command, env=c.env, text=True).returncode == 0
+            c = ShellCommand.parse_command_like(self.compile)
+            return c.exec_command(text=True).returncode == 0
         return True
 
 
 class ProblemVerification(BaseVerification):
     type: Literal["problem"] = "problem"
 
-    command: ShellCommandLike
-    compile: Optional[ShellCommandLike] = None
+    command: ShellCommandLike = Field(description="The shell command for verification.")
+    """The shell command for verification.
+    """
+    compile: Optional[ShellCommandLike] = Field(
+        default=None,
+        description="The shell command for compile.",
+    )
+    """The shell command for compile.
+    """
 
-    problem: str
+    problem: str = Field(
+        description="The URL of problem.",
+    )
     """
     problem: URL of problem
     """
 
-    error: Optional[float] = None
-    tle: Optional[float] = None
-    mle: Optional[float] = None
+    error: Optional[float] = Field(
+        default=None,
+        examples=[1e-9],
+        description="The absolute or relative error to be considered as correct.",
+    )
+    """The absolute or relative error to be considered as correct.
+    """
+    tle: Optional[float] = Field(
+        default=None,
+        examples=[10],
+        description="The TLE time in seconds.",
+    )
+    """The TLE time in seconds.
+    """
+    mle: Optional[float] = Field(
+        default=None,
+        examples=[64],
+        description="The MLE memory size in megabytes.",
+    )
+    """The MLE memory size in megabytes.
+    """
 
     def run(
         self,
@@ -128,7 +144,7 @@ class ProblemVerification(BaseVerification):
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 
-        c = parse_command_like(self.command)
+        c = ShellCommand.parse_command_like(self.command)
         result = oj.test(
             url=self.problem,
             command=c.command,
@@ -145,8 +161,8 @@ class ProblemVerification(BaseVerification):
         params: Optional[VerificationParams] = None,
     ) -> bool:
         if self.compile:
-            c = parse_command_like(self.compile)
-            return exec_command(c.command, env=c.env, text=True).returncode == 0
+            c = ShellCommand.parse_command_like(self.compile)
+            return c.exec_command(text=True).returncode == 0
         return True
 
 
