@@ -1,6 +1,6 @@
 [languages.awk]
 compile = "ls {tempdir}"
-execute = "env AWKPATH={basedir} awk -f {path}"
+execute = { "command" = "awk -f {path}", env = { "AWKPATH" = "{basedir}" } }
 bundle = "false"
 list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 

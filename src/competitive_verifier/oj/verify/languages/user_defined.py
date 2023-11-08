@@ -29,17 +29,34 @@ class PathContainer(BaseModel):
             **({"tempdir": str(self.tempdir)} if self.tempdir else {}),
         )
 
-    def parse_command(self, command: ShellCommandLike) -> ShellCommand:
-        command = ShellCommand.parse_command_like(command)
-        if isinstance(command.command, list):
-            command.command = list(map(self._format, command.command))
+    def format_command(self, command: ShellCommandLike) -> ShellCommandLike:
+        if isinstance(command, str):
+            return self._format(command)
+
+        if not isinstance(command, ShellCommand):
+            return list(map(self._format, command))
+
+        if isinstance(command.command, str):
+            cmd = self._format(command.command)
         else:
-            command.command = self._format(command.command)
+            cmd = list(map(self._format, command.command))
 
-        if command.env:
-            command.env = {k: self._format(v) for k, v in command.env.items()}
+        env = (
+            {self._format(k): self._format(v) for k, v in command.env.items()}
+            if command.env
+            else None
+        )
 
-        return command
+        cwd = pathlib.Path(self._format(str(command.cwd))) if command.cwd else None
+
+        return ShellCommand(
+            command=cmd,
+            env=env,
+            cwd=cwd,
+        )
+
+    def parse_command(self, command: ShellCommandLike) -> ShellCommand:
+        return ShellCommand.parse_command_like(self.format_command(command))
 
 
 class UserDefinedLanguageEnvironment(LanguageEnvironment):
@@ -60,15 +77,15 @@ class UserDefinedLanguageEnvironment(LanguageEnvironment):
         if self.config.compile:
             return PathContainer(
                 path=path, basedir=basedir, tempdir=tempdir
-            ).parse_command(self.config.compile)
+            ).format_command(self.config.compile)
         return None
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> ShellCommandLike:
-        return PathContainer(path=path, basedir=basedir, tempdir=tempdir).parse_command(
-            self.config.execute
-        )
+        return PathContainer(
+            path=path, basedir=basedir, tempdir=tempdir
+        ).format_command(self.config.execute)
 
 
 class UserDefinedLanguage(Language):
