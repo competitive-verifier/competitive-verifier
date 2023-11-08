@@ -4,12 +4,13 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Generator, Iterable, Optional
+from typing import Iterable, Optional
 
 import pytest
 import requests
 from pytest_mock import MockerFixture
 
+from .data.go import GoWithConfigData, GoWithoutConfigData
 from .data.integration_data import IntegrationData
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
@@ -105,18 +106,30 @@ def setenv(
 
 
 @pytest.fixture
-def integration_data(
+def user_defined_and_python_data(
     monkeypatch: pytest.MonkeyPatch,
     file_paths: FilePaths,
     set_config_dir: ConfigDirSetter,
-) -> Generator[IntegrationData, None, None]:
-    yield UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
-
-
-@pytest.fixture
-def user_defined_and_python_data(
-    integration_data: IntegrationData,
 ) -> UserDefinedAndPythonData:
-    if isinstance(integration_data, UserDefinedAndPythonData):
-        return integration_data
-    assert False
+    return UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
+
+
+@pytest.fixture(
+    params=[
+        UserDefinedAndPythonData,
+        GoWithConfigData,
+        GoWithoutConfigData,
+    ]
+)
+def integration_data(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+    set_config_dir: ConfigDirSetter,
+) -> IntegrationData:
+    cls = request.param
+    assert issubclass(cls, IntegrationData)
+    d = cls(monkeypatch, set_config_dir, file_paths)
+    if not d.check_envinronment():
+        pytest.skip(f"No envinronment {cls.__name__}")
+    return d

@@ -138,4 +138,4 @@ reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = "tests/"
-markers = ["integration"]
+markers = ["integration", "each_language_integration"]

@@ -68,15 +68,16 @@ def make_args() -> _ArgsFunc:
 @pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-1000)
 class TestCommandOjResolve:
+    @pytest.mark.each_language_integration
     @pytest.mark.integration
     @pytest.mark.usefixtures("setenv_resolve")
-    def test_with_config_include(
+    def test_oj_resolve_by_lang_data(
         self,
         make_args: _ArgsFunc,
         integration_data: IntegrationData,
         capfd: pytest.CaptureFixture[str],
     ):
-        expected = integration_data.expected()
+        expected = integration_data.expected_verify_json()
         args = make_args(
             include=integration_data.include_path,
             exclude=integration_data.exclude_path,
