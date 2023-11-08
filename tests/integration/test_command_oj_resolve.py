@@ -8,8 +8,8 @@ from pytest_mock import MockerFixture
 from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj_resolve.main import main
 
-from .types import FilePaths
 from .data.integration_data import IntegrationData
+from .types import FilePaths
 
 
 @pytest.fixture
@@ -96,7 +96,8 @@ class TestCommandOjResolve:
         verify.write_text(stdout, encoding="utf-8")
 
     @pytest.mark.usefixtures("setenv_resolve")
-    def text_without_include_exclude(
+    def test_without_include_exclude(
+        self,
         make_args: _ArgsFunc,
         monkeypatch: pytest.MonkeyPatch,
         file_paths: FilePaths,
@@ -111,98 +112,315 @@ class TestCommandOjResolve:
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
-        assert resolved == {}
+        assert resolved == {
+            "files": {
+                "a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "b1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["b1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "b2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["b2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+            },
+        }
 
-    # def test_with_config_include_nobundle(
-    #     self,
-    #     make_args: _ArgsFunc,
-    #     user_defined_and_python_data: UserDefinedAndPythonData,
-    #     capfd: pytest.CaptureFixture[str],
-    #     file_paths: FilePaths,
-    # ):
-    #     expected = user_defined_and_python_data.expected()
-    #     expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]["additonal_sources"] = []
-    #     expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]["additonal_sources"] = []
-    #     args = make_args(
-    #         include=[file_paths.targets],
-    #         config="config.toml",
-    #         bundle=False,
-    #     )
-    #     main(args)
-    #     stdout = capfd.readouterr().out
-    #     resolved = json.loads(stdout)
-    #     assert resolved == expected
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_include1(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "IncludeExclude")
+        args = make_args(
+            include=["subdir/"],
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
 
-    # test_with_include_exclude_param: list[tuple[list[str], list[str]]] = [
-    #     (
-    #         ["UserDefinedAndPythonData/**/*.py", "**/*.awk", "**/*.txt"],
-    #         [],
-    #     ),
-    #     (
-    #         ["UserDefinedAndPythonData/"],
-    #         ["dummy/dummy.py"],
-    #     ),
-    #     (
-    #         ["UserDefinedAndPythonData/encoding", "UserDefinedAndPythonData/awk", "UserDefinedAndPythonData/python"],
-    #         ["dummy/"],
-    #     ),
-    #     (
-    #         ["UserDefinedAndPythonData/encoding", "UserDefinedAndPythonData/awk", "UserDefinedAndPythonData/python"],
-    #         [],
-    #     ),
-    #     (
-    #         ["**/*.py", "**/*.awk", "**/*.txt"],
-    #         ["dummy/"],
-    #     ),
-    # ]
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {
+            "files": {
+                "subdir/a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+            },
+        }
 
-    # @pytest.mark.parametrize(
-    #     "include, exclude",
-    #     test_with_include_exclude_param,
-    #     ids=range(len(test_with_include_exclude_param)),
-    # )
-    # @pytest.mark.usefixtures("setenv_resolve")
-    # def test_with_include_exclude(
-    #     self,
-    #     include: list[str],
-    #     exclude: list[str],
-    #     make_args: _ArgsFunc,
-    #     user_defined_and_python_data: UserDefinedAndPythonData,
-    #     capfd: pytest.CaptureFixture[str],
-    # ):
-    #     expected = user_defined_and_python_data.expected()
-    #     del expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]
-    #     del expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_include2(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "IncludeExclude")
+        args = make_args(
+            include=["**a*.txt"],
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
 
-    #     args = make_args(include=include, exclude=exclude)
-    #     main(args)
-    #     stdout = capfd.readouterr().out
-    #     resolved = json.loads(stdout)
-    #     assert resolved == expected
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {
+            "files": {
+                "a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+            },
+        }
 
-    # @pytest.mark.usefixtures("setenv_resolve")
-    # def test_without_args(
-    #     self,
-    #     monkeypatch: pytest.MonkeyPatch,
-    #     make_args: _ArgsFunc,
-    #     user_defined_and_python_data: UserDefinedAndPythonData,
-    #     capfd: pytest.CaptureFixture[str],
-    # ):
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_exclude1(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "IncludeExclude")
+        args = make_args(
+            exclude=["subdir/"],
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
 
-    #     expected = user_defined_and_python_data.expected()
-    #     del expected["files"]["UserDefinedAndPythonData/encoding/EUC-KR.txt"]
-    #     del expected["files"]["UserDefinedAndPythonData/encoding/cp932.txt"]
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {
+            "files": {
+                "a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "b1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["b1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "b2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["b2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+            },
+        }
 
-    #     expected["files"]["dummy/dummy.py"] = {
-    #         "additonal_sources": [],
-    #         "dependencies": ["dummy/dummy.py"],
-    #         "document_attributes": {"links": []},
-    #         "verification": [],
-    #     }
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_with_exclude2(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "IncludeExclude")
+        args = make_args(
+            exclude=["a*.txt", "b*.txt"],
+            config="config.toml",
+            bundle=True,
+        )
+        main(args)
 
-    #     monkeypatch.chdir("UserDefinedAndPythonData/python")
-    #     args = make_args()
-    #     main(args)
-    #     stdout = capfd.readouterr().out
-    #     resolved = json.loads(stdout)
-    #     assert resolved == expected
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {
+            "files": {
+                "c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/a2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/a2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/b2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/b2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c1.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c1.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "subdir/c2.txt": {
+                    "additonal_sources": [],
+                    "dependencies": ["subdir/c2.txt"],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+            },
+        }
