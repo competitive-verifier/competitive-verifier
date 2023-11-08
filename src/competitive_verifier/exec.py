@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from contextlib import nullcontext
@@ -74,6 +75,8 @@ def exec_command(
         cm = nullcontext()
 
     encoding = sys.stdout.encoding if text else None
+    if env:
+        env = os.environ | env
 
     with cm:
         return subprocess.run(

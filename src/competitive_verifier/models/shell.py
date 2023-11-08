@@ -1,5 +1,5 @@
 import pathlib
-import subprocess
+from subprocess import CompletedProcess
 from typing import Annotated, Literal, Optional, Union, overload
 
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> subprocess.CompletedProcess[bytes]:
+    ) -> CompletedProcess[bytes]:
         ...
 
     @overload
@@ -45,7 +45,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> subprocess.CompletedProcess[str]:
+    ) -> CompletedProcess[str]:
         ...
 
     def exec_command(
@@ -54,7 +54,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
+    ) -> Union[CompletedProcess[str], CompletedProcess[bytes]]:
         return exec_command(
             command=self.command,
             env=self.env,

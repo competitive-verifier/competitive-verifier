@@ -5,12 +5,12 @@ import pathlib
 import platform
 import shlex
 import signal
-import subprocess
 import sys
 import tempfile
 import threading
 import time
 from logging import getLogger
+from subprocess import PIPE, Popen, TimeoutExpired
 from typing import Annotated, Any, BinaryIO, Optional, Union
 
 import onlinejudge_command.format_utils as fmtutils
@@ -70,10 +70,10 @@ def oj_exec_command(
     input: Optional[bytes] = None,
     timeout: Optional[float] = None,
     gnu_time: Optional[str] = None,
-) -> tuple[OjExecInfo, subprocess.Popen[bytes]]:
+) -> tuple[OjExecInfo, Popen[bytes]]:
     if input is not None:
         assert stdin is None
-        stdin = subprocess.PIPE  # type: ignore
+        stdin = PIPE  # type: ignore
     if gnu_time is not None:
         context: Any = tempfile.NamedTemporaryFile(delete=True)
     else:
@@ -95,11 +95,11 @@ def oj_exec_command(
             preexec_fn = os.setsid
 
         try:
-            proc = subprocess.Popen(
+            proc = Popen(
                 command,
                 env=env,
                 stdin=stdin,
-                stdout=subprocess.PIPE,
+                stdout=PIPE,
                 stderr=sys.stderr,
                 preexec_fn=preexec_fn,
             )  # pylint: disable=subprocess-popen-preexec-fn
@@ -112,7 +112,7 @@ def oj_exec_command(
         answer: Optional[bytes] = None
         try:
             answer, _ = proc.communicate(input=input, timeout=timeout)
-        except subprocess.TimeoutExpired:
+        except TimeoutExpired:
             pass
         finally:
             if preexec_fn is not None:
@@ -144,7 +144,7 @@ def oj_exec_command(
 
 # flake8: noqa: C901
 def display_result(
-    proc: subprocess.Popen[bytes],
+    proc: Popen[bytes],
     answer: str,
     memory: Optional[float],
     test_input_path: pathlib.Path,

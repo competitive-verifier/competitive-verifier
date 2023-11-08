@@ -1,8 +1,8 @@
 # Python Version: 3.x
 import glob
 import pathlib
-import subprocess
 from os import PathLike
+from subprocess import CompletedProcess
 from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional, Union
 
 from charset_normalizer import from_path  # pyright: ignore[reportUnknownVariableType]
@@ -33,7 +33,7 @@ def exec_command(
     check: bool = False,
     env: Optional[dict[str, str]] = None,
     cwd: Optional["StrOrBytesPath"] = None,
-) -> subprocess.CompletedProcess[bytes]:
+) -> CompletedProcess[bytes]:
     return _exec_command(
         command,
         check=check,
