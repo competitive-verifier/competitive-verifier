@@ -38,5 +38,10 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gnu-time
 
-      - name: Run test
+      - name: Run test all
+        if: runner.os == 'Linux'
         run: poetry run pytest -vv
+
+      - name: Run test quick
+        if: runner.os != 'Linux'
+        run: poetry run pytest -vv -m 'not integration'

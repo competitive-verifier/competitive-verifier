@@ -1,0 +1,3 @@
+[languages.go]
+compile = "env GO111MODULE=off go build -o {tempdir}/{path} {basedir}/{path}"
+execute = "{tempdir}/{path}"

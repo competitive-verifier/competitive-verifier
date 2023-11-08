@@ -63,6 +63,7 @@ lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
+test-each-language-integration = "pytest -m each_language_integration"
 
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
@@ -138,4 +139,4 @@ reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = "tests/"
-markers = ["integration"]
+markers = ["integration", "each_language_integration"]

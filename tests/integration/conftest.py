@@ -4,16 +4,46 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Generator, Iterable
+from typing import Iterable, Optional
 
 import pytest
 import requests
 from pytest_mock import MockerFixture
 
+from .data.cpp import CppWithConfigData, CppWithoutConfigData
+from .data.go import GoWithConfigData, GoWithoutConfigData
 from .data.integration_data import IntegrationData
+from .data.java import JavaData
+from .data.rust import RustWithoutConfigData
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import ConfigDirSetter, FilePaths
 from .utils import md5_number
+
+
+@pytest.fixture(scope="session")
+def check_necessary_commands() -> Optional[str]:
+    git_path = shutil.which("git")
+    if not git_path:
+        raise Exception("The integration test needs command")
+    if shutil.which("env"):
+        return None
+    if os.name != "nt":
+        raise Exception("The integration test needs env command")
+
+    for git_dir in pathlib.Path(git_path).parents:
+        search = git_dir / "usr/bin"
+        if search.is_dir():
+            return str(search)
+    raise Exception("The integration test needs env command")
+
+
+@pytest.fixture()
+def additional_path(
+    monkeypatch: pytest.MonkeyPatch,
+    check_necessary_commands: Optional[str],
+):
+    if check_necessary_commands:
+        monkeypatch.setenv("PATH", check_necessary_commands, prepend=os.pathsep)
 
 
 @pytest.fixture(scope="session")
@@ -79,18 +109,34 @@ def setenv(
 
 
 @pytest.fixture
-def integration_data(
+def user_defined_and_python_data(
     monkeypatch: pytest.MonkeyPatch,
     file_paths: FilePaths,
     set_config_dir: ConfigDirSetter,
-) -> Generator[IntegrationData, None, None]:
-    yield UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
-
-
-@pytest.fixture
-def user_defined_and_python_data(
-    integration_data: IntegrationData,
 ) -> UserDefinedAndPythonData:
-    if isinstance(integration_data, UserDefinedAndPythonData):
-        return integration_data
-    assert False
+    return UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
+
+
+@pytest.fixture(
+    params=[
+        UserDefinedAndPythonData,
+        GoWithConfigData,
+        GoWithoutConfigData,
+        JavaData,
+        CppWithConfigData,
+        CppWithoutConfigData,
+        RustWithoutConfigData,
+    ]
+)
+def integration_data(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+    set_config_dir: ConfigDirSetter,
+) -> IntegrationData:
+    cls = request.param
+    assert issubclass(cls, IntegrationData)
+    d = cls(monkeypatch, set_config_dir, file_paths)
+    if not d.check_envinronment():
+        pytest.skip(f"No envinronment {cls.__name__}")
+    return d

@@ -54,6 +54,281 @@ def data(
         ],
         targets_data=[
             MarkdownData(
+                path="awk/aplusb.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {"TITLE": 'Calculate "A + B"'},
+                        "dependencies": [
+                            {"files": [], "type": "Depends on"},
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": [],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("awk/aplusb.awk").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "awk/aplusb.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "timestamp": "1985-12-01 00:29:29.550000-07:00",
+                        "verificationStatus": "LIBRARY_NO_TESTS",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/aplusb.awk",
+                    "layout": "document",
+                    "title": 'Calculate "A + B"',
+                },
+            ),
+            MarkdownData(
+                path="awk/aplusb.test.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
+                        },
+                        "dependencies": [
+                            {"files": [], "type": "Depends on"},
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": [],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("awk/aplusb.test.awk").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": True,
+                        "isVerificationFile": True,
+                        "path": "awk/aplusb.test.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 3.96,
+                                "environment": "awk",
+                                "memory": 10.63,
+                                "name": "example_00",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 4.87,
+                                "environment": "awk",
+                                "memory": 57.66,
+                                "name": "example_01",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 9.41,
+                                "environment": "awk",
+                                "memory": 55.5,
+                                "name": "random_00",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 8.94,
+                                "environment": "awk",
+                                "memory": 5.09,
+                                "name": "random_01",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 6.02,
+                                "environment": "awk",
+                                "memory": 50.45,
+                                "name": "random_02",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 0.29,
+                                "environment": "awk",
+                                "memory": 48.46,
+                                "name": "random_03",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 7.92,
+                                "environment": "awk",
+                                "memory": 57.15,
+                                "name": "random_04",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 2.76,
+                                "environment": "awk",
+                                "memory": 6.76,
+                                "name": "random_05",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 8.25,
+                                "environment": "awk",
+                                "memory": 23.66,
+                                "name": "random_06",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 6.99,
+                                "environment": "awk",
+                                "memory": 66.49,
+                                "name": "random_07",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 8.71,
+                                "environment": "awk",
+                                "memory": 16.96,
+                                "name": "random_08",
+                                "status": "RE",
+                            },
+                            {
+                                "elapsed": 5.17,
+                                "environment": "awk",
+                                "memory": 36.25,
+                                "name": "random_09",
+                                "status": "RE",
+                            },
+                        ],
+                        "timestamp": "1989-12-14 00:37:12.870000+00:00",
+                        "verificationStatus": "TEST_WRONG_ANSWER",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/aplusb.test.awk",
+                    "layout": "document",
+                    "title": "awk/aplusb.test.awk",
+                },
+            ),
+            MarkdownData(
+                path="awk/aplusb_direct.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
+                        },
+                        "dependencies": [
+                            {"files": [], "type": "Depends on"},
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": [],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("awk/aplusb_direct.awk").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": True,
+                        "path": "awk/aplusb_direct.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 3.82,
+                                "environment": "awk",
+                                "memory": 48.12,
+                                "name": "example_00",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 6.27,
+                                "environment": "awk",
+                                "memory": 69.16,
+                                "name": "example_01",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.99,
+                                "environment": "awk",
+                                "memory": 97.03,
+                                "name": "random_00",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 7.9,
+                                "environment": "awk",
+                                "memory": 25.28,
+                                "name": "random_01",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 5.37,
+                                "environment": "awk",
+                                "memory": 77.2,
+                                "name": "random_02",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 4.71,
+                                "environment": "awk",
+                                "memory": 95.31,
+                                "name": "random_03",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 0.02,
+                                "environment": "awk",
+                                "memory": 3.83,
+                                "name": "random_04",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.69,
+                                "environment": "awk",
+                                "memory": 55.61,
+                                "name": "random_05",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 4.75,
+                                "environment": "awk",
+                                "memory": 46.8,
+                                "name": "random_06",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.08,
+                                "environment": "awk",
+                                "memory": 75.38,
+                                "name": "random_07",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 9.96,
+                                "environment": "awk",
+                                "memory": 58.54,
+                                "name": "random_08",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 7.36,
+                                "environment": "awk",
+                                "memory": 98.49,
+                                "name": "random_09",
+                                "status": "AC",
+                            },
+                        ],
+                        "timestamp": "2058-12-19 05:34:30.160000+04:00",
+                        "verificationStatus": "TEST_ACCEPTED",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/aplusb_direct.awk",
+                    "layout": "document",
+                    "title": "awk/aplusb_direct.awk",
+                },
+            ),
+            MarkdownData(
                 path="encoding/EUC-KR.txt.md",
                 front_matter={
                     "data": {
@@ -1313,6 +1588,7 @@ def check_common(
         lambda p: p.is_file(),
         chain.from_iterable(
             (
+                (destination / "awk").glob("**/*"),
                 (destination / "encoding").glob("**/*"),
                 (destination / "python").glob("**/*"),
             )
@@ -1336,6 +1612,7 @@ def check_common(
     assert not list(targets.keys())
 
 
+@pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-100)
 class TestCommandDocuments:
     @pytest.mark.integration
@@ -1507,6 +1784,7 @@ class TestCommandDocuments:
                 "--include",
                 "python/",
                 "encoding",
+                "a*",
                 "failure.*.md",
                 "--docs",
                 "testdata/nothing",

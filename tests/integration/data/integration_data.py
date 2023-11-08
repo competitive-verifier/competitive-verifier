@@ -18,14 +18,19 @@ class IntegrationData(ABC):
         set_config_dir: ConfigDirSetter,
         file_paths: FilePaths,
     ) -> None:
-        self.config_dir_path = set_config_dir(self.name)
+        self.config_dir_path = set_config_dir(self.config_dir_name)
         self.file_paths = file_paths
-        self.targets_path = file_paths.root / self.name
+        self.targets_path = file_paths.root / self.input_name
         monkeypatch.chdir(self.targets_path)
 
     @classmethod
     @property
-    def name(cls) -> str:
+    def input_name(cls) -> str:
+        return cls.__name__
+
+    @classmethod
+    @property
+    def config_dir_name(cls) -> str:
         return cls.__name__
 
     @property
@@ -46,5 +51,8 @@ class IntegrationData(ABC):
     def check_envinronment(self) -> bool:
         return True
 
-    def expected(self) -> dict[str, Any]:
+    def expected_verify_json(self) -> dict[str, Any]:
+        ...
+
+    def expected_verify_result(self) -> dict[str, Any]:
         ...

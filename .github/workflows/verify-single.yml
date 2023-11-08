@@ -78,6 +78,13 @@ jobs:
         uses: haskell/actions/setup@v2
         if: ${{ inputs.name == 'haskell' }}
 
+      - name: Set up Rust (1.42.0)
+        if: ${{ inputs.name == 'rust' }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.42.0"
+          targets: x86_64-unknown-linux-gnu
+
       - name: Verify
         uses: competitive-verifier/actions/verify@v1
         with:

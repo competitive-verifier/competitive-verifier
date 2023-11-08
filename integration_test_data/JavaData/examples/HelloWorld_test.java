@@ -1,0 +1,9 @@
+// competitive-verifier: PROBLEM https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A
+package examples;
+import examples.HelloWorld;
+
+public class HelloWorld_test {
+    public static void main(String[] args) {
+        System.out.println(HelloWorld.getHelloWorld());
+    }
+}
