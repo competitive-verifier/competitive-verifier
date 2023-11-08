@@ -49,6 +49,44 @@ class UserDefinedAndPythonData(IntegrationData):
         return dict(
             {
                 "files": {
+                    "awk/aplusb.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/aplusb.awk"],
+                        "document_attributes": {"TITLE": 'Calculate "A + ' 'B"'},
+                        "verification": [],
+                    },
+                    "awk/aplusb.test.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/aplusb.test.awk"],
+                        "document_attributes": {
+                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
+                        },
+                        "verification": [
+                            {
+                                "command": f"env AWKPATH={self.targets_path.as_posix()} awk -f awk/aplusb.test.awk",
+                                "compile": f"ls {self.config_dir_path.as_posix()}/cache/problems/8e3916c7805235eb07ec2a58660d89c6",
+                                "name": "awk",
+                                "problem": "https://judge.yosupo.jp/problem/aplusb",
+                                "type": "problem",
+                            }
+                        ],
+                    },
+                    "awk/aplusb_direct.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/aplusb_direct.awk"],
+                        "document_attributes": {
+                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
+                        },
+                        "verification": [
+                            {
+                                "command": f"env AWKPATH={self.targets_path.as_posix()} awk -f awk/aplusb_direct.awk",
+                                "compile": f"ls {self.config_dir_path.as_posix()}/cache/problems/8e3916c7805235eb07ec2a58660d89c6",
+                                "name": "awk",
+                                "problem": "https://judge.yosupo.jp/problem/aplusb",
+                                "type": "problem",
+                            }
+                        ],
+                    },
                     "encoding/EUC-KR.txt": {
                         "dependencies": ["encoding/EUC-KR.txt"],
                         "verification": [],

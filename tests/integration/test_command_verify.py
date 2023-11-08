@@ -171,8 +171,182 @@ class TestCommandVerfy:
         main.main(["--verify-json", str(verify), "--output", str(result)])
 
         assert json.loads(pathlib.Path(result).read_bytes()) == {
-            "total_seconds": 8719.92,
+            "total_seconds": 11189.039999999999,
             "files": {
+                "awk/aplusb.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 6605.0,
+                            "heaviest": 706.0,
+                            "last_execution_time": "2021-04-10T08:08:54.390000+02:00",
+                            "slowest": 660.0,
+                            "status": "failure",
+                            "testcases": [
+                                {
+                                    "elapsed": 3.96,
+                                    "memory": 10.63,
+                                    "name": "example_00",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 4.87,
+                                    "memory": 57.66,
+                                    "name": "example_01",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 9.41,
+                                    "memory": 55.5,
+                                    "name": "random_00",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 8.94,
+                                    "memory": 5.09,
+                                    "name": "random_01",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 6.02,
+                                    "memory": 50.45,
+                                    "name": "random_02",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 0.29,
+                                    "memory": 48.46,
+                                    "name": "random_03",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 7.92,
+                                    "memory": 57.15,
+                                    "name": "random_04",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 2.76,
+                                    "memory": 6.76,
+                                    "name": "random_05",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 8.25,
+                                    "memory": 23.66,
+                                    "name": "random_06",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 6.99,
+                                    "memory": 66.49,
+                                    "name": "random_07",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 8.71,
+                                    "memory": 16.96,
+                                    "name": "random_08",
+                                    "status": "RE",
+                                },
+                                {
+                                    "elapsed": 5.17,
+                                    "memory": 36.25,
+                                    "name": "random_09",
+                                    "status": "RE",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        }
+                    ],
+                },
+                "awk/aplusb_direct.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 2481.0,
+                            "heaviest": 198.0,
+                            "last_execution_time": "2019-09-03T13:45:49.350000-02:00",
+                            "slowest": 248.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 3.82,
+                                    "memory": 48.12,
+                                    "name": "example_00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.27,
+                                    "memory": 69.16,
+                                    "name": "example_01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.99,
+                                    "memory": 97.03,
+                                    "name": "random_00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.9,
+                                    "memory": 25.28,
+                                    "name": "random_01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 5.37,
+                                    "memory": 77.2,
+                                    "name": "random_02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.71,
+                                    "memory": 95.31,
+                                    "name": "random_03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.02,
+                                    "memory": 3.83,
+                                    "name": "random_04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.69,
+                                    "memory": 55.61,
+                                    "name": "random_05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.75,
+                                    "memory": 46.8,
+                                    "name": "random_06",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.08,
+                                    "memory": 75.38,
+                                    "name": "random_07",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.96,
+                                    "memory": 58.54,
+                                    "name": "random_08",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.36,
+                                    "memory": 98.49,
+                                    "name": "random_09",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        }
+                    ],
+                },
                 "python/failure.mle.py": {
                     "verifications": [
                         {
