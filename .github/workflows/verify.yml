@@ -71,6 +71,8 @@ jobs:
             verify-directory: examples/python
           - name: ruby
             verify-directory: examples/ruby
+          - name: rust
+            verify-directory: examples/rust
     with:
       verify-directory: ${{ matrix.langs.verify-directory }}
       name: ${{ matrix.langs.name }}
