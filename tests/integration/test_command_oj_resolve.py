@@ -90,7 +90,7 @@ class TestCommandOjResolve:
 
         verify = integration_data.config_dir_path / "verify.json"
         verify.parent.mkdir(parents=True, exist_ok=True)
-        verify.write_text(stdout)
+        verify.write_text(stdout, encoding="utf-8")
 
     # @pytest.mark.usefixtures("setenv_resolve")
     # def test_with_config_include_nobundle(
