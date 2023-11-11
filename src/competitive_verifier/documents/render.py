@@ -88,7 +88,7 @@ def select_markdown(sources: set[pathlib.Path]) -> dict[pathlib.Path, Markdown]:
             else:
                 logger.warning(
                     "Markdown(%s) documentation_of: %s is not found.",
-                    md.path,
+                    md.path.as_posix(),
                     md.front_matter.documentation_of,
                 )
     return d
