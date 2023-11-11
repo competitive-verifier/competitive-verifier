@@ -1,7 +1,8 @@
 # Python Version: 3.x
 import pathlib
 from logging import getLogger
-from typing import Optional, Sequence
+from tempfile import TemporaryDirectory
+from typing import Optional, Sequence, Union
 
 from pydantic import BaseModel
 
@@ -16,17 +17,20 @@ from competitive_verifier.oj.verify.models import (
 
 logger = getLogger(__name__)
 
+StrPath = Union[pathlib.Path, str]
+
 
 class PathContainer(BaseModel):
-    path: pathlib.Path
-    basedir: pathlib.Path
-    tempdir: Optional[pathlib.Path] = None
+    path: StrPath
+    basedir: StrPath
+    tempdir: StrPath
 
     def _format(self, input: str):
         return input.format(
             path=str(self.path),
+            dir=str(pathlib.Path(self.path).parent),
             basedir=str(self.basedir),
-            **({"tempdir": str(self.tempdir)} if self.tempdir else {}),
+            tempdir=str(self.tempdir),
         )
 
     def format_command(self, command: ShellCommandLike) -> ShellCommandLike:
@@ -102,12 +106,13 @@ class UserDefinedLanguage(Language):
         if self.config.list_attributes is None:
             return dict(special_comments.list_special_comments(path))
 
-        text = (
-            PathContainer(path=path, basedir=basedir)
-            .parse_command(self.config.list_attributes)
-            .exec_command(text=False, capture_output=True)
-            .stdout
-        )
+        with TemporaryDirectory() as tempdir:
+            text = (
+                PathContainer(path=path, basedir=basedir, tempdir=tempdir)
+                .parse_command(self.config.list_attributes)
+                .exec_command(text=False, capture_output=True)
+                .stdout
+            )
         attributes: dict[str, str] = {}
         for line in text.splitlines():
             key, _, value = line.decode().partition(" ")
@@ -128,12 +133,13 @@ class UserDefinedLanguage(Language):
                 )
             )
 
-        text = (
-            PathContainer(path=path, basedir=basedir)
-            .parse_command(self.config.list_dependencies)
-            .exec_command(text=False, capture_output=True)
-            .stdout
-        )
+        with TemporaryDirectory() as tempdir:
+            text = (
+                PathContainer(path=path, basedir=basedir, tempdir=tempdir)
+                .parse_command(self.config.list_dependencies)
+                .exec_command(text=False, capture_output=True)
+                .stdout
+            )
         dependencies = [path]
         for line in text.splitlines():
             dependencies.append(pathlib.Path(line.decode()))
@@ -142,12 +148,13 @@ class UserDefinedLanguage(Language):
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
         if self.config.bundle is None:
             return None
-        return (
-            PathContainer(path=path, basedir=basedir)
-            .parse_command(self.config.bundle)
-            .exec_command(text=False, capture_output=True)
-            .stdout
-        )
+        with TemporaryDirectory() as tempdir:
+            return (
+                PathContainer(path=path, basedir=basedir, tempdir=tempdir)
+                .parse_command(self.config.bundle)
+                .exec_command(text=False, capture_output=True)
+                .stdout
+            )
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

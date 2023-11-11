@@ -95,8 +95,8 @@ You can customize the method to list depending files with `languages.rust.list_d
 
 #### Settings for other languages
 
-You can use languages other than above (e.g. AWK [examples/awk/circle.test.awk](https://github.com/online-judge-tools/verification-helper/blob/master/examples/awk/circle.test.awk)). Please write commands to compile and execute in the config file `config.toml` (e.g. [config.toml](https://github.com/kmyk/online-judge-verify-helper/blob/master/.verify-helper/config.toml)).
-`compile` field and `execute` field are required, and other fields are optional.
+You can use languages other than above (e.g. AWK [examples/awk/circle.test.awk](https://github.com/online-judge-tools/verification-helper/blob/master/examples/awk/circle.test.awk)). Please write commands to compile and execute in the config file `config.toml` (e.g. [config.toml](https://github.com/competitive-verifier/competitive-verifier/blob/HEAD/examples/config.toml)).
+`execute` field are required, and other fields are optional.
 
 ``` toml
 [languages.awk]
@@ -105,6 +105,15 @@ execute = "env AWKPATH={basedir} awk -f {path}"
 bundle = "false"
 list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 ```
+
+**Replacement**
+
+|Config|Actual|
+|:---|:----|
+|`{basedir}`|The working directory.|
+|`{path}`| The relative path to `{basedir}` of the file to execute. |
+|`{dir}`| The relative path to `{basedir}` of the directory which contains file to execute. |
+|`{tempdir}`|The temporary directory.|
 
 #### Unit test
 
@@ -184,7 +193,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 ### Embedding Markdown to pages for source codes
 
 Markdown files in the repository are automatically recognized.
-When the `documentation_of` field in [Front Matter](http://jekyllrb-ja.github.io/docs/front-matter/) specifies a source code file, the content of Markdown file is inserted into the generated document page of specified code.
+When the `documentation_of` field in [Front Matter](https://jekyllrb-ja.github.io/docs/front-matter/) specifies a source code file, the content of Markdown file is inserted into the generated document page of specified code.
 
 For example, to add description to a document of a file `path/to/segment_tree.hpp`, make a Markdown file like `foo/bar.md` and write as the following in the file.
 

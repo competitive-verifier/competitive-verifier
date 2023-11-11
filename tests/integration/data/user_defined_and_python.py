@@ -87,7 +87,7 @@ class UserDefinedAndPythonData(IntegrationData):
                         ],
                     },
                     "encoding/EUC-KR.txt": {
-                        "dependencies": ["encoding/EUC-KR.txt"],
+                        "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
                         "verification": [],
                         "document_attributes": {},
                         "additonal_sources": [
@@ -98,7 +98,7 @@ class UserDefinedAndPythonData(IntegrationData):
                         ],
                     },
                     "encoding/cp932.txt": {
-                        "dependencies": ["encoding/cp932.txt"],
+                        "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
                         "verification": [],
                         "document_attributes": {},
                         "additonal_sources": [

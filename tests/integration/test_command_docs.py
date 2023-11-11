@@ -335,11 +335,29 @@ def data(
                     "data": {
                         "attributes": {},
                         "dependencies": [
-                            {"files": [], "type": "Depends on"},
-                            {"files": [], "type": "Required by"},
+                            {
+                                "files": [
+                                    {
+                                        "filename": "cp932.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "encoding/cp932.txt",
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {
+                                "files": [
+                                    {
+                                        "filename": "cp932.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "encoding/cp932.txt",
+                                    }
+                                ],
+                                "type": "Required by",
+                            },
                             {"files": [], "type": "Verified with"},
                         ],
-                        "dependsOn": [],
+                        "dependsOn": ["encoding/cp932.txt"],
                         "embedded": [
                             {
                                 "code": "컴퓨터 프로그램(영국 영어: computer programme, 미국 영어: computer program)은 컴퓨터에서 실행될 때 특정 작업(specific task)을 수행하는 일련의 명령어들의 모음(집합)이다.[1][2] 특정 문제를 해결하기 위해 처리 방법과 순서를 기술하여 컴퓨터에 입력되는 일련의 명령문 집합체이며 대부분의 프로그램은 실행 중(즉, 명령어를 '불러들일' 때)에 사용자의 입력에 반응하도록 구현된 일련의 명령어들로 구성되어 있다. 대부분의 프로그램들은 하드디스크 등의 매체에 바이너리 형식의 파일로 저장되어 있다가 사용자가 실행시키면 메모리로 적재되어 실행된다. 컴퓨터 소프트웨어와 비슷한 뜻을 가지고 있다. \"컴퓨터프로그램저작물\"은 저작권법상 저작물로서 보호된다. 동법에서 컴퓨터프로그램저작물이라 함은 특정한 결과를 얻기 위하여 컴퓨터 등 정보처리능력을 가진 장치 내에서 직접 또는 간접으로 사용되는 일련의 지시?· 명령으로 표현된 창작물을 말한다. (대한민국 저작권법 제2조 16호 및 제4조 제1항 9호)",
@@ -351,8 +369,8 @@ def data(
                         "isVerificationFile": False,
                         "path": "encoding/EUC-KR.txt",
                         "pathExtension": "txt",
-                        "requiredBy": [],
-                        "timestamp": "1970-05-06 18:01:32.540000-08:00",
+                        "requiredBy": ["encoding/cp932.txt"],
+                        "timestamp": "2049-12-17 18:54:29.650000+03:00",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
                     },
@@ -366,11 +384,29 @@ def data(
                     "data": {
                         "attributes": {},
                         "dependencies": [
-                            {"files": [], "type": "Depends on"},
-                            {"files": [], "type": "Required by"},
+                            {
+                                "files": [
+                                    {
+                                        "filename": "EUC-KR.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "encoding/EUC-KR.txt",
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {
+                                "files": [
+                                    {
+                                        "filename": "EUC-KR.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "encoding/EUC-KR.txt",
+                                    }
+                                ],
+                                "type": "Required by",
+                            },
                             {"files": [], "type": "Verified with"},
                         ],
-                        "dependsOn": [],
+                        "dependsOn": ["encoding/EUC-KR.txt"],
                         "embedded": [
                             {
                                 "code": "雨ニモマケズ\n風ニモマケズ\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ\n慾ハナク\n決シテ瞋ラズ\nイツモシヅカニワラッテヰル\n一日ニ玄米四合ト\n味噌ト少シノ野菜ヲタベ\nアラユルコトヲ\nジブンヲカンジョウニ入レズニ\nヨクミキキシワカリ\nソシテワスレズ\n野原ﾉ松ﾉ林ﾉ陰ﾉ\n小ｻﾅ萱ﾌﾞｷﾉ小屋ﾆヰﾃ\n東ﾆ病気ﾉｺﾄﾞﾓｱﾚﾊﾞ\n行ｯﾃ看病ｼﾃﾔﾘ\n西ﾆﾂｶﾚﾀ母ｱﾚﾊﾞ\n行ｯﾃｿﾉ稲ﾉ束ｦ負ﾋ\n南ﾆ死ﾆｻｳﾅ人ｱﾚﾊﾞ\n行ｯﾃｺﾊｶﾞﾗﾅｸﾃﾓｲヽﾄｲﾋ\n北ﾆｹﾝｸヮﾔｿｼｮｳｶﾞｱﾚﾊﾞ\nﾂﾏﾗﾅｲｶﾗﾔﾒﾛﾄｲﾋ\nﾋﾃﾞﾘﾉﾄｷﾊﾅﾐﾀﾞｦﾅｶﾞｼ\nｻﾑｻﾉﾅﾂﾊｵﾛｵﾛｱﾙｷ\nﾐﾝﾅﾆﾃﾞｸﾉﾎﾞーﾄﾖﾊﾞﾚ\nﾎﾒﾗﾚﾓｾｽﾞ\nｸﾆﾓｻﾚｽﾞ\nｻｳｲﾌﾓﾉﾆ\nﾜﾀｼﾊﾅﾘﾀｲ",
@@ -382,8 +418,8 @@ def data(
                         "isVerificationFile": False,
                         "path": "encoding/cp932.txt",
                         "pathExtension": "txt",
-                        "requiredBy": [],
-                        "timestamp": "1974-11-24 03:31:21.920000+05:00",
+                        "requiredBy": ["encoding/EUC-KR.txt"],
+                        "timestamp": "2049-12-17 18:54:29.650000+03:00",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
                     },

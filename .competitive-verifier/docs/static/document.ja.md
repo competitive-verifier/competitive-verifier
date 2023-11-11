@@ -97,8 +97,8 @@ NIMFLAGS = ["--warning:on", "--opt:none"]
 #### その他の言語の設定
 
 上記以外の言語でも実行可能です (例: [examples/awk/circle.test.awk](https://github.com/online-judge-tools/verification-helper/blob/master/examples/awk/circle.test.awk))。
-`config.toml` というファイルを作って、以下のようにコンパイルや実行のためのコマンドを書いてください (例: [config.toml](https://github.com/online-judge-tools/verification-helper/blob/master/.verify-helper/config.toml))。
-`compile` と `execute` のフィールドは必須で、その他は省略可能です。
+`config.toml` というファイルを作って、以下のようにコンパイルや実行のためのコマンドを書いてください (例: [config.toml](https://github.com/competitive-verifier/competitive-verifier/blob/HEAD/examples/config.toml))。
+`execute` のフィールドは必須で、その他は省略可能です。
 
 ``` toml
 [languages.awk]
@@ -107,6 +107,15 @@ execute = "env AWKPATH={basedir} awk -f {path}"
 bundle = "false"
 list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 ```
+
+**置換される文字列**
+
+|置換元|置換後|
+|:---|:----|
+|`{basedir}`|実行時のワーキングディレクトリ|
+|`{path}`|対象ファイルのパス (`{basedir}`からの相対パス)|
+|`{dir}`|対象ファイルがあるディレクトリのパス (`{basedir}`からの相対パス)|
+|`{tempdir}`|一時ディレクトリ|
 
 #### ユニットテストの設定
 
@@ -185,7 +194,7 @@ func TestHelloWorld(t *testing.T) {
 ### ソースコードのページへの Markdown の埋め込み
 
 リポジトリ内に Markdown ファイルを置いておくと自動で認識されます。
-[Front Matter](http://jekyllrb-ja.github.io/docs/front-matter/) 形式で `documentation_of` という項目にファイルを指定しておくと、指定したファイルについての生成されたドキュメント中に、Markdown ファイルの中身が挿入されます。
+[Front Matter](https://jekyllrb-ja.github.io/docs/front-matter/) 形式で `documentation_of` という項目にファイルを指定しておくと、指定したファイルについての生成されたドキュメント中に、Markdown ファイルの中身が挿入されます。
 
 たとえば、`path/to/segment_tree.hpp` というファイルに説明を Markdown で追加したいときは `for/bar.md` などに次のように書きます。
 
