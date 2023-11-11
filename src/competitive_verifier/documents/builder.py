@@ -123,6 +123,7 @@ class DocumentBuilder(BaseModel):
             sources=sources,
             input=self.input,
             result=self.result,
+            config=config_yml,
             index_md=index_md,
         ):
             logger.debug(job)

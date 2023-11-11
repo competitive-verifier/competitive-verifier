@@ -196,15 +196,18 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                                 pages=[
                                     RenderLink(
                                         path=pathlib.Path("/a/b/1/d.txt"),
+                                        filename="d.txt",
                                         title="D(text)",
                                         icon=StatusIcon.LIBRARY_ALL_AC,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/a/b/1/e.txt"),
+                                        filename="e.txt",
                                         icon=StatusIcon.LIBRARY_NO_TESTS,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/a/b/1/f.txt"),
+                                        filename="f.txt",
                                         icon=StatusIcon.LIBRARY_PARTIAL_AC,
                                     ),
                                 ],
@@ -214,11 +217,13 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                                 pages=[
                                     RenderLink(
                                         path=pathlib.Path("/a/b/c/d.txt"),
+                                        filename="d.txt",
                                         title="D(text)",
                                         icon=StatusIcon.LIBRARY_SOME_WA,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/a/b/c/e.txt"),
+                                        filename="e.txt",
                                         icon=StatusIcon.LIBRARY_ALL_WA,
                                     ),
                                 ],
@@ -233,15 +238,18 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                                 pages=[
                                     RenderLink(
                                         path=pathlib.Path("/z/b/1/d.txt"),
+                                        filename="d.txt",
                                         title="D(text)",
                                         icon=StatusIcon.TEST_ACCEPTED,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/z/b/1/e.txt"),
+                                        filename="e.txt",
                                         icon=StatusIcon.TEST_WAITING_JUDGE,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/z/b/1/f.txt"),
+                                        filename="f.txt",
                                         icon=StatusIcon.TEST_WAITING_JUDGE,
                                     ),
                                 ],
@@ -251,11 +259,13 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                                 pages=[
                                     RenderLink(
                                         path=pathlib.Path("/z/b/c/d.txt"),
+                                        filename="d.txt",
                                         title="D(text)",
                                         icon=StatusIcon.TEST_WRONG_ANSWER,
                                     ),
                                     RenderLink(
                                         path=pathlib.Path("/z/b/c/e.txt"),
+                                        filename="e.txt",
                                         icon=StatusIcon.TEST_WAITING_JUDGE,
                                     ),
                                 ],
@@ -372,11 +382,13 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                         files=[
                             RenderLink(
                                 path=pathlib.Path("dep/a.txt"),
+                                filename="a.txt",
                                 icon=StatusIcon.LIBRARY_ALL_AC,
                                 title="A(txt)",
                             ),
                             RenderLink(
                                 path=pathlib.Path("dep/b.txt"),
+                                filename="b.txt",
                                 icon=StatusIcon.LIBRARY_ALL_AC,
                             ),
                         ],
@@ -386,11 +398,13 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                         files=[
                             RenderLink(
                                 path=pathlib.Path("req/a.txt"),
+                                filename="a.txt",
                                 icon=StatusIcon.TEST_ACCEPTED,
                                 title="A(txt)",
                             ),
                             RenderLink(
                                 path=pathlib.Path("req/b.txt"),
+                                filename="b.txt",
                                 icon=StatusIcon.TEST_WAITING_JUDGE,
                             ),
                         ],
@@ -400,11 +414,13 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                         files=[
                             RenderLink(
                                 path=pathlib.Path("ver/a.txt"),
+                                filename="a.txt",
                                 icon=StatusIcon.TEST_ACCEPTED,
                                 title="A(txt)",
                             ),
                             RenderLink(
                                 path=pathlib.Path("ver/b.txt"),
+                                filename="b.txt",
                                 icon=StatusIcon.TEST_WAITING_JUDGE,
                             ),
                         ],

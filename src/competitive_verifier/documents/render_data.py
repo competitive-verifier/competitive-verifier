@@ -2,13 +2,7 @@ import datetime
 import enum
 from typing import Annotated, Any, Optional
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    PlainSerializer,
-    computed_field,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, PlainSerializer, model_validator
 from pydantic.alias_generators import to_camel
 
 from competitive_verifier.models import ForcePosixPath, SortedPathList, TestcaseResult
@@ -49,6 +43,7 @@ class RenderBaseModel(BaseModel):
 
 class RenderLink(RenderBaseModel):
     path: ForcePosixPath
+    filename: str
     icon: StatusIcon
     title: Optional[str] = None
 
@@ -57,11 +52,6 @@ class RenderLink(RenderBaseModel):
         if self.path.as_posix() == self.title:
             self.title = None
         return self
-
-    @computed_field
-    @property
-    def filename(self) -> str:
-        return self.path.name
 
 
 class Dependency(RenderBaseModel):

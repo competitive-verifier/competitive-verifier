@@ -23,6 +23,7 @@ from competitive_verifier.models import (
 )
 from competitive_verifier.util import read_text_normalized
 
+from .config import ConfigYaml
 from .front_matter import DocumentOutputMode, FrontMatter, Markdown
 from .render_data import (
     CategorizedIndex,
@@ -253,6 +254,7 @@ class RenderJob(ABC):
         sources: set[pathlib.Path],
         input: VerificationInput,
         result: VerifyCommandResult,
+        config: ConfigYaml,
         index_md: Optional[Markdown] = None,
     ) -> list["RenderJob"]:
         def plain_content(source: pathlib.Path) -> Optional[RenderJob]:
@@ -310,8 +312,17 @@ class RenderJob(ABC):
                 and markdown.front_matter.display == DocumentOutputMode.never
             ):
                 continue
+
+            group_dir = None
+            if config.consolidate:
+                consolidate = config.consolidate
+                group_dir = next(
+                    filter(lambda p: p in consolidate, source.parents), None
+                )
+
             pj = PageRenderJob(
                 source_path=source,
+                group_dir=group_dir or source.parent,
                 markdown=markdown,
                 stat=stat,
                 input=input,
@@ -359,6 +370,7 @@ class MarkdownRenderJob(RenderJob):
 @dataclass
 class PageRenderJob(RenderJob):
     source_path: ForcePosixPath
+    group_dir: pathlib.Path
     markdown: Markdown
     stat: SourceCodeStat
     input: VerificationInput
@@ -382,6 +394,7 @@ class PageRenderJob(RenderJob):
     def to_render_link(self) -> RenderLink:
         return RenderLink(
             path=self.source_path,
+            filename=self.source_path.relative_to(self.group_dir).as_posix(),
             title=self.get_title(),
             icon=self.stat.verification_status,
         )
@@ -552,7 +565,7 @@ class IndexRenderJob(RenderJob):
             else:
                 categories = library_categories
 
-            directory = job.source_path.parent
+            directory = job.group_dir
             category = directory.as_posix()
             if category == ".":
                 category = ""
@@ -562,13 +575,7 @@ class IndexRenderJob(RenderJob):
             if category not in categories:
                 categories[category] = []
 
-            categories[category].append(
-                RenderLink(
-                    path=stat.path,
-                    icon=stat.verification_status,
-                    title=job.get_title(),
-                ),
-            )
+            categories[category].append(job.to_render_link())
 
         def _build_categories_list(
             categories: dict[str, list[RenderLink]]
