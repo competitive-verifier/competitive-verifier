@@ -2196,7 +2196,7 @@ def test_hand_docs(
     def front_matter_data(path: str) -> dict[str, Any]:
         def force_read():
             try:
-                return (targets / path).read_text()
+                return (targets / path).read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 return ""
 
