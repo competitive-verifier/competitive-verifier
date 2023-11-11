@@ -8,4 +8,4 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 compile = "true"
 execute = "true"
 bundle = "normalizer {path} -m"
-list_dependencies = ""
+list_dependencies = 'find {dir} -type f -name "*.txt"'

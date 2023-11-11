@@ -76,9 +76,9 @@ class RustWithoutConfigData(IntegrationData):
                             "verification/src/bin/aizu-online-judge-itp1-1-a.rs",
                         ],
                         "document_attributes": {
-                            "PROBLEM": "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
+                            "PROBLEM": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
                             "links": [
-                                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A"
+                                "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A"
                             ],
                         },
                         "verification": [
@@ -96,7 +96,7 @@ class RustWithoutConfigData(IntegrationData):
                                 "--bin "
                                 "aizu-online-judge-itp1-1-a",
                                 "name": "Rust",
-                                "problem": "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
+                                "problem": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
                                 "type": "problem",
                             }
                         ],

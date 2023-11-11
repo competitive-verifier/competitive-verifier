@@ -25,7 +25,7 @@
     - 並列実行用の引数を用意しておく
 1. docs: ドキュメント生成
     - resolve, verify の結果からドキュメントを生成する
-    - [Jekyll](http://jekyllrb-ja.github.io/) 形式で出力する
+    - [Jekyll](https://jekyllrb-ja.github.io/) 形式で出力する
 1. check: verify の結果が成功かどうかをチェックする
     - verify を並列実行した際にはすべてを終えてからチェックすることを想定している
 1. download: 問題のダウンロード

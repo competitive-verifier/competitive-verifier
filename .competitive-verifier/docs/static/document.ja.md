@@ -194,7 +194,7 @@ func TestHelloWorld(t *testing.T) {
 ### ソースコードのページへの Markdown の埋め込み
 
 リポジトリ内に Markdown ファイルを置いておくと自動で認識されます。
-[Front Matter](http://jekyllrb-ja.github.io/docs/front-matter/) 形式で `documentation_of` という項目にファイルを指定しておくと、指定したファイルについての生成されたドキュメント中に、Markdown ファイルの中身が挿入されます。
+[Front Matter](https://jekyllrb-ja.github.io/docs/front-matter/) 形式で `documentation_of` という項目にファイルを指定しておくと、指定したファイルについての生成されたドキュメント中に、Markdown ファイルの中身が挿入されます。
 
 たとえば、`path/to/segment_tree.hpp` というファイルに説明を Markdown で追加したいときは `for/bar.md` などに次のように書きます。
 
