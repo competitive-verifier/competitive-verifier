@@ -1,13 +1,13 @@
 import os
 import pathlib
 from logging import getLogger
-from typing import Annotated, Any, Optional, Union
+from typing import Any, Optional, Union
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, Field
 
 from competitive_verifier import git, github
-from competitive_verifier.models import RelativeDirectoryPath
+from competitive_verifier.models import RelativeDirectoryPath, SortedPathSet
 
 _CONFIG_YML_PATH = "_config.yml"
 
@@ -76,12 +76,7 @@ class ConfigYaml(BaseModel):
     )
     sass: dict[str, Any] = Field(default_factory=lambda: {"style": "compressed"})
     icons: ConfigIcons = ConfigIcons()
-    coordinate: Optional[
-        Annotated[
-            set[str],
-            PlainSerializer(sorted, return_type=list[str], when_used="json"),
-        ]
-    ] = None
+    consolidate: Optional[SortedPathSet] = None
 
 
 def _load_user_render_config_yml(docs_dir: pathlib.Path) -> Optional[ConfigYaml]:

@@ -35,8 +35,16 @@
         },
         "root.txt": {},
         "a/b/c.txt": {},
-        "coordinate/q/b/c.txt": {},
-        "coordinate/q/d.txt": {},
+        "consolidate/1.txt":{},
+        "consolidate/2.txt":{},
+        "consolidate/a/1.txt":{},
+        "consolidate/a/2.txt":{},
+        "consolidate/a/b/1.txt":{},
+        "consolidate/a/b/2.txt":{},
+        "consolidate/z/1.txt":{},
+        "consolidate/z/2.txt":{},
+        "consolidate/z/b/1.txt":{},
+        "consolidate/z/b/2.txt":{},
         "txts/utf-8👍.txt": {},
         "txts/utf-16LE.txt": {
             "document_attributes": {

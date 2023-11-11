@@ -2,3 +2,5 @@ description: <small>Example documentation of <a href="https://github.com/competi
 highlightjs-style: routeros
 filename-index: true
 remote_theme: vaibhavvikas/jekyll-theme-minimalistic
+consolidate:
+- examples/rust
