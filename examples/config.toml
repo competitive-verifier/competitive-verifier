@@ -9,3 +9,9 @@ compile = "true"
 execute = "true"
 bundle = "false"
 list_dependencies = ""
+
+[languages.hello]
+execute = { command = "tail -n 1 {path}", cwd = "{basedir}" }
+compile = "true"
+bundle = "false"
+list_dependencies = 'find {basedir} -type f -name "*.hello"'
