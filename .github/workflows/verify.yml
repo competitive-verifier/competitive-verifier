@@ -56,7 +56,7 @@ jobs:
       matrix:
         langs:
           - name: others
-            verify-directory: examples/tests examples/awk
+            verify-directory: examples/test_for_documents examples/awk
             for_testing: true
           - name: cpp
             verify-directory: examples/cpp
