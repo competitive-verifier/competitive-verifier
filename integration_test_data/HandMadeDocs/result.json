@@ -1,0 +1,5 @@
+{
+    "$schema": "../../schema/verify_result.schema.json",
+    "total_seconds": 0,
+    "files": {}
+}

@@ -8,7 +8,7 @@ from typing import Optional
 import yaml
 
 import competitive_verifier.git as git
-from competitive_verifier.documents.job import resolve_documentation_of
+from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
 from competitive_verifier.oj.verify.languages.go import GoLanguage
@@ -83,7 +83,10 @@ def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path
     if docs_match:
         doc_path = docs_match.group(1)
         if isinstance(doc_path, str):
-            return resolve_documentation_of(doc_path.strip(), basepath=path)
+            return resolve_documentation_of(
+                doc_path.strip(),
+                basedir=path.parent,
+            )
     return None
 
 

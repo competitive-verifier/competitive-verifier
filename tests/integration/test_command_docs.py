@@ -5,18 +5,21 @@ import os
 import pathlib
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 import yaml
 from pytest_mock import MockerFixture
 from pytest_subtests import SubTests
 
+from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
+from competitive_verifier.documents.front_matter import split_front_matter_raw
 from competitive_verifier.documents.main import main
 from competitive_verifier.oj import check_gnu_time
 
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import FilePaths
+from .utils import dummy_commit_time
 
 
 @dataclass
@@ -204,7 +207,6 @@ def data(
                     },
                     "documentation_of": "awk/aplusb.test.awk",
                     "layout": "document",
-                    "title": "awk/aplusb.test.awk",
                 },
             ),
             MarkdownData(
@@ -325,7 +327,6 @@ def data(
                     },
                     "documentation_of": "awk/aplusb_direct.awk",
                     "layout": "document",
-                    "title": "awk/aplusb_direct.awk",
                 },
             ),
             MarkdownData(
@@ -357,7 +358,6 @@ def data(
                     },
                     "documentation_of": "encoding/EUC-KR.txt",
                     "layout": "document",
-                    "title": "encoding/EUC-KR.txt",
                 },
             ),
             MarkdownData(
@@ -389,7 +389,6 @@ def data(
                     },
                     "documentation_of": "encoding/cp932.txt",
                     "layout": "document",
-                    "title": "encoding/cp932.txt",
                 },
             ),
             MarkdownData(
@@ -872,7 +871,7 @@ def data(
             ),
             MarkdownData(
                 path="python/lib_all_failure.py.md",
-                content=b"# Lib All failure",
+                content=b"\n# Lib All failure",
                 front_matter={
                     "data": {
                         "attributes": {"links": []},
@@ -940,7 +939,7 @@ def data(
             ),
             MarkdownData(
                 path="python/lib_all_success.py.md",
-                content=b"# Lib All Success",
+                content=b"\n# Lib All Success",
                 front_matter={
                     "data": {
                         "attributes": {"links": []},
@@ -985,7 +984,7 @@ def data(
             ),
             MarkdownData(
                 path="python/lib_skip.py.md",
-                content=b"# Skip",
+                content=b"\n# Skip",
                 front_matter={
                     "data": {
                         "attributes": {"links": []},
@@ -1119,7 +1118,6 @@ def data(
                     },
                     "documentation_of": "python/lib_some_skip.py",
                     "layout": "document",
-                    "title": "python/lib_some_skip.py",
                 },
             ),
             MarkdownData(
@@ -1177,7 +1175,6 @@ def data(
                     },
                     "documentation_of": "python/lib_some_skip_some_wa.py",
                     "layout": "document",
-                    "title": "python/lib_some_skip_some_wa.py",
                 },
             ),
             MarkdownData(
@@ -1233,7 +1230,6 @@ def data(
                     },
                     "documentation_of": "python/skip.py",
                     "layout": "document",
-                    "title": "python/skip.py",
                 },
             ),
             MarkdownData(
@@ -1551,7 +1547,6 @@ def data(
                     },
                     "documentation_of": "python/sub/no_dependants.py",
                     "layout": "document",
-                    "title": "python/sub/no_dependants.py",
                 },
             ),
         ],
@@ -1584,6 +1579,8 @@ def check_common(
 
     targets = {t.path: t for t in data.targets_data}
 
+    assert not (destination / "dummy").exists()
+
     for target_file in filter(
         lambda p: p.is_file(),
         chain.from_iterable(
@@ -1595,36 +1592,30 @@ def check_common(
         ),
     ):
         path_str = target_file.relative_to(destination).as_posix()
-        with subtests.test(  # pyright: ignore[reportUnknownMemberType]
-            msg="Check testdata", path=path_str
-        ):
-            target_value = target_file.read_bytes().strip()
-            assert target_value.startswith(b"---\n")
-
-            front_matter_end = target_value.index(b"---", 4)
-            front_matter = yaml.safe_load(target_value[4:front_matter_end])
-            content = target_value[front_matter_end + 3 :].strip()
-
+        with subtests.test(msg=path_str):  # pyright: ignore[reportUnknownMemberType]
+            front_matter, content = split_front_matter_raw(target_file.read_bytes())
             assert content == targets[path_str].content
-            assert front_matter == targets[path_str].front_matter
+            assert front_matter
+            assert yaml.safe_load(front_matter) == targets[path_str].front_matter
         del targets[path_str]
 
     assert not list(targets.keys())
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-100)
 class TestCommandDocuments:
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setup_docs")
     def test_with_config(
         self,
+        user_defined_and_python_data: UserDefinedAndPythonData,
         package_dst: pathlib.Path,
         data: DocsData,
         subtests: SubTests,
     ):
         destination = package_dst / inspect.stack()[0].function
-        docs_settings_dir = data.root / "docs_settings"
+        docs_settings_dir = user_defined_and_python_data.targets_path / "docs_settings"
 
         main(
             [
@@ -1677,7 +1668,6 @@ class TestCommandDocuments:
                 static_file, destination / static_file.relative_to(static_dir)
             )
 
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setup_docs")
     def test_without_config(
         self,
@@ -1689,8 +1679,6 @@ class TestCommandDocuments:
 
         main(
             [
-                "--docs",
-                "testdata/nothing",
                 "--destination",
                 destination.as_posix(),
             ]
@@ -1735,7 +1723,6 @@ class TestCommandDocuments:
                 resource_file, destination / resource_file.relative_to(resource_dir)
             )
 
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setup_docs")
     def test_logging_default(
         self,
@@ -1749,8 +1736,6 @@ class TestCommandDocuments:
 
         main(
             [
-                "--docs",
-                "testdata/nothing",
                 "--destination",
                 destination.as_posix(),
             ]
@@ -1759,15 +1744,8 @@ class TestCommandDocuments:
 
         check_common(destination, data=data, subtests=subtests)
 
-        assert caplog.record_tuples == [
-            (
-                "competitive_verifier.documents.job",
-                logging.WARNING,
-                "the `documentation_of` path of dummy/dummy.md is not target: ./dummy.py",
-            )
-        ]
+        assert not caplog.record_tuples
 
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setup_docs")
     def test_logging_include(
         self,
@@ -1786,8 +1764,6 @@ class TestCommandDocuments:
                 "encoding",
                 "a*",
                 "failure.*.md",
-                "--docs",
-                "testdata/nothing",
                 "--destination",
                 destination.as_posix(),
             ]
@@ -1805,7 +1781,6 @@ class TestCommandDocuments:
             ["dummy/dummy.md"],
         ],
     )
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setup_docs")
     def test_logging_exclude(
         self,
@@ -1822,8 +1797,6 @@ class TestCommandDocuments:
             [
                 "--exclude",
                 *exclude,
-                "--docs",
-                "testdata/nothing",
                 "--destination",
                 destination.as_posix(),
             ]
@@ -1833,3 +1806,494 @@ class TestCommandDocuments:
         check_common(destination, data=data, subtests=subtests)
 
         assert not caplog.record_tuples
+
+    @pytest.mark.usefixtures("setup_docs")
+    def test_logging_exclude_code_but_include_docs(
+        self,
+        package_dst: pathlib.Path,
+        data: DocsData,
+        subtests: SubTests,
+        caplog: pytest.LogCaptureFixture,
+    ):
+        caplog.set_level(logging.WARNING)
+        destination = package_dst / inspect.stack()[0].function
+
+        main(
+            [
+                "--exclude",
+                "dummy/dummy.py",
+                "--destination",
+                destination.as_posix(),
+            ]
+            + data.default_args
+        )
+
+        check_common(destination, data=data, subtests=subtests)
+
+        assert caplog.record_tuples == [
+            (
+                "competitive_verifier.documents.render",
+                30,
+                "Markdown(dummy/dummy.md) documentation_of: ./dummy.py is not found.",
+            ),
+        ]
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("additional_path")
+@pytest.mark.usefixtures("setup_docs")
+@pytest.mark.order(-100)
+def test_hand_docs(
+    monkeypatch: pytest.MonkeyPatch,
+    file_paths: FilePaths,
+    package_dst: pathlib.Path,
+    subtests: SubTests,
+):
+    targets = file_paths.root / "HandMadeDocs"
+    monkeypatch.chdir(targets)
+
+    destination = package_dst / "handmade" / inspect.stack()[0].function
+
+    main(
+        [
+            "--exclude",
+            "docs/",
+            "--docs",
+            "docs/",
+            "--destination",
+            destination.as_posix(),
+            "--verify-json",
+            str(targets / "verify.json"),
+            str(targets / "result.json"),
+        ]
+    )
+
+    assert (destination / "_config.yml").exists()
+    with (destination / "_config.yml").open("rb") as fp:
+        config_yml = yaml.safe_load(fp)
+    assert config_yml == {
+        "action_name": "TESTING_WORKFLOW",
+        "basedir": "integration_test_data/HandMadeDocs/",
+        "branch_name": "TESTING_GIT_REF",
+        "description": '<small>This documentation is automatically generated by <a href="https://github.com/competitive-verifier/competitive-verifier">competitive-verifier/competitive-verifier</a></small>',
+        "filename-index": False,
+        "highlightjs-style": "default",
+        "icons": {
+            "LIBRARY_ALL_AC": ":100:",
+            "LIBRARY_ALL_WA": ":x:",
+            "LIBRARY_NO_TESTS": ":warning:",
+            "LIBRARY_PARTIAL_AC": ":heavy_check_mark:",
+            "LIBRARY_SOME_WA": ":question:",
+            "TEST_ACCEPTED": ":heavy_check_mark:",
+            "TEST_WAITING_JUDGE": ":warning:",
+            "TEST_WRONG_ANSWER": ":x:",
+        },
+        "mathjax": 3,
+        "plugins": ["jemoji", "jekyll-redirect-from", "jekyll-remote-theme"],
+        "remote_theme": "vaibhavvikas/jekyll-theme-minimalistic",
+        "sass": {"style": "compressed"},
+        "theme": "jekyll-theme-minimal",
+        "coordinate": [
+            "coordinate/q/",
+        ],
+        "additional-data": "`code`",
+    }
+
+    assert config_yml == ConfigYaml(
+        basedir=pathlib.Path("integration_test_data/HandMadeDocs"),
+        action_name="TESTING_WORKFLOW",
+        branch_name="TESTING_GIT_REF",
+        icons=ConfigIcons(LIBRARY_ALL_AC=":100:"),
+        coordinate={
+            "coordinate/q/",
+        },
+    ).model_copy(
+        update={
+            "additional-data": "`code`",
+            "remote_theme": "vaibhavvikas/jekyll-theme-minimalistic",
+        }
+    ).model_dump(
+        mode="json",
+        exclude_none=True,
+        by_alias=True,
+    )
+
+    assert not pathlib.Path(destination / "display/never.txt.md").exists()
+    assert pathlib.Path(destination / "foo/bar.js").exists()
+    assert not pathlib.Path(destination / "docs").exists()
+
+    class TextFileData(NamedTuple):
+        path: str
+        update_data: dict[str, Any] = {}
+        update_root: dict[str, Any] = {}
+        content: bytes = b""
+
+    text_files: list[TextFileData] = [
+        TextFileData("a/b/c.txt"),
+        TextFileData("root.txt"),
+        TextFileData("coordinate/q/d.txt"),
+        TextFileData("coordinate/q/b/c.txt"),
+        TextFileData(
+            "display/hidden.txt",
+            {
+                "documentPath": "display/hidden.md",
+                "timestamp": "2012-11-04 01:38:54.260000-11:00",
+                "dependsOn": ["display/no-index.txt", "display/visible.txt"],
+                "requiredBy": ["display/no-index.txt", "display/visible.txt"],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+            },
+            {
+                "display": "hidden",
+                "title": "display=hidden",
+            },
+        ),
+        TextFileData(
+            "display/no-index.txt",
+            {
+                "documentPath": "display/no-index.md",
+                "timestamp": "2012-11-04 01:38:54.260000-11:00",
+                "dependsOn": ["display/visible.txt"],
+                "requiredBy": ["display/visible.txt"],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+            },
+            {
+                "display": "no-index",
+                "title": "display=no-index",
+            },
+        ),
+        TextFileData(
+            "display/visible.txt",
+            {
+                "timestamp": "2012-11-04 01:38:54.260000-11:00",
+                "documentPath": "display/visible.md",
+                "dependsOn": ["display/no-index.txt"],
+                "requiredBy": ["display/no-index.txt"],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+            },
+            {
+                "display": "visible",
+                "title": "display=visible",
+            },
+            b"# Visible",
+        ),
+        TextFileData("txts/utf-8👍.txt"),
+        TextFileData(
+            "txts/utf-16BE.txt",
+            {
+                "attributes": {"document_title": "UTF-16BE"},
+                "timestamp": "1974-07-18 21:35:09.220000+10:00",
+                "embedded": [
+                    {
+                        "code": "🐴🐑🐵🐔🐶🐗",
+                        "name": "default",
+                    }
+                ],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "utf-16LE.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "txts/utf-16LE.txt",
+                                "title": "UTF-16LE",
+                            }
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "utf-16LE.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "txts/utf-16LE.txt",
+                                "title": "UTF-16LE",
+                            }
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "dependsOn": ["txts/utf-16LE.txt"],
+                "requiredBy": ["txts/utf-16LE.txt"],
+            },
+            {
+                "title": "UTF-16BE",
+            },
+        ),
+        TextFileData(
+            "txts/utf-16LE.txt",
+            {
+                "attributes": {"TITLE": "UTF-16LE"},
+                "timestamp": "1974-07-18 21:35:09.220000+10:00",
+                "embedded": [
+                    {
+                        "code": "🐭🐮🐯🐰🐲🐍",
+                        "name": "default",
+                    }
+                ],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "utf-16BE.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "txts/utf-16BE.txt",
+                                "title": "UTF-16BE",
+                            }
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "utf-16BE.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "txts/utf-16BE.txt",
+                                "title": "UTF-16BE",
+                            }
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "dependsOn": ["txts/utf-16BE.txt"],
+                "requiredBy": ["txts/utf-16BE.txt"],
+            },
+            {
+                "title": "UTF-16LE",
+            },
+        ),
+    ]
+
+    def front_matter_data(path: str) -> dict[str, Any]:
+        def force_read():
+            try:
+                return (targets / path).read_text()
+            except UnicodeDecodeError:
+                return ""
+
+        return {
+            "attributes": {},
+            "dependencies": [
+                {"files": [], "type": "Depends on"},
+                {"files": [], "type": "Required by"},
+                {"files": [], "type": "Verified with"},
+            ],
+            "dependsOn": [],
+            "requiredBy": [],
+            "embedded": [
+                {
+                    "code": force_read(),
+                    "name": "default",
+                }
+            ],
+            "isFailed": False,
+            "isVerificationFile": False,
+            "path": path,
+            "pathExtension": "txt",
+            "timestamp": dummy_commit_time([pathlib.Path(path)]).isoformat(sep=" "),
+            "verificationStatus": "LIBRARY_NO_TESTS",
+            "verifiedWith": [],
+        }
+
+    markdawns = [
+        MarkdownData(
+            path=path,
+            front_matter={
+                "documentation_of": path,
+                "layout": "document",
+                "data": front_matter_data(path) | data,
+            }
+            | root,
+            content=content,
+        )
+        for path, data, root, content in text_files
+    ]
+
+    for t in markdawns:
+        with subtests.test(msg=t.path):  # pyright: ignore[reportUnknownMemberType]
+            front_matter, content = split_front_matter_raw(
+                (destination / f"{t.path}.md").read_bytes()
+            )
+            assert front_matter
+            assert yaml.safe_load(front_matter) == t.front_matter
+            assert content == t.content
+
+    def check_index_md():
+        front_matter, content = split_front_matter_raw(
+            (destination / "index.md").read_bytes()
+        )
+        assert front_matter
+        assert yaml.safe_load(front_matter) == {
+            "data": {
+                "top": [
+                    {
+                        "categories": [
+                            {
+                                "name": "",
+                                "pages": [
+                                    {
+                                        "filename": "root.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "root.txt",
+                                    }
+                                ],
+                            },
+                            {
+                                "name": "a/b/",
+                                "pages": [
+                                    {
+                                        "filename": "c.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "a/b/c.txt",
+                                    }
+                                ],
+                            },
+                            {
+                                "name": "coordinate/q/",
+                                "pages": [
+                                    {
+                                        "filename": "d.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "coordinate/q/d.txt",
+                                    }
+                                ],
+                            },
+                            {
+                                "name": "coordinate/q/b/",
+                                "pages": [
+                                    {
+                                        "filename": "c.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "coordinate/q/b/c.txt",
+                                    }
+                                ],
+                            },
+                            {
+                                "name": "display/",
+                                "pages": [
+                                    {
+                                        "filename": "visible.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/visible.txt",
+                                        "title": "display=visible",
+                                    },
+                                ],
+                            },
+                            {
+                                "name": "txts/",
+                                "pages": [
+                                    {
+                                        "filename": "utf-16BE.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "txts/utf-16BE.txt",
+                                        "title": "UTF-16BE",
+                                    },
+                                    {
+                                        "filename": "utf-16LE.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "txts/utf-16LE.txt",
+                                        "title": "UTF-16LE",
+                                    },
+                                    {
+                                        "filename": "utf-8👍.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "txts/utf-8👍.txt",
+                                    },
+                                ],
+                            },
+                        ],
+                        "type": "Library Files",
+                    },
+                    {"categories": [], "type": "Verification Files"},
+                ]
+            },
+            "layout": "toppage",
+        }
+        assert content == b""
+
+    check_index_md()

@@ -1,7 +1,7 @@
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import Any, NamedTuple, Union
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -12,6 +12,8 @@ from .path import ForcePosixPath, SortedPathSet
 from .result import FileResult
 from .verification import Verification
 
+if TYPE_CHECKING:
+    from _typeshed import StrPath
 logger = getLogger(__name__)
 
 _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
@@ -70,6 +72,14 @@ class VerificationFile(BaseModel):
     """
 
     @property
+    def title(self) -> Optional[str]:
+        """The document title specified as a attributes"""
+        title = self.document_attributes.get("TITLE")
+        if not title:
+            title = self.document_attributes.get("document_title")
+        return title
+
+    @property
     def verification_list(self) -> list[Verification]:
         if self.verification is None:
             return []
@@ -97,9 +107,7 @@ class VerificationInput(BaseModel):
         return VerificationInput(files=self.files | other.files)
 
     @staticmethod
-    def parse_file_relative(
-        path: Union[str, pathlib.Path], **kwargs: Any
-    ) -> "VerificationInput":
+    def parse_file_relative(path: "StrPath", **kwargs: Any) -> "VerificationInput":
         with pathlib.Path(path).open("rb") as p:
             impl = VerificationInput.model_validate_json(p.read(), **kwargs)
         new_files: dict[pathlib.Path, VerificationFile] = {}

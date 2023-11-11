@@ -23,3 +23,12 @@ SortedPathList = Annotated[
     list[ForcePosixPath],
     PlainSerializer(_sorted, return_type=list[ForcePosixPath]),
 ]
+
+RelativeDirectoryPath = Annotated[
+    pathlib.Path,
+    PlainSerializer(
+        lambda x: f"{x.as_posix()}/" if x != pathlib.Path(".") else "",
+        return_type=str,
+        when_used="json",
+    ),
+]

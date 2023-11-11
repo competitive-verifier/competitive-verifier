@@ -3,7 +3,7 @@ import json
 import pathlib
 import random
 import shutil
-from typing import Any, Generator, List
+from typing import Any, Iterable, List
 
 import onlinejudge.dispatch
 import onlinejudge.service.library_checker as library_checker
@@ -297,7 +297,7 @@ class _MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
 
         # library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
 
-    def _mock_cases(self) -> Generator[OjTestCase, Any, Any]:
+    def _mock_cases(self) -> Iterable[OjTestCase]:
         if self.problem_id == "aplusb":
             for name, a, b in [
                 ("example_00", 1000, 10),

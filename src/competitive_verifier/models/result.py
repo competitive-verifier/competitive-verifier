@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
 from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel, Field, field_validator
@@ -10,6 +10,9 @@ from competitive_verifier.util import to_relative
 
 from .path import ForcePosixPath
 from .result_status import ResultStatus
+
+if TYPE_CHECKING:
+    from _typeshed import StrPath
 
 logger = getLogger(__name__)
 
@@ -145,7 +148,7 @@ class VerifyCommandResult(BaseModel):
 
     @classmethod
     def parse_file_relative(
-        cls, path: Union[str, pathlib.Path], **kwargs: Any
+        cls, path: "StrPath", **kwargs: Any
     ) -> "VerifyCommandResult":
         with pathlib.Path(path).open("rb") as p:
             impl = cls.model_validate_json(p.read(), **kwargs)

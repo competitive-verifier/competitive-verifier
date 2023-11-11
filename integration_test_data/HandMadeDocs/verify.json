@@ -1,0 +1,58 @@
+{
+    "$schema": "../../schema/verify_files.schema.json",
+    "files": {
+        "display/hidden.txt": {
+            "dependencies": [
+                "display/hidden.txt",
+                "display/no-index.txt",
+                "display/never.txt",
+                "display/visible.txt"
+            ]
+        },
+        "display/no-index.txt": {
+            "dependencies": [
+                "display/hidden.txt",
+                "display/no-index.txt",
+                "display/never.txt",
+                "display/visible.txt"
+            ]
+        },
+        "display/never.txt": {
+            "dependencies": [
+                "display/hidden.txt",
+                "display/no-index.txt",
+                "display/never.txt",
+                "display/visible.txt"
+            ]
+        },
+        "display/visible.txt": {
+            "dependencies": [
+                "display/hidden.txt",
+                "display/no-index.txt",
+                "display/never.txt",
+                "display/visible.txt"
+            ]
+        },
+        "root.txt": {},
+        "a/b/c.txt": {},
+        "coordinate/q/b/c.txt": {},
+        "coordinate/q/d.txt": {},
+        "txts/utf-8👍.txt": {},
+        "txts/utf-16LE.txt": {
+            "document_attributes": {
+                "TITLE": "UTF-16LE"
+            },
+            "dependencies": [
+                "txts/utf-16BE.txt"
+            ]
+        },
+        "txts/utf-16BE.txt": {
+            "document_attributes": {
+                "document_title": "UTF-16BE"
+            },
+            "dependencies": [
+                "txts/utf-16LE.txt"
+            ]
+        }
+    }
+}

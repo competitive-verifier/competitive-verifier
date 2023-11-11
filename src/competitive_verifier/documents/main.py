@@ -18,10 +18,18 @@ from competitive_verifier.arg import (
 from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
+from .. import config as conf
 from .builder import DocumentBuilder
-from .render import get_default_docs_dir
 
 logger = getLogger(__name__)
+
+
+def get_default_docs_dir() -> pathlib.Path:
+    default_docs_dir = conf.get_config_dir() / "docs"
+    oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
+    if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
+        return oj_verify_docs_dir
+    return default_docs_dir
 
 
 def run_impl(
@@ -35,11 +43,10 @@ def run_impl(
 ) -> bool:
     logger.debug("input=%s", input.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
-    print(docs_dir)
     builder = DocumentBuilder(
         input=input,
         result=result,
-        docs_dir=docs_dir,
+        docs_dir=docs_dir or get_default_docs_dir(),
         destination_dir=destination_dir,
         include=include,
         exclude=exclude,
