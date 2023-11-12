@@ -1989,6 +1989,92 @@ def test_hand_docs(
         TextFileData("consolidate/1.txt"),
         TextFileData("consolidate/2.txt"),
         TextFileData(
+            "display/multi-no-keep.txt",
+            {
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "multi-no-keep2.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep2.txt",
+                            }
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "multi-no-keep2.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep2.txt",
+                            },
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "dependsOn": ["display/multi-no-keep2.txt"],
+                "requiredBy": [
+                    "display/multi-no-keep2.txt",
+                    "display/no-index.txt",
+                    "display/visible.txt",
+                ],
+                "timestamp": "2017-12-03 09:56:02.050000-07:00",
+            },
+            {
+                "display": "no-index",
+                "redirect_to": "/display/multi-no-keep",
+            },
+        ),
+        TextFileData(
+            "display/multi-no-keep2.txt",
+            {
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "multi-no-keep.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep.txt",
+                            }
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "multi-no-keep.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep.txt",
+                            }
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "dependsOn": ["display/multi-no-keep.txt"],
+                "requiredBy": ["display/multi-no-keep.txt"],
+                "timestamp": "2017-12-03 09:56:02.050000-07:00",
+            },
+            {
+                "display": "no-index",
+                "redirect_to": "/display/multi-no-keep",
+            },
+        ),
+        TextFileData(
             "display/hidden.txt",
             {
                 "documentPath": "display/hidden.md",
@@ -2298,7 +2384,10 @@ def test_hand_docs(
                 "codes": [
                     {
                         "attributes": {},
-                        "dependsOn": ["display/multi-no-keep.txt", "display/no-index.txt"],
+                        "dependsOn": [
+                            "display/multi-no-keep.txt",
+                            "display/no-index.txt",
+                        ],
                         "embedded": [{"code": "", "name": "default"}],
                         "isFailed": False,
                         "isVerificationFile": False,
@@ -2312,7 +2401,10 @@ def test_hand_docs(
                     },
                     {
                         "attributes": {},
-                        "dependsOn": ["display/multi-no-keep.txt", "display/visible.txt"],
+                        "dependsOn": [
+                            "display/multi-no-keep.txt",
+                            "display/visible.txt",
+                        ],
                         "embedded": [{"code": "", "name": "default"}],
                         "isFailed": False,
                         "isVerificationFile": False,
@@ -2442,7 +2534,6 @@ def test_hand_docs(
                     {"files": [], "type": "Verified with"},
                 ],
                 "dependsOn": ["display/multi-no-keep2.txt"],
-                "documentPath": "display/multi-no-keep.txt",
                 "embedded": [{"code": "no-keep", "name": "default"}],
                 "isFailed": False,
                 "isVerificationFile": False,
