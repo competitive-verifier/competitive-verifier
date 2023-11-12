@@ -165,12 +165,12 @@ class UserMarkdowns:
                 s = single.get(source)
                 if s:
                     if s.front_matter:
-                        s.front_matter.display = DocumentOutputMode.hidden
+                        s.front_matter.display = DocumentOutputMode.no_index
                         s.front_matter.redirect_to = redirect_to
                     else:
                         s.front_matter = FrontMatter(
                             redirect_to=redirect_to,
-                            display=DocumentOutputMode.hidden,
+                            display=DocumentOutputMode.no_index,
                         )
                 else:
                     s = Markdown(
@@ -178,7 +178,7 @@ class UserMarkdowns:
                         content=b"",
                         front_matter=FrontMatter(
                             redirect_to=redirect_to,
-                            display=DocumentOutputMode.hidden,
+                            display=DocumentOutputMode.no_index,
                         ),
                     )
                 single[source] = s
@@ -468,11 +468,11 @@ class RenderJob(ABC):
 
             multis.append(job)
 
-            if not md.front_matter.keep_single:
-                for of in md.multi_documentation_of:
-                    pj = page_jobs.get(of)
-                    if pj:
-                        pj.render_link = job.to_render_link()
+            # if not md.front_matter.keep_single:
+            #     for of in md.multi_documentation_of:
+            #         pj = page_jobs.get(of)
+            #         if pj:
+            #             pj.render_link = job.to_render_link()
 
         jobs.extend(multis)
         jobs.append(
@@ -519,7 +519,6 @@ class PageRenderJob(RenderJob):
     input: VerificationInput
     result: VerifyCommandResult
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
-    render_link: Optional[RenderLink] = None
 
     @property
     def is_verification(self):
@@ -543,8 +542,6 @@ class PageRenderJob(RenderJob):
                 )
 
     def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
-        if self.render_link:
-            return self.render_link
         if (
             self.front_matter.display == DocumentOutputMode.hidden
             or self.front_matter.display == DocumentOutputMode.never

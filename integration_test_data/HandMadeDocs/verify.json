@@ -37,7 +37,18 @@
                 "display/visible.txt"
             ]
         },
-        "display/multi-no-keep.txt": {},
+        "display/multi-no-keep.txt": {
+            "dependencies": [
+                "display/multi-no-keep.txt",
+                "display/multi-no-keep2.txt"
+            ]
+        },
+        "display/multi-no-keep2.txt": {
+            "dependencies": [
+                "display/multi-no-keep.txt",
+                "display/multi-no-keep2.txt"
+            ]
+        },
         "root.txt": {},
         "a/b/c.txt": {},
         "consolidate/1.txt": {},
