@@ -22,7 +22,7 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.util import read_text_normalized, normalize_bytes_text
+from competitive_verifier.util import normalize_bytes_text, read_text_normalized
 
 from .config import ConfigYaml
 from .front_matter import DocumentOutputMode, FrontMatter, Markdown
