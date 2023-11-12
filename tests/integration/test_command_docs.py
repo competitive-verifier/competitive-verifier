@@ -2557,36 +2557,11 @@ def test_hand_docs(
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
                             },
-                            {
-                                "filename": "no-index.txt",
-                                "icon": "LIBRARY_NO_TESTS",
-                                "path": "display/no-index.txt",
-                                "title": "display=no-index",
-                            },
-                            {
-                                "filename": "visible.txt",
-                                "icon": "LIBRARY_NO_TESTS",
-                                "path": "display/visible.txt",
-                                "title": "display=visible",
-                            },
                         ],
                         "type": "Depends on",
                     },
                     {
-                        "files": [
-                            {
-                                "filename": "no-index.txt",
-                                "icon": "LIBRARY_NO_TESTS",
-                                "path": "display/no-index.txt",
-                                "title": "display=no-index",
-                            },
-                            {
-                                "filename": "visible.txt",
-                                "icon": "LIBRARY_NO_TESTS",
-                                "path": "display/visible.txt",
-                                "title": "display=visible",
-                            },
-                        ],
+                        "files": [],
                         "type": "Required by",
                     },
                     {"files": [], "type": "Verified with"},

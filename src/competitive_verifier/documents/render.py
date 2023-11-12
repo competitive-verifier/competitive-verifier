@@ -717,14 +717,19 @@ class MultiCodePageRenderJob(RenderJob):
             for j in self.jobs
         ]
 
-        depends_on_paths = set(
-            chain.from_iterable(j.stat.depends_on for j in self.jobs)
+        multi_documentation_of_set = set(self.markdown.multi_documentation_of)
+        multi_documentation_of_set.add(self.markdown.path)
+        depends_on_paths = (
+            set(chain.from_iterable(j.stat.depends_on for j in self.jobs))
+            - multi_documentation_of_set
         )
-        required_by_paths = set(
-            chain.from_iterable(j.stat.required_by for j in self.jobs)
+        required_by_paths = (
+            set(chain.from_iterable(j.stat.required_by for j in self.jobs))
+            - multi_documentation_of_set
         )
-        verified_with_paths = set(
-            chain.from_iterable(j.stat.verified_with for j in self.jobs)
+        verified_with_paths = (
+            set(chain.from_iterable(j.stat.verified_with for j in self.jobs))
+            - multi_documentation_of_set
         )
 
         depends_on = _paths_to_render_links(depends_on_paths, self.page_jobs)
