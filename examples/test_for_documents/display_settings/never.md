@@ -9,3 +9,5 @@ display: never
 ```
 
 The documentation will not be created.
+
+### Code

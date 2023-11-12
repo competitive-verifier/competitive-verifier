@@ -1,11 +1,12 @@
-<h2>{%- if include.title -%}{{ include.title }}{%- else -%}Code{% endif %}</h2>
+<h2>{{ include.title | default: 'Code' }}</h2>
 
 {{ include.header }}
 
 {%- include code.html extension=include.data.pathExtension embedded=include.data.embedded -%}
 
 {%- if include.data.testcases and include.data.testcases.size != 0 -%}
-<h2>Test cases</h2>
+{% assign test_cases_tag = include.test_cases_tag | default: 'h2' %}
+<{{test_cases_tag}}>Test cases</{{test_cases_tag}}>
 <table class="testcases-table">
     <thead>
         <tr>

@@ -23,5 +23,5 @@
 {%- else -%}
     {%- capture page_title -%}{{code.path | xml_escape }}{%- endcapture -%}
 {%- endif -%}
-{%- include code_and_testcases.html data=code title=page_title header=header -%}
+{%- include code_and_testcases.html data=code title=page_title header=header test_cases_tag='h3' -%}
 {%- endfor -%}
