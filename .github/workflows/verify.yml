@@ -118,6 +118,7 @@ jobs:
         with:
           verify-files: ${{ runner.temp }}/verify.json
           verify-result: .artifacts/Result-*/result.json
+          include: examples/
           destination: _jekyll
           write-summary: true
 
