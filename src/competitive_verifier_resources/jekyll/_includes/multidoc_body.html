@@ -15,6 +15,7 @@
     {%- endif -%}
     {%- endfor -%}
 </ul>
+{{ code.documentContent | markdownify }}
 {%- endcapture -%}
 
 {%- if code.title -%}
