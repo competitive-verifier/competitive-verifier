@@ -1,6 +1,6 @@
 import datetime
 import enum
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Optional, Sequence
 
 from pydantic import BaseModel, ConfigDict, PlainSerializer, model_validator
 from pydantic.alias_generators import to_camel
@@ -21,6 +21,20 @@ class StatusIcon(str, enum.Enum):
             or self == self.LIBRARY_NO_TESTS
             or self == self.TEST_ACCEPTED
             or self == self.TEST_WAITING_JUDGE
+        )
+
+    @property
+    def is_test(self) -> bool:
+        return not self.is_library
+
+    @property
+    def is_library(self) -> bool:
+        return (
+            self == self.LIBRARY_ALL_AC
+            or self == self.LIBRARY_PARTIAL_AC
+            or self == self.LIBRARY_SOME_WA
+            or self == self.LIBRARY_ALL_WA
+            or self == self.LIBRARY_NO_TESTS
         )
 
     LIBRARY_ALL_AC = "LIBRARY_ALL_AC"
@@ -78,11 +92,10 @@ class IndexFiles(RenderBaseModel):
     categories: list[CategorizedIndex]
 
 
-class PageRenderData(RenderBaseModel):
+class CodePageData(RenderBaseModel):
     path: ForcePosixPath
     path_extension: str
-    document_path: Optional[ForcePosixPath] = None
-
+    title: Optional[str]
     embedded: list[EmbeddedCode]
 
     timestamp: Annotated[
@@ -96,10 +109,22 @@ class PageRenderData(RenderBaseModel):
     is_verification_file: bool
     verification_status: StatusIcon
 
-    dependencies: list[Dependency]
     depends_on: SortedPathList
     required_by: SortedPathList
     verified_with: SortedPathList
+
+
+class PageRenderData(CodePageData):
+    document_path: Optional[ForcePosixPath] = None
+    dependencies: list[Dependency]
+
+
+class MultiCodePageData(RenderBaseModel):
+    path: ForcePosixPath
+    verification_status: StatusIcon
+    is_failed: bool
+    codes: Sequence[CodePageData]
+    dependencies: list[Dependency]
 
 
 class IndexRenderData(RenderBaseModel):
