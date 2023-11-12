@@ -1991,6 +1991,7 @@ def test_hand_docs(
         TextFileData(
             "display/multi-no-keep.txt",
             {
+                "attributes": {"TITLE": "Multi no keep $1$"},
                 "dependencies": [
                     {
                         "files": [
@@ -2035,10 +2036,12 @@ def test_hand_docs(
                     "display/visible.txt",
                 ],
                 "timestamp": "2017-12-03 09:56:02.050000-07:00",
+                "title": "Multi no keep $1$",
             },
             {
                 "display": "no-index",
                 "redirect_to": "/display/multi-no-keep",
+                "title": "Multi no keep $1$",
             },
         ),
         TextFileData(
@@ -2051,6 +2054,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             }
                         ],
                         "type": "Depends on",
@@ -2061,6 +2065,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             }
                         ],
                         "type": "Required by",
@@ -2098,6 +2103,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             },
                             {
                                 "filename": "no-index.txt",
@@ -2154,6 +2160,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             },
                             {
                                 "filename": "visible.txt",
@@ -2201,6 +2208,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             },
                             {
                                 "filename": "no-index.txt",
@@ -2397,6 +2405,7 @@ def test_hand_docs(
                                         "filename": "multi-no-keep.txt",
                                         "icon": "LIBRARY_NO_TESTS",
                                         "path": "display/multi-no-keep.txt",
+                                        "title": "Multi no keep $1$",
                                     },
                                     {
                                         "filename": "no-index.txt",
@@ -2446,6 +2455,7 @@ def test_hand_docs(
                                         "filename": "multi-no-keep.txt",
                                         "icon": "LIBRARY_NO_TESTS",
                                         "path": "display/multi-no-keep.txt",
+                                        "title": "Multi no keep $1$",
                                     },
                                     {
                                         "filename": "visible.txt",
@@ -2495,6 +2505,7 @@ def test_hand_docs(
                                         "filename": "multi-no-keep.txt",
                                         "icon": "LIBRARY_NO_TESTS",
                                         "path": "display/multi-no-keep.txt",
+                                        "title": "Multi no keep $1$",
                                     },
                                     {
                                         "filename": "no-index.txt",
@@ -2556,6 +2567,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep.txt",
+                                "title": "Multi no keep $1$",
                             },
                         ],
                         "type": "Depends on",
@@ -2586,7 +2598,7 @@ def test_hand_docs(
         assert front_matter
         assert yaml.safe_load(front_matter) == {
             "data": {
-                "attributes": {},
+                "attributes": {"TITLE": "Multi no keep $1$"},
                 "dependencies": [
                     {
                         "files": [
@@ -2638,11 +2650,13 @@ def test_hand_docs(
                 "timestamp": "2017-12-03 09:56:02.050000-07:00",
                 "verificationStatus": "LIBRARY_NO_TESTS",
                 "verifiedWith": [],
+                "title": "Multi no keep $1$",
             },
             "display": "no-index",
             "documentation_of": "display/multi-no-keep.txt",
             "layout": "document",
             "redirect_to": "/display/multi-no-keep",
+            "title": "Multi no keep $1$",
         }
 
     def check_index_md():

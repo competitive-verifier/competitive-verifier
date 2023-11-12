@@ -38,6 +38,9 @@
             ]
         },
         "display/multi-no-keep.txt": {
+            "document_attributes": {
+                "TITLE": "Multi no keep $1$"
+            },
             "dependencies": [
                 "display/multi-no-keep.txt",
                 "display/multi-no-keep2.txt"
