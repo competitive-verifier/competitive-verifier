@@ -22,12 +22,13 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.util import read_text_normalized
+from competitive_verifier.util import normalize_bytes_text, read_text_normalized
 
 from .config import ConfigYaml
 from .front_matter import DocumentOutputMode, FrontMatter, Markdown
 from .render_data import (
     CategorizedIndex,
+    CodePageData,
     Dependency,
     EmbeddedCode,
     EnvTestcaseResult,
@@ -165,20 +166,19 @@ class UserMarkdowns:
                 s = single.get(source)
                 if s:
                     if s.front_matter:
-                        s.front_matter.display = DocumentOutputMode.hidden
+                        s.front_matter.display = DocumentOutputMode.no_index
                         s.front_matter.redirect_to = redirect_to
                     else:
                         s.front_matter = FrontMatter(
                             redirect_to=redirect_to,
-                            display=DocumentOutputMode.hidden,
+                            display=DocumentOutputMode.no_index,
                         )
                 else:
                     s = Markdown(
-                        path=source,
                         content=b"",
                         front_matter=FrontMatter(
                             redirect_to=redirect_to,
-                            display=DocumentOutputMode.hidden,
+                            display=DocumentOutputMode.no_index,
                         ),
                     )
                 single[source] = s
@@ -468,11 +468,11 @@ class RenderJob(ABC):
 
             multis.append(job)
 
-            if not md.front_matter.keep_single:
-                for of in md.multi_documentation_of:
-                    pj = page_jobs.get(of)
-                    if pj:
-                        pj.render_link = job.to_render_link()
+            # if not md.front_matter.keep_single:
+            #     for of in md.multi_documentation_of:
+            #         pj = page_jobs.get(of)
+            #         if pj:
+            #             pj.render_link = job.to_render_link()
 
         jobs.extend(multis)
         jobs.append(
@@ -519,7 +519,6 @@ class PageRenderJob(RenderJob):
     input: VerificationInput
     result: VerifyCommandResult
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
-    render_link: Optional[RenderLink] = None
 
     @property
     def is_verification(self):
@@ -543,8 +542,6 @@ class PageRenderJob(RenderJob):
                 )
 
     def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
-        if self.render_link:
-            return self.render_link
         if (
             self.front_matter.display == DocumentOutputMode.hidden
             or self.front_matter.display == DocumentOutputMode.never
@@ -712,16 +709,27 @@ class MultiCodePageRenderJob(RenderJob):
         ).dump_merged(fp)
 
     def get_page_data(self) -> MultiCodePageData:
-        codes = [j.get_page_data() for j in self.jobs]
+        codes = [
+            CodePageData.model_validate(
+                {"document_content": normalize_bytes_text(j.markdown.content)}
+                | j.get_page_data().model_dump(),
+            )
+            for j in self.jobs
+        ]
 
-        depends_on_paths = set(
-            chain.from_iterable(j.stat.depends_on for j in self.jobs)
+        multi_documentation_of_set = set(self.markdown.multi_documentation_of)
+        multi_documentation_of_set.add(self.markdown.path)
+        depends_on_paths = (
+            set(chain.from_iterable(j.stat.depends_on for j in self.jobs))
+            - multi_documentation_of_set
         )
-        required_by_paths = set(
-            chain.from_iterable(j.stat.required_by for j in self.jobs)
+        required_by_paths = (
+            set(chain.from_iterable(j.stat.required_by for j in self.jobs))
+            - multi_documentation_of_set
         )
-        verified_with_paths = set(
-            chain.from_iterable(j.stat.verified_with for j in self.jobs)
+        verified_with_paths = (
+            set(chain.from_iterable(j.stat.verified_with for j in self.jobs))
+            - multi_documentation_of_set
         )
 
         depends_on = _paths_to_render_links(depends_on_paths, self.page_jobs)

@@ -92,7 +92,7 @@ class IndexFiles(RenderBaseModel):
     categories: list[CategorizedIndex]
 
 
-class CodePageData(RenderBaseModel):
+class PageRenderData(RenderBaseModel):
     path: ForcePosixPath
     path_extension: str
     title: Optional[str]
@@ -113,10 +113,12 @@ class CodePageData(RenderBaseModel):
     required_by: SortedPathList
     verified_with: SortedPathList
 
-
-class PageRenderData(CodePageData):
     document_path: Optional[ForcePosixPath] = None
     dependencies: list[Dependency]
+
+
+class CodePageData(PageRenderData):
+    document_content: Optional[str]
 
 
 class MultiCodePageData(RenderBaseModel):
