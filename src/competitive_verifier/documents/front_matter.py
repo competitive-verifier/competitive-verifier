@@ -1,13 +1,13 @@
 import enum
 import pathlib
-from typing import BinaryIO, Literal, Optional, Union
+from typing import Annotated, BinaryIO, Literal, Optional, Union
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from competitive_verifier.models import ForcePosixPath
 
-from .render_data import IndexRenderData, PageRenderData
+from .render_data import IndexRenderData, MultiCodePageData, PageRenderData
 
 _separator: bytes = b"---"
 
@@ -35,11 +35,21 @@ class FrontMatter(BaseModel):
 
     display: Optional[DocumentOutputMode] = None
     title: Optional[str] = None
-    layout: Union[Literal["toppage"], Literal["document"], str, None] = None
-    documentation_of: Optional[str] = None
-    data: Union[PageRenderData, IndexRenderData, None] = None
+    layout: Union[
+        Literal["toppage"],
+        Literal["document"],
+        Literal["multidoc"],
+        str,
+        None,
+    ] = None
+    documentation_of: Union[str, Annotated[list[str], Field(min_length=1)], None] = None
+    keep_single: Optional[bool] = None
+    data: Union[PageRenderData, MultiCodePageData, IndexRenderData, None] = None
     redirect_from: Optional[list[str]] = None
-    """for jekyll-redirect-from plugin
+    """For jekyll-redirect-from plugin
+    """
+    redirect_to: Optional[str] = None
+    """For jekyll-redirect-from plugin
     """
 
     def model_dump_yml(self):

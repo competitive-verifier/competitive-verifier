@@ -45,6 +45,7 @@ jobs:
         uses: competitive-verifier/actions/oj-resolve@v1
         with:
           include: ${{ inputs.verify-directory }}
+          exclude: integration_test_data/
           output-path: verify.json
           config: examples/config.toml
         env:
