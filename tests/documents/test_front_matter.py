@@ -342,6 +342,7 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
             redirect_from=["bar.txt"],
             title="Foooo",
             data=PageRenderData(
+                title=None,
                 path=pathlib.Path("root/foo.txt"),
                 path_extension="txt",
                 document_path=pathlib.Path("root/docs/foo.md"),

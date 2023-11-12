@@ -1,0 +1,15 @@
+{%- for dep in include.data.dependencies -%}
+{%- if dep.files.size != 0 -%}
+<h2>{{dep.type}}</h2>
+<ul>
+    {%- for item in dep.files -%}
+    {%- if item.title -%}
+        {%- capture link_title -%}{{item.title | xml_escape }} <small>({{ item.path | xml_escape }})</small>{%- endcapture -%}
+    {%- else -%}
+        {%- capture link_title -%}{{item.path | xml_escape }}{%- endcapture -%}
+    {%- endif -%}
+    <li><a href="{{ item.path | relative_url }}">{{ site.icons[item.icon] }} {{ link_title | xml_escape }}</a></li>
+    {%- endfor -%}
+</ul>
+{%- endif -%}
+{%- endfor -%}

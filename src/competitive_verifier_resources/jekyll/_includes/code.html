@@ -1,8 +1,4 @@
-
-
-{%- if include.embedded.size == null == include.embedded.size < 1 -%}
-<div style="height: 5em;">:x: <b>There is no code.</b></div>
-{%- else -%}
+{%- if include.embedded.size >= 1 -%}
 <div class="code">
 {%- for source in include.embedded -%}
     {%- assign codeBody = source.code -%}
@@ -19,4 +15,6 @@
         <div class="btn-group"><button type="button" class="code-btn code-copy-btn hint--top hint--always hint--disable" aria-label="Copied!">Copy</button></div>
     </div>
 </div>
+{%- else -%}
+<div style="height: 5em;">:x: <b>There is no code.</b></div>
 {%- endif -%}

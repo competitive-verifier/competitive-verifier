@@ -28,3 +28,7 @@ h1 a:focus {
 .emoji {
     vertical-align: middle;
 }
+
+.testcases-table .col:not(.col1):not(.col2) {
+    text-align: center;
+}

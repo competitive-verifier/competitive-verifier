@@ -4,6 +4,7 @@ import pathlib
 from abc import ABC, abstractmethod, abstractproperty
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import chain
 from logging import getLogger
 from typing import AbstractSet, BinaryIO, Iterable, Optional
 
@@ -32,6 +33,7 @@ from .render_data import (
     EnvTestcaseResult,
     IndexFiles,
     IndexRenderData,
+    MultiCodePageData,
     PageRenderData,
     RenderLink,
     StatusIcon,
@@ -73,30 +75,125 @@ def resolve_documentation_of(
     return None
 
 
-def select_markdown(sources: set[pathlib.Path]) -> dict[pathlib.Path, Markdown]:
-    d: dict[pathlib.Path, Markdown] = {}
-    markdowns = [Markdown.load_file(t) for t in sources if t.suffix == ".md"]
-    for md in markdowns:
-        if md.path and md.front_matter and md.front_matter.documentation_of:
-            documentation_of = resolve_documentation_of(
-                md.front_matter.documentation_of,
-                basedir=md.path.parent,
-            )
-            if documentation_of in sources:
-                md.front_matter.documentation_of = documentation_of.as_posix()
-                d[documentation_of] = md
-            else:
-                logger.warning(
-                    "Markdown(%s) documentation_of: %s is not found.",
-                    md.path.as_posix(),
+def _paths_to_render_links(
+    paths: SortedPathSet, page_jobs: dict[pathlib.Path, "PageRenderJob"]
+) -> list[RenderLink]:
+    def get_link(path: pathlib.Path) -> Optional[RenderLink]:
+        job = page_jobs.get(path)
+        if not job:
+            return None
+        return job.to_render_link()
+
+    return [
+        link
+        for link in map(
+            get_link, sorted(paths, key=lambda p: str.casefold(p.as_posix()))
+        )
+        if link
+    ]
+
+
+class MultiTargetMarkdown(Markdown):
+    path: ForcePosixPath  # pyright: ignore
+    front_matter: FrontMatter  # pyright: ignore
+    multi_documentation_of: list[pathlib.Path]
+
+
+@dataclass
+class UserMarkdowns:
+    single: dict[pathlib.Path, Markdown]
+    multi: list[MultiTargetMarkdown]
+
+    @staticmethod
+    def select_markdown(sources: set[pathlib.Path]) -> "UserMarkdowns":
+        single: dict[pathlib.Path, Markdown] = {}
+        multi: list[MultiTargetMarkdown] = []
+        markdowns = [Markdown.load_file(t) for t in sources if t.suffix == ".md"]
+        for md in markdowns:
+            if not (md.path and md.front_matter and md.front_matter.documentation_of):
+                continue
+
+            if isinstance(md.front_matter.documentation_of, str):
+                source_path = resolve_documentation_of(
                     md.front_matter.documentation_of,
+                    basedir=md.path.parent,
                 )
-    return d
+                if source_path in sources:
+                    md.front_matter.documentation_of = source_path.as_posix()
+                    single[source_path] = md
+                else:
+                    logger.warning(
+                        "Markdown(%s) documentation_of: %s is not found.",
+                        md.path,
+                        md.front_matter.documentation_of,
+                    )
+            else:
+                multi_documentation_of: list[pathlib.Path] = []
+                for d in md.front_matter.documentation_of:
+                    source_path = resolve_documentation_of(
+                        d,
+                        basedir=md.path.parent,
+                    )
+                    if source_path in sources:
+                        multi_documentation_of.append(source_path)
+                    else:
+                        logger.warning(
+                            "Markdown(%s) documentation_of: %s is not found.",
+                            md.path,
+                            d,
+                        )
+                if multi_documentation_of:
+                    multi.append(
+                        MultiTargetMarkdown(
+                            path=md.path,
+                            front_matter=md.front_matter,
+                            content=md.content,
+                            multi_documentation_of=multi_documentation_of,
+                        )
+                    )
+                else:
+                    logger.warning(
+                        "Markdown(%s) documentation_of have no valid files.",
+                        md.path,
+                    )
+
+        for m in multi:
+            if m.front_matter and m.front_matter.keep_single:
+                continue
+            for source in m.multi_documentation_of:
+                redirect_to = f"/{m.path.with_suffix('').as_posix()}"
+                s = single.get(source)
+                if s:
+                    if s.front_matter:
+                        s.front_matter.display = DocumentOutputMode.hidden
+                        s.front_matter.redirect_to = redirect_to
+                    else:
+                        s.front_matter = FrontMatter(
+                            redirect_to=redirect_to,
+                            display=DocumentOutputMode.hidden,
+                        )
+                else:
+                    s = Markdown(
+                        path=source,
+                        content=b"",
+                        front_matter=FrontMatter(
+                            redirect_to=redirect_to,
+                            display=DocumentOutputMode.hidden,
+                        ),
+                    )
+                single[source] = s
+        return UserMarkdowns(
+            single=single,
+            multi=multi,
+        )
 
 
 class _VerificationStatusFlag(enum.Flag):
-    TEST_NOTHING = 0
-    IS_LIBRARY = enum.auto()
+    IS_LIBRARY = 0
+    NOTHING = 0
+    LIBRARY_NOTHING = IS_LIBRARY
+    TEST_NOTHING = enum.auto()
+    IS_TEST = TEST_NOTHING
     HAVE_AC = enum.auto()
     HAVE_WA = enum.auto()
     HAVE_SKIP = enum.auto()
@@ -108,15 +205,14 @@ class _VerificationStatusFlag(enum.Flag):
     LIBRARY_WA_SKIP = IS_LIBRARY | HAVE_WA | HAVE_SKIP
     LIBRARY_WA = IS_LIBRARY | HAVE_WA
     LIBRARY_SKIP = IS_LIBRARY | HAVE_SKIP
-    LIBRARY_NOTHING = IS_LIBRARY
 
-    TEST_AC_WA_SKIP = HAVE_AC | HAVE_WA | HAVE_SKIP
-    TEST_AC_WA = HAVE_AC | HAVE_WA
-    TEST_AC_SKIP = HAVE_AC | HAVE_SKIP
-    TEST_AC = HAVE_AC
-    TEST_WA_SKIP = HAVE_WA | HAVE_SKIP
-    TEST_WA = HAVE_WA
-    TEST_SKIP = HAVE_SKIP
+    TEST_AC_WA_SKIP = IS_TEST | HAVE_AC | HAVE_WA | HAVE_SKIP
+    TEST_AC_WA = IS_TEST | HAVE_AC | HAVE_WA
+    TEST_AC_SKIP = IS_TEST | HAVE_AC | HAVE_SKIP
+    TEST_AC = IS_TEST | HAVE_AC
+    TEST_WA_SKIP = IS_TEST | HAVE_WA | HAVE_SKIP
+    TEST_WA = IS_TEST | HAVE_WA
+    TEST_SKIP = IS_TEST | HAVE_SKIP
 
     @classmethod
     @property
@@ -145,8 +241,31 @@ class _VerificationStatusFlag(enum.Flag):
             cls._conv_dict_attr = d
         return d
 
+    @classmethod
+    @property
+    def _conv_dict_rev(cls) -> dict[StatusIcon, "_VerificationStatusFlag"]:
+        try:
+            d: dict[StatusIcon, "_VerificationStatusFlag"] = cls._conv_dict_rev_attr
+        except AttributeError:
+            d = {
+                StatusIcon.LIBRARY_SOME_WA: cls.LIBRARY_AC_WA,
+                StatusIcon.LIBRARY_PARTIAL_AC: cls.LIBRARY_AC_SKIP,
+                StatusIcon.LIBRARY_ALL_AC: cls.LIBRARY_AC,
+                StatusIcon.LIBRARY_ALL_WA: cls.LIBRARY_WA,
+                StatusIcon.LIBRARY_NO_TESTS: cls.LIBRARY_NOTHING,
+                StatusIcon.TEST_ACCEPTED: cls.TEST_AC,
+                StatusIcon.TEST_WRONG_ANSWER: cls.TEST_WA,
+                StatusIcon.TEST_WAITING_JUDGE: cls.TEST_NOTHING,
+            }
+            cls._conv_dict_rev_attr = d
+        return d
+
     def to_status(self) -> StatusIcon:
         return self._conv_dict[self]
+
+    @classmethod
+    def from_status(cls, status: StatusIcon) -> "_VerificationStatusFlag":
+        return cls._conv_dict_rev[status]
 
 
 class SourceCodeStat(BaseModel):
@@ -169,14 +288,14 @@ class SourceCodeStat(BaseModel):
     ) -> dict[pathlib.Path, "SourceCodeStat"]:
         d: dict[pathlib.Path, SourceCodeStat] = {}
         statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
-            p: _VerificationStatusFlag.TEST_NOTHING for p in input.files.keys()
+            p: _VerificationStatusFlag.NOTHING for p in input.files.keys()
         }
         verification_results_dict: dict[pathlib.Path, list[VerificationResult]] = {}
 
         for p, r in result.files.items():
             if p not in included_files:
                 continue
-            st = _VerificationStatusFlag.TEST_NOTHING
+            st = _VerificationStatusFlag.NOTHING
             for v in r.verifications:
                 if v.status == ResultStatus.SUCCESS:
                     st |= _VerificationStatusFlag.HAVE_AC
@@ -192,7 +311,7 @@ class SourceCodeStat(BaseModel):
             if not group:
                 continue
 
-            group_status = _VerificationStatusFlag.TEST_NOTHING
+            group_status = _VerificationStatusFlag.NOTHING
 
             for path in group:
                 assert path in statuses
@@ -214,9 +333,11 @@ class SourceCodeStat(BaseModel):
 
                 assert not is_verification or verification_results is not None
 
-                flag_status = group_status
-                if not is_verification:
-                    flag_status |= _VerificationStatusFlag.IS_LIBRARY
+                flag_status = group_status | (
+                    _VerificationStatusFlag.IS_TEST
+                    if is_verification
+                    else _VerificationStatusFlag.IS_LIBRARY
+                )
 
                 d[path] = SourceCodeStat(
                     path=path,
@@ -232,7 +353,6 @@ class SourceCodeStat(BaseModel):
         return d
 
 
-@dataclass
 class RenderJob(ABC):
     def render(self, dst: pathlib.Path):
         file = dst / self.destination_name
@@ -260,32 +380,30 @@ class RenderJob(ABC):
         def plain_content(source: pathlib.Path) -> Optional[RenderJob]:
             if source.suffix == ".md":
                 md = Markdown.load_file(source)
-                if md.front_matter is None or md.front_matter.documentation_of is None:
-                    return MarkdownRenderJob(
-                        source_path=source,
-                        markdown=md,
-                    )
-                return None
+                if md.front_matter and md.front_matter.documentation_of:
+                    return None
             elif source.suffix == ".html":
-                return PlainRenderJob(
-                    source_path=source,
-                    content=source.read_bytes(),
-                )
-            return None
+                pass
+            else:
+                return None
+            return PlainRenderJob(
+                source_path=source,
+                content=source.read_bytes(),
+            )
 
-        markdown_dict = select_markdown(sources)
+        user_markdowns = UserMarkdowns.select_markdown(sources)
 
         logger.info(" %s source files...", len(sources))
 
         class SourceForDebug(BaseModel):
             sources: SortedPathSet
-            markdowns: dict[ForcePosixPath, Markdown]
+            markdowns: UserMarkdowns
 
         logger.debug(
             "source: %s",
             SourceForDebug(
                 sources=sources,
-                markdowns=markdown_dict,
+                markdowns=user_markdowns,
             ),
         )
         with log.group("Resolve dependency"):
@@ -298,7 +416,9 @@ class RenderJob(ABC):
         page_jobs: dict[pathlib.Path, PageRenderJob] = {}
         jobs: list[RenderJob] = []
         for source in sources:
-            markdown = markdown_dict.get(source) or Markdown.make_default(source)
+            markdown = user_markdowns.single.get(source) or Markdown.make_default(
+                source
+            )
             stat = stats_dict.get(source)
             if not stat:
                 plain_job = plain_content(source)
@@ -332,9 +452,33 @@ class RenderJob(ABC):
             page_jobs[pj.source_path] = pj
             jobs.append(pj)
 
+        multis: list[MultiCodePageRenderJob] = []
+        for md in user_markdowns.multi:
+            group_dir = None
+            if config.consolidate:
+                consolidate = config.consolidate
+                group_dir = next(
+                    filter(lambda p: p in consolidate, md.path.parents), None
+                )
+            job = MultiCodePageRenderJob(
+                markdown=md,
+                group_dir=group_dir or md.path.parent,
+                page_jobs=page_jobs,
+            )
+
+            multis.append(job)
+
+            if not md.front_matter.keep_single:
+                for of in md.multi_documentation_of:
+                    pj = page_jobs.get(of)
+                    if pj:
+                        pj.render_link = job.to_render_link()
+
+        jobs.extend(multis)
         jobs.append(
             IndexRenderJob(
                 page_jobs=page_jobs,
+                multicode_docs=multis,
                 index_md=index_md,
             )
         )
@@ -354,9 +498,8 @@ class PlainRenderJob(RenderJob):
         fp.write(self.content)
 
 
-@dataclass
 class MarkdownRenderJob(RenderJob):
-    source_path: ForcePosixPath
+    source_path: pathlib.Path
     markdown: Markdown
 
     @property
@@ -369,29 +512,45 @@ class MarkdownRenderJob(RenderJob):
 
 @dataclass
 class PageRenderJob(RenderJob):
-    source_path: ForcePosixPath
+    source_path: pathlib.Path
     group_dir: pathlib.Path
     markdown: Markdown
     stat: SourceCodeStat
     input: VerificationInput
     result: VerifyCommandResult
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
+    render_link: Optional[RenderLink] = None
+
+    @property
+    def is_verification(self):
+        return self.stat.is_verification
+
+    @property
+    def display(self):
+        return self.front_matter.display or DocumentOutputMode.visible
 
     def __str__(self) -> str:
         return f"PageRenderJob(source_path={repr(self.source_path)},markdown={repr(self.markdown)},stat={repr(self.stat)})"
 
     def validate_front_matter(self):
         front_matter = self.markdown.front_matter
-        if (
-            front_matter
-            and front_matter.documentation_of
-            and self.source_path != pathlib.Path(front_matter.documentation_of)
-        ):
-            raise ValueError(
-                "PageRenderJob.path must equal front_matter.documentation_of."
-            )
+        if front_matter and front_matter.documentation_of:
+            if not isinstance(
+                front_matter.documentation_of, str
+            ) or self.source_path != pathlib.Path(front_matter.documentation_of):
+                raise ValueError(
+                    "PageRenderJob.path must equal front_matter.documentation_of."
+                )
 
-    def to_render_link(self) -> RenderLink:
+    def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
+        if self.render_link:
+            return self.render_link
+        if (
+            self.front_matter.display == DocumentOutputMode.hidden
+            or self.front_matter.display == DocumentOutputMode.never
+            or (index and self.front_matter.display == DocumentOutputMode.no_index)
+        ):
+            return None
         return RenderLink(
             path=self.source_path,
             filename=self.source_path.relative_to(self.group_dir).as_posix(),
@@ -437,32 +596,9 @@ class PageRenderJob(RenderJob):
         ).dump_merged(fp)
 
     def get_page_data(self) -> PageRenderData:
-        def get_link(path: pathlib.Path) -> Optional[RenderLink]:
-            job = self.page_jobs.get(path)
-            if not job:
-                return None
-            if (
-                job.front_matter.display == DocumentOutputMode.hidden
-                or job.front_matter.display == DocumentOutputMode.never
-            ):
-                return None
-            return job.to_render_link()
-
-        depends_on = [
-            link
-            for link in map(get_link, sorted(self.stat.depends_on, key=str))
-            if link
-        ]
-        required_by = [
-            link
-            for link in map(get_link, sorted(self.stat.required_by, key=str))
-            if link
-        ]
-        verified_with = [
-            link
-            for link in map(get_link, sorted(self.stat.verified_with, key=str))
-            if link
-        ]
+        depends_on = _paths_to_render_links(self.stat.depends_on, self.page_jobs)
+        required_by = _paths_to_render_links(self.stat.required_by, self.page_jobs)
+        verified_with = _paths_to_render_links(self.stat.verified_with, self.page_jobs)
 
         attributes = self.stat.file_input.document_attributes.copy()
         problem = next(
@@ -486,6 +622,8 @@ class PageRenderJob(RenderJob):
 
         return PageRenderData(
             path=self.source_path,
+            path_extension=self.source_path.suffix.lstrip("."),
+            title=self.get_title(),
             embedded=embedded,
             timestamp=self.stat.timestamp,
             attributes=attributes,
@@ -504,7 +642,6 @@ class PageRenderJob(RenderJob):
             else None,
             verification_status=self.stat.verification_status,
             is_verification_file=self.stat.is_verification,
-            path_extension=self.source_path.suffix.lstrip("."),
             is_failed=self.stat.verification_status.is_failed,
             document_path=self.markdown.path,
             dependencies=[
@@ -519,8 +656,95 @@ class PageRenderJob(RenderJob):
 
 
 @dataclass
+class MultiCodePageRenderJob(RenderJob):
+    markdown: MultiTargetMarkdown
+    group_dir: pathlib.Path
+    page_jobs: dict[pathlib.Path, "PageRenderJob"]
+
+    def __str__(self) -> str:
+        return f"MultiCodePageRenderJob(multi_documentation_of={repr(self.markdown.multi_documentation_of)})"
+
+    @cached_property
+    def jobs(self) -> list[PageRenderJob]:
+        jobs: list[PageRenderJob] = []
+        for m in self.markdown.multi_documentation_of:
+            job = self.page_jobs.get(m)
+            if not job:
+                continue
+            jobs.append(job)
+        return jobs
+
+    @cached_property
+    def verification_status(self) -> StatusIcon:
+        flag = _VerificationStatusFlag.NOTHING
+        for job in self.jobs:
+            flag |= _VerificationStatusFlag.from_status(job.stat.verification_status)
+        return flag.to_status()
+
+    @property
+    def is_verification(self):
+        return self.verification_status.is_test
+
+    @property
+    def display(self):
+        return self.markdown.front_matter.display or DocumentOutputMode.visible
+
+    @property
+    def destination_name(self) -> pathlib.Path:
+        return self.markdown.path
+
+    def to_render_link(self, *, index: bool = False) -> RenderLink:
+        return RenderLink(
+            path=self.markdown.path.with_suffix(""),
+            filename=self.markdown.path.relative_to(self.group_dir).as_posix(),
+            title=self.markdown.front_matter.title,
+            icon=self.verification_status,
+        )
+
+    def write_to(self, fp: BinaryIO):
+        front_matter = self.markdown.front_matter
+        front_matter.layout = "multidoc"
+        front_matter.data = self.get_page_data()
+        Markdown(
+            path=self.markdown.path,
+            front_matter=front_matter,
+            content=self.markdown.content,
+        ).dump_merged(fp)
+
+    def get_page_data(self) -> MultiCodePageData:
+        codes = [j.get_page_data() for j in self.jobs]
+
+        depends_on_paths = set(
+            chain.from_iterable(j.stat.depends_on for j in self.jobs)
+        )
+        required_by_paths = set(
+            chain.from_iterable(j.stat.required_by for j in self.jobs)
+        )
+        verified_with_paths = set(
+            chain.from_iterable(j.stat.verified_with for j in self.jobs)
+        )
+
+        depends_on = _paths_to_render_links(depends_on_paths, self.page_jobs)
+        required_by = _paths_to_render_links(required_by_paths, self.page_jobs)
+        verified_with = _paths_to_render_links(verified_with_paths, self.page_jobs)
+
+        return MultiCodePageData(
+            path=self.markdown.path,
+            verification_status=self.verification_status,
+            is_failed=any(c.is_failed for c in codes),
+            codes=codes,
+            dependencies=[
+                Dependency(type="Depends on", files=depends_on),
+                Dependency(type="Required by", files=required_by),
+                Dependency(type="Verified with", files=verified_with),
+            ],
+        )
+
+
+@dataclass
 class IndexRenderJob(RenderJob):
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
+    multicode_docs: list[MultiCodePageRenderJob]
     index_md: Optional[Markdown] = None
 
     def __str__(self) -> str:
@@ -553,14 +777,10 @@ class IndexRenderJob(RenderJob):
     def get_page_data(self) -> IndexRenderData:
         library_categories: dict[str, list[RenderLink]] = {}
         verification_categories: dict[str, list[RenderLink]] = {}
-        for job in self.page_jobs.values():
-            if (
-                job.front_matter.display
-                and job.front_matter.display != DocumentOutputMode.visible
-            ):
+        for job in chain.from_iterable([self.page_jobs.values(), self.multicode_docs]):
+            if job.display != DocumentOutputMode.visible:
                 continue
-            stat = job.stat
-            if stat.is_verification:
+            if job.is_verification:
                 categories = verification_categories
             else:
                 categories = library_categories
@@ -575,7 +795,9 @@ class IndexRenderJob(RenderJob):
             if category not in categories:
                 categories[category] = []
 
-            categories[category].append(job.to_render_link())
+            link = job.to_render_link(index=True)
+            if link:
+                categories[category].append(link)
 
         def _build_categories_list(
             categories: dict[str, list[RenderLink]]

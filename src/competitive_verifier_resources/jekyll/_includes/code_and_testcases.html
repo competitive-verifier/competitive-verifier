@@ -1,0 +1,35 @@
+<h2>{%- if include.title -%}{{ include.title }}{%- else -%}Code{% endif %}</h2>
+
+{{ include.header }}
+
+{%- include code.html extension=include.data.pathExtension embedded=include.data.embedded -%}
+
+{%- if include.data.testcases and include.data.testcases.size != 0 -%}
+<h2>Test cases</h2>
+<table class="testcases-table">
+    <thead>
+        <tr>
+            <th class="col col1">Env</th>
+            <th class="col col2">Name</th>
+            <th class="col col3">Status</th>
+            <th class="col col4">Elapsed</th>
+            <th class="col col5">Memory</th>
+        </tr>
+    </thead>
+    <tbody>
+        {%- for case in include.data.testcases -%}
+        <tr>
+            <td class="col col1">{{ case.environment | xml_escape }}</td>
+            <td class="col col2">{{ case.name | xml_escape }}</td>
+            {%- if case.status == "AC" -%}
+            <td class="col col3">{{ site.icons.TEST_ACCEPTED }}&nbsp;AC</td>
+            {%- else -%}
+            <td class="col col3">{{site.icons.TEST_WRONG_ANSWER}}&nbsp;{{ case.status | xml_escape }}</td>
+            {%- endif -%}
+            <td class="col col4">{{ case.elapsed | times: 1000 | round }} ms</td>
+            <td class="col col5">{{ case.memory | round }} MB</td>
+        </tr>
+        {%- endfor -%}
+    </tbody>
+</table>
+{%- endif -%}

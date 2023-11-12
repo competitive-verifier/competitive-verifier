@@ -83,6 +83,7 @@ def data(
                         "timestamp": "1985-12-01 00:29:29.550000-07:00",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
+                        "title": 'Calculate "A + B"',
                     },
                     "documentation_of": "awk/aplusb.awk",
                     "layout": "document",
@@ -566,6 +567,7 @@ def data(
                         "timestamp": "2063-11-24 03:09:17.740000+12:00",
                         "verificationStatus": "TEST_WRONG_ANSWER",
                         "verifiedWith": [],
+                        "title": "Failure-MLE",
                     },
                     "documentation_of": "python/failure.mle.py",
                     "layout": "document",
@@ -699,6 +701,7 @@ def data(
                         "timestamp": "2025-09-24 11:55:03.150000+03:00",
                         "verificationStatus": "TEST_WRONG_ANSWER",
                         "verifiedWith": [],
+                        "title": "Failure-RE",
                     },
                     "documentation_of": "python/failure.re.py",
                     "layout": "document",
@@ -758,6 +761,7 @@ def data(
                         "timestamp": "2006-12-18 06:30:34.720000+10:00",
                         "verificationStatus": "TEST_WRONG_ANSWER",
                         "verifiedWith": [],
+                        "title": "Failure-TLE",
                     },
                     "documentation_of": "python/failure.tle.py",
                     "layout": "document",
@@ -899,6 +903,7 @@ def data(
                         "timestamp": "1987-12-04 11:42:47.800000-07:00",
                         "verificationStatus": "TEST_WRONG_ANSWER",
                         "verifiedWith": [],
+                        "title": "Failure-WA",
                     },
                     "documentation_of": "python/failure.wa.py",
                     "layout": "document",
@@ -967,6 +972,7 @@ def data(
                             "python/failure.tle.py",
                             "python/failure.wa.py",
                         ],
+                        "title": "Lib All failure",
                     },
                     "documentation_of": "python/lib_all_failure.py",
                     "layout": "document",
@@ -1012,6 +1018,7 @@ def data(
                         "timestamp": "2059-10-27 14:16:37.850000-02:00",
                         "verificationStatus": "LIBRARY_ALL_AC",
                         "verifiedWith": ["python/success2.py"],
+                        "title": "Lib All Success",
                     },
                     "documentation_of": "python/lib_all_success.py",
                     "layout": "document",
@@ -1056,6 +1063,7 @@ def data(
                         "timestamp": "1992-02-27 21:48:42.830000-04:00",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": ["python/skip.py"],
+                        "title": "Skip Library",
                     },
                     "documentation_of": "python/lib_skip.py",
                     "layout": "document",
@@ -1108,6 +1116,7 @@ def data(
                             "python/failure.mle.py",
                             "python/success1.py",
                         ],
+                        "title": "Units📏",
                     },
                     "documentation_of": "python/lib_some_failure.py",
                     "layout": "document",
@@ -1403,6 +1412,7 @@ def data(
                         "timestamp": "1972-12-09 20:42:07.860000-01:00",
                         "verificationStatus": "TEST_ACCEPTED",
                         "verifiedWith": [],
+                        "title": "Success1",
                     },
                     "documentation_of": "python/success1.py",
                     "layout": "document",
@@ -1544,6 +1554,7 @@ def data(
                         "timestamp": "1977-03-05 16:44:55.840000-03:00",
                         "verificationStatus": "TEST_ACCEPTED",
                         "verifiedWith": [],
+                        "title": "Success2",
                     },
                     "documentation_of": "python/success2.py",
                     "layout": "document",
@@ -1981,12 +1992,22 @@ def test_hand_docs(
             "display/hidden.txt",
             {
                 "documentPath": "display/hidden.md",
-                "timestamp": "2012-11-04 01:38:54.260000-11:00",
-                "dependsOn": ["display/no-index.txt", "display/visible.txt"],
+                "timestamp": "2015-03-22 15:11:14.830000-04:00",
+                "dependsOn": [
+                    "display/multi-no-keep",
+                    "display/no-index.txt",
+                    "display/visible.txt",
+                ],
                 "requiredBy": ["display/no-index.txt", "display/visible.txt"],
                 "dependencies": [
                     {
                         "files": [
+                            {
+                                "filename": "multi-no-keep.md",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep",
+                                "title": "Multi no keep",
+                            },
                             {
                                 "filename": "no-index.txt",
                                 "icon": "LIBRARY_NO_TESTS",
@@ -2021,6 +2042,7 @@ def test_hand_docs(
                     },
                     {"files": [], "type": "Verified with"},
                 ],
+                "title": "display=hidden",
             },
             {
                 "display": "hidden",
@@ -2031,12 +2053,18 @@ def test_hand_docs(
             "display/no-index.txt",
             {
                 "documentPath": "display/no-index.md",
-                "timestamp": "2012-11-04 01:38:54.260000-11:00",
-                "dependsOn": ["display/visible.txt"],
+                "timestamp": "2015-03-22 15:11:14.830000-04:00",
+                "dependsOn": ["display/multi-no-keep", "display/visible.txt"],
                 "requiredBy": ["display/visible.txt"],
                 "dependencies": [
                     {
                         "files": [
+                            {
+                                "filename": "multi-no-keep.md",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep",
+                                "title": "Multi no keep",
+                            },
                             {
                                 "filename": "visible.txt",
                                 "icon": "LIBRARY_NO_TESTS",
@@ -2059,6 +2087,7 @@ def test_hand_docs(
                     },
                     {"files": [], "type": "Verified with"},
                 ],
+                "title": "display=no-index",
             },
             {
                 "display": "no-index",
@@ -2068,13 +2097,22 @@ def test_hand_docs(
         TextFileData(
             "display/visible.txt",
             {
-                "timestamp": "2012-11-04 01:38:54.260000-11:00",
+                "timestamp": "2015-03-22 15:11:14.830000-04:00",
                 "documentPath": "display/visible.md",
-                "dependsOn": ["display/no-index.txt"],
+                "dependsOn": [
+                    "display/multi-no-keep",
+                    "display/no-index.txt",
+                ],
                 "requiredBy": ["display/no-index.txt"],
                 "dependencies": [
                     {
                         "files": [
+                            {
+                                "filename": "multi-no-keep.md",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep",
+                                "title": "Multi no keep",
+                            },
                             {
                                 "filename": "no-index.txt",
                                 "icon": "LIBRARY_NO_TESTS",
@@ -2097,6 +2135,7 @@ def test_hand_docs(
                     },
                     {"files": [], "type": "Verified with"},
                 ],
+                "title": "display=visible",
             },
             {
                 "display": "visible",
@@ -2143,6 +2182,7 @@ def test_hand_docs(
                 ],
                 "dependsOn": ["txts/utf-16LE.txt"],
                 "requiredBy": ["txts/utf-16LE.txt"],
+                "title": "UTF-16BE",
             },
             {
                 "title": "UTF-16BE",
@@ -2186,6 +2226,7 @@ def test_hand_docs(
                 ],
                 "dependsOn": ["txts/utf-16BE.txt"],
                 "requiredBy": ["txts/utf-16BE.txt"],
+                "title": "UTF-16LE",
             },
             {
                 "title": "UTF-16LE",
@@ -2243,9 +2284,170 @@ def test_hand_docs(
             front_matter, content = split_front_matter_raw(
                 (destination / f"{t.path}.md").read_bytes()
             )
+            assert content == t.content
             assert front_matter
             assert yaml.safe_load(front_matter) == t.front_matter
-            assert content == t.content
+
+    with subtests.test(  # pyright: ignore[reportUnknownMemberType]
+        msg="display/multi.md"
+    ):
+        front_matter, content = split_front_matter_raw(
+            (destination / "display/multi.md").read_bytes()
+        )
+        assert content == b""
+        assert front_matter
+        assert yaml.safe_load(front_matter) == {
+            "data": {
+                "codes": [
+                    {
+                        "attributes": {},
+                        "dependsOn": ["display/multi-no-keep", "display/no-index.txt"],
+                        "embedded": [{"code": "", "name": "default"}],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "display/visible.txt",
+                        "pathExtension": "txt",
+                        "requiredBy": ["display/no-index.txt"],
+                        "timestamp": "2015-03-22 15:11:14.830000-04:00",
+                        "title": "display=visible",
+                        "verificationStatus": "LIBRARY_NO_TESTS",
+                        "verifiedWith": [],
+                    },
+                    {
+                        "attributes": {},
+                        "dependsOn": ["display/multi-no-keep", "display/visible.txt"],
+                        "embedded": [{"code": "", "name": "default"}],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "display/no-index.txt",
+                        "pathExtension": "txt",
+                        "requiredBy": ["display/visible.txt"],
+                        "timestamp": "2015-03-22 15:11:14.830000-04:00",
+                        "title": "display=no-index",
+                        "verificationStatus": "LIBRARY_NO_TESTS",
+                        "verifiedWith": [],
+                    },
+                    {
+                        "attributes": {},
+                        "dependsOn": [
+                            "display/multi-no-keep",
+                            "display/no-index.txt",
+                            "display/visible.txt",
+                        ],
+                        "embedded": [{"code": "", "name": "default"}],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "display/hidden.txt",
+                        "pathExtension": "txt",
+                        "requiredBy": ["display/no-index.txt", "display/visible.txt"],
+                        "timestamp": "2015-03-22 15:11:14.830000-04:00",
+                        "title": "display=hidden",
+                        "verificationStatus": "LIBRARY_NO_TESTS",
+                        "verifiedWith": [],
+                    },
+                ],
+                "dependencies": [
+                    {
+                        "files": [
+                            {
+                                "filename": "multi-no-keep.md",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/multi-no-keep",
+                                "title": "Multi no keep",
+                            },
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Depends on",
+                    },
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "isFailed": False,
+                "path": "display/multi.md",
+                "verificationStatus": "LIBRARY_NO_TESTS",
+            },
+            "documentation_of": ["visible.txt", "no-index.txt", "hidden.txt"],
+            "keep_single": True,
+            "layout": "multidoc",
+            "title": "Multi",
+        }
+
+    with subtests.test(  # pyright: ignore[reportUnknownMemberType]
+        msg="display/multi-no-keep.txt"
+    ):
+        front_matter, content = split_front_matter_raw(
+            (destination / "display/multi-no-keep.txt.md").read_bytes()
+        )
+        assert content == b""
+        assert front_matter
+        assert yaml.safe_load(front_matter) == {
+            "data": {
+                "attributes": {},
+                "dependencies": [
+                    {"files": [], "type": "Depends on"},
+                    {
+                        "files": [
+                            {
+                                "filename": "no-index.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/no-index.txt",
+                                "title": "display=no-index",
+                            },
+                            {
+                                "filename": "visible.txt",
+                                "icon": "LIBRARY_NO_TESTS",
+                                "path": "display/visible.txt",
+                                "title": "display=visible",
+                            },
+                        ],
+                        "type": "Required by",
+                    },
+                    {"files": [], "type": "Verified with"},
+                ],
+                "dependsOn": [],
+                "documentPath": "display/multi-no-keep.txt",
+                "embedded": [{"code": "no-keep", "name": "default"}],
+                "isFailed": False,
+                "isVerificationFile": False,
+                "path": "display/multi-no-keep.txt",
+                "pathExtension": "txt",
+                "requiredBy": ["display/no-index.txt", "display/visible.txt"],
+                "timestamp": "1985-10-06 07:40:56.730000+11:00",
+                "verificationStatus": "LIBRARY_NO_TESTS",
+                "verifiedWith": [],
+            },
+            "display": "hidden",
+            "documentation_of": "display/multi-no-keep.txt",
+            "layout": "document",
+            "redirect_to": "/display/multi-no-keep",
+        }
 
     def check_index_md():
         front_matter, content = split_front_matter_raw(
@@ -2340,6 +2542,18 @@ def test_hand_docs(
                             {
                                 "name": "display/",
                                 "pages": [
+                                    {
+                                        "filename": "multi.md",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/multi",
+                                        "title": "Multi",
+                                    },
+                                    {
+                                        "filename": "multi-no-keep.md",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/multi-no-keep",
+                                        "title": "Multi no keep",
+                                    },
                                     {
                                         "filename": "visible.txt",
                                         "icon": "LIBRARY_NO_TESTS",
