@@ -1998,6 +1998,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep2.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep2.txt",
+                                "title": "Multi no keep $2$",
                             }
                         ],
                         "type": "Depends on",
@@ -2008,6 +2009,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep2.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep2.txt",
+                                "title": "Multi no keep $2$",
                             },
                             {
                                 "filename": "no-index.txt",
@@ -2065,14 +2067,18 @@ def test_hand_docs(
                     },
                     {"files": [], "type": "Verified with"},
                 ],
+                "documentPath": "display/multi-no-keep2.md",
                 "dependsOn": ["display/multi-no-keep.txt"],
                 "requiredBy": ["display/multi-no-keep.txt"],
                 "timestamp": "2017-12-03 09:56:02.050000-07:00",
+                "title": "Multi no keep $2$",
             },
             {
                 "display": "no-index",
                 "redirect_to": "/display/multi-no-keep",
+                "title": "Multi no keep $2$",
             },
+            b"\nKeep $2^x$",
         ),
         TextFileData(
             "display/hidden.txt",
@@ -2384,10 +2390,42 @@ def test_hand_docs(
                 "codes": [
                     {
                         "attributes": {},
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "multi-no-keep.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/multi-no-keep.txt",
+                                    },
+                                    {
+                                        "filename": "no-index.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/no-index.txt",
+                                        "title": "display=no-index",
+                                    },
+                                ],
+                                "type": "Depends on",
+                            },
+                            {
+                                "files": [
+                                    {
+                                        "filename": "no-index.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/no-index.txt",
+                                        "title": "display=no-index",
+                                    }
+                                ],
+                                "type": "Required by",
+                            },
+                            {"files": [], "type": "Verified with"},
+                        ],
                         "dependsOn": [
                             "display/multi-no-keep.txt",
                             "display/no-index.txt",
                         ],
+                        "documentContent": "# Visible",
+                        "documentPath": "display/visible.md",
                         "embedded": [{"code": "", "name": "default"}],
                         "isFailed": False,
                         "isVerificationFile": False,
@@ -2401,10 +2439,42 @@ def test_hand_docs(
                     },
                     {
                         "attributes": {},
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "multi-no-keep.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/multi-no-keep.txt",
+                                    },
+                                    {
+                                        "filename": "visible.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/visible.txt",
+                                        "title": "display=visible",
+                                    },
+                                ],
+                                "type": "Depends on",
+                            },
+                            {
+                                "files": [
+                                    {
+                                        "filename": "visible.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/visible.txt",
+                                        "title": "display=visible",
+                                    }
+                                ],
+                                "type": "Required by",
+                            },
+                            {"files": [], "type": "Verified with"},
+                        ],
                         "dependsOn": [
                             "display/multi-no-keep.txt",
                             "display/visible.txt",
                         ],
+                        "documentContent": "",
+                        "documentPath": "display/no-index.md",
                         "embedded": [{"code": "", "name": "default"}],
                         "isFailed": False,
                         "isVerificationFile": False,
@@ -2418,11 +2488,55 @@ def test_hand_docs(
                     },
                     {
                         "attributes": {},
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "multi-no-keep.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/multi-no-keep.txt",
+                                    },
+                                    {
+                                        "filename": "no-index.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/no-index.txt",
+                                        "title": "display=no-index",
+                                    },
+                                    {
+                                        "filename": "visible.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/visible.txt",
+                                        "title": "display=visible",
+                                    },
+                                ],
+                                "type": "Depends on",
+                            },
+                            {
+                                "files": [
+                                    {
+                                        "filename": "no-index.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/no-index.txt",
+                                        "title": "display=no-index",
+                                    },
+                                    {
+                                        "filename": "visible.txt",
+                                        "icon": "LIBRARY_NO_TESTS",
+                                        "path": "display/visible.txt",
+                                        "title": "display=visible",
+                                    },
+                                ],
+                                "type": "Required by",
+                            },
+                            {"files": [], "type": "Verified with"},
+                        ],
                         "dependsOn": [
                             "display/multi-no-keep.txt",
                             "display/no-index.txt",
                             "display/visible.txt",
                         ],
+                        "documentContent": "",
+                        "documentPath": "display/hidden.md",
                         "embedded": [{"code": "", "name": "default"}],
                         "isFailed": False,
                         "isVerificationFile": False,
@@ -2505,6 +2619,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep2.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep2.txt",
+                                "title": "Multi no keep $2$",
                             },
                         ],
                         "type": "Depends on",
@@ -2515,6 +2630,7 @@ def test_hand_docs(
                                 "filename": "multi-no-keep2.txt",
                                 "icon": "LIBRARY_NO_TESTS",
                                 "path": "display/multi-no-keep2.txt",
+                                "title": "Multi no keep $2$",
                             },
                             {
                                 "filename": "no-index.txt",

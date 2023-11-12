@@ -22,12 +22,13 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.util import read_text_normalized
+from competitive_verifier.util import read_text_normalized, normalize_bytes_text
 
 from .config import ConfigYaml
 from .front_matter import DocumentOutputMode, FrontMatter, Markdown
 from .render_data import (
     CategorizedIndex,
+    CodePageData,
     Dependency,
     EmbeddedCode,
     EnvTestcaseResult,
@@ -708,7 +709,13 @@ class MultiCodePageRenderJob(RenderJob):
         ).dump_merged(fp)
 
     def get_page_data(self) -> MultiCodePageData:
-        codes = [j.get_page_data() for j in self.jobs]
+        codes = [
+            CodePageData.model_validate(
+                {"document_content": normalize_bytes_text(j.markdown.content)}
+                | j.get_page_data().model_dump(),
+            )
+            for j in self.jobs
+        ]
 
         depends_on_paths = set(
             chain.from_iterable(j.stat.depends_on for j in self.jobs)
