@@ -174,7 +174,6 @@ class UserMarkdowns:
                         )
                 else:
                     s = Markdown(
-                        path=source,
                         content=b"",
                         front_matter=FrontMatter(
                             redirect_to=redirect_to,
