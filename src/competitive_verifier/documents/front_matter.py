@@ -4,7 +4,7 @@ from typing import Annotated, BinaryIO, Literal, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
-from competitive_verifier.models import ForcePosixPath, DocumentOutputMode
+from competitive_verifier.models import DocumentOutputMode, ForcePosixPath
 
 from .render_data import IndexRenderData, MultiCodePageData, PageRenderData
 

@@ -1,8 +1,8 @@
 from .file import (
     AddtionalSource,
+    DocumentOutputMode,
     VerificationFile,
     VerificationInput,
-    DocumentOutputMode,
 )
 from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
 from .result import (

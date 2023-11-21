@@ -1,5 +1,5 @@
-import pathlib
 import enum
+import pathlib
 from functools import cached_property
 from logging import getLogger
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union

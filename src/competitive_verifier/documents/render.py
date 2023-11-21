@@ -13,13 +13,13 @@ from pydantic import BaseModel
 import competitive_verifier.git as git
 import competitive_verifier.log as log
 from competitive_verifier.models import (
+    DocumentOutputMode,
     ForcePosixPath,
     ProblemVerification,
     ResultStatus,
     SortedPathSet,
     VerificationFile,
     VerificationInput,
-    DocumentOutputMode,
     VerificationResult,
     VerifyCommandResult,
 )
