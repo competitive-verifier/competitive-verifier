@@ -187,6 +187,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 | `TLE` | specify the TLE time in seconds | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
 | `TITLE` | specify the title of source  | |
+| `DISPLAY` | specify the document output mode | `visible`, `no-index`, `hidden`, `never` |
 
 ## Generating Documentation
 

@@ -1,4 +1,9 @@
-from .file import AddtionalSource, VerificationFile, VerificationInput
+from .file import (
+    AddtionalSource,
+    VerificationFile,
+    VerificationInput,
+    DocumentOutputMode,
+)
 from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
 from .result import (
     FileResult,
@@ -40,4 +45,5 @@ __all__ = [
     "Verification",
     "VerificationResult",
     "VerificationParams",
+    "DocumentOutputMode",
 ]

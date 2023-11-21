@@ -1026,6 +1026,39 @@ def data(
                 },
             ),
             MarkdownData(
+                path="python/lib_hidden.py.md",
+                front_matter={
+                    "data": {
+                        "attributes": {"DISPLAY": "hidden", "links": []},
+                        "dependencies": [
+                            {"files": [], "type": "Depends on"},
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": [],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("python/lib_hidden.py").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "python/lib_hidden.py",
+                        "pathExtension": "py",
+                        "requiredBy": [],
+                        "timestamp": "2050-01-17 11:34:55.500000-12:00",
+                        "verificationStatus": "LIBRARY_NO_TESTS",
+                        "verifiedWith": [],
+                    },
+                    "display": "hidden",
+                    "documentation_of": "python/lib_hidden.py",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
                 path="python/lib_skip.py.md",
                 content=b"\n# Skip",
                 front_matter={

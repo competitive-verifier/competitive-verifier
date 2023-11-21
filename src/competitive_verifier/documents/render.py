@@ -19,13 +19,14 @@ from competitive_verifier.models import (
     SortedPathSet,
     VerificationFile,
     VerificationInput,
+    DocumentOutputMode,
     VerificationResult,
     VerifyCommandResult,
 )
 from competitive_verifier.util import normalize_bytes_text, read_text_normalized
 
 from .config import ConfigYaml
-from .front_matter import DocumentOutputMode, FrontMatter, Markdown
+from .front_matter import FrontMatter, Markdown
 from .render_data import (
     CategorizedIndex,
     CodePageData,
@@ -427,12 +428,6 @@ class RenderJob(ABC):
                 elif source.suffix != ".md":
                     logger.info("Skip file: %s", source.as_posix())
                 continue
-            if (
-                markdown.front_matter
-                and markdown.front_matter.display == DocumentOutputMode.never
-            ):
-                continue
-
             group_dir = None
             if config.consolidate:
                 consolidate = config.consolidate
@@ -449,6 +444,10 @@ class RenderJob(ABC):
                 result=result,
                 page_jobs=page_jobs,
             )
+
+            if pj.display == DocumentOutputMode.never:
+                continue
+
             page_jobs[pj.source_path] = pj
             jobs.append(pj)
 
@@ -485,7 +484,7 @@ class RenderJob(ABC):
         return jobs
 
 
-@dataclass
+@dataclass(frozen=True)
 class PlainRenderJob(RenderJob):
     source_path: ForcePosixPath
     content: bytes
@@ -510,7 +509,7 @@ class MarkdownRenderJob(RenderJob):
         self.markdown.dump_merged(fp)
 
 
-@dataclass
+@dataclass(frozen=True)
 class PageRenderJob(RenderJob):
     source_path: pathlib.Path
     group_dir: pathlib.Path
@@ -543,27 +542,17 @@ class PageRenderJob(RenderJob):
 
     def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
         if (
-            self.front_matter.display == DocumentOutputMode.hidden
-            or self.front_matter.display == DocumentOutputMode.never
-            or (index and self.front_matter.display == DocumentOutputMode.no_index)
+            self.display == DocumentOutputMode.hidden
+            or self.display == DocumentOutputMode.never
+            or (index and self.display == DocumentOutputMode.no_index)
         ):
             return None
         return RenderLink(
             path=self.source_path,
             filename=self.source_path.relative_to(self.group_dir).as_posix(),
-            title=self.get_title(),
+            title=self.front_matter.title,
             icon=self.stat.verification_status,
         )
-
-    def get_title(self):
-        front_matter = self.front_matter
-        if front_matter.title:
-            return front_matter.title
-
-        input_file = self.input.files.get(self.source_path)
-        if input_file and input_file.title:
-            return input_file.title
-        return None
 
     @cached_property
     def front_matter(self) -> FrontMatter:
@@ -574,6 +563,13 @@ class PageRenderJob(RenderJob):
         front_matter.documentation_of = self.source_path.as_posix()
         if not front_matter.layout:
             front_matter.layout = "document"
+
+        input_file = self.input.files.get(self.source_path)
+        if not front_matter.title and (input_file and input_file.title):
+            front_matter.title = input_file.title
+        if not front_matter.display and (input_file and input_file.display):
+            front_matter.display = input_file.display
+
         return front_matter
 
     @property
@@ -584,8 +580,6 @@ class PageRenderJob(RenderJob):
         self.validate_front_matter()
         front_matter = self.front_matter
         front_matter.data = self.get_page_data()
-        if not front_matter.title:
-            front_matter.title = self.get_title()
         Markdown(
             path=self.source_path,
             front_matter=front_matter,
@@ -620,7 +614,7 @@ class PageRenderJob(RenderJob):
         return PageRenderData(
             path=self.source_path,
             path_extension=self.source_path.suffix.lstrip("."),
-            title=self.get_title(),
+            title=self.front_matter.title,
             embedded=embedded,
             timestamp=self.stat.timestamp,
             attributes=attributes,
@@ -652,7 +646,7 @@ class PageRenderJob(RenderJob):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class MultiCodePageRenderJob(RenderJob):
     markdown: MultiTargetMarkdown
     group_dir: pathlib.Path

@@ -1,4 +1,5 @@
 import pathlib
+import enum
 from functools import cached_property
 from logging import getLogger
 from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
@@ -23,6 +24,24 @@ class _DependencyGraph(NamedTuple):
     depends_on: _DependencyEdges
     required_by: _DependencyEdges
     verified_with: _DependencyEdges
+
+
+class DocumentOutputMode(str, enum.Enum):
+    visible = "visible"
+    """The document will be output. (default)
+    """
+
+    hidden = "hidden"
+    """The document will be output but will not linked from other pages.
+    """
+
+    no_index = "no-index"
+    """The document will be output but will not linked from index page.
+    """
+
+    never = "never"
+    """The document will be never output.
+    """
 
 
 class AddtionalSource(BaseModel):
@@ -78,6 +97,18 @@ class VerificationFile(BaseModel):
         if not title:
             title = self.document_attributes.get("document_title")
         return title
+
+    @property
+    def display(self) -> Optional[DocumentOutputMode]:
+        """The document output mode as a attributes"""
+
+        d = self.document_attributes.get("DISPLAY")
+        if not isinstance(d, str):
+            return None
+        try:
+            return DocumentOutputMode[d.lower()]
+        except KeyError:
+            return None
 
     @property
     def verification_list(self) -> list[Verification]:

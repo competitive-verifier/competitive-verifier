@@ -1,33 +1,14 @@
-import enum
 import pathlib
 from typing import Annotated, BinaryIO, Literal, Optional, Union
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
-from competitive_verifier.models import ForcePosixPath
+from competitive_verifier.models import ForcePosixPath, DocumentOutputMode
 
 from .render_data import IndexRenderData, MultiCodePageData, PageRenderData
 
 _separator: bytes = b"---"
-
-
-class DocumentOutputMode(str, enum.Enum):
-    visible = "visible"
-    """The document will be output. (default)
-    """
-
-    hidden = "hidden"
-    """The document will be output but will not linked from other pages.
-    """
-
-    no_index = "no-index"
-    """The document will be output but will not linked from index page.
-    """
-
-    never = "never"
-    """The document will be never output.
-    """
 
 
 class FrontMatter(BaseModel):

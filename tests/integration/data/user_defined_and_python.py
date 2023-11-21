@@ -120,6 +120,12 @@ class UserDefinedAndPythonData(IntegrationData):
                         "document_attributes": {"TITLE": "Units📏", "links": []},
                         "additonal_sources": [],
                     },
+                    "python/lib_hidden.py": {
+                        "additonal_sources": [],
+                        "dependencies": ["python/lib_hidden.py"],
+                        "document_attributes": {"DISPLAY": "hidden", "links": []},
+                        "verification": [],
+                    },
                     "python/lib_skip.py": {
                         "dependencies": ["python/lib_skip.py"],
                         "verification": [],

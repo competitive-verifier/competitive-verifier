@@ -188,6 +188,7 @@ func TestHelloWorld(t *testing.T) {
 | `TLE` | TLE までの秒数を指定します | |
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
 | `TITLE` | ドキュメントのタイトルを指定します | |
+| `DISPLAY` | ドキュメントの表示方法を指定します。 | `visible`, `no-index`, `hidden`, `never` |
 
 ## ドキュメント生成
 
