@@ -137,7 +137,7 @@
             '  uses: actions/setup-java@v3',
             '  with:',
             '    distribution: "temurin"',
-            '    java-version: "11"',
+            '    java-version: "17"',
           )
         }
         if (useGo) {

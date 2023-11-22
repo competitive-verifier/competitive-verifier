@@ -89,7 +89,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "11"
+          java-version: "17"
 
       - name: Verify
         uses: competitive-verifier/actions/verify@v1
