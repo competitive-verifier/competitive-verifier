@@ -2273,6 +2273,16 @@ def test_hand_docs(
             },
             b"# Visible",
         ),
+        TextFileData(
+            "display/no-index2.txt",
+            {"attributes": {"DISPLAY": "no-index"}},
+            {"display": "no-index"},
+        ),
+        TextFileData(
+            "display/no-index3.txt",
+            {"attributes": {"DISPLAY": "no_index"}},
+            {"display": "no-index"},
+        ),
         TextFileData("txts/utf-8👍.txt"),
         TextFileData(
             "txts/utf-16BE.txt",

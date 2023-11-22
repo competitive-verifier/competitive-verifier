@@ -106,7 +106,7 @@ class VerificationFile(BaseModel):
         if not isinstance(d, str):
             return None
         try:
-            return DocumentOutputMode[d.lower()]
+            return DocumentOutputMode[d.lower().replace("-", "_")]
         except KeyError:
             return None
 
