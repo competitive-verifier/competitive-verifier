@@ -19,6 +19,18 @@
                 "display/visible.txt"
             ]
         },
+        "display/no-index2.txt": {
+            "document_attributes": {
+                "DISPLAY": "no-index"
+            },
+            "dependencies": []
+        },
+        "display/no-index3.txt": {
+            "document_attributes": {
+                "DISPLAY": "no_index"
+            },
+            "dependencies": []
+        },
         "display/never.txt": {
             "dependencies": [
                 "display/multi-no-keep.txt",
