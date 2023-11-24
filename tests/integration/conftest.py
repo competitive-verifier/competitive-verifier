@@ -5,6 +5,8 @@ import pathlib
 import shutil
 from typing import Optional
 
+import onlinejudge.dispatch
+import onlinejudge.service.library_checker as library_checker
 import pytest
 import requests
 from pytest_mock import MockerFixture
@@ -15,6 +17,7 @@ from .data.integration_data import IntegrationData
 from .data.java import JavaData
 from .data.rust import RustWithoutConfigData
 from .data.user_defined_and_python import UserDefinedAndPythonData
+from .mock import MockLibraryCheckerProblem, MockVerifyCommandResult
 from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
 
@@ -106,6 +109,25 @@ def user_defined_and_python_data(
     set_config_dir: ConfigDirSetter,
 ) -> UserDefinedAndPythonData:
     return UserDefinedAndPythonData(monkeypatch, set_config_dir, file_paths)
+
+
+@pytest.fixture
+def mock_verification(mocker: MockerFixture):
+    mocker.patch(
+        "competitive_verifier.verify.verifier.VerifyCommandResult",
+        side_effect=MockVerifyCommandResult,
+    )
+
+    mocker.patch.object(
+        onlinejudge.dispatch,
+        "problems",
+        new=[
+            MockLibraryCheckerProblem
+            if p == library_checker.LibraryCheckerProblem
+            else p
+            for p in onlinejudge.dispatch.problems
+        ],
+    )
 
 
 @pytest.fixture(
