@@ -271,15 +271,14 @@ class BaseVerifier(InputContainer):
         Returns:
             tuple[ResultStatus, Optional[str]]: (Result, error_message)
         """
-        error_message: Optional[str] = None
         if not verification.run_compile_command():
-            error_message = "Failed to compile"
+            return ResultStatus.FAILURE, "Failed to compile"
 
         rs = verification.run(self)
 
         if rs.status != ResultStatus.SUCCESS:
-            error_message = "Failed to test"
-        return (rs, error_message)
+            return rs, "Failed to test"
+        return rs, None
 
     def skippable_results(self) -> dict[pathlib.Path, FileResult]:
         """

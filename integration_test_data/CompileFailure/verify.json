@@ -1,0 +1,22 @@
+{
+    "$schema": "../../schema/verify_files.schema.json",
+    "files": {
+        "verify.json": {
+            "verification": [
+                {
+                    "name": "Compile Failure",
+                    "type": "problem",
+                    "compile": "false",
+                    "command": "false",
+                    "problem": "https://judge.yosupo.jp/problem/aplusb"
+                },
+                {
+                    "name": "Command Failure",
+                    "type": "problem",
+                    "command": "false",
+                    "problem": "https://judge.yosupo.jp/problem/aplusb"
+                }
+            ]
+        }
+    }
+}
