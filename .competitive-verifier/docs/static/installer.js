@@ -264,42 +264,42 @@
 
       let actionYaml = `name: verify
 on:
-push:
-  branches:
-    - "${branch}"
-workflow_dispatch:
+  push:
+    branches:
+      - "${branch}"
+  workflow_dispatch:
 `
 
       if (inputPrevResult.checked) {
         actionYaml += `    inputs:
-    ignore_prev_result:
-      type: boolean
-      default: false
+      ignore_prev_result:
+        type: boolean
+        default: false
 `
       }
 
       actionYaml += `
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-contents: read
-pages: write
-id-token: write
+  contents: read
+  pages: write
+  id-token: write
 
 # Allow one concurrent deployment
 concurrency:
-group: "pages"
-cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-setup:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Set up competitive-verifier
-      uses: competitive-verifier/actions/setup@v1
-      with:
-        cache-pip: true
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          cache-pip: true
 
 `
 
@@ -308,74 +308,73 @@ setup:
       }
 
       actionYaml += `
-    - name: Upload verify_files.json
-      uses: competitive-verifier/actions/upload-verify-artifact@v1
-      with:
-        file: verify_files.json
+      - name: Upload verify_files.json
+        uses: competitive-verifier/actions/upload-verify-artifact@v1
+        with:
+          file: verify_files.json
 
-    - name: Check bundled
-      id: test-bundled
-      run: |
-        echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
-    - name: Upload bundled
-      uses: actions/upload-artifact@v3
-      if: steps.test-bundled.outputs.count > 0
-      with:
-        name: Bundled-\${{ runner.os }}
-        path: .competitive-verifier/bundled
-        retention-days: 1
+      - name: Check bundled
+        id: test-bundled
+        run: |
+          echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
+      - name: Upload bundled
+        uses: actions/upload-artifact@v3
+        if: steps.test-bundled.outputs.count > 0
+        with:
+          name: Bundled-\${{ runner.os }}
+          path: .competitive-verifier/bundled
+          retention-days: 1
 
-verify:
-  runs-on: ubuntu-latest
-  needs: [setup]
-  env:
-    SPLIT_SIZE: "${parseInt(inputParallelSize.value.trim())}"
-  strategy:
-    matrix:
-      # prettier-ignore
-      index:
-        [${parallelIndexMatrix(parallelSize)}]
-  steps:
-    - uses: actions/checkout@v4
+  verify:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    env:
+      SPLIT_SIZE: "${parseInt(inputParallelSize.value.trim())}"
+    strategy:
+      matrix:
+        # prettier-ignore
+        index:
+          [${parallelIndexMatrix(parallelSize)}]
+    steps:
+      - uses: actions/checkout@v4
 `
       if (inputPrevResult.checked) {
         actionYaml += `        with:
-        fetch-depth: 2147483647
+          fetch-depth: 2147483647
 
-    - name: Restore cached results
-      if: \${{ ! inputs.ignore_prev_result }}
-      uses: actions/cache/restore@v3
-      id: restore-cached-results
-      with:
-        path: \${{github.workspace}}/merged-result.json
-        key: \${{ runner.os }}-verify-result-\${{ github.sha }}
-        restore-keys: |
-          \${{ runner.os }}-verify-result-
+      - name: Restore cached results
+        if: \${{ ! inputs.ignore_prev_result }}
+        uses: actions/cache/restore@v3
+        id: restore-cached-results
+        with:
+          path: \${{github.workspace}}/merged-result.json
+          key: \${{ runner.os }}-verify-result-\${{ github.sha }}
+          restore-keys: |
+            \${{ runner.os }}-verify-result-
 `
       }
 
       actionYaml += `
-    - name: Download verify_files.json
-      uses: competitive-verifier/actions/download-verify-artifact@v1
+      - name: Download verify_files.json
+        uses: competitive-verifier/actions/download-verify-artifact@v1
 
-    - name: Set up competitive-verifier
-      uses: competitive-verifier/actions/setup@v1
-      with:
-        cache-pip: true
-
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          cache-pip: true
 `
       if (initializeForVerification.length > 0) {
         actionYaml += stepDefinition(["      # Initialize your own environment for verification.", ...initializeForVerification]) + "\n"
       }
 
       actionYaml += `
-    - name: Verify
-      uses: competitive-verifier/actions/verify@v1
-      with:
-        destination: \${{runner.temp}}/result.json
-        split-size: \${{ env.SPLIT_SIZE }}
-        split-index: \${{ matrix.index }}
-        timeout: 1800
+      - name: Verify
+        uses: competitive-verifier/actions/verify@v1
+        with:
+          destination: \${{runner.temp}}/result.json
+          split-size: \${{ env.SPLIT_SIZE }}
+          split-index: \${{ matrix.index }}
+          timeout: 1800
 `
       if (inputPrevResult.checked) {
         actionYaml += `          prev-result: \${{ steps.restore-cached-results.outputs.cache-hit && 'merged-result.json' || ''}}
@@ -383,114 +382,114 @@ verify:
       }
       if (inputHasYukicoder.checked) {
         actionYaml += `        env:
-        YUKICODER_TOKEN: \${{secrets.YUKICODER_TOKEN}}
+          YUKICODER_TOKEN: \${{secrets.YUKICODER_TOKEN}}
 `
       }
 
 
       actionYaml += `
-    - name: Upload result artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Result-\${{ runner.os }}-\${{ matrix.index }}
-        path: \${{runner.temp}}/result.json
-        retention-days: 1
+      - name: Upload result artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Result-\${{ runner.os }}-\${{ matrix.index }}
+          path: \${{runner.temp}}/result.json
+          retention-days: 1
 
-docs-and-check:
-  runs-on: ubuntu-latest
-  needs: [verify]
-  outputs:
-    upload-pages: \${{steps.upload-pages.outcome == 'success'}}
-  steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2147483647
-
-    - name: Download verify_files.json and all artifacts
-      id: all-artifacts
-      uses: competitive-verifier/actions/download-verify-artifact@v1
-      with:
-        download-all: true
-        artifact-root: .artifacts/
-
-    - name: Extract bundled
-      shell: bash
-      run: |
-        rm -rf .competitive-verifier/bundled
-        if test -d "$SRCDIR"; then
-          mkdir -p .competitive-verifier/
-          mv "$SRCDIR" .competitive-verifier/bundled
-        else
-          echo "$SRCDIR does not exist."
-        fi
-      env:
-        SRCDIR: .artifacts/Bundled-\${{ runner.os }}
-
-    - name: Set up competitive-verifier
-      uses: competitive-verifier/actions/setup@v1
-      with:
-        cache-pip: true
+  docs-and-check:
+    runs-on: ubuntu-latest
+    needs: [verify]
+    outputs:
+      upload-pages: \${{steps.upload-pages.outcome == 'success'}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2147483647
+  
+      - name: Download verify_files.json and all artifacts
+        id: all-artifacts
+        uses: competitive-verifier/actions/download-verify-artifact@v1
+        with:
+          download-all: true
+          artifact-root: .artifacts/
+  
+      - name: Extract bundled
+        shell: bash
+        run: |
+          rm -rf .competitive-verifier/bundled
+          if test -d "$SRCDIR"; then
+            mkdir -p .competitive-verifier/
+            mv "$SRCDIR" .competitive-verifier/bundled
+          else
+            echo "$SRCDIR does not exist."
+          fi
+        env:
+          SRCDIR: .artifacts/Bundled-\${{ runner.os }}
+  
+      - name: Set up competitive-verifier
+        uses: competitive-verifier/actions/setup@v1
+        with:
+          cache-pip: true
 `
 
       if (inputPrevResult.checked) {
         actionYaml += `
-    - name: Merge results
-      uses: competitive-verifier/actions/merge-result@v1
-      with:
-        result-files: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
-        output-path: \${{github.workspace}}/merged-result.json
-    - name: Docs
-      uses: competitive-verifier/actions/docs@v1
-      with:
-        verify-result: \${{github.workspace}}/merged-result.json
-        destination: _jekyll
-        write-summary: true
-    - name: Save result
-      uses: actions/cache/save@v3
-      with:
-        path: \${{github.workspace}}/merged-result.json
-        key: \${{ runner.os }}-verify-result-\${{ github.sha }}
+      - name: Merge results
+        uses: competitive-verifier/actions/merge-result@v1
+        with:
+          result-files: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
+          output-path: \${{github.workspace}}/merged-result.json
+      - name: Docs
+        uses: competitive-verifier/actions/docs@v1
+        with:
+          verify-result: \${{github.workspace}}/merged-result.json
+          destination: _jekyll
+          write-summary: true
+      - name: Save result
+        uses: actions/cache/save@v3
+        with:
+          path: \${{github.workspace}}/merged-result.json
+          key: \${{ runner.os }}-verify-result-\${{ github.sha }}
 `
       } else {
         actionYaml += `
-    - name: Docs
-      uses: competitive-verifier/actions/docs@v1
-      with:
-        verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
-        destination: _jekyll
-        write-summary: true
+      - name: Docs
+        uses: competitive-verifier/actions/docs@v1
+        with:
+          verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
+          destination: _jekyll
+          write-summary: true
 `
       }
 
       actionYaml += `
-    - name: Setup Pages
-      uses: actions/configure-pages@v3
-    - name: Build with Jekyll
-      uses: actions/jekyll-build-pages@v1
-      with:
-        source: _jekyll
-        destination: _site
-    - name: Upload artifact
-      id: upload-pages
-      uses: actions/upload-pages-artifact@v2
-      with:
-        path: _site
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: _jekyll
+          destination: _site
+      - name: Upload artifact
+        id: upload-pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: _site
 
-    - name: Check
-      uses: competitive-verifier/actions/check@v1
-      with:
-        verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
-deploy:
-  if: (success() || failure()) && github.ref == 'refs/heads/${branch}' && needs.docs-and-check.outputs.upload-pages == 'true'
-  needs: docs-and-check
-  environment:
-    name: github-pages
-    url: \${{ steps.deployment.outputs.page_url }}
-  runs-on: ubuntu-latest
-  steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v2
+      - name: Check
+        uses: competitive-verifier/actions/check@v1
+        with:
+          verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
+  deploy:
+    if: (success() || failure()) && github.ref == 'refs/heads/${branch}' && needs.docs-and-check.outputs.upload-pages == 'true'
+    needs: docs-and-check
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 `
 
       return actionYaml.trim()
