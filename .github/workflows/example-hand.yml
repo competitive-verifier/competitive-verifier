@@ -28,7 +28,7 @@ jobs:
         id: create-hash
         run: |
           echo "hash=${{ hashFiles('**/*verify-files.json') }}" > $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: setup-${{ runner.os }}
           path: ${{ env.artifact-path }}
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: setup-${{ runner.os }}
           path: ${{ needs.setup.outputs.artifact-path }}
@@ -54,7 +54,7 @@ jobs:
             verifier-${{ runner.os }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install competitive-verifier
@@ -71,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: setup-${{ runner.os }}
           path: ${{ needs.setup.outputs.artifact-path }}
@@ -85,7 +85,7 @@ jobs:
             verifier-${{ runner.os }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install competitive-verifier

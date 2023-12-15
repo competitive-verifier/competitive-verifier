@@ -134,7 +134,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Java)',
-            '  uses: actions/setup-java@v3',
+            '  uses: actions/setup-java@v4',
             '  with:',
             '    distribution: "temurin"',
             '    java-version: "17"',
@@ -144,7 +144,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Go)',
-            '  uses: actions/setup-go@v4',
+            '  uses: actions/setup-go@v5',
           )
         }
         if (useRuby) {
@@ -167,7 +167,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Haskell)',
-            '  uses: haskell/actions/setup@v2',
+            '  uses: haskell-actions/setup@v2',
           )
         }
         if (useRust) {
@@ -318,7 +318,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-\${{ runner.os }}
@@ -389,7 +389,7 @@ jobs:
 
       actionYaml += `
       - name: Upload result artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Result-\${{ runner.os }}-\${{ matrix.index }}
           path: \${{runner.temp}}/result.json
@@ -463,7 +463,7 @@ jobs:
 
       actionYaml += `
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
@@ -489,7 +489,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v3
 `
 
       return actionYaml.trim()
