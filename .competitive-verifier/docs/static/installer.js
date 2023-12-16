@@ -220,7 +220,7 @@
             '  env:',
             '    VERIFY_CSPROJ: YourVerify.csproj',
             '- name: cs-resolve',
-            '  uses: competitive-verifier/actions/cs-resolve@v1',
+            '  uses: competitive-verifier/actions/cs-resolve@v2',
             '  with:',
             '    output-path: verify_files.json',
             '    msbuild-properties: Configuration=Release',
@@ -237,7 +237,7 @@
         if (ojResolve) {
           initializeForResolving.push(
             '- name: oj-resolve',
-            '  uses: competitive-verifier/actions/oj-resolve@v1',
+            '  uses: competitive-verifier/actions/oj-resolve@v2',
             '  with:',
             '    output-path: verify_files.json',
             '    # Specify patterns',
@@ -251,7 +251,7 @@
         if (useCpp) {
           initializeForResolving.push(
             '- name: parse-doxygen',
-            '  uses: competitive-verifier/actions/parse-doxygen@v1',
+            '  uses: competitive-verifier/actions/parse-doxygen@v2',
             '  with:',
             '    verify-files: verify_files.json',
           )
@@ -297,7 +297,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 
@@ -309,7 +309,7 @@ jobs:
 
       actionYaml += `
       - name: Upload verify_files.json
-        uses: competitive-verifier/actions/upload-verify-artifact@v1
+        uses: competitive-verifier/actions/upload-verify-artifact@v2
         with:
           file: verify_files.json
 
@@ -356,10 +356,10 @@ jobs:
 
       actionYaml += `
       - name: Download verify_files.json
-        uses: competitive-verifier/actions/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v2
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 `
@@ -369,7 +369,7 @@ jobs:
 
       actionYaml += `
       - name: Verify
-        uses: competitive-verifier/actions/verify@v1
+        uses: competitive-verifier/actions/verify@v2
         with:
           destination: \${{runner.temp}}/result.json
           split-size: \${{ env.SPLIT_SIZE }}
@@ -407,7 +407,7 @@ jobs:
   
       - name: Download verify_files.json and all artifacts
         id: all-artifacts
-        uses: competitive-verifier/actions/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v2
         with:
           download-all: true
           artifact-root: .artifacts/
@@ -426,7 +426,7 @@ jobs:
           SRCDIR: .artifacts/Bundled-\${{ runner.os }}
   
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 `
@@ -434,12 +434,12 @@ jobs:
       if (inputPrevResult.checked) {
         actionYaml += `
       - name: Merge results
-        uses: competitive-verifier/actions/merge-result@v1
+        uses: competitive-verifier/actions/merge-result@v2
         with:
           result-files: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
           output-path: \${{github.workspace}}/merged-result.json
       - name: Docs
-        uses: competitive-verifier/actions/docs@v1
+        uses: competitive-verifier/actions/docs@v2
         with:
           verify-result: \${{github.workspace}}/merged-result.json
           destination: _jekyll
@@ -453,7 +453,7 @@ jobs:
       } else {
         actionYaml += `
       - name: Docs
-        uses: competitive-verifier/actions/docs@v1
+        uses: competitive-verifier/actions/docs@v2
         with:
           verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
           destination: _jekyll
@@ -476,7 +476,7 @@ jobs:
           path: _site
 
       - name: Check
-        uses: competitive-verifier/actions/check@v1
+        uses: competitive-verifier/actions/check@v2
         with:
           verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
   deploy:
