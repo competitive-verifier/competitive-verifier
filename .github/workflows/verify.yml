@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
@@ -34,7 +34,7 @@ jobs:
         run: cp examples/external/verify_files.json verify.json
 
       - name: Verify
-        uses: competitive-verifier/actions/verify@v1
+        uses: competitive-verifier/actions/verify@v2
         with:
           verify-files: verify.json
           destination: result.json
@@ -42,7 +42,7 @@ jobs:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
       - name: Upload result artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Result-${{ runner.os }}-external
           path: |
@@ -90,7 +90,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: .artifacts/
 
@@ -102,19 +102,19 @@ jobs:
           cp -Tr .artifacts/Bundled-*/ .competitive-verifier/bundled/
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - name: Merge json
-        uses: competitive-verifier/actions/merge-verify-files@v1
+        uses: competitive-verifier/actions/merge-verify-files@v2
         with:
           verify-files: .artifacts/Result-*/verify.json
           output-path: ${{ runner.temp }}/verify.json
 
       - name: Docs
-        uses: competitive-verifier/actions/docs@v1
+        uses: competitive-verifier/actions/docs@v2
         with:
           verify-files: ${{ runner.temp }}/verify.json
           verify-result: .artifacts/Result-*/result.json
@@ -123,7 +123,7 @@ jobs:
           write-summary: true
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
@@ -136,7 +136,7 @@ jobs:
           path: _site
 
       - name: Check
-        uses: competitive-verifier/actions/check@v1
+        uses: competitive-verifier/actions/check@v2
         with:
           verify-result: .artifacts/Result-*/result.json
   deploy:
@@ -149,4 +149,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v3

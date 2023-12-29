@@ -36,13 +36,13 @@ jobs:
           GO111MODULE: "off"
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
           package: git+https://github.com/${{ github.repository }}.git@${{ github.ref }}
 
       - name: oj-resolve
-        uses: competitive-verifier/actions/oj-resolve@v1
+        uses: competitive-verifier/actions/oj-resolve@v2
         with:
           include: ${{ inputs.verify-directory }}
           exclude: integration_test_data/
@@ -53,19 +53,19 @@ jobs:
 
       - name: parse-doxygen
         if: ${{ inputs.name == 'cpp' }}
-        uses: competitive-verifier/actions/parse-doxygen@v1
+        uses: competitive-verifier/actions/parse-doxygen@v2
         with:
           verify-files: verify.json
 
       - name: Install dependencies (Java)
         if: ${{ inputs.name == 'java' }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
 
       - name: Install dependencies (Go)
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         if: ${{ inputs.name == 'go' }}
         with:
           # go.mod などもないのでキャッシュできない
@@ -76,7 +76,7 @@ jobs:
         if: ${{ inputs.name == 'nim' }}
 
       - name: Install dependencies (Haskell)
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup@v2
         if: ${{ inputs.name == 'haskell' }}
 
       - name: Set up Rust (1.42.0)
@@ -87,7 +87,7 @@ jobs:
           targets: x86_64-unknown-linux-gnu
 
       - name: Verify
-        uses: competitive-verifier/actions/verify@v1
+        uses: competitive-verifier/actions/verify@v2
         with:
           verify-files: verify.json
           destination: result.json
@@ -96,7 +96,7 @@ jobs:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
       - name: Upload result artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Result-${{ runner.os }}-${{ inputs.name }}
           path: |
@@ -109,7 +109,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-${{ runner.os }}-${{ inputs.name }}

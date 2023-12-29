@@ -150,7 +150,7 @@ func TestHelloWorld(t *testing.T) {
           GO111MODULE: "off"
 
       - name: oj-resolve
-        uses: competitive-verifier/actions/oj-resolve@v1
+        uses: competitive-verifier/actions/oj-resolve@v2
         with:
           include: examples
           exclude: |

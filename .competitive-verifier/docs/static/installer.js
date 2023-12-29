@@ -134,7 +134,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Java)',
-            '  uses: actions/setup-java@v3',
+            '  uses: actions/setup-java@v4',
             '  with:',
             '    distribution: "temurin"',
             '    java-version: "17"',
@@ -144,7 +144,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Go)',
-            '  uses: actions/setup-go@v4',
+            '  uses: actions/setup-go@v5',
           )
         }
         if (useRuby) {
@@ -167,7 +167,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Haskell)',
-            '  uses: haskell/actions/setup@v2',
+            '  uses: haskell-actions/setup@v2',
           )
         }
         if (useRust) {
@@ -220,7 +220,7 @@
             '  env:',
             '    VERIFY_CSPROJ: YourVerify.csproj',
             '- name: cs-resolve',
-            '  uses: competitive-verifier/actions/cs-resolve@v1',
+            '  uses: competitive-verifier/actions/cs-resolve@v2',
             '  with:',
             '    output-path: verify_files.json',
             '    msbuild-properties: Configuration=Release',
@@ -237,7 +237,7 @@
         if (ojResolve) {
           initializeForResolving.push(
             '- name: oj-resolve',
-            '  uses: competitive-verifier/actions/oj-resolve@v1',
+            '  uses: competitive-verifier/actions/oj-resolve@v2',
             '  with:',
             '    output-path: verify_files.json',
             '    # Specify patterns',
@@ -251,7 +251,7 @@
         if (useCpp) {
           initializeForResolving.push(
             '- name: parse-doxygen',
-            '  uses: competitive-verifier/actions/parse-doxygen@v1',
+            '  uses: competitive-verifier/actions/parse-doxygen@v2',
             '  with:',
             '    verify-files: verify_files.json',
           )
@@ -297,7 +297,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 
@@ -309,7 +309,7 @@ jobs:
 
       actionYaml += `
       - name: Upload verify_files.json
-        uses: competitive-verifier/actions/upload-verify-artifact@v1
+        uses: competitive-verifier/actions/upload-verify-artifact@v2
         with:
           file: verify_files.json
 
@@ -318,7 +318,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-\${{ runner.os }}
@@ -356,10 +356,10 @@ jobs:
 
       actionYaml += `
       - name: Download verify_files.json
-        uses: competitive-verifier/actions/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v2
 
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 `
@@ -369,7 +369,7 @@ jobs:
 
       actionYaml += `
       - name: Verify
-        uses: competitive-verifier/actions/verify@v1
+        uses: competitive-verifier/actions/verify@v2
         with:
           destination: \${{runner.temp}}/result.json
           split-size: \${{ env.SPLIT_SIZE }}
@@ -389,7 +389,7 @@ jobs:
 
       actionYaml += `
       - name: Upload result artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Result-\${{ runner.os }}-\${{ matrix.index }}
           path: \${{runner.temp}}/result.json
@@ -407,7 +407,7 @@ jobs:
   
       - name: Download verify_files.json and all artifacts
         id: all-artifacts
-        uses: competitive-verifier/actions/download-verify-artifact@v1
+        uses: competitive-verifier/actions/download-verify-artifact@v2
         with:
           download-all: true
           artifact-root: .artifacts/
@@ -426,7 +426,7 @@ jobs:
           SRCDIR: .artifacts/Bundled-\${{ runner.os }}
   
       - name: Set up competitive-verifier
-        uses: competitive-verifier/actions/setup@v1
+        uses: competitive-verifier/actions/setup@v2
         with:
           cache-pip: true
 `
@@ -434,12 +434,12 @@ jobs:
       if (inputPrevResult.checked) {
         actionYaml += `
       - name: Merge results
-        uses: competitive-verifier/actions/merge-result@v1
+        uses: competitive-verifier/actions/merge-result@v2
         with:
           result-files: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
           output-path: \${{github.workspace}}/merged-result.json
       - name: Docs
-        uses: competitive-verifier/actions/docs@v1
+        uses: competitive-verifier/actions/docs@v2
         with:
           verify-result: \${{github.workspace}}/merged-result.json
           destination: _jekyll
@@ -453,7 +453,7 @@ jobs:
       } else {
         actionYaml += `
       - name: Docs
-        uses: competitive-verifier/actions/docs@v1
+        uses: competitive-verifier/actions/docs@v2
         with:
           verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
           destination: _jekyll
@@ -463,7 +463,7 @@ jobs:
 
       actionYaml += `
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
@@ -476,7 +476,7 @@ jobs:
           path: _site
 
       - name: Check
-        uses: competitive-verifier/actions/check@v1
+        uses: competitive-verifier/actions/check@v2
         with:
           verify-result: \${{ steps.all-artifacts.outputs.artifacts-root }}/Result-*/result.json
   deploy:
@@ -489,7 +489,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v3
 `
 
       return actionYaml.trim()
