@@ -54,7 +54,7 @@ jobs:
             verifier-${{ runner.os }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
       - name: Install competitive-verifier
@@ -85,7 +85,7 @@ jobs:
             verifier-${{ runner.os }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
       - name: Install competitive-verifier
