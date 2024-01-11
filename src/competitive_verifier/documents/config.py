@@ -48,6 +48,7 @@ class ConfigYaml(BaseModel):
     basedir: Optional[RelativeDirectoryPath] = None
     action_name: Optional[str] = None
     branch_name: Optional[str] = None
+    workflow_name: Optional[str] = None
 
     exclude: Optional[list[str]] = None
     description: str = (
@@ -115,6 +116,8 @@ def load_config_yml(docs_dir: pathlib.Path) -> ConfigYaml:
         config_yml.action_name = github.env.get_workflow_name()
     if not config_yml.branch_name:
         config_yml.branch_name = github.env.get_ref_name()
+    if not config_yml.workflow_name:
+        config_yml.workflow_name = github.env.get_workflow_filename()
 
     if not config_yml.basedir:
         git_root = git.get_root_directory().resolve()

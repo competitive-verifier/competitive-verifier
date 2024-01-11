@@ -1,5 +1,6 @@
 import os
 import pathlib
+import re
 import uuid
 from contextlib import contextmanager
 from typing import Optional, TextIO
@@ -41,6 +42,17 @@ class env:
     @classmethod
     def get_workflow_name(cls) -> Optional[str]:
         return os.getenv("GITHUB_WORKFLOW")
+
+    @classmethod
+    def get_workflow_ref(cls) -> Optional[str]:
+        return os.getenv("GITHUB_WORKFLOW_REF")
+
+    @classmethod
+    def get_workflow_filename(cls) -> Optional[str]:
+        ref = cls.get_workflow_ref()
+        if not ref:
+            return None
+        return re.sub(r".*/([^/]+\.yml)@.*$", r"\1", ref)
 
     @classmethod
     def get_output_path(cls) -> Optional[pathlib.Path]:

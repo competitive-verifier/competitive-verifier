@@ -1,3 +1,3 @@
 <h1>{{ site.title }}</h1>
-<a href="{{ site.github.repository_url }}/actions"><img src="{{ site.github.repository_url }}/workflows/{{ site.action_name | default: "verify" }}/badge.svg" /></a>
+<a href="{{ site.github.repository_url }}/actions"><img src="{{ site.github.repository_url }}/actions/workflows/{{ site.workflow_name | default: "verify.yml" }}/badge.svg" /></a>
 <a href="{{ site.github.repository_url }}"><img src="https://img.shields.io/github/last-commit/{{ site.github.owner_name }}/{{ site.github.repository_name }}" /></a>
