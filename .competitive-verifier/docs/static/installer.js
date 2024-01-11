@@ -613,7 +613,7 @@ jobs:
       const badgeVerifyLink = document.getElementById('badge-verify-link')
       const badgeVerifyImg = document.getElementById('badge-verify-img')
       const link = repoRoot + "/actions"
-      const img = repoRoot + "/workflows/verify/badge.svg"
+      const img = repoRoot + "/actions/workflows/verify.yml/badge.svg"
       badgeVerifyRaw.value = `[![Actions Status](${img})](${link})`
       badgeVerifyLink.href = link
       badgeVerifyImg.src = img
