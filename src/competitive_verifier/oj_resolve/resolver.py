@@ -13,8 +13,8 @@ import competitive_verifier.git as git
 import competitive_verifier.oj as oj
 from competitive_verifier.models import (
     AddtionalSource,
-    ConstVerification,
     CommandVerification,
+    ConstVerification,
     ProblemVerification,
     ResultStatus,
     Verification,
