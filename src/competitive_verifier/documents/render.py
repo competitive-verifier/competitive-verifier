@@ -344,10 +344,12 @@ class RenderJob(ABC):
             self.write_to(fp)
 
     @abstractproperty
-    def destination_name(self) -> pathlib.Path: ...
+    def destination_name(self) -> pathlib.Path:
+        ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO): ...
+    def write_to(self, fp: BinaryIO):
+        ...
 
     @staticmethod
     def enumerate_jobs(

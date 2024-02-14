@@ -18,18 +18,16 @@ class IntegrationData(ABC):
         set_config_dir: ConfigDirSetter,
         file_paths: FilePaths,
     ) -> None:
-        self.config_dir_path = set_config_dir(self.config_dir_name)
+        self.config_dir_path = set_config_dir(self.config_dir_name())
         self.file_paths = file_paths
-        self.targets_path = file_paths.root / self.input_name
+        self.targets_path = file_paths.root / self.input_name()
         monkeypatch.chdir(self.targets_path)
 
     @classmethod
-    @property
     def input_name(cls) -> str:
         return cls.__name__
 
     @classmethod
-    @property
     def config_dir_name(cls) -> str:
         return cls.__name__
 

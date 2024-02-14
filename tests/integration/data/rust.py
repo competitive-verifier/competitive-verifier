@@ -20,7 +20,6 @@ class RustWithoutConfigData(IntegrationData):
         return bool(shutil.which("rustc"))
 
     @classmethod
-    @property
     def input_name(cls) -> str:
         return "RustData"
 
