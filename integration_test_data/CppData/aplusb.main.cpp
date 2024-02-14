@@ -12,7 +12,7 @@ int main()
     {
         auto a = rnd() % 1000000007;
         auto b = rnd() % 1000000007;
-        cout << (a + b) << " " << aplusb(a, b) << endl;
+        // cout << (a + b) << " " << aplusb(a, b) << endl;
         assert((a + b) == aplusb(a, b));
     }
 }

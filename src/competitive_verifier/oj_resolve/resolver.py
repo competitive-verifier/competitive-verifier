@@ -140,6 +140,7 @@ class OjResolver:
                         / "standalone"
                         / hashlib.md5(path.as_posix().encode("utf-8")).hexdigest()
                     )
+                    tempdir.mkdir(parents=True, exist_ok=True)
                     yield CommandVerification(
                         name=env.name,
                         command=env.get_execute_command(

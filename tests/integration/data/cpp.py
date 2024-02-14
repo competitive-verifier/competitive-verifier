@@ -152,15 +152,15 @@ class CppWithoutConfigData(IntegrationData):
                     "newest": True,
                     "verifications": [
                         {
-                            "elapsed": 5858.0,
-                            "last_execution_time": "1988-02-08T10:31:33.400000+03:00",
-                            "status": "failure",
+                            "elapsed": 9633.0,
+                            "last_execution_time": "2047-05-09T09:21:33.150000+03:00",
+                            "status": "success",
                             "verification_name": "g++",
                         },
                         {
-                            "elapsed": 6873.0,
-                            "last_execution_time": "2003-06-13T13:42:41.530000-09:00",
-                            "status": "failure",
+                            "elapsed": 2064.0,
+                            "last_execution_time": "2004-04-16T13:27:48.340000-03:00",
+                            "status": "success",
                             "verification_name": "clang++",
                         },
                     ],
