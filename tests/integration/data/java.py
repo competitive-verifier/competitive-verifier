@@ -23,10 +23,10 @@ class JavaData(IntegrationData):
         return dict(
             {
                 "files": {
-                    "examples/Aplutb_test.java": {
+                    "examples/Aplusb_test.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -35,8 +35,8 @@ class JavaData(IntegrationData):
                         },
                         "verification": [
                             {
-                                "command": "java examples.Aplutb_test",
-                                "compile": f"javac {self.targets_path/'examples/Aplutb_test.java'}",
+                                "command": "java examples.Aplusb_test",
+                                "compile": f"javac {self.targets_path/'examples/Aplusb_test.java'}",
                                 "name": "Java",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
                                 "type": "problem",
@@ -46,7 +46,7 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -56,7 +56,7 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld_test.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -80,7 +80,7 @@ class JavaData(IntegrationData):
     def expected_verify_result(self) -> dict[str, Any]:
         return {
             "files": {
-                "examples/Aplutb_test.java": {
+                "examples/Aplusb_test.java": {
                     "newest": True,
                     "verifications": [
                         {
