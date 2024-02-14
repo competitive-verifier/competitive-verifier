@@ -491,7 +491,7 @@ class Bundler:
                 self.result_lines.append(line)
 
             # #if #endif の対応が壊れてたら諦める
-            last_index = i + 1  # pyright: ignore[reportUnboundVariable]
+            last_index = i + 1  # pyright: ignore[reportPossiblyUnboundVariable]
 
             if preprocess_if_nest != 0:
                 raise BundleErrorAt(

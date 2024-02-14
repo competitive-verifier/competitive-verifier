@@ -62,7 +62,7 @@ class RenderLink(RenderBaseModel):
     title: Optional[str] = None
 
     @model_validator(mode="after")
-    def validate_title(self) -> "RenderLink":
+    def validate_title(self: "RenderLink") -> "RenderLink":
         if self.path.as_posix() == self.title:
             self.title = None
         return self
