@@ -23,9 +23,42 @@ class JavaData(IntegrationData):
         return dict(
             {
                 "files": {
+                    "examples/Aplusb.java": {
+                        "additonal_sources": [],
+                        "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
+                            "examples/HelloWorld.java",
+                            "examples/HelloWorld_test.java",
+                        ],
+                        "document_attributes": {},
+                        "verification": [],
+                    },
+                    "examples/Aplusb_main.java": {
+                        "additonal_sources": [],
+                        "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
+                            "examples/HelloWorld.java",
+                            "examples/HelloWorld_test.java",
+                        ],
+                        "document_attributes": {"STANDALONE": ""},
+                        "verification": [
+                            {
+                                "command": "java " "examples.Aplusb_main",
+                                "compile": f"javac {self.targets_path/'examples/Aplusb_main.java'}",
+                                "name": "Java",
+                                "type": "command",
+                            }
+                        ],
+                    },
                     "examples/Aplusb_test.java": {
                         "additonal_sources": [],
                         "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
                             "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
@@ -46,6 +79,8 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld.java": {
                         "additonal_sources": [],
                         "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
                             "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
@@ -56,6 +91,8 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld_test.java": {
                         "additonal_sources": [],
                         "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
                             "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
@@ -80,13 +117,23 @@ class JavaData(IntegrationData):
     def expected_verify_result(self) -> dict[str, Any]:
         return {
             "files": {
+                "examples/Aplusb_main.java": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 1000.0,
+                            "last_execution_time": "2046-12-04T14:37:36.530000-09:00",
+                            "status": "success",
+                            "verification_name": "Java",
+                        }
+                    ],
+                },
                 "examples/Aplusb_test.java": {
                     "newest": True,
                     "verifications": [
                         {
-                            "elapsed": 5673.0,
-                            "heaviest": 12.0,
-                            "last_execution_time": "2029-07-26T03:21:57.010000-11:00",
+                            "elapsed": 3276.0,
+                            "last_execution_time": "2048-01-01T16:10:21.640000+02:00",
                             "slowest": 567.0,
                             "status": "success",
                             "testcases": [

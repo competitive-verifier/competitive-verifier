@@ -136,7 +136,7 @@ class OjResolver:
 
                 if attr.get("STANDALONE") is not None:
                     tempdir = (
-                        oj.get_cache_directory()
+                        config.get_cache_dir()
                         / "standalone"
                         / hashlib.md5(path.as_posix().encode("utf-8")).hexdigest()
                     )
