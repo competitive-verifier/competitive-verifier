@@ -117,7 +117,7 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 
 #### Unit test
 
-If you have unit test, you can use `UNITTEST` attribute.
+If you have unit tests, you can use `UNITTEST` attribute. [helloworld_test.go]({{ "/examples/go/helloworld_test.go" | relative_url }})
 
 {% raw %}
 ```go
@@ -160,6 +160,34 @@ func TestHelloWorld(t *testing.T) {
           GOTEST_RESULT: ${{ steps.go-unittest.outcome == 'success' }}
 ```
 {% endraw %}
+
+specify in the unit test file executed by the main function
+
+If you have unit tests executed by the main function like C++, you can use `STANDALONE` attribute. [bit_minus_random_test.cpp]({{ "/examples/cpp/bit_minus_random_test.cpp" | relative_url }})
+
+{% raw %}
+```cpp
+#define STANDALONE
+#include <iostream>
+#include <cassert>
+#include <random>
+#include "examples/cpp/bit_minus.hpp"
+using namespace std;
+
+int main()
+{
+    mt19937 rnd(random_device{}());
+    for (size_t i = 0; i < 100000; i++)
+    {
+        auto num = rnd();
+        cout << num << " " << bit_minus(num) << endl;
+        assert(-(int64_t)num == bit_minus(num));
+    }
+    return 0;
+}
+```
+{% endraw %}
+
 ### csharp-resolver: C# settings
 
 Use [https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver).
@@ -183,6 +211,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 |Macro name|Description|Remarks|
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
+| `STANDALONE` | specify in the unit test file executed by the main function | |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
 | `TLE` | specify the TLE time in seconds | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
