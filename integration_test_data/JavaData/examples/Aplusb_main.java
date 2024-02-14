@@ -1,7 +1,7 @@
 // competitive-verifier: STANDALONE
-package examples.java;
+package examples;
 import java.util.Random;
-import examples.java.Aplusb;
+import examples.Aplusb;
 
 public class Aplusb_main {
     public static void main(String[] args) {

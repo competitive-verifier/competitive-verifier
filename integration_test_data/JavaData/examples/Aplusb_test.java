@@ -1,7 +1,7 @@
 // competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
-package examples.java;
+package examples;
 import java.util.Scanner;
-import examples.java.Aplusb;
+import examples.Aplusb;
 
 public class Aplusb_test {
     public static void main(String[] args) {
