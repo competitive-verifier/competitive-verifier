@@ -20,7 +20,6 @@ class CppWithoutConfigData(IntegrationData):
         return bool(shutil.which("g++") and shutil.which("clang++"))
 
     @classmethod
-    @property
     def input_name(cls) -> str:
         return "CppData"
 

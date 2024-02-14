@@ -20,7 +20,6 @@ class GoWithoutConfigData(IntegrationData):
         return bool(shutil.which("go"))
 
     @classmethod
-    @property
     def input_name(cls) -> str:
         return "GoData"
 
@@ -127,7 +126,6 @@ class GoWithConfigData(GoWithoutConfigData):
         super().__init__(monkeypatch, set_config_dir, file_paths)
 
     @classmethod
-    @property
     def input_name(cls) -> str:
         return "GoData"
 

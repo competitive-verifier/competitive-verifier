@@ -124,7 +124,7 @@ def run(
             if data is None:
                 continue
             name = sample.name
-            table = {}
+            table: dict[str, str] = {}
             table["i"] = str(i + 1)
             table["e"] = ext
             table["n"] = name

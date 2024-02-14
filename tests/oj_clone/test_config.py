@@ -154,7 +154,13 @@ def test_oj_resolve_config_load(toml: str, expected: Any):
         assert OjVerifyConfig.load(fp).model_dump(exclude_none=True) == expected
 
 
-test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails]]] = {
+class ErrorDetailsWithUrl(ErrorDetails):
+    url: str
+
+
+test_oj_resolve_config_load_error_params: dict[
+    str, tuple[str, list[ErrorDetailsWithUrl]]
+] = {
     "cpp_no_CXX": (
         textwrap.dedent(
             r"""
@@ -169,7 +175,7 @@ test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails
                 "loc": ("languages", "cpp", "environments", 0, "CXX"),
                 "msg": "Field required",
                 "type": "missing",
-                "url": "https://errors.pydantic.dev/2.4/v/missing",
+                "url": "https://errors.pydantic.dev/2.6/v/missing",
             },
         ],
     ),
@@ -192,7 +198,7 @@ test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails
                 "loc": ("languages", "java", "execute"),
                 "msg": 'Value error, You cannot overwrite "execute" for Java language',
                 "type": "value_error",
-                "url": "https://errors.pydantic.dev/2.4/v/value_error",
+                "url": "https://errors.pydantic.dev/2.6/v/value_error",
             },
             {
                 "ctx": {
@@ -204,7 +210,7 @@ test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails
                 "loc": ("languages", "java", "compile"),
                 "msg": 'Value error, You cannot overwrite "compile" for Java language',
                 "type": "value_error",
-                "url": "https://errors.pydantic.dev/2.4/v/value_error",
+                "url": "https://errors.pydantic.dev/2.6/v/value_error",
             },
         ],
     ),
@@ -228,7 +234,7 @@ test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails
                 "loc": ("languages", "awk", "execute"),
                 "msg": "Field required",
                 "type": "missing",
-                "url": "https://errors.pydantic.dev/2.4/v/missing",
+                "url": "https://errors.pydantic.dev/2.6/v/missing",
             },
         ],
     ),
@@ -253,14 +259,14 @@ test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails
                 "loc": ("languages", "awk", "execute"),
                 "msg": "Field required",
                 "type": "missing",
-                "url": "https://errors.pydantic.dev/2.4/v/missing",
+                "url": "https://errors.pydantic.dev/2.6/v/missing",
             },
             {
                 "input": {},
                 "loc": ("languages", "txt", "execute"),
                 "msg": "Field required",
                 "type": "missing",
-                "url": "https://errors.pydantic.dev/2.4/v/missing",
+                "url": "https://errors.pydantic.dev/2.6/v/missing",
             },
         ],
     ),
