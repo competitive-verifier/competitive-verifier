@@ -117,6 +117,7 @@ _IGNORE = "IGNORE"
 _IGNORE_IF_CLANG = "IGNORE_IF_CLANG"
 _IGNORE_IF_GCC = "IGNORE_IF_GCC"
 _ERROR = "ERROR"
+_STANDALONE = "STANDALONE"
 
 
 # config.toml example:
@@ -193,7 +194,6 @@ class CPlusPlusLanguage(Language):
         comments = special_comments.list_special_comments(path.resolve())
         if comments:
             attributes.update(comments)
-
         else:
             # use old-style if special comments not found
             # #define PROBLEM "https://..." の形式は複数 environments との相性がよくない。あと遅い
@@ -209,6 +209,9 @@ class CPlusPlusLanguage(Language):
 
                 # convert macros to attributes
                 if _IGNORE not in macros:
+                    if _STANDALONE in macros:
+                        attributes[_STANDALONE] = ""
+
                     for key in [_PROBLEM, _ERROR]:
                         if all_ignored:
                             # the first non-ignored environment
