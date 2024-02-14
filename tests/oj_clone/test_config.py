@@ -154,7 +154,13 @@ def test_oj_resolve_config_load(toml: str, expected: Any):
         assert OjVerifyConfig.load(fp).model_dump(exclude_none=True) == expected
 
 
-test_oj_resolve_config_load_error_params: dict[str, tuple[str, list[ErrorDetails]]] = {
+class ErrorDetailsWithUrl(ErrorDetails):
+    url: str
+
+
+test_oj_resolve_config_load_error_params: dict[
+    str, tuple[str, list[ErrorDetailsWithUrl]]
+] = {
     "cpp_no_CXX": (
         textwrap.dedent(
             r"""
