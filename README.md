@@ -5,16 +5,21 @@
 
 The library is inspired by [online-judge-tools/verification-helper](https://github.com/online-judge-tools/verification-helper).
 
-If you want more info, see [DESIGN.md](DESIGN.md).
+- [Getting Started](https://competitive-verifier.github.io/competitive-verifier/installer.html) / [日本語](https://competitive-verifier.github.io/competitive-verifier/installer.ja.html)
+- [Reference](https://competitive-verifier.github.io/competitive-verifier/document.html) / [日本語](https://competitive-verifier.github.io/competitive-verifier/document.ja.html)
+- [DESIGN(日本語)](https://competitive-verifier.github.io/competitive-verifier/DESIGN)
+
 
 ## Get started
 
-### GitHub Actions
+### Use in GitHub Actions
 
 See [GitHub Pages](https://competitive-verifier.github.io/competitive-verifier/installer.html).
 [日本語](https://competitive-verifier.github.io/competitive-verifier/installer.ja.html)
 
-### Install(local)
+### Use in local
+
+#### Install(local)
 
 Needs Python 3.9 or greater.
 
@@ -28,7 +33,7 @@ Or
 pip install git+https://github.com/competitive-verifier/competitive-verifier.git@latest
 ```
 
-#### Migrate from verification-helper
+**Migrate from verification-helper**
 
 Run this script.
 
@@ -36,7 +41,7 @@ Run this script.
 competitive-verifier migrate
 ```
 
-## Development
+## Development for contributors
 
 ```sh
 pip install -U poetry
