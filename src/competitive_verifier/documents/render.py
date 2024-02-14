@@ -215,58 +215,40 @@ class _VerificationStatusFlag(enum.Flag):
     TEST_WA = IS_TEST | HAVE_WA
     TEST_SKIP = IS_TEST | HAVE_SKIP
 
-    @classmethod
-    @property
-    def _conv_dict(cls) -> dict["_VerificationStatusFlag", StatusIcon]:
-        try:
-            d: dict["_VerificationStatusFlag", StatusIcon] = cls._conv_dict_attr
-        except AttributeError:
-            d = {
-                cls.LIBRARY_AC_WA_SKIP: StatusIcon.LIBRARY_SOME_WA,
-                cls.LIBRARY_AC_WA: StatusIcon.LIBRARY_SOME_WA,
-                cls.LIBRARY_AC_SKIP: StatusIcon.LIBRARY_PARTIAL_AC,
-                cls.LIBRARY_AC: StatusIcon.LIBRARY_ALL_AC,
-                cls.LIBRARY_WA_SKIP: StatusIcon.LIBRARY_ALL_WA,
-                cls.LIBRARY_WA: StatusIcon.LIBRARY_ALL_WA,
-                cls.LIBRARY_SKIP: StatusIcon.LIBRARY_NO_TESTS,
-                cls.LIBRARY_NOTHING: StatusIcon.LIBRARY_NO_TESTS,
-                cls.TEST_AC_WA_SKIP: StatusIcon.TEST_WRONG_ANSWER,
-                cls.TEST_AC_WA: StatusIcon.TEST_WRONG_ANSWER,
-                cls.TEST_AC_SKIP: StatusIcon.TEST_WAITING_JUDGE,
-                cls.TEST_AC: StatusIcon.TEST_ACCEPTED,
-                cls.TEST_WA_SKIP: StatusIcon.TEST_WRONG_ANSWER,
-                cls.TEST_WA: StatusIcon.TEST_WRONG_ANSWER,
-                cls.TEST_SKIP: StatusIcon.TEST_WAITING_JUDGE,
-                cls.TEST_NOTHING: StatusIcon.TEST_WAITING_JUDGE,
-            }
-            cls._conv_dict_attr = d
-        return d
-
-    @classmethod
-    @property
-    def _conv_dict_rev(cls) -> dict[StatusIcon, "_VerificationStatusFlag"]:
-        try:
-            d: dict[StatusIcon, "_VerificationStatusFlag"] = cls._conv_dict_rev_attr
-        except AttributeError:
-            d = {
-                StatusIcon.LIBRARY_SOME_WA: cls.LIBRARY_AC_WA,
-                StatusIcon.LIBRARY_PARTIAL_AC: cls.LIBRARY_AC_SKIP,
-                StatusIcon.LIBRARY_ALL_AC: cls.LIBRARY_AC,
-                StatusIcon.LIBRARY_ALL_WA: cls.LIBRARY_WA,
-                StatusIcon.LIBRARY_NO_TESTS: cls.LIBRARY_NOTHING,
-                StatusIcon.TEST_ACCEPTED: cls.TEST_AC,
-                StatusIcon.TEST_WRONG_ANSWER: cls.TEST_WA,
-                StatusIcon.TEST_WAITING_JUDGE: cls.TEST_NOTHING,
-            }
-            cls._conv_dict_rev_attr = d
-        return d
-
     def to_status(self) -> StatusIcon:
-        return self._conv_dict[self]
+        d = {
+            self.LIBRARY_AC_WA_SKIP: StatusIcon.LIBRARY_SOME_WA,
+            self.LIBRARY_AC_WA: StatusIcon.LIBRARY_SOME_WA,
+            self.LIBRARY_AC_SKIP: StatusIcon.LIBRARY_PARTIAL_AC,
+            self.LIBRARY_AC: StatusIcon.LIBRARY_ALL_AC,
+            self.LIBRARY_WA_SKIP: StatusIcon.LIBRARY_ALL_WA,
+            self.LIBRARY_WA: StatusIcon.LIBRARY_ALL_WA,
+            self.LIBRARY_SKIP: StatusIcon.LIBRARY_NO_TESTS,
+            self.LIBRARY_NOTHING: StatusIcon.LIBRARY_NO_TESTS,
+            self.TEST_AC_WA_SKIP: StatusIcon.TEST_WRONG_ANSWER,
+            self.TEST_AC_WA: StatusIcon.TEST_WRONG_ANSWER,
+            self.TEST_AC_SKIP: StatusIcon.TEST_WAITING_JUDGE,
+            self.TEST_AC: StatusIcon.TEST_ACCEPTED,
+            self.TEST_WA_SKIP: StatusIcon.TEST_WRONG_ANSWER,
+            self.TEST_WA: StatusIcon.TEST_WRONG_ANSWER,
+            self.TEST_SKIP: StatusIcon.TEST_WAITING_JUDGE,
+            self.TEST_NOTHING: StatusIcon.TEST_WAITING_JUDGE,
+        }
+        return d[self]
 
     @classmethod
     def from_status(cls, status: StatusIcon) -> "_VerificationStatusFlag":
-        return cls._conv_dict_rev[status]
+        d = {
+            StatusIcon.LIBRARY_SOME_WA: cls.LIBRARY_AC_WA,
+            StatusIcon.LIBRARY_PARTIAL_AC: cls.LIBRARY_AC_SKIP,
+            StatusIcon.LIBRARY_ALL_AC: cls.LIBRARY_AC,
+            StatusIcon.LIBRARY_ALL_WA: cls.LIBRARY_WA,
+            StatusIcon.LIBRARY_NO_TESTS: cls.LIBRARY_NOTHING,
+            StatusIcon.TEST_ACCEPTED: cls.TEST_AC,
+            StatusIcon.TEST_WRONG_ANSWER: cls.TEST_WA,
+            StatusIcon.TEST_WAITING_JUDGE: cls.TEST_NOTHING,
+        }
+        return d[status]
 
 
 class SourceCodeStat(BaseModel):
@@ -362,12 +344,10 @@ class RenderJob(ABC):
             self.write_to(fp)
 
     @abstractproperty
-    def destination_name(self) -> pathlib.Path:
-        ...
+    def destination_name(self) -> pathlib.Path: ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO):
-        ...
+    def write_to(self, fp: BinaryIO): ...
 
     @staticmethod
     def enumerate_jobs(
@@ -618,19 +598,21 @@ class PageRenderJob(RenderJob):
             embedded=embedded,
             timestamp=self.stat.timestamp,
             attributes=attributes,
-            testcases=[
-                EnvTestcaseResult(
-                    name=c.name,
-                    status=c.status,
-                    elapsed=c.elapsed,
-                    memory=c.memory,
-                    environment=v.verification_name,
-                )
-                for v in self.stat.verification_results
-                for c in (v.testcases or [])
-            ]
-            if self.stat.verification_results
-            else None,
+            testcases=(
+                [
+                    EnvTestcaseResult(
+                        name=c.name,
+                        status=c.status,
+                        elapsed=c.elapsed,
+                        memory=c.memory,
+                        environment=v.verification_name,
+                    )
+                    for v in self.stat.verification_results
+                    for c in (v.testcases or [])
+                ]
+                if self.stat.verification_results
+                else None
+            ),
             verification_status=self.stat.verification_status,
             is_verification_file=self.stat.is_verification,
             is_failed=self.stat.verification_status.is_failed,
