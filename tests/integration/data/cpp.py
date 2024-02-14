@@ -43,6 +43,46 @@ class CppWithoutConfigData(IntegrationData):
                         },
                         "verification": [],
                     },
+                    "aplusb.main.cpp": {
+                        "additonal_sources": [
+                            {
+                                "name": "bundled",
+                                "path": f"{self.config_dir_path/'bundled/aplusb.main.cpp'}",
+                            }
+                        ],
+                        "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
+                        "document_attributes": {
+                            "*NOT_SPECIAL_COMMENTS*": "",
+                            "STANDALONE": "",
+                            "links": [],
+                        },
+                        "verification": [
+                            {
+                                "command": f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "compile": "/usr/bin/g++ "
+                                "--std=c++17 -O2 "
+                                "-Wall -g -I "
+                                f"{self.targets_path} "
+                                "-o "
+                                f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                                "aplusb.main.cpp",
+                                "name": "g++",
+                                "type": "command",
+                            },
+                            {
+                                "command": f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "compile": "/usr/bin/clang++ "
+                                "--std=c++17 -O2 "
+                                "-Wall -g -I "
+                                f"{self.targets_path} "
+                                "-o "
+                                f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                                "aplusb.main.cpp",
+                                "name": "clang++",
+                                "type": "command",
+                            },
+                        ],
+                    },
                     "aplusb.test.cpp": {
                         "additonal_sources": [
                             {
@@ -108,6 +148,23 @@ class CppWithoutConfigData(IntegrationData):
     def expected_verify_result(self) -> dict[str, Any]:
         return {
             "files": {
+                "aplusb.main.cpp": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 9633.0,
+                            "last_execution_time": "2047-05-09T09:21:33.150000+03:00",
+                            "status": "success",
+                            "verification_name": "g++",
+                        },
+                        {
+                            "elapsed": 2064.0,
+                            "last_execution_time": "2004-04-16T13:27:48.340000-03:00",
+                            "status": "success",
+                            "verification_name": "clang++",
+                        },
+                    ],
+                },
                 "aplusb.test.cpp": {
                     "newest": True,
                     "verifications": [
@@ -276,9 +333,9 @@ class CppWithoutConfigData(IntegrationData):
                             "verification_name": "clang++",
                         },
                     ],
-                }
+                },
             },
-            "total_seconds": 1312.56,
+            "total_seconds": 2547.12,
         }
 
 
@@ -314,6 +371,44 @@ class CppWithConfigData(CppWithoutConfigData):
                             "links": [],
                         },
                         "verification": [],
+                    },
+                    "aplusb.main.cpp": {
+                        "additonal_sources": [
+                            {
+                                "name": "bundled",
+                                "path": f"{self.config_dir_path/'bundled/aplusb.main.cpp'}",
+                            }
+                        ],
+                        "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
+                        "document_attributes": {
+                            "*NOT_SPECIAL_COMMENTS*": "",
+                            "STANDALONE": "",
+                            "links": [],
+                        },
+                        "verification": [
+                            {
+                                "command": f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "compile": "g++ "
+                                "--std=c++17 -Wall -g -I "
+                                f"{self.targets_path} "
+                                "-o "
+                                f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                                "aplusb.main.cpp",
+                                "name": "g++",
+                                "type": "command",
+                            },
+                            {
+                                "command": f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "compile": "clang++ "
+                                "--std=c++17 -Wall -g -I "
+                                f"{self.targets_path} "
+                                "-o "
+                                f"{self.config_dir_path/'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                                "aplusb.main.cpp",
+                                "name": "clang++",
+                                "type": "command",
+                            },
+                        ],
                     },
                     "aplusb.test.cpp": {
                         "additonal_sources": [

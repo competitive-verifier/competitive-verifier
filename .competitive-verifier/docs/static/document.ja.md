@@ -119,7 +119,7 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 
 #### ユニットテストの設定
 
-ユニットテストがある場合は, `UNITTEST` 属性を使うことができます。
+ユニットテストがある場合は, `UNITTEST` 属性を使うことができます。 [helloworld_test.go]({{ "/examples/go/helloworld_test.go" | relative_url }})
 
 {% raw %}
 ```go
@@ -162,6 +162,32 @@ func TestHelloWorld(t *testing.T) {
           GOTEST_RESULT: ${{ steps.go-unittest.outcome == 'success' }}
 ```
 {% endraw %}
+
+C++ のように main 関数で実行されるユニットテストがある場合は, `STANDALONE` 属性を使うことができます。 [bit_minus_random_test.cpp]({{ "/examples/cpp/bit_minus_random_test.cpp" | relative_url }})
+
+{% raw %}
+```cpp
+#define STANDALONE
+#include <iostream>
+#include <cassert>
+#include <random>
+#include "examples/cpp/bit_minus.hpp"
+using namespace std;
+
+int main()
+{
+    mt19937 rnd(random_device{}());
+    for (size_t i = 0; i < 100000; i++)
+    {
+        auto num = rnd();
+        cout << num << " " << bit_minus(num) << endl;
+        assert(-(int64_t)num == bit_minus(num));
+    }
+    return 0;
+}
+```
+{% endraw %}
+
 ### csharp-resolver: C# の設定
 
 [https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver) を使います。
@@ -184,6 +210,7 @@ func TestHelloWorld(t *testing.T) {
 |変数名|説明|備考|
 |---|---|---|
 | `PROBLEM` | 提出する問題の URL を指定します | |
+| `STANDALONE` | main 関数で実行されるユニットテストファイルに指定します | |
 | `ERROR` | 許容誤差を指定します | |
 | `TLE` | TLE までの秒数を指定します | |
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |

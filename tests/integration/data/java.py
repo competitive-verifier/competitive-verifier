@@ -23,10 +23,43 @@ class JavaData(IntegrationData):
         return dict(
             {
                 "files": {
-                    "examples/Aplutb_test.java": {
+                    "examples/Aplusb.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
+                            "examples/HelloWorld.java",
+                            "examples/HelloWorld_test.java",
+                        ],
+                        "document_attributes": {},
+                        "verification": [],
+                    },
+                    "examples/Aplusb_main.java": {
+                        "additonal_sources": [],
+                        "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
+                            "examples/HelloWorld.java",
+                            "examples/HelloWorld_test.java",
+                        ],
+                        "document_attributes": {"STANDALONE": ""},
+                        "verification": [
+                            {
+                                "command": "java " "examples.Aplusb_main",
+                                "compile": f"javac {self.targets_path/'examples/Aplusb_main.java'}",
+                                "name": "Java",
+                                "type": "command",
+                            }
+                        ],
+                    },
+                    "examples/Aplusb_test.java": {
+                        "additonal_sources": [],
+                        "dependencies": [
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -35,8 +68,8 @@ class JavaData(IntegrationData):
                         },
                         "verification": [
                             {
-                                "command": "java examples.Aplutb_test",
-                                "compile": f"javac {self.targets_path/'examples/Aplutb_test.java'}",
+                                "command": "java examples.Aplusb_test",
+                                "compile": f"javac {self.targets_path/'examples/Aplusb_test.java'}",
                                 "name": "Java",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
                                 "type": "problem",
@@ -46,7 +79,9 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -56,7 +91,9 @@ class JavaData(IntegrationData):
                     "examples/HelloWorld_test.java": {
                         "additonal_sources": [],
                         "dependencies": [
-                            "examples/Aplutb_test.java",
+                            "examples/Aplusb.java",
+                            "examples/Aplusb_main.java",
+                            "examples/Aplusb_test.java",
                             "examples/HelloWorld.java",
                             "examples/HelloWorld_test.java",
                         ],
@@ -80,85 +117,96 @@ class JavaData(IntegrationData):
     def expected_verify_result(self) -> dict[str, Any]:
         return {
             "files": {
-                "examples/Aplutb_test.java": {
+                "examples/Aplusb_main.java": {
                     "newest": True,
                     "verifications": [
                         {
-                            "elapsed": 5673.0,
-                            "heaviest": 12.0,
-                            "last_execution_time": "2029-07-26T03:21:57.010000-11:00",
-                            "slowest": 567.0,
+                            "elapsed": 5854.0,
+                            "last_execution_time": "1973-11-01T17:29:53.180000+06:00",
+                            "status": "success",
+                            "verification_name": "Java",
+                        }
+                    ],
+                },
+                "examples/Aplusb_test.java": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 1440.0,
+                            "heaviest": 331.0,
+                            "last_execution_time": "2013-11-08T23:55:48.570000-05:00",
+                            "slowest": 144.0,
                             "status": "success",
                             "testcases": [
                                 {
-                                    "elapsed": 6.24,
-                                    "memory": 23.23,
+                                    "elapsed": 5.84,
+                                    "memory": 18.62,
                                     "name": "example_00",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 8.85,
-                                    "memory": 85.03,
+                                    "elapsed": 8.73,
+                                    "memory": 11.04,
                                     "name": "example_01",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 3.51,
-                                    "memory": 66.88,
+                                    "elapsed": 8.11,
+                                    "memory": 84.96,
                                     "name": "random_00",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 3.94,
-                                    "memory": 18.9,
+                                    "elapsed": 7.84,
+                                    "memory": 71.78,
                                     "name": "random_01",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 0.27,
-                                    "memory": 9.41,
+                                    "elapsed": 5.44,
+                                    "memory": 56.52,
                                     "name": "random_02",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 9.34,
-                                    "memory": 26.78,
+                                    "elapsed": 5.1,
+                                    "memory": 94.73,
                                     "name": "random_03",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 0.34,
-                                    "memory": 2.03,
+                                    "elapsed": 7.52,
+                                    "memory": 85.38,
                                     "name": "random_04",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 3.24,
-                                    "memory": 36.55,
+                                    "elapsed": 2.03,
+                                    "memory": 95.06,
                                     "name": "random_05",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 9.52,
-                                    "memory": 51.34,
+                                    "elapsed": 4.13,
+                                    "memory": 25.69,
                                     "name": "random_06",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 2.22,
-                                    "memory": 30.05,
+                                    "elapsed": 7.88,
+                                    "memory": 2.09,
                                     "name": "random_07",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 0.38,
-                                    "memory": 35.4,
+                                    "elapsed": 9.73,
+                                    "memory": 79.09,
                                     "name": "random_08",
                                     "status": "AC",
                                 },
                                 {
-                                    "elapsed": 6.03,
-                                    "memory": 68.16,
+                                    "elapsed": 1.31,
+                                    "memory": 63.99,
                                     "name": "random_09",
                                     "status": "AC",
                                 },
@@ -189,5 +237,5 @@ class JavaData(IntegrationData):
                     ],
                 },
             },
-            "total_seconds": 2547.12,
+            "total_seconds": 3781.68,
         }
