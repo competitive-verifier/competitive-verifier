@@ -1,4 +1,5 @@
 import fnmatch
+import hashlib
 import os
 import pathlib
 import traceback
@@ -13,6 +14,7 @@ import competitive_verifier.oj as oj
 from competitive_verifier.models import (
     AddtionalSource,
     ConstVerification,
+    CommandVerification,
     ProblemVerification,
     ResultStatus,
     Verification,
@@ -130,6 +132,22 @@ class OjResolver:
                         error=error,
                         tle=tle,
                         mle=mle,
+                    )
+
+                if attr.get("STANDALONE") is not None:
+                    tempdir = (
+                        oj.get_cache_directory()
+                        / "standalone"
+                        / hashlib.md5(path.as_posix().encode("utf-8")).hexdigest()
+                    )
+                    yield CommandVerification(
+                        name=env.name,
+                        command=env.get_execute_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
+                        compile=env.get_compile_command(
+                            path, basedir=basedir, tempdir=tempdir
+                        ),
                     )
 
                 unit_test_envvar = attr.get("UNITTEST")
