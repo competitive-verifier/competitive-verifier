@@ -66,8 +66,8 @@ test-integration = "pytest -m integration"
 test-each-language-integration = "pytest -m each_language_integration"
 test-use-prev-dest = "poe test --use-prev-dest"
 
-"jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload" }
-"jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install" }
+"jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
+"jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
 
 [tool.poe.tasks."schema-verify_files"]
 script = "competitive_verifier.script_tools.schema:show_verify_json_schema"
