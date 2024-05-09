@@ -344,7 +344,7 @@ jobs:
 
       - name: Restore cached results
         if: \${{ ! inputs.ignore_prev_result }}
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cached-results
         with:
           path: \${{github.workspace}}/merged-result.json
@@ -445,7 +445,7 @@ jobs:
           destination: _jekyll
           write-summary: true
       - name: Save result
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: \${{github.workspace}}/merged-result.json
           key: \${{ runner.os }}-verify-result-\${{ github.sha }}
