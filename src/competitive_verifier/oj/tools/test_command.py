@@ -14,16 +14,15 @@ from subprocess import PIPE, Popen, TimeoutExpired
 from typing import Annotated, Any, BinaryIO, Optional, Union
 
 import onlinejudge_command.format_utils as fmtutils
-import onlinejudge_command.pretty_printers as pretty_printers
-import onlinejudge_command.utils as utils
+from onlinejudge_command import pretty_printers, utils
 from onlinejudge_command.subcommand.test import (
     CompareMode,
     DisplayMode,
     JudgeStatus,
     build_match_function,
+    run_checking_output,
 )
 from onlinejudge_command.subcommand.test import check_gnu_time as orig_check_gnu_time
-from onlinejudge_command.subcommand.test import run_checking_output
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 
@@ -103,7 +102,7 @@ def oj_exec_command(
                 stdin=stdin,
                 stdout=PIPE,
                 stderr=sys.stderr,
-                preexec_fn=preexec_fn,
+                preexec_fn=preexec_fn,  # noqa: PLW1509
             )  # pylint: disable=subprocess-popen-preexec-fn
         except FileNotFoundError:
             logger.error("No such file or directory: %s", command)

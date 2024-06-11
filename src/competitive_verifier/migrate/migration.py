@@ -7,7 +7,7 @@ from typing import Optional
 
 import yaml
 
-import competitive_verifier.git as git
+from competitive_verifier import git
 from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage

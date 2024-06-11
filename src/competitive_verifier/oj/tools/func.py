@@ -7,7 +7,7 @@ from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 
-import competitive_verifier.config as config
+from competitive_verifier import config
 
 checker_exe_name = "checker.exe" if sys.platform == "win32" else "checker"
 

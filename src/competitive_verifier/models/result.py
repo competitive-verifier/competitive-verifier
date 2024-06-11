@@ -153,8 +153,8 @@ class VerifyCommandResult(BaseModel):
         with pathlib.Path(path).open("rb") as p:
             impl = cls.model_validate_json(p.read(), **kwargs)
         new_files: dict[pathlib.Path, FileResult] = {}
-        for p, f in impl.files.items():
-            p = to_relative(p)
+        for file_path, f in impl.files.items():
+            p = to_relative(file_path)
             if not p:
                 continue
             new_files[p] = f

@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-import competitive_verifier.app as app
+from competitive_verifier import app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
 
 

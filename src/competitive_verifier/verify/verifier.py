@@ -44,8 +44,7 @@ class InputContainer(ABC):
         self.split_state = split_state
 
     @abstractmethod
-    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        ...
+    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
 
     def file_need_verification(
         self,
@@ -207,7 +206,7 @@ class BaseVerifier(InputContainer):
                     verifications.append(
                         self.create_command_result(ResultStatus.FAILURE, prev_time)
                     )
-                    logger.exception("Failed to download", e)
+                    logger.exception("Failed to download: %s", e)
                     return verifications
 
                 for ve in f.verification_list:

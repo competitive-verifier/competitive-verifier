@@ -31,7 +31,7 @@ def to_human_str_seconds(total_seconds: float) -> str:
         return f"{hours}h {minutes}m"
     elif minutes > 0:
         return f"{minutes}m {int(seconds)}s"
-    elif total_seconds >= 10:
+    elif total_seconds >= 10:  # noqa: PLR2004
         return f"{int(seconds)}s"
     elif total_seconds > 1:
         return f"{total_seconds:.1f}s"
@@ -40,9 +40,9 @@ def to_human_str_seconds(total_seconds: float) -> str:
 
 
 def to_human_str_mega_bytes(total_mega_bytes: float) -> str:
-    if total_mega_bytes < 0.001:
+    if total_mega_bytes < 0.001:  # noqa: PLR2004
         return "0MB"
-    if total_mega_bytes < 100:
+    if total_mega_bytes < 100:  # noqa: PLR2004
         return f"{total_mega_bytes:.3g}MB"
     return f"{int(total_mega_bytes)}MB"
 

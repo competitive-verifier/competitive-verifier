@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-import competitive_verifier.oj as oj
+from competitive_verifier import oj
 
 from .types import ConfigDirSetter
 
@@ -38,7 +38,8 @@ class TestCommandDownload:
                         in_path.as_posix(),
                         out_path.as_posix(),
                         out_path.as_posix(),
-                    ]
+                    ],
+                    check=False,
                 ).returncode
                 == 0
             )

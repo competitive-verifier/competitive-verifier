@@ -15,7 +15,7 @@ from typing import Optional, TextIO
 import colorlog
 from colorama import Fore, Style
 
-import competitive_verifier.github as github
+from competitive_verifier import github
 
 _orig_stderr = sys.stderr
 
@@ -42,7 +42,7 @@ class GitHubActionsHandler(Handler):
             github.print_debug(message, stream=self.stream)
         elif record.levelno == WARNING:
             github.print_warning(message, stream=self.stream)
-        elif record.levelno == ERROR or record.levelno == CRITICAL:
+        elif record.levelno in (ERROR, CRITICAL):
             github.print_error(message, stream=self.stream)
 
 

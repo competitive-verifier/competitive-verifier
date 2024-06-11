@@ -5,8 +5,8 @@ import sys
 from logging import getLogger
 from typing import Optional
 
-import competitive_verifier.config as config
 import competitive_verifier.merge_result.main as merge_result
+from competitive_verifier import config
 from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_include_exclude_argument,

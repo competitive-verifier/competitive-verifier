@@ -6,9 +6,9 @@ import shutil
 from typing import Optional
 
 import onlinejudge.dispatch
-import onlinejudge.service.library_checker as library_checker
 import pytest
 import requests
+from onlinejudge.service import library_checker
 from pytest_mock import MockerFixture
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData

@@ -8,9 +8,7 @@ from itertools import chain
 from logging import getLogger
 from typing import Generator
 
-import competitive_verifier.config as config
-import competitive_verifier.git as git
-import competitive_verifier.oj as oj
+from competitive_verifier import config, git, oj
 from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,

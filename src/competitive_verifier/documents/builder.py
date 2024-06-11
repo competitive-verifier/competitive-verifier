@@ -6,8 +6,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.github as github
+from competitive_verifier import git, github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .config import ConfigYaml, load_config_yml
@@ -99,7 +98,7 @@ class DocumentBuilder(BaseModel):
                     dirs_exist_ok=True,
                 )
         except Exception as e:
-            logger.exception("Failed to copy user static files.", e)
+            logger.exception("Failed to copy user static files. %s", e)
 
     def write_code_docs(
         self,

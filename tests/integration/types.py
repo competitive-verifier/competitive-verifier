@@ -13,5 +13,4 @@ class ConfigDirSetter(Protocol):
     def __call__(
         self,
         name: str,
-    ) -> pathlib.Path:
-        ...
+    ) -> pathlib.Path: ...

@@ -36,8 +36,7 @@ class _ArgsFunc(Protocol):
         include: Optional[list[str]] = None,
         exclude: Optional[list[str]] = None,
         config: Optional[str] = None,
-    ) -> list[str]:
-        ...
+    ) -> list[str]: ...
 
 
 @pytest.fixture

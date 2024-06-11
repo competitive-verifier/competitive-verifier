@@ -1,7 +1,7 @@
 import datetime
 import enum
 import pathlib
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
@@ -10,8 +10,7 @@ from typing import AbstractSet, BinaryIO, Iterable, Optional
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.log as log
+from competitive_verifier import git, log
 from competitive_verifier.models import (
     DocumentOutputMode,
     ForcePosixPath,
@@ -289,8 +288,8 @@ class SourceCodeStat(BaseModel):
             statuses[p] = st
             verification_results_dict[p] = r.verifications
 
-        for group in input.scc():
-            group &= included_files
+        for input_group in input.scc():
+            group = input_group & included_files
             if not group:
                 continue
 
@@ -343,13 +342,12 @@ class RenderJob(ABC):
         with file.open("rb") as fp:
             self.write_to(fp)
 
-    @abstractproperty
-    def destination_name(self) -> pathlib.Path:
-        ...
+    @property
+    @abstractmethod
+    def destination_name(self) -> pathlib.Path: ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO):
-        ...
+    def write_to(self, fp: BinaryIO): ...
 
     @staticmethod
     def enumerate_jobs(
@@ -786,7 +784,7 @@ class IndexRenderJob(RenderJob):
                 categories[category].append(link)
 
         def _build_categories_list(
-            categories: dict[str, list[RenderLink]]
+            categories: dict[str, list[RenderLink]],
         ) -> list[CategorizedIndex]:
             return sorted(
                 (

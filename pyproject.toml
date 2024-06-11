@@ -138,45 +138,36 @@ cwd = "${_COMPETITIVE_SERVE_DIR}"
 ref = "jekyll:serve"
 cwd = "${_COMPETITIVE_SERVE_DIR}"
 
+[tool.ruff]
+target-version = "py39"
 
-[tool.pylint.'MESSAGES CONTROL']
-max-line-length = 120
-disable = """
-    missing-module-docstring,
-    missing-function-docstring,
-    consider-using-f-string
-"""
 
-[tool.black]
-target-version = ['py39']
-line-length = 88
-
-[tool.isort]
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-
-[tool.flake8]
-max-line-length = 500
-max-complexity = 18
 exclude = [
     "examples",
+    "integration_test_data",
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
 ]
-ignore = ["E203", "E266", "E501", "E701", "E704", "W503", "B905", "B907"]
-per-file-ignores = ["tests/integration/test_command_docs.py: E501"]
+line-length = 88
+indent-width = 4
 
-[tool.pyright]
-pythonVersion = "3.9"
-typeCheckingMode = "strict"
-include = ["src", "tests"]
-exclude = [
-    "src/competitive_verifier_resources/jekyll",
-    "tests/integration/testdata",
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "PL", "E", "W", "F", "I"]
+ignore = ["PLR0911", "PLR0912", "PLR0913", "PLR0915", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["PLR2004"]
+"src/competitive_verifier/oj/verify/languages/*.py" = ["PLW2901", "PLR2004"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["competitive_verifier"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
 ]
-reportMissingImports = true
-reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = "tests/"

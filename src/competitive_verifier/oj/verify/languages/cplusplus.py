@@ -9,8 +9,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.languages.special_comments as special_comments
 import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj.verify.languages.cplusplus_bundle import Bundler
 from competitive_verifier.oj.verify.models import (
     Language,
@@ -220,13 +220,12 @@ class CPlusPlusLanguage(Language):
                         else:
                             assert attributes.get(key) == macros.get(key)
                     all_ignored = False
+                elif env.is_gcc():
+                    attributes[_IGNORE_IF_GCC] = ""
+                elif env.is_clang():
+                    attributes[_IGNORE_IF_CLANG] = ""
                 else:
-                    if env.is_gcc():
-                        attributes[_IGNORE_IF_GCC] = ""
-                    elif env.is_clang():
-                        attributes[_IGNORE_IF_CLANG] = ""
-                    else:
-                        attributes[_IGNORE] = ""
+                    attributes[_IGNORE] = ""
             if all_ignored:
                 attributes[_IGNORE] = ""
 

@@ -20,15 +20,13 @@ class BaseVerification(BaseModel, ABC):
     def run(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> Union[ResultStatus, VerificationResult]:
-        ...
+    ) -> Union[ResultStatus, VerificationResult]: ...
 
     @abstractmethod
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
-        ...
+    ) -> bool: ...
 
     @property
     def is_skippable(self) -> bool:
@@ -139,7 +137,7 @@ class ProblemVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
     ) -> VerificationResult:
-        import competitive_verifier.oj as oj
+        from competitive_verifier import oj
 
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")

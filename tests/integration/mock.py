@@ -3,14 +3,13 @@ import pathlib
 import shutil
 from typing import Any, Iterable, List
 
-import onlinejudge.service.library_checker as library_checker
 import requests
+from onlinejudge.service import library_checker
 from onlinejudge.type import TestCase as OjTestCase
 
-import competitive_verifier.config as config
-from competitive_verifier.models import FileResult
+from competitive_verifier import config
+from competitive_verifier.models import FileResult, VerificationResult
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
-from competitive_verifier.models import VerificationResult
 from competitive_verifier.verify import verifier
 from tests.integration.utils import md5_number
 

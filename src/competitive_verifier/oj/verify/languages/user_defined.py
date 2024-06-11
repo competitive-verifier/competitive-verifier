@@ -6,9 +6,9 @@ from typing import Optional, Sequence, Union
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.languages.special_comments as special_comments
-import competitive_verifier.oj.verify.utils as utils
 from competitive_verifier.models import ShellCommand, ShellCommandLike
+from competitive_verifier.oj.verify import utils
+from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
