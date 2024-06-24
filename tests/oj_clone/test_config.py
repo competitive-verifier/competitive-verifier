@@ -287,8 +287,9 @@ def test_oj_resolve_config_load_error(toml: str, expected_error: list[ErrorDetai
         assert len(errors) == len(expected_error)
         for i, ex in enumerate(errors):
             expected_ctx = expected_error[i].get("ctx")
-            if expected_ctx and expected_ctx.get("error"):
-                assert ex["ctx"]["error"].args == expected_ctx["error"].args
-                del ex["ctx"]["error"]
-                del expected_ctx["error"]
+            if "ctx" in ex and "error" in ex["ctx"]:
+                if expected_ctx and expected_ctx.get("error"):
+                    assert ex["ctx"]["error"].args == expected_ctx["error"].args
+                    del ex["ctx"]["error"]
+                    del expected_ctx["error"]
         assert errors == expected_error
