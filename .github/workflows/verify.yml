@@ -55,8 +55,8 @@ jobs:
     strategy:
       matrix:
         langs:
-          - name: others
-            verify-directory: examples/test_for_documents examples/awk
+          - name: docs
+            verify-directory: examples/test_for_documents
             for_testing: true
           - name: cpp
             verify-directory: examples/cpp
@@ -73,11 +73,14 @@ jobs:
             verify-directory: examples/ruby
           - name: rust
             verify-directory: examples/rust
+          - name: others-awk
+            verify-directory: examples/awk
     with:
       verify-directory: ${{ matrix.langs.verify-directory }}
       name: ${{ matrix.langs.name }}
       enabled: ${{ github.event_name != 'pull_request' || !!matrix.langs.for_testing }}
-    secrets: inherit
+    secrets:
+      YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
   docs-and-check:
     runs-on: ubuntu-latest
