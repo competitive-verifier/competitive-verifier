@@ -163,7 +163,7 @@ class MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
                     input_name=f"{name}.in",
                     output_name=f"{name}.out",
                     input_data=f"{a} {b}\n".encode(),
-                    output_data=f"{a+b}\n".encode(),
+                    output_data=f"{a + b}\n".encode(),
                 )
         else:
             raise NotImplementedError()

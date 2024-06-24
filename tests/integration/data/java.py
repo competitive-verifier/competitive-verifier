@@ -48,7 +48,7 @@ class JavaData(IntegrationData):
                         "verification": [
                             {
                                 "command": "java " "examples.Aplusb_main",
-                                "compile": f"javac {self.targets_path/'examples/Aplusb_main.java'}",
+                                "compile": f"javac {self.targets_path / 'examples/Aplusb_main.java'}",
                                 "name": "Java",
                                 "type": "command",
                             }
@@ -69,7 +69,7 @@ class JavaData(IntegrationData):
                         "verification": [
                             {
                                 "command": "java examples.Aplusb_test",
-                                "compile": f"javac {self.targets_path/'examples/Aplusb_test.java'}",
+                                "compile": f"javac {self.targets_path / 'examples/Aplusb_test.java'}",
                                 "name": "Java",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
                                 "type": "problem",
@@ -103,7 +103,7 @@ class JavaData(IntegrationData):
                         "verification": [
                             {
                                 "command": "java examples.HelloWorld_test",
-                                "compile": f"javac {self.targets_path/'examples/HelloWorld_test.java'}",
+                                "compile": f"javac {self.targets_path / 'examples/HelloWorld_test.java'}",
                                 "name": "Java",
                                 "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                                 "type": "problem",

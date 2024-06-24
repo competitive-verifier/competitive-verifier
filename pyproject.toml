@@ -44,13 +44,13 @@ pytest-subtests = "^0.11.0"
 pytest-order = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
-flake8 = { version = "^6.1.0", extras = ["lint"] }
 black = { version = "^23.7.0", extras = ["lint"] }
 isort = { version = "^5.10.1", extras = ["lint"] }
 pyright = { version = "^1.1.277", extras = ["lint"] }
-pyproject-flake8 = { version = "^6.1.0", extras = ["lint"] }
 poethepoet = "^0.24.1"
 
+flake8 = "^7.0.0"
+pyproject-flake8 = "^7.0.0"
 [tool.poe.tasks]
 flake8 = "pflake8 src tests"
 isort = "isort src tests"
