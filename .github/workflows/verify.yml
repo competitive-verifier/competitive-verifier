@@ -77,7 +77,8 @@ jobs:
       verify-directory: ${{ matrix.langs.verify-directory }}
       name: ${{ matrix.langs.name }}
       enabled: ${{ github.event_name != 'pull_request' || !!matrix.langs.for_testing }}
-    secrets: inherit
+    secrets:
+      YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
   docs-and-check:
     runs-on: ubuntu-latest
