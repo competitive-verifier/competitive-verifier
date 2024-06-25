@@ -27,7 +27,7 @@ competitive-verifier = "competitive_verifier.app:main"
 python = ">=3.9,<4.0"
 colorlog = "^6.7.0"
 online-judge-tools = { git = "https://github.com/online-judge-tools/oj.git", tag = "v12.0.0" }
-online-judge-api-client = "=10.10.1"
+online-judge-api-client = { git = "https://github.com/online-judge-tools/api-client.git", rev = "615c345f169e2603e0b907287559a4535fc3c6f9" }
 colorama = "^0.4.6"
 pydantic = "^2.0.3"
 pyyaml = "^6.0"
