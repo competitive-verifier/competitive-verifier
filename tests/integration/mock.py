@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 import shutil
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Literal, Union
 
 import onlinejudge.service.library_checker as library_checker
 import requests
@@ -27,7 +27,9 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: bool = True,
+        context: Any = None,
+        warnings: Union[bool, Literal["none", "warn", "error"]] = True,
+        serialize_as_any: bool = False,
     ) -> str:
         return self.model_copy()._dump_super(
             indent=indent,
@@ -52,7 +54,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: bool = True,
+        warnings: Union[bool, Literal["none", "warn", "error"]] = True,
     ) -> str:
         def rewriteVerifyCommandResult(result: verifier.VerifyCommandResult):
             result.total_seconds = len(result.files) * 1234.56 + 78
@@ -161,7 +163,7 @@ class MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
                     input_name=f"{name}.in",
                     output_name=f"{name}.out",
                     input_data=f"{a} {b}\n".encode(),
-                    output_data=f"{a+b}\n".encode(),
+                    output_data=f"{a + b}\n".encode(),
                 )
         else:
             raise NotImplementedError()

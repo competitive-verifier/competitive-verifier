@@ -44,7 +44,11 @@
         "type": {
           "const": "command",
           "default": "command",
-          "title": "Type"
+          "enum": [
+            "command"
+          ],
+          "title": "Type",
+          "type": "string"
         },
         "command": {
           "anyOf": [
@@ -166,7 +170,11 @@
         "type": {
           "const": "const",
           "default": "const",
-          "title": "Type"
+          "enum": [
+            "const"
+          ],
+          "title": "Type",
+          "type": "string"
         },
         "status": {
           "allOf": [
@@ -200,7 +208,11 @@
         "type": {
           "const": "problem",
           "default": "problem",
-          "title": "Type"
+          "enum": [
+            "problem"
+          ],
+          "title": "Type",
+          "type": "string"
         },
         "command": {
           "anyOf": [

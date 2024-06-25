@@ -87,7 +87,7 @@ class RustWithoutConfigData(IntegrationData):
                                     / "target/release/aizu-online-judge-itp1-1-a"
                                 ),
                                 "compile": "cd "
-                                f"{self.targets_path/'verification/src/bin'} "
+                                f"{self.targets_path / 'verification/src/bin'} "
                                 "&& "
                                 "cargo "
                                 "build "
@@ -119,7 +119,7 @@ class RustWithoutConfigData(IntegrationData):
                                     / "target/release/library-checker-aplusb"
                                 ),
                                 "compile": "cd "
-                                f"{self.targets_path/'verification/src/bin'} "
+                                f"{self.targets_path / 'verification/src/bin'} "
                                 "&& "
                                 "cargo "
                                 "build "

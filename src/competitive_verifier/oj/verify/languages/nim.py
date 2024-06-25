@@ -46,7 +46,7 @@ class NimLanguageEnvironment(LanguageEnvironment):
                 "nim",
                 self.compile_to,
                 "-p:.",
-                f"-o:{str(tempdir /'a.out')}",
+                f"-o:{str(tempdir / 'a.out')}",
                 f"--nimcache:{str(tempdir)}",
             ]
             + self.nim_flags

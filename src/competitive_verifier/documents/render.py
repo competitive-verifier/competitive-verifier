@@ -1,7 +1,7 @@
 import datetime
 import enum
 import pathlib
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
@@ -343,7 +343,8 @@ class RenderJob(ABC):
         with file.open("rb") as fp:
             self.write_to(fp)
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def destination_name(self) -> pathlib.Path:
         ...
 
