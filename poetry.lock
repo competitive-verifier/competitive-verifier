@@ -590,8 +590,9 @@ version = "10.10.1"
 description = "API client to develop tools for competitive programming"
 optional = false
 python-versions = ">=3.6"
-files = []
-develop = false
+files = [
+    {file = "online_judge_api_client-10.10.1-py3-none-any.whl", hash = "sha256:2e7bf210db2709ab41b85454c76f7901231ddb0990c52f5c01624a53a28a534d"},
+]
 
 [package.dependencies]
 appdirs = ">=1"
@@ -600,41 +601,30 @@ colorlog = ">=4.1.0"
 jsonschema = ">=3.2"
 lxml = ">=4"
 requests = ">=2"
+toml = ">=0.10"
 
 [package.extras]
-dev = ["isort (==5.7.0)", "mypy (==1.8.0)", "pylint (==3.0.3)", "pytest (>=5.1.2)", "pytest-cov (>=2.7.1)", "types-requests (==2.31.0)", "yapf (==0.30.0)"]
-docs = ["sphinx (>=2.4)", "sphinx_rtd_theme (>=0.4)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/online-judge-tools/api-client.git"
-reference = "615c345f169e2603e0b907287559a4535fc3c6f9"
-resolved_reference = "615c345f169e2603e0b907287559a4535fc3c6f9"
+dev = ["isort (==5.7.0)", "mypy (==0.812)", "pylint (==2.7.2)", "pytest (>=5.1.2)", "pytest-cov (>=2.7.1)", "yapf (==0.30.0)"]
+docs = ["sphinx (>=2.4)", "sphinx-rtd-theme (>=0.4)"]
 
 [[package]]
 name = "online-judge-tools"
-version = "12.0.0"
+version = "11.5.1"
 description = "CLI tool to solve problems of competitive programming"
 optional = false
-python-versions = ">=3.8"
-files = []
-develop = false
+python-versions = ">=3.6"
+files = [
+    {file = "online_judge_tools-11.5.1-py3-none-any.whl", hash = "sha256:209ff413b430715fa672fc9e94e96dcad7e2627817ae8aa6edf574c5a2d95ba1"},
+]
 
 [package.dependencies]
 colorama = ">=0.3,<1"
 online-judge-api-client = ">=10.9.0,<11"
-packaging = ">=24"
 requests = ">=2,<3"
 
 [package.extras]
-dev = ["isort (==5.7.0)", "mypy (==1.10.0)", "pylint (==3.1.0)", "pytest (>=6.2.2,<7)", "yapf (==0.30.0)"]
+dev = ["isort (==5.7.0)", "mypy (==0.812)", "pylint (==2.7.0)", "pytest (>=6.2.2,<7)", "yapf (==0.30.0)"]
 selenium = ["selenium (>=3.141.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/online-judge-tools/oj.git"
-reference = "v12.0.0"
-resolved_reference = "d90b0a2bd87ae72cf89951b80c8fa4bd834afd0a"
 
 [[package]]
 name = "packaging"
@@ -1169,6 +1159,17 @@ files = [
 ]
 
 [[package]]
+name = "toml"
+version = "0.10.2"
+description = "Python Library for Tom's Obvious, Minimal Language"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
+]
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -1210,4 +1211,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<4.0"
-content-hash = "600343e414f583dc6b6a031a7fad9fc78658e7f6d4dbac6c0ca262995be68a20"
+content-hash = "feb6ba39f223165dbe3f39c1ca899b93ece32de20a862716f85c8e9f22898bf1"
