@@ -67,6 +67,7 @@ class CppWithoutConfigData(IntegrationData):
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
                                 "aplusb.main.cpp",
                                 "name": "g++",
+                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                                 "type": "command",
                             },
                             {
@@ -79,6 +80,7 @@ class CppWithoutConfigData(IntegrationData):
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
                                 "aplusb.main.cpp",
                                 "name": "clang++",
+                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                                 "type": "command",
                             },
                         ],
@@ -395,6 +397,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
                                 "aplusb.main.cpp",
                                 "name": "g++",
+                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                                 "type": "command",
                             },
                             {
@@ -406,6 +409,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
                                 "aplusb.main.cpp",
                                 "name": "clang++",
+                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                                 "type": "command",
                             },
                         ],

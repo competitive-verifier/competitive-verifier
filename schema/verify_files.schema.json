@@ -145,6 +145,20 @@
           "default": null,
           "description": "The shell command for compile.",
           "title": "Compile"
+        },
+        "tempdir": {
+          "anyOf": [
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The temporary directory for running verification.",
+          "title": "Tempdir"
         }
       },
       "required": [
