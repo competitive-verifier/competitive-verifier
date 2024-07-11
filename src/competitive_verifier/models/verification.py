@@ -3,6 +3,7 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
+from .path import ForcePosixPath
 from .result import VerificationResult
 from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike

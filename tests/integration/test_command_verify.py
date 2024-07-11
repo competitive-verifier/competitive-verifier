@@ -2,6 +2,7 @@ import datetime
 import json
 import pathlib
 import random
+import shutil
 
 import pytest
 
@@ -155,6 +156,8 @@ class TestCommandVerfy:
     ):
         verify = integration_data.config_dir_path / "verify.json"
         result = integration_data.config_dir_path / "result.json"
+        shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
+
         main.main(["--verify-json", str(verify), "--output", str(result)])
 
         assert (
