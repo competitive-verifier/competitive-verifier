@@ -36,8 +36,8 @@ charset-normalizer = "^3.3.2"
 tomli = { version = "^2.0.1", python = "<3.11" }
 requests = "^2.32.3"
 appdirs = "^1.4.4"
-
 beautifulsoup4 = "^4.12.3"
+
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
 pytest-mock = "^3.12.0"
@@ -53,13 +53,13 @@ poethepoet = "^0.24.2"
 flake8 = { version = "^7.0.0", extras = ["lint"] }
 pyproject-flake8 = { version = "^7.0.0", extras = ["lint"] }
 [tool.poe.tasks]
-flake8 = "pflake8 src tests"
-isort = "isort src tests"
-black = "black src tests"
-pyright = "pyright src tests"
+flake8 = "pflake8 src/competitive_verifier tests"
+isort = "isort src/competitive_verifier tests"
+black = "black src/competitive_verifier tests"
+pyright = "pyright src/competitive_verifier tests"
 format = ["isort", "black", "pyright", "flake8"]
-"lint:isort" = "isort --check-only --diff src tests"
-"lint:black" = "black --diff --check src tests"
+"lint:isort" = "isort --check-only --diff src/competitive_verifier tests"
+"lint:black" = "black --diff --check src/competitive_verifier tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
