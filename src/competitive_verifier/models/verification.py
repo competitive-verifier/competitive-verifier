@@ -3,6 +3,7 @@ from typing import Annotated, Literal, Optional, Protocol, Union
 
 from pydantic import BaseModel, Field
 
+from .path import ForcePosixPath
 from .result import VerificationResult
 from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -74,10 +75,19 @@ class CommandVerification(BaseVerification):
     """The shell command for compile.
     """
 
+    tempdir: Optional[ForcePosixPath] = Field(
+        default=None,
+        description="The temporary directory for running verification.",
+    )
+    """The temporary directory for running verification.
+    """
+
     def run(
         self,
         params: Optional[VerificationParams] = None,
     ) -> ResultStatus:
+        if self.tempdir:
+            self.tempdir.mkdir(parents=True, exist_ok=True)
         c = ShellCommand.parse_command_like(self.command)
         if c.exec_command(text=True).returncode == 0:
             return ResultStatus.SUCCESS
@@ -88,6 +98,8 @@ class CommandVerification(BaseVerification):
         params: Optional[VerificationParams] = None,
     ) -> bool:
         if self.compile:
+            if self.tempdir:
+                self.tempdir.mkdir(parents=True, exist_ok=True)
             c = ShellCommand.parse_command_like(self.compile)
             return c.exec_command(text=True).returncode == 0
         return True
