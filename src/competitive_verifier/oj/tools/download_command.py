@@ -9,7 +9,6 @@ from typing import Iterator, Optional
 import onlinejudge.dispatch as dispatch
 import onlinejudge_command.download_history
 import onlinejudge_command.format_utils as format_utils
-import onlinejudge_command.main
 import onlinejudge_command.pretty_printers as pretty_printers
 import onlinejudge_command.utils as utils
 import requests.exceptions

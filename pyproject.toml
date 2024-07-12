@@ -13,6 +13,8 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
+    { include = "onlinejudge", from = "src/porting_oj" },
+    { include = "onlinejudge_command", from = "src/porting_oj" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -26,16 +28,15 @@ competitive-verifier = "competitive_verifier.app:main"
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 colorlog = "^6.7.0"
-online-judge-tools = "11.5.1"
-online-judge-api-client = "10.10.1"
 colorama = "^0.4.6"
 pydantic = "^2.0.3"
 pyyaml = "^6.0"
 importlab = "^0.8"
 charset-normalizer = "^3.3.2"
 tomli = { version = "^2.0.1", python = "<3.11" }
-poethepoet = "^0.24.2"
-
+requests = "^2.32.3"
+appdirs = "^1.4.4"
+beautifulsoup4 = "^4.12.3"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"
@@ -47,18 +48,18 @@ pytest-order = "^1.1.0"
 black = { version = "^23.7.0", extras = ["lint"] }
 isort = { version = "^5.10.1", extras = ["lint"] }
 pyright = { version = "^1.1.277", extras = ["lint"] }
-poethepoet = "^0.24.1"
+poethepoet = "^0.24.2"
 
 flake8 = { version = "^7.0.0", extras = ["lint"] }
 pyproject-flake8 = { version = "^7.0.0", extras = ["lint"] }
 [tool.poe.tasks]
-flake8 = "pflake8 src tests"
-isort = "isort src tests"
-black = "black src tests"
-pyright = "pyright src tests"
+flake8 = "pflake8 src/competitive_verifier tests"
+isort = "isort src/competitive_verifier tests"
+black = "black src/competitive_verifier tests"
+pyright = "pyright src/competitive_verifier tests"
 format = ["isort", "black", "pyright", "flake8"]
-"lint:isort" = "isort --check-only --diff src tests"
-"lint:black" = "black --diff --check src tests"
+"lint:isort" = "isort --check-only --diff src/competitive_verifier tests"
+"lint:black" = "black --diff --check src/competitive_verifier tests"
 lint = ["lint:isort", "lint:black", "pyright", "flake8"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
@@ -68,6 +69,22 @@ test-use-prev-dest = "poe test --use-prev-dest"
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
+
+[tool.poe.tasks."port-oj"]
+shell = """
+mkdir -p src/porting_oj
+mkdir -p downloads
+wget -q https://github.com/online-judge-tools/oj/archive/refs/heads/master.zip -O downloads/oj.zip
+wget -q https://github.com/online-judge-tools/api-client/archive/refs/heads/master.zip -O downloads/api-client.zip
+
+unzip -o downloads/oj.zip -d downloads
+unzip -o downloads/api-client.zip -d downloads
+
+mv downloads/oj-master/onlinejudge_command src/porting_oj
+mv downloads/api-client-master/onlinejudge src/porting_oj
+
+echo '\\e[33mThis task should be deleted when https://github.com/online-judge-tools/oj/issues/929 is completed.\\e[m'
+"""
 
 [tool.poe.tasks."schema-verify_files"]
 script = "competitive_verifier.script_tools.schema:show_verify_json_schema"
@@ -163,6 +180,7 @@ exclude = [
     "examples",
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
+    "src/oj_porting",
 ]
 ignore = ["E203", "E266", "E501", "E701", "E704", "W503", "B905", "B907"]
 per-file-ignores = ["tests/integration/test_command_docs.py: E501"]
@@ -174,6 +192,7 @@ include = ["src", "tests"]
 exclude = [
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
+    "src/oj_porting",
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false
