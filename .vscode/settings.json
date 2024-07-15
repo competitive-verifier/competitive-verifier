@@ -22,9 +22,6 @@
     "python.testing.pytestArgs": [
         "tests"
     ],
-    "flake8.path": [
-        "pflake8"
-    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
 }

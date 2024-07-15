@@ -14,7 +14,6 @@ packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
     { include = "onlinejudge", from = "src/porting_oj" },
-    { include = "onlinejudge_command", from = "src/porting_oj" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 
@@ -183,7 +182,10 @@ exclude = [
     "src/oj_porting",
 ]
 ignore = ["E203", "E266", "E501", "E701", "E704", "W503", "B905", "B907"]
-per-file-ignores = ["tests/integration/test_command_docs.py: E501"]
+per-file-ignores = [
+    "tests/integration/test_command_docs.py: E501",
+    "src/competitive_verifier/oj/tools/pretty_printers.py: E741",
+]
 
 [tool.pyright]
 pythonVersion = "3.9"

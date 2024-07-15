@@ -5,14 +5,8 @@ from .file import (
     VerificationInput,
 )
 from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
-from .result import (
-    FileResult,
-    JudgeStatus,
-    TestcaseResult,
-    VerificationResult,
-    VerifyCommandResult,
-)
-from .result_status import ResultStatus
+from .result import FileResult, TestcaseResult, VerificationResult, VerifyCommandResult
+from .result_status import JudgeStatus, ResultStatus
 from .shell import ShellCommand, ShellCommandLike
 from .verification import (
     BaseVerification,

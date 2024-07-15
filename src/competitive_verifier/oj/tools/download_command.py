@@ -6,11 +6,8 @@ from contextlib import nullcontext
 from logging import getLogger
 from typing import Iterator, Optional
 
+import onlinejudge._implementation.format_utils as format_utils
 import onlinejudge.dispatch as dispatch
-import onlinejudge_command.download_history
-import onlinejudge_command.format_utils as format_utils
-import onlinejudge_command.pretty_printers as pretty_printers
-import onlinejudge_command.utils as utils
 import requests.exceptions
 from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
@@ -18,6 +15,7 @@ from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
 
 from competitive_verifier import log
 
+from . import pretty_printers, utils
 from .func import (
     get_cache_directory,
     get_checker_path,
@@ -50,7 +48,6 @@ def run(
         logger.error('The URL "%s" is not supported', url)
         return False
 
-    is_default_format = format is None
     if format is None:
         format = "%b.%e"
 
@@ -105,14 +102,6 @@ def run(
     if not samples:
         logger.error("Sample not found")
         return False
-
-    # append the history for submit subcommand
-    if not dry_run and is_default_format:
-        history = onlinejudge_command.download_history.DownloadHistory()
-        if not list(directory.glob("*")):
-            # reset the history to help users who use only one directory for many problems
-            history.remove(directory=pathlib.Path.cwd())
-        history.add(problem, directory=pathlib.Path.cwd())
 
     # prepare files to write
     def iterate_files_to_write(

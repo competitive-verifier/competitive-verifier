@@ -42,7 +42,7 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
         yield sess
 
     mocker.patch(
-        "onlinejudge_command.utils.new_session_with_our_user_agent",
+        "competitive_verifier.oj.tools.utils.new_session_with_our_user_agent",
         side_effect=new_session_with_our_user_agent,
     )
 
