@@ -6,10 +6,8 @@ from contextlib import nullcontext
 from logging import getLogger
 from typing import Iterator, Optional
 
+import onlinejudge._implementation.format_utils as format_utils
 import onlinejudge.dispatch as dispatch
-import onlinejudge_command.format_utils as format_utils
-import onlinejudge_command.pretty_printers as pretty_printers
-import onlinejudge_command.utils as utils
 import requests.exceptions
 from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
@@ -17,6 +15,7 @@ from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
 
 from competitive_verifier import log
 
+from . import pretty_printers, utils
 from .func import (
     get_cache_directory,
     get_checker_path,

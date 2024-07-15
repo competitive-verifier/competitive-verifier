@@ -9,3 +9,11 @@ class ResultStatus(str, Enum):
     @property
     def status(self) -> "ResultStatus":
         return self
+
+
+class JudgeStatus(Enum):
+    AC = "AC"
+    WA = "WA"
+    RE = "RE"
+    TLE = "TLE"
+    MLE = "MLE"

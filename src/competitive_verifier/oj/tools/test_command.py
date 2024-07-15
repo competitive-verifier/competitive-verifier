@@ -5,30 +5,28 @@ import pathlib
 import platform
 import shlex
 import signal
+import subprocess
 import sys
 import tempfile
 import threading
 import time
+import traceback
 from logging import getLogger
 from subprocess import PIPE, Popen, TimeoutExpired
-from typing import Annotated, Any, BinaryIO, Optional, Union
+from typing import Annotated, Any, BinaryIO, Callable, Optional, Union
 
-import onlinejudge_command.format_utils as fmtutils
-import onlinejudge_command.pretty_printers as pretty_printers
-import onlinejudge_command.utils as utils
-from onlinejudge_command.subcommand.test import (
-    CompareMode,
-    DisplayMode,
-    JudgeStatus,
-    build_match_function,
-)
-from onlinejudge_command.subcommand.test import check_gnu_time as orig_check_gnu_time
-from onlinejudge_command.subcommand.test import run_checking_output
+import onlinejudge._implementation.format_utils as fmtutils
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 
-from competitive_verifier.models import ResultStatus, TestcaseResult, VerificationResult
+from competitive_verifier.models import (
+    JudgeStatus,
+    ResultStatus,
+    TestcaseResult,
+    VerificationResult,
+)
 
+from . import output_comparators, pretty_printers, utils
 from .func import checker_exe_name, get_cache_directory, get_directory
 
 logger = getLogger(__name__)
@@ -52,8 +50,6 @@ class OjTestArguments(BaseModel):
     log_file: Optional[pathlib.Path] = None
     silent: bool = False
     ignore_backup: bool = True
-    display_mode: DisplayMode = DisplayMode.SUMMARY
-    compare_mode: CompareMode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
 
 
 class OjExecInfo(BaseModel):
@@ -153,8 +149,6 @@ def display_result(
     test_output_path: Optional[pathlib.Path],
     *,
     mle: Optional[float],
-    display_mode: DisplayMode,
-    compare_mode: CompareMode,
     does_print_input: bool,
     silent: bool,
     match_result: Optional[bool],
@@ -212,50 +206,18 @@ def display_result(
                     expected = outf.read().decode()
             else:
                 expected = ""
-            if display_mode == DisplayMode.SUMMARY:
-                logger.info(
-                    utils.NO_HEADER + "output:\n%s",
-                    pretty_printers.make_pretty_large_file_content(
-                        answer.encode(), limit=40, head=20, tail=10
-                    ),
-                )
-                logger.info(
-                    utils.NO_HEADER + "expected:\n%s",
-                    pretty_printers.make_pretty_large_file_content(
-                        expected.encode(), limit=40, head=20, tail=10
-                    ),
-                )
-            elif display_mode == DisplayMode.ALL:
-                logger.info(
-                    utils.NO_HEADER + "output:\n%s",
-                    pretty_printers.make_pretty_all(answer.encode()),
-                )
-                logger.info(
-                    utils.NO_HEADER + "expected:\n%s",
-                    pretty_printers.make_pretty_all(expected.encode()),
-                )
-            elif display_mode == DisplayMode.DIFF:
-                logger.info(
-                    utils.NO_HEADER
-                    + pretty_printers.make_pretty_diff(
-                        answer.encode(),
-                        expected=expected,
-                        compare_mode=compare_mode,
-                        limit=40,
-                    )
-                )
-            elif display_mode == DisplayMode.DIFF_ALL:
-                logger.info(
-                    utils.NO_HEADER
-                    + pretty_printers.make_pretty_diff(
-                        answer.encode(),
-                        expected=expected,
-                        compare_mode=compare_mode,
-                        limit=-1,
-                    )
-                )
-            else:
-                assert False
+            logger.info(
+                utils.NO_HEADER + "output:\n%s",
+                pretty_printers.make_pretty_large_file_content(
+                    answer.encode(), limit=40, head=20, tail=10
+                ),
+            )
+            logger.info(
+                utils.NO_HEADER + "expected:\n%s",
+                pretty_printers.make_pretty_large_file_content(
+                    expected.encode(), limit=40, head=20, tail=10
+                ),
+            )
     if match_result is None:
         if not silent:
             print_input()
@@ -311,7 +273,149 @@ def get_gnu_time_command() -> str:
 
 
 def check_gnu_time(gnu_time: Optional[str] = None) -> bool:
-    return orig_check_gnu_time(gnu_time or get_gnu_time_command())
+    if not gnu_time:
+        gnu_time = get_gnu_time_command()
+    try:
+        with tempfile.NamedTemporaryFile(delete=True) as fh:
+            subprocess.check_call(
+                [gnu_time, "-f", "%M KB", "-o", fh.name, "--", "true"]
+            )
+            with open(fh.name) as fh1:
+                data = fh1.read()
+            int(utils.remove_suffix(data.rstrip().splitlines()[-1], " KB"))
+            return True
+    except NameError:
+        raise  # NameError is not a runtime error caused by the environment, but a coding mistake
+    except AttributeError:
+        raise  # AttributeError is also a mistake
+    except Exception:
+        logger.debug(traceback.format_exc())
+    return False
+
+
+class SpecialJudge:
+    def __init__(self, judge_command: str, *, is_silent: bool):
+        self.judge_command = judge_command  # already quoted and joined command
+        self.is_silent = is_silent
+
+    def run(
+        self,
+        *,
+        actual_output: bytes,
+        input_path: pathlib.Path,
+        expected_output_path: Optional[pathlib.Path],
+    ) -> bool:
+        with tempfile.TemporaryDirectory() as tempdir:
+            actual_output_path = pathlib.Path(tempdir) / "actual.out"
+            with open(actual_output_path, "wb") as fh:
+                fh.write(actual_output)
+
+            # if you use shlex.quote, it fails on Windows. why?
+            command = " ".join(
+                [
+                    self.judge_command,  # already quoted and joined command
+                    str(input_path.resolve()),
+                    str(actual_output_path.resolve()),
+                    str(
+                        expected_output_path.resolve()
+                        if expected_output_path is not None
+                        else ""
+                    ),
+                ]
+            )
+
+            logger.info("$ %s", command)
+            info, proc = utils.exec_command(command)
+        if not self.is_silent:
+            logger.info(
+                utils.NO_HEADER + "judge's output:\n%s",
+                pretty_printers.make_pretty_large_file_content(
+                    info["answer"] or b"", limit=40, head=20, tail=10
+                ),
+            )
+        return proc.returncode == 0
+
+
+def build_match_function(
+    *,
+    error: Optional[float],
+    judge_command: Optional[str],
+    silent: bool,
+    test_input_path: pathlib.Path,
+    test_output_path: Optional[pathlib.Path],
+) -> Callable[[bytes, bytes], bool]:
+    """build_match_function builds the function to compare actual outputs and expected outputs.
+
+    This function doesn't any I/O.
+    """
+
+    if judge_command is not None:
+        special_judge = SpecialJudge(judge_command=judge_command, is_silent=silent)
+
+        def run_judge_command(actual: bytes, expected: bytes) -> bool:
+            # the second argument is ignored
+            return special_judge.run(
+                actual_output=actual,
+                input_path=test_input_path,
+                expected_output_path=test_output_path,
+            )
+
+        return run_judge_command
+
+    is_exact = False
+    if error is None:
+        is_exact = True
+        file_comparator = output_comparators.CRLFInsensitiveComparator(
+            output_comparators.ExactComparator()
+        )
+    else:
+        word_comparator: output_comparators.OutputComparator = (
+            output_comparators.FloatingPointNumberComparator(
+                rel_tol=error, abs_tol=error
+            )
+        )
+        file_comparator = output_comparators.SplitLinesComparator(
+            output_comparators.SplitComparator(word_comparator)
+        )
+        file_comparator = output_comparators.CRLFInsensitiveComparator(file_comparator)
+
+    def compare_outputs(actual: bytes, expected: bytes) -> bool:
+        result = file_comparator(actual, expected)
+        if not result and is_exact:
+            non_stcict_comparator = output_comparators.CRLFInsensitiveComparator(
+                output_comparators.SplitComparator(output_comparators.ExactComparator())
+            )
+            if non_stcict_comparator(actual, expected):
+                logger.warning(
+                    "This was AC if spaces and newlines were ignored. Please use --ignore-spaces (-S) option or --ignore-spaces-and-newline (-N) option."
+                )
+        return result
+
+    return compare_outputs
+
+
+def run_checking_output(
+    *,
+    answer: bytes,
+    test_output_path: Optional[pathlib.Path],
+    is_special_judge: bool,
+    match_function: Callable[[bytes, bytes], bool],
+) -> Optional[bool]:
+    """run_checking_output executes matching of the actual output and the expected output.
+
+    This function has file I/O including the execution of the judge command.
+    """
+
+    if test_output_path is None and not is_special_judge:
+        return None
+    if test_output_path is not None:
+        with test_output_path.open("rb") as outf:
+            expected = outf.read()
+    else:
+        # only if --judge option
+        expected = b""
+        logger.warning("expected output is not found")
+    return match_function(answer, expected)
 
 
 def test_single_case(
@@ -351,7 +455,6 @@ def test_single_case(
             logger.info("memory: %f MB", memory)
 
         match_function = build_match_function(
-            compare_mode=CompareMode(args.compare_mode),
             error=args.error,
             judge_command=str(args.judge) if args.judge else None,
             silent=args.silent,
@@ -371,8 +474,6 @@ def test_single_case(
             test_input_path,
             test_output_path,
             mle=args.mle,
-            display_mode=DisplayMode(args.display_mode),
-            compare_mode=CompareMode(args.compare_mode),
             does_print_input=args.print_input,
             silent=args.silent,
             match_result=match_result,

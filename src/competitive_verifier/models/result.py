@@ -3,13 +3,12 @@ import pathlib
 from logging import getLogger
 from typing import TYPE_CHECKING, Any, Optional
 
-from onlinejudge_command.subcommand.test import JudgeStatus
 from pydantic import BaseModel, Field, field_validator
 
 from competitive_verifier.util import to_relative
 
 from .path import ForcePosixPath
-from .result_status import ResultStatus
+from .result_status import JudgeStatus, ResultStatus
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
