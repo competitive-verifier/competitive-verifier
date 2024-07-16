@@ -167,7 +167,7 @@ def display_result(
             is_input_printed = True
             with test_input_path.open("rb") as inf:
                 logger.info(
-                    utils.NO_HEADER + "input:\n%s",
+                    "input:\n%s",
                     pretty_printers.make_pretty_large_file_content(
                         inf.read(), limit=40, head=20, tail=10
                     ),
@@ -207,13 +207,13 @@ def display_result(
             else:
                 expected = ""
             logger.info(
-                utils.NO_HEADER + "output:\n%s",
+                "output:\n%s",
                 pretty_printers.make_pretty_large_file_content(
                     answer.encode(), limit=40, head=20, tail=10
                 ),
             )
             logger.info(
-                utils.NO_HEADER + "expected:\n%s",
+                "expected:\n%s",
                 pretty_printers.make_pretty_large_file_content(
                     expected.encode(), limit=40, head=20, tail=10
                 ),
@@ -222,7 +222,7 @@ def display_result(
         if not silent:
             print_input()
             logger.info(
-                utils.NO_HEADER + "output:\n%s",
+                "output:\n%s",
                 pretty_printers.make_pretty_large_file_content(
                     answer.encode(), limit=40, head=20, tail=10
                 ),
@@ -328,7 +328,7 @@ class SpecialJudge:
             info, proc = utils.exec_command(command)
         if not self.is_silent:
             logger.info(
-                utils.NO_HEADER + "judge's output:\n%s",
+                "judge's output:\n%s",
                 pretty_printers.make_pretty_large_file_content(
                     info["answer"] or b"", limit=40, head=20, tail=10
                 ),
@@ -428,7 +428,6 @@ def test_single_case(
 ) -> dict[str, Any]:
     # print the header earlier if not in parallel
     if lock is None:
-        logger.info("")
         logger.info("%s", test_name)
 
     # run the binary
@@ -448,11 +447,11 @@ def test_single_case(
     # lock is require to avoid mixing logs if in parallel
     with lock or contextlib.nullcontext():
         if lock is not None:
-            logger.info("")
             logger.info("%s", test_name)
-        logger.info("time: %f sec", elapsed)
         if memory:
-            logger.info("memory: %f MB", memory)
+            logger.info("time: %f sec, memory: %f MB", elapsed, memory)
+        else:
+            logger.info("time: %f sec", elapsed)
 
         match_function = build_match_function(
             error=args.error,
@@ -550,7 +549,6 @@ def run(args: OjTestArguments) -> OjTestResult:
             heaviest_name = result.testcase.name
 
     # print the summary
-    logger.info("")
     logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
     if heaviest >= 0:
         logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
