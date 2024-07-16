@@ -4,9 +4,8 @@ import shutil
 import textwrap
 from contextlib import nullcontext
 from logging import getLogger
-from typing import Iterator, Optional
+from typing import Iterator
 
-import onlinejudge._implementation.format_utils as format_utils
 import onlinejudge.dispatch as dispatch
 import requests.exceptions
 from onlinejudge.service.atcoder import AtCoderProblem
@@ -15,7 +14,7 @@ from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
 
 from competitive_verifier import log
 
-from . import pretty_printers, utils
+from . import utils
 from .func import (
     get_cache_directory,
     get_checker_path,
@@ -33,9 +32,7 @@ def run(
     url: str,
     directory: pathlib.Path,
     cookie: pathlib.Path,
-    format: Optional[str] = None,
     system: bool = True,
-    silent: bool = True,
     dry_run: bool = False,
 ) -> bool:
     # prepare values
@@ -47,9 +44,6 @@ def run(
             )
         logger.error('The URL "%s" is not supported', url)
         return False
-
-    if format is None:
-        format = "%b.%e"
 
     # get samples from the server
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
@@ -111,14 +105,9 @@ def run(
             data = getattr(sample, ext + "put_data")
             if data is None:
                 continue
-            name = sample.name
-            table: dict[str, str] = {}
-            table["i"] = str(i + 1)
-            table["e"] = ext
-            table["n"] = name
-            table["b"] = os.path.basename(name)
-            table["d"] = os.path.dirname(name)
-            path: pathlib.Path = directory / format_utils.percentformat(format, table)
+            basename = os.path.basename(sample.name)
+            filename = f"{basename}.{ext}"
+            path: pathlib.Path = directory / filename
             yield ext, path, data
 
     for i, sample in enumerate(samples):
@@ -135,20 +124,12 @@ def run(
 
     # write samples to files
     for i, sample in enumerate(samples):
-        logger.info("")
-        logger.info("sample %d", i)
-        for ext, path, data in iterate_files_to_write(sample, i=i):
-            content = ""
-            if not silent:
-                content = "\n" + pretty_printers.make_pretty_large_file_content(
-                    data, limit=40, head=20, tail=10
-                )
-            logger.info("%sput: %s%s", ext, sample.name, content)
+        for _, path, data in iterate_files_to_write(sample, i=i):
             if not dry_run:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("wb") as fh:
                     fh.write(data)
-                logger.info(utils.SUCCESS + "saved to: %s", path)
+                logger.info("saved to: %s", path)
 
     return True
 
