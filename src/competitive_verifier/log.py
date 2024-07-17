@@ -17,15 +17,15 @@ from colorama import Fore, Style
 
 import competitive_verifier.github as github
 
-_orig_stderr = sys.stderr
+# _orig_stderr = sys.stderr
 
 
-def override_stderr() -> None:
-    sys.stderr = sys.stdout
+# def override_stderr() -> None:
+#     sys.stderr = sys.stdout
 
 
-def restore_stderr() -> None:
-    sys.stderr = _orig_stderr
+# def restore_stderr() -> None:
+#     sys.stderr = _orig_stderr
 
 
 class GitHubActionsHandler(Handler):
@@ -65,7 +65,7 @@ def configure_logging(
     if in_github_actions is None:
         in_github_actions = github.env.is_in_github_actions()
 
-    override_stderr()
+    # override_stderr()
 
     colorlog_handler = colorlog.StreamHandler()
     colorlog_handler.setLevel(default_level or WARNING)
@@ -115,6 +115,8 @@ def _console_group(category: str, *, title: str, file: Optional[TextIO]):
 
 @contextmanager
 def group(title: str, *, stream: Optional[TextIO] = None):
+    if stream is None:
+        stream = sys.stderr
     if github.env.is_in_github_actions():
         try:
             github.begin_group(title, stream=stream)
