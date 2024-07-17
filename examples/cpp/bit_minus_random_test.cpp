@@ -11,7 +11,7 @@ int main()
     for (size_t i = 0; i < 100000; i++)
     {
         auto num = rnd();
-        cout << num << " " << bit_minus(num) << endl;
+        // cout << num << " " << bit_minus(num) << endl;
         assert(-(int64_t)num == bit_minus(num));
     }
     return 0;
