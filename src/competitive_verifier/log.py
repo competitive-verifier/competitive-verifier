@@ -91,7 +91,7 @@ def configure_stderr_logging(default_level: Optional[int] = None) -> None:
     colorlog_handler.setLevel(default_level or WARNING)
     colorlog_handler.setFormatter(
         colorlog.ColoredFormatter(
-            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
+            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(lineno)d: %(message)s"
         )
     )
     handlers: list[Handler] = [colorlog_handler]

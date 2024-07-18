@@ -324,15 +324,14 @@ class SpecialJudge:
                 ]
             )
 
-            logger.info("$ %s", command)
+            logger.debug("$ %s", command)
             info, proc = utils.exec_command(command)
-        if not self.is_silent:
-            logger.info(
-                "judge's output:\n%s",
-                pretty_printers.make_pretty_large_file_content(
-                    info["answer"] or b"", limit=40, head=20, tail=10
-                ),
-            )
+        logger.debug(
+            "judge's output:\n%s",
+            pretty_printers.make_pretty_large_file_content(
+                info["answer"] or b"", limit=40, head=20, tail=10
+            ),
+        )
         return proc.returncode == 0
 
 

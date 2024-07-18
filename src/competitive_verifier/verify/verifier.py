@@ -194,7 +194,6 @@ class BaseVerifier(InputContainer):
             file_results = dict[pathlib.Path, FileResult]()
 
         for p, f in current_verification_files.items():
-            logger.info("Start: %s", p.as_posix())
 
             def enumerate_verifications() -> list[VerificationResult]:
                 logger.debug(repr(f))

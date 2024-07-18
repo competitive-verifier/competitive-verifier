@@ -129,7 +129,7 @@ def run(
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("wb") as fh:
                     fh.write(data)
-                logger.info("saved to: %s", path)
+                logger.debug("saved to: %s", path)
 
     return True
 
