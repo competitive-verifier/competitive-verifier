@@ -1,7 +1,7 @@
 import hashlib
 import pathlib
 import sys
-from typing import Optional
+from typing import Optional, Union
 
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
@@ -36,8 +36,13 @@ def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
     return LibraryCheckerProblem.from_url(url)
 
 
-def get_checker_path(url: str) -> Optional[pathlib.Path]:
-    checker_problem = get_checker_problem(url)
+def get_checker_path(
+    url_or_problem: Union[str, LibraryCheckerProblem, None]
+) -> Optional[pathlib.Path]:
+    if isinstance(url_or_problem, str):
+        checker_problem = get_checker_problem(url_or_problem)
+    else:
+        checker_problem = url_or_problem
     if checker_problem:
         problem_dir = (
             checker_problem._get_problem_directory_path()  # pyright: ignore[reportPrivateUsage]
