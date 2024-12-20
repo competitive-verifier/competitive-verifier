@@ -1,11 +1,12 @@
 import datetime
 import pathlib
 import shutil
-from typing import Any, Iterable, List, Literal, Union
+import subprocess
+import sys
+import tarfile
+from typing import Any, Literal, Optional, Union
 
-import onlinejudge.service.library_checker as library_checker
 import requests
-from onlinejudge.type import TestCase as OjTestCase
 
 import competitive_verifier.config as config
 from competitive_verifier.models import FileResult
@@ -114,56 +115,57 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         )
 
 
-class MockLibraryCheckerProblem(library_checker.LibraryCheckerProblem):
-    def __init__(self, *, problem_id: str):
-        super().__init__(problem_id=problem_id)
+_library_checker_problems_tar_gz: Optional[bytes] = None
 
-    def download_system_cases(self, *, session: Any = None) -> List[OjTestCase]:
-        self._update_cloned_repository()
-        return list(self._mock_cases())
 
-    def download_sample_cases(self, *, session: Any = None) -> List[OjTestCase]:
-        assert False
+def update_cloned_repository() -> None:
+    global _library_checker_problems_tar_gz
 
-    def _update_cloned_repository(self) -> None:
-        zip_path = config.get_cache_dir() / "library-checker-problems.zip"
-        if not zip_path.exists():
-            zip_path.parent.mkdir(parents=True, exist_ok=True)
+    gz_path = config.get_cache_dir() / "library-checker-problems.tar.gz"
+    gz_path = gz_path.resolve()
+    if not gz_path.exists():
+        gz_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if _library_checker_problems_tar_gz:
+            gz_path.write_bytes(_library_checker_problems_tar_gz)
+            shutil.unpack_archive(gz_path, config.get_cache_dir())
+        else:
             res = requests.get(
-                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.zip"
+                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.tar.gz"
             )
-            with zip_path.open("wb") as fp:
-                fp.write(res.content)
-            shutil.unpack_archive(zip_path, config.get_cache_dir())
+            content = res.content
+
+            with gz_path.open("wb") as fp:
+                fp.write(content)
+
+            shutil.unpack_archive(gz_path, config.get_cache_dir())
+            master_dir = config.get_cache_dir() / "library-checker-problems-master"
+
+            subprocess.check_call(
+                [sys.executable, "generate.py", "sample/aplusb/info.toml"],
+                cwd=master_dir,
+            )
+
+            gz_path.unlink(missing_ok=True)
+            with tarfile.open(gz_path, "w:gz") as gzp:
+                gzp.add(master_dir, "library-checker-problems", filter=_match_aplusb)
+            _library_checker_problems_tar_gz = gz_path.read_bytes()
+
             shutil.move(
-                config.get_cache_dir() / "library-checker-problems-master",
+                master_dir,
                 config.get_cache_dir() / "library-checker-problems",
             )
 
-        # library_checker.LibraryCheckerService._update_cloned_repository()  # pyright: ignore[reportPrivateUsage]
 
-    def _mock_cases(self) -> Iterable[OjTestCase]:
-        if self.problem_id == "aplusb":
-            for name, a, b in [
-                ("example_00", 1000, 10),
-                ("example_01", 1002, 20),
-                ("random_00", 1000, 130),
-                ("random_01", 1003, 140),
-                ("random_02", 1005, 150),
-                ("random_03", 1000, 160),
-                ("random_04", 1005, 170),
-                ("random_05", 1007, 180),
-                ("random_06", 1009, 191),
-                ("random_07", 1008, 200),
-                ("random_08", 1005, 214),
-                ("random_09", 1008, 225),
-            ]:
-                yield OjTestCase(
-                    name=name,
-                    input_name=f"{name}.in",
-                    output_name=f"{name}.out",
-                    input_data=f"{a} {b}\n".encode(),
-                    output_data=f"{a + b}\n".encode(),
-                )
-        else:
-            raise NotImplementedError()
+def _match_aplusb(t: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
+    if t.isdir():
+        if "library-checker-problems/sample/aplusb".startswith(t.path):
+            return t
+        elif t.path.startswith("library-checker-problems/sample/aplusb"):
+            return t
+    elif t.isfile():
+        if t.path.startswith("library-checker-problems/sample/aplusb"):
+            return t
+        elif t.path.endswith(".py"):
+            return t
+    return None
