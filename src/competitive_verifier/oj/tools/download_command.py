@@ -5,10 +5,12 @@ import textwrap
 from contextlib import nullcontext
 from logging import getLogger
 from typing import Iterator
+from itertools import chain
 
 import onlinejudge.dispatch as dispatch
 import requests.exceptions
 from onlinejudge.service.atcoder import AtCoderProblem
+from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
 from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
 
@@ -24,6 +26,34 @@ from .func import (
 )
 
 logger = getLogger(__name__)
+
+
+def _run_library_checker(
+    *,
+    problem: LibraryCheckerProblem,
+    directory: pathlib.Path,
+    dry_run: bool = False,
+) -> bool:
+    problem._generate_test_cases_in_cloned_repository()  # pyright: ignore[reportPrivateUsage]
+    path = problem._get_problem_directory_path()  # pyright: ignore[reportPrivateUsage]
+    for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
+        dst = directory / "test" / file.name
+        if dst.exists():
+            logger.error("Failed to download since file already exists: %s", str(dst))
+            return False
+        if not dry_run:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(file, dst)
+
+    checker_path = get_checker_path(problem)
+    if checker_path and checker_path.exists():
+        try:
+            shutil.copy2(checker_path, directory)
+        except Exception as e:
+            logger.exception("Failed to copy checker %s", e)
+            shutil.rmtree(directory)
+            return False
+    return True
 
 
 # flake8: noqa: C901
@@ -44,6 +74,12 @@ def run(
             )
         logger.error('The URL "%s" is not supported', url)
         return False
+
+    if isinstance(problem, LibraryCheckerProblem):
+        return _run_library_checker(
+            problem=problem,
+            directory=directory,
+        )
 
     # get samples from the server
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
@@ -107,7 +143,7 @@ def run(
                 continue
             basename = os.path.basename(sample.name)
             filename = f"{basename}.{ext}"
-            path: pathlib.Path = directory / filename
+            path: pathlib.Path = directory / "test" / filename
             yield ext, path, data
 
     for i, sample in enumerate(samples):
@@ -148,22 +184,13 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
             cm = nullcontext()
         with cm:
             directory.mkdir(parents=True, exist_ok=True)
-            # time.sleep(2)
 
             try:
                 run(
                     url=url,
-                    directory=test_directory,
+                    directory=directory,
                     cookie=get_cache_directory() / "cookie.txt",
                 )
-                checker_path = get_checker_path(url)
-                if checker_path and checker_path.exists():
-                    try:
-                        shutil.copy2(checker_path, directory)
-                    except Exception as e:
-                        logger.exception("Failed to copy checker %s", e)
-                        shutil.rmtree(directory)
-                        return False
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
                     logger.error("Required: $YUKICODER_TOKEN environment variable")

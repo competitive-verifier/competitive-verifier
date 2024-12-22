@@ -1,7 +1,8 @@
 import contextlib
+from dataclasses import dataclass
 import os
 import pathlib
-from typing import Any, TypedDict
+from typing import Optional
 
 import onlinejudge.service.atcoder as atcoder
 import onlinejudge.service.library_checker as library_checker
@@ -15,9 +16,11 @@ from pytest_mock.plugin import MockType
 from competitive_verifier.download.main import run_impl as download
 
 
-class MockProblem(TypedDict):
+@dataclass
+class MockProblem:
     download_system_cases: MockType
     download_sample_cases: MockType
+    generate_test_cases_in_cloned_repository: Optional[MockType] = None
 
 
 @pytest.fixture
@@ -60,10 +63,27 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
             ),
         )
         for problem_type in [
-            library_checker.LibraryCheckerProblem,
             yukicoder.YukicoderProblem,
             atcoder.AtCoderProblem,
         ]
+    } | {
+        library_checker.LibraryCheckerProblem: MockProblem(
+            download_system_cases=mocker.patch.object(
+                library_checker.LibraryCheckerProblem,
+                "download_system_cases",
+                return_value=[],
+            ),
+            download_sample_cases=mocker.patch.object(
+                library_checker.LibraryCheckerProblem,
+                "download_sample_cases",
+                return_value=[],
+            ),
+            generate_test_cases_in_cloned_repository=mocker.patch.object(
+                library_checker.LibraryCheckerProblem,
+                "_generate_test_cases_in_cloned_repository",
+                return_value=None,
+            ),
+        )
     }
 
 
@@ -98,32 +118,28 @@ def test_oj_download(
         ),
     ]
 
-    for m in mock_problem.values():
-        m["download_sample_cases"].assert_not_called()
-        m["download_system_cases"].assert_called_once()
-
-    class SessionData(TypedDict):
-        headers: dict[str, Any]
-        cookies: dict[str, Any]
-
-    calls: dict[type[onlinejudge.type.Problem], SessionData] = {
-        k: {
-            "headers": v["download_system_cases"].call_args[1]["session"].headers,
-            "cookies": v["download_system_cases"]
-            .call_args[1]["session"]
-            .cookies.get_dict(),
-        }
-        for k, v in mock_problem.items()
+    assert set(mock_problem.keys()) == {
+        library_checker.LibraryCheckerProblem,
+        yukicoder.YukicoderProblem,
+        atcoder.AtCoderProblem,
     }
 
-    assert calls == {
-        library_checker.LibraryCheckerProblem: {"headers": {}, "cookies": {}},
-        yukicoder.YukicoderProblem: {
-            "headers": {"Authorization": "Bearer YKTK"},
-            "cookies": {},
-        },
-        atcoder.AtCoderProblem: {
-            "headers": {"Authorization": "Bearer DBTK"},
-            "cookies": {},
-        },
+    #
+    mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
+    mock_library_checker.download_sample_cases.assert_not_called()
+    mock_library_checker.download_system_cases.assert_not_called()
+    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()  # type: ignore
+
+    mock_yuki_coder = mock_problem[yukicoder.YukicoderProblem]
+    mock_yuki_coder.download_sample_cases.assert_not_called()
+    mock_yuki_coder.download_system_cases.assert_called_once()
+    assert mock_yuki_coder.download_system_cases.call_args[1]["session"].headers == {
+        "Authorization": "Bearer YKTK"
+    }
+
+    mock_at_coder = mock_problem[atcoder.AtCoderProblem]
+    mock_at_coder.download_sample_cases.assert_not_called()
+    mock_at_coder.download_system_cases.assert_called_once()
+    assert mock_at_coder.download_system_cases.call_args[1]["session"].headers == {
+        "Authorization": "Bearer DBTK"
     }
