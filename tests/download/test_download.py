@@ -1,7 +1,7 @@
 import contextlib
-from dataclasses import dataclass
 import os
 import pathlib
+from dataclasses import dataclass
 from typing import Optional
 
 import onlinejudge.service.atcoder as atcoder

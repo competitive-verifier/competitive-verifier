@@ -3,9 +3,9 @@ import pathlib
 import shutil
 import textwrap
 from contextlib import nullcontext
+from itertools import chain
 from logging import getLogger
 from typing import Iterator
-from itertools import chain
 
 import onlinejudge.dispatch as dispatch
 import requests.exceptions
