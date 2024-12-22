@@ -46,9 +46,9 @@ def _run_library_checker(
             shutil.move(file, dst)
 
     checker_path = get_checker_path(problem)
-    if checker_path and checker_path.exists():
+    if checker_path and checker_path.exists() and not dry_run:
         try:
-            shutil.copy2(checker_path, directory)
+            shutil.move(checker_path, directory)
         except Exception as e:
             logger.exception("Failed to copy checker %s", e)
             shutil.rmtree(directory)
