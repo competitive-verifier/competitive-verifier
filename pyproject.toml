@@ -51,6 +51,7 @@ poethepoet = "^0.24.2"
 
 flake8 = { version = "^7.0.0", extras = ["lint"] }
 pyproject-flake8 = { version = "^7.0.0", extras = ["lint"] }
+
 [tool.poe.tasks]
 flake8 = "pflake8 src/competitive_verifier tests"
 isort = "isort src/competitive_verifier tests"
@@ -179,7 +180,7 @@ exclude = [
     "examples",
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
-    "src/oj_porting",
+    "src/porting_oj",
 ]
 ignore = ["E203", "E266", "E501", "E701", "E704", "W503", "B905", "B907"]
 per-file-ignores = [
@@ -191,10 +192,10 @@ per-file-ignores = [
 pythonVersion = "3.9"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
-exclude = [
+ignore = [
     "src/competitive_verifier_resources/jekyll",
     "tests/integration/testdata",
-    "src/oj_porting",
+    "src/porting_oj",
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false

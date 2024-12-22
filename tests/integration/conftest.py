@@ -5,7 +5,6 @@ import pathlib
 import shutil
 from typing import Optional
 
-import onlinejudge.dispatch
 import onlinejudge.service.library_checker as library_checker
 import pytest
 import requests
@@ -17,7 +16,7 @@ from .data.integration_data import IntegrationData
 from .data.java import JavaData
 from .data.rust import RustWithoutConfigData
 from .data.user_defined_and_python import UserDefinedAndPythonData
-from .mock import MockLibraryCheckerProblem, MockVerifyCommandResult
+from .mock import MockVerifyCommandResult, update_cloned_repository
 from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
 
@@ -119,14 +118,9 @@ def mock_verification(mocker: MockerFixture):
     )
 
     mocker.patch.object(
-        onlinejudge.dispatch,
-        "problems",
-        new=[
-            MockLibraryCheckerProblem
-            if p == library_checker.LibraryCheckerProblem
-            else p
-            for p in onlinejudge.dispatch.problems
-        ],
+        library_checker.LibraryCheckerService,
+        "_update_cloned_repository",
+        side_effect=update_cloned_repository,
     )
 
 
