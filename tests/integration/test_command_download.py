@@ -49,7 +49,7 @@ class TestCommandDownload:
         reason="$YUKICODER_TOKEN is not found",
     )
     def test_yukicoder(self, set_config_dir: ConfigDirSetter):
-        url = "https://yukicoder.me/problems/no/3040"
+        url = "https://yukicoder.me/problems/no/1088"
         dst_path = set_config_dir("download/yukicoder")
 
         promlem_path = oj.get_directory(url)
