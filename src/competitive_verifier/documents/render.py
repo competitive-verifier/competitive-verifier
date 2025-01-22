@@ -169,7 +169,7 @@ class UserMarkdowns:
                     s = Markdown(content=b"", front_matter=None)
                 if not s.front_matter:
                     s.front_matter = FrontMatter()
-                
+
                 if m.front_matter.display == DocumentOutputMode.never:
                     s.front_matter.display = DocumentOutputMode.never
                 else:
@@ -339,10 +339,12 @@ class RenderJob(ABC):
 
     @property
     @abstractmethod
-    def destination_name(self) -> pathlib.Path: ...
+    def destination_name(self) -> pathlib.Path:
+        ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO): ...
+    def write_to(self, fp: BinaryIO):
+        ...
 
     @staticmethod
     def enumerate_jobs(
