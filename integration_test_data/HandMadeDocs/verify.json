@@ -46,6 +46,8 @@
                 "display/hidden.txt",
                 "display/no-index.txt",
                 "display/never.txt",
+                "display/multi-never.txt",
+                "display/multi-never2.txt",
                 "display/visible.txt"
             ]
         },
@@ -62,6 +64,21 @@
             "dependencies": [
                 "display/multi-no-keep.txt",
                 "display/multi-no-keep2.txt"
+            ]
+        },
+        "display/multi-never.txt": {
+            "document_attributes": {
+                "TITLE": "Multi never $1$"
+            },
+            "dependencies": [
+                "display/multi-never.txt",
+                "display/multi-never2.txt"
+            ]
+        },
+        "display/multi-never2.txt": {
+            "dependencies": [
+                "display/multi-never.txt",
+                "display/multi-never2.txt"
             ]
         },
         "root.txt": {},

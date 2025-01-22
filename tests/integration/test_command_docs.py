@@ -2004,6 +2004,8 @@ def test_hand_docs(
     )
 
     assert not pathlib.Path(destination / "display/never.txt.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never.txt.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never2.txt.md").exists()
     assert pathlib.Path(destination / "foo/bar.js").exists()
     assert not pathlib.Path(destination / "docs").exists()
 
