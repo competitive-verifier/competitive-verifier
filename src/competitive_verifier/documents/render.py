@@ -165,23 +165,17 @@ class UserMarkdowns:
             for source in m.multi_documentation_of:
                 redirect_to = f"/{m.path.with_suffix('').as_posix()}"
                 s = single.get(source)
-                if s:
-                    if s.front_matter:
-                        s.front_matter.display = DocumentOutputMode.no_index
-                        s.front_matter.redirect_to = redirect_to
-                    else:
-                        s.front_matter = FrontMatter(
-                            redirect_to=redirect_to,
-                            display=DocumentOutputMode.no_index,
-                        )
+                if not s:
+                    s = Markdown(content=b"", front_matter=None)
+                if not s.front_matter:
+                    s.front_matter = FrontMatter()
+                
+                if m.front_matter.display == DocumentOutputMode.never:
+                    s.front_matter.display = DocumentOutputMode.never
                 else:
-                    s = Markdown(
-                        content=b"",
-                        front_matter=FrontMatter(
-                            redirect_to=redirect_to,
-                            display=DocumentOutputMode.no_index,
-                        ),
-                    )
+                    s.front_matter.display = DocumentOutputMode.no_index
+                s.front_matter.redirect_to = redirect_to
+
                 single[source] = s
         return UserMarkdowns(
             single=single,
@@ -345,12 +339,10 @@ class RenderJob(ABC):
 
     @property
     @abstractmethod
-    def destination_name(self) -> pathlib.Path:
-        ...
+    def destination_name(self) -> pathlib.Path: ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO):
-        ...
+    def write_to(self, fp: BinaryIO): ...
 
     @staticmethod
     def enumerate_jobs(
@@ -448,6 +440,8 @@ class RenderJob(ABC):
                 page_jobs=page_jobs,
             )
 
+            if md.front_matter.display == DocumentOutputMode.never:
+                continue
             multis.append(job)
 
             # if not md.front_matter.keep_single:
