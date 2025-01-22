@@ -2004,6 +2004,11 @@ def test_hand_docs(
     )
 
     assert not pathlib.Path(destination / "display/never.txt.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never.txt.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never2.txt.md").exists()
+    assert not pathlib.Path(destination / "display/never.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never.md").exists()
+    assert not pathlib.Path(destination / "display/multi-never2.md").exists()
     assert pathlib.Path(destination / "foo/bar.js").exists()
     assert not pathlib.Path(destination / "docs").exists()
 
@@ -2127,7 +2132,7 @@ def test_hand_docs(
             "display/hidden.txt",
             {
                 "documentPath": "display/hidden.md",
-                "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "dependsOn": [
                     "display/multi-no-keep.txt",
                     "display/no-index.txt",
@@ -2188,7 +2193,7 @@ def test_hand_docs(
             "display/no-index.txt",
             {
                 "documentPath": "display/no-index.md",
-                "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "dependsOn": ["display/multi-no-keep.txt", "display/visible.txt"],
                 "requiredBy": ["display/visible.txt"],
                 "dependencies": [
@@ -2232,7 +2237,7 @@ def test_hand_docs(
         TextFileData(
             "display/visible.txt",
             {
-                "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "documentPath": "display/visible.md",
                 "dependsOn": [
                     "display/multi-no-keep.txt",
@@ -2489,7 +2494,7 @@ def test_hand_docs(
                         "path": "display/visible.txt",
                         "pathExtension": "txt",
                         "requiredBy": ["display/no-index.txt"],
-                        "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                        "timestamp": "2052-02-21 19:31:36.300000-07:00",
                         "title": "display=visible",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
@@ -2539,7 +2544,7 @@ def test_hand_docs(
                         "path": "display/no-index.txt",
                         "pathExtension": "txt",
                         "requiredBy": ["display/visible.txt"],
-                        "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                        "timestamp": "2052-02-21 19:31:36.300000-07:00",
                         "title": "display=no-index",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
@@ -2602,7 +2607,7 @@ def test_hand_docs(
                         "path": "display/hidden.txt",
                         "pathExtension": "txt",
                         "requiredBy": ["display/no-index.txt", "display/visible.txt"],
-                        "timestamp": "2029-10-02 13:51:10.570000-05:00",
+                        "timestamp": "2052-02-21 19:31:36.300000-07:00",
                         "title": "display=hidden",
                         "verificationStatus": "LIBRARY_NO_TESTS",
                         "verifiedWith": [],
