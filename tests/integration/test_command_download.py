@@ -5,6 +5,7 @@ import subprocess
 
 import pytest
 
+import competitive_verifier.config as config
 import competitive_verifier.oj as oj
 
 from .types import ConfigDirSetter
@@ -87,8 +88,9 @@ class TestCommandDownload:
     def test_atcoder(self, set_config_dir: ConfigDirSetter):
         url = "https://atcoder.jp/contests/abc322/tasks/abc322_a"
         dst_path = set_config_dir("download/atcoder")
-
-        problem_path = oj.get_atcoder_cache_dir() / "abc322" / "abc322" / "A"
+        problem_path = (
+            config.get_cache_dir() / "atcoder-problems" / "abc322" / "abc322" / "A"
+        )
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(dst_path)
 

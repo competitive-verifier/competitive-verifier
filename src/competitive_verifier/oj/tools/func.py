@@ -20,10 +20,6 @@ def get_problem_cache_dir() -> pathlib.Path:
     return config.get_cache_dir() / "problems"
 
 
-def get_atcoder_cache_dir() -> pathlib.Path:
-    return config.get_cache_dir() / "atcoder-problems"
-
-
 def get_directory(url: str) -> pathlib.Path:
     return get_problem_cache_dir() / hashlib.md5(url.encode()).hexdigest()
 
