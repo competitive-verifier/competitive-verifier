@@ -21,6 +21,7 @@ class MockProblem:
     download_system_cases: MockType
     download_sample_cases: MockType
     generate_test_cases_in_cloned_repository: Optional[MockType] = None
+    update_branch: Optional[MockType] = None
 
 
 @pytest.fixture
@@ -49,42 +50,63 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
         side_effect=new_session_with_our_user_agent,
     )
 
-    return {
-        problem_type: MockProblem(
-            download_system_cases=mocker.patch.object(
-                problem_type,
-                "download_system_cases",
-                return_value=[],
-            ),
-            download_sample_cases=mocker.patch.object(
-                problem_type,
-                "download_sample_cases",
-                return_value=[],
-            ),
-        )
-        for problem_type in [
-            yukicoder.YukicoderProblem,
-            atcoder.AtCoderProblem,
-        ]
-    } | {
-        library_checker.LibraryCheckerProblem: MockProblem(
-            download_system_cases=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
-                "download_system_cases",
-                return_value=[],
-            ),
-            download_sample_cases=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
-                "download_sample_cases",
-                return_value=[],
-            ),
-            generate_test_cases_in_cloned_repository=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
-                "_generate_test_cases_in_cloned_repository",
-                return_value=None,
-            ),
-        )
-    }
+    return (
+        {
+            problem_type: MockProblem(
+                download_system_cases=mocker.patch.object(
+                    problem_type,
+                    "download_system_cases",
+                    return_value=[],
+                ),
+                download_sample_cases=mocker.patch.object(
+                    problem_type,
+                    "download_sample_cases",
+                    return_value=[],
+                ),
+            )
+            for problem_type in [
+                yukicoder.YukicoderProblem,
+            ]
+        }
+        | {
+            library_checker.LibraryCheckerProblem: MockProblem(
+                download_system_cases=mocker.patch.object(
+                    library_checker.LibraryCheckerProblem,
+                    "download_system_cases",
+                    return_value=[],
+                ),
+                download_sample_cases=mocker.patch.object(
+                    library_checker.LibraryCheckerProblem,
+                    "download_sample_cases",
+                    return_value=[],
+                ),
+                generate_test_cases_in_cloned_repository=mocker.patch.object(
+                    library_checker.LibraryCheckerProblem,
+                    "_generate_test_cases_in_cloned_repository",
+                    return_value=None,
+                ),
+            )
+        }
+        | {
+            atcoder.AtCoderProblem: MockProblem(
+                download_system_cases=mocker.patch.object(
+                    atcoder.AtCoderProblem,
+                    "download_system_cases",
+                    return_value=[],
+                ),
+                download_sample_cases=mocker.patch.object(
+                    atcoder.AtCoderProblem,
+                    "download_sample_cases",
+                    return_value=[],
+                ),
+                update_branch=mocker.patch.object(
+                    atcoder.AtCoderProblem,
+                    "_update_branch",
+                    return_value=None,
+                ),
+            )
+        }
+    )
 
 
 @pytest.fixture
@@ -139,7 +161,5 @@ def test_oj_download(
 
     mock_at_coder = mock_problem[atcoder.AtCoderProblem]
     mock_at_coder.download_sample_cases.assert_not_called()
-    mock_at_coder.download_system_cases.assert_called_once()
-    assert mock_at_coder.download_system_cases.call_args[1]["session"].headers == {
-        "Authorization": "Bearer DBTK"
-    }
+    mock_at_coder.download_system_cases.assert_not_called()
+    mock_at_coder.update_branch.assert_called_once()  # type: ignore

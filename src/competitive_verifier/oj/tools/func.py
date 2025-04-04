@@ -20,6 +20,10 @@ def get_problem_cache_dir() -> pathlib.Path:
     return config.get_cache_dir() / "problems"
 
 
+def get_atcoder_cache_dir() -> pathlib.Path:
+    return config.get_cache_dir() / "atcoder-problems"
+
+
 def get_directory(url: str) -> pathlib.Path:
     return get_problem_cache_dir() / hashlib.md5(url.encode()).hexdigest()
 
@@ -37,7 +41,7 @@ def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
 
 
 def get_checker_path(
-    url_or_problem: Union[str, LibraryCheckerProblem, None]
+    url_or_problem: Union[str, LibraryCheckerProblem, None],
 ) -> Optional[pathlib.Path]:
     if isinstance(url_or_problem, str):
         checker_problem = get_checker_problem(url_or_problem)

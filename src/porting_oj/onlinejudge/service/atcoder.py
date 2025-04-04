@@ -150,6 +150,7 @@ class AtCoderService(onlinejudge.type.Service):
         if branch in cls.updated_branches:
             return
 
+        # check git command
         try:
             subprocess.check_call(
                 ["git", "--version"], stdout=sys.stderr, stderr=sys.stderr
@@ -163,9 +164,11 @@ class AtCoderService(onlinejudge.type.Service):
             # init the problem repository
             try:
                 url = "https://github.com/conlacda/atcoder-testcases"
-                logger.info("$ git clone -b %s %s %s", branch, url, path)
+                logger.info(
+                    "$ git clone --single-branch -b %s %s %s", branch, url, path
+                )
                 subprocess.check_call(
-                    ["git", "clone", "-b", branch, url, str(path)],
+                    ["git", "clone", "--single-branch", "-b", branch, url, str(path)],
                     stdout=sys.stderr,
                     stderr=sys.stderr,
                 )
@@ -942,16 +945,6 @@ class AtCoderProblem(onlinejudge.type.Problem):
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
         return AtCoderProblemDetailedData._parse_sample_cases(soup)
 
-    def _match_system_cases_contest_folder(self, *, contest_folder_name: str) -> bool:
-        # TODO: improve this function
-        return self.contest_id in contest_folder_name.lower()
-
-    def _match_system_cases_problem_folder(
-        self, *, contest_folder_name: str, problem_folder_name: str
-    ) -> bool:
-        # TODO: improve this function
-        return self.problem_id[-1] == problem_folder_name.lower()[-1]
-
     def _get_problem_directory_path(self) -> pathlib.Path:
         return (
             AtCoderService._get_cloned_repository_path()
@@ -959,6 +952,9 @@ class AtCoderProblem(onlinejudge.type.Problem):
             / self.contest_id
             / self.problem_id
         )
+
+    def _update_branch(self) -> None:
+        AtCoderService._update_branch(branch=self.contest_id)
 
     def download_system_cases(
         self, *, session: Optional[requests.Session] = None
@@ -968,7 +964,7 @@ class AtCoderProblem(onlinejudge.type.Problem):
         :raises subprocess.CalledProcessError: if problem is not found
         :raises SampleParseError: if parsing failed
         """
-        AtCoderService._update_branch(branch=self.contest_id)
+        self._update_branch()
 
         # zip files
         testcases: List[TestCase] = []
