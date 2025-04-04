@@ -52,4 +52,7 @@ poetry run pytest
 
 # format
 poetry run poe format
+
+# run local source
+poetry run competitive-verifier $args
 ```
