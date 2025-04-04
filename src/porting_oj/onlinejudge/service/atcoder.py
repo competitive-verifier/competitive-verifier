@@ -18,6 +18,8 @@ import json
 import pathlib
 import posixpath
 import re
+import subprocess
+import sys
 import time
 import urllib.parse
 from logging import getLogger
@@ -141,8 +143,44 @@ class AtCoderService(onlinejudge.type.Service):
     def _get_cloned_repository_path(cls) -> pathlib.Path:
         return utils.user_cache_dir / "atcoder-problems"
 
+    updated_branches = []
+
     @classmethod
-    def _list_cloned_branches(cls) -> List[str]: ...
+    def _update_branch(cls, branch: str) -> None:
+        if branch in cls.updated_branches:
+            return
+
+        try:
+            subprocess.check_call(
+                ["git", "--version"], stdout=sys.stderr, stderr=sys.stderr
+            )
+        except FileNotFoundError:
+            logger.error("git command not found")
+            raise
+
+        path = AtCoderService._get_cloned_repository_path() / branch
+        if not path.exists():
+            # init the problem repository
+            try:
+                url = "https://github.com/conlacda/atcoder-testcases"
+                logger.info("$ git clone -b %s %s %s", branch, url, path)
+                subprocess.check_call(
+                    ["git", "clone", "-b", branch, url, str(path)],
+                    stdout=sys.stderr,
+                    stderr=sys.stderr,
+                )
+            except subprocess.CalledProcessError:
+                logger.error(
+                    "Failed to clone the repository. This contest may not be supported."
+                )
+                raise
+        else:
+            # sync the problem repository
+            logger.info("$ git -C %s pull", str(path))
+            subprocess.check_call(
+                ["git", "-C", str(path), "pull"], stdout=sys.stderr, stderr=sys.stderr
+            )
+        cls.updated_branches.append(branch)
 
     def iterate_contest_data(
         self, *, lang: str = "ja", session: Optional[requests.Session] = None
@@ -914,172 +952,33 @@ class AtCoderProblem(onlinejudge.type.Problem):
         # TODO: improve this function
         return self.problem_id[-1] == problem_folder_name.lower()[-1]
 
-    def _list_dropbox_folder(
-        self, *, path: str, shared_link_url: str, session: requests.Session
-    ) -> List[Dict[str, str]]:
-        """
-        :raises requests.exceptions.HTTPError: if no such problem exists
-
-        https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_folders
-        """
-
-        time.sleep(0.5)  # at most two requests per a second
-
-        url = "https://api.dropboxapi.com/2/files/list_folder"
-        payload = {
-            "path": path,
-            "shared_link": {
-                "url": shared_link_url,
-            },
-        }
-
-        entries: List[Dict[str, str]] = []
-        while True:
-            resp = utils.request(
-                "POST", url, json=payload, session=session, raise_for_status=False
-            )
-            try:
-                resp.raise_for_status()
-            except:
-                logger.debug("%s", resp.content.decode())
-                raise
-            result = json.loads(resp.content)
-            entries.extend(result["entries"])
-
-            if result["has_more"]:
-                url = "https://api.dropboxapi.com/2/files/list_folder/continue"
-                payload = {
-                    "cursor": result["cursor"],
-                }
-            else:
-                break
-        return entries
-
-    def _get_dropbox_shared_link_file(
-        self, *, path: str, shared_link_url: str, session: requests.Session
-    ) -> bytes:
-        """
-        :raises requests.exceptions.HTTPError: if no such problem exists
-
-        https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file
-        """
-
-        time.sleep(0.5)  # at most two requests per a second
-
-        url = "https://content.dropboxapi.com/2/sharing/get_shared_link_file"
-        headers = {
-            "Dropbox-API-Arg": json.dumps(
-                {
-                    "path": path,
-                    "url": shared_link_url,
-                }
-            ),
-        }
-        resp = utils.request(
-            "POST", url, headers=headers, session=session, raise_for_status=False
+    def _get_problem_directory_path(self) -> pathlib.Path:
+        return (
+            AtCoderService._get_cloned_repository_path()
+            / self.contest_id
+            / self.contest_id
+            / self.problem_id
         )
-        try:
-            resp.raise_for_status()
-        except:
-            logger.debug("%s", resp.content.decode())
-            raise
-        return resp.content
 
     def download_system_cases(
         self, *, session: Optional[requests.Session] = None
     ) -> List[onlinejudge.type.TestCase]:
         """
-        :raises requests.exceptions.HTTPError: if no such problem exists
+        :raises FileNotFoundError: if git is not installed
+        :raises subprocess.CalledProcessError: if problem is not found
         :raises SampleParseError: if parsing failed
         """
-
-        # Dropbox API documentation: https://www.dropbox.com/developers/documentation/http/documentation
-        session = session or utils.get_default_session()
-        shared_link_url = (
-            "https://www.dropbox.com/sh/nx3tnilzqz7df8a/AAAYlTq2tiEHl5hsESw6-yfLa"
-        )
-
-        # list folders
-        path = ""
-        contest_folders = self._list_dropbox_folder(
-            path=path, shared_link_url=shared_link_url, session=session
-        )
-
-        # find the content folder
-        contest_folder: Optional[Dict[str, str]] = None
-        for entry in contest_folders:
-            logger.debug("entry: %s", entry)
-            if self._match_system_cases_contest_folder(
-                contest_folder_name=entry["name"]
-            ):
-                if contest_folder is not None:
-                    raise SampleParseError(
-                        "two folders match the contest: {} and {}".format(
-                            contest_folder, entry
-                        )
-                    )
-                contest_folder = entry
-        if contest_folder is None:
-            raise SampleParseError("no folder matches the contest")
-        logger.info("contest folder found: %s", entry)
-
-        # list folders
-        path = "/{}".format(contest_folder["name"])
-        problem_folders = self._list_dropbox_folder(
-            path=path, shared_link_url=shared_link_url, session=session
-        )
-
-        # find the problem folder
-        problem_folder: Optional[Dict[str, str]] = None
-        for entry in problem_folders:
-            logger.debug("entry: %s", entry)
-            if self._match_system_cases_problem_folder(
-                contest_folder_name=contest_folder["name"],
-                problem_folder_name=entry["name"],
-            ):
-                if problem_folder is not None:
-                    raise SampleParseError(
-                        "two folders match the problem: {} and {}".format(
-                            problem_folder, entry
-                        )
-                    )
-                problem_folder = entry
-        if problem_folder is None:
-            raise SampleParseError("no folder matches the problem")
-        logger.info("problem folder found: %s", entry)
-
-        # list folders
-        path = "/{}/{}/in".format(contest_folder["name"], problem_folder["name"])
-        in_files = self._list_dropbox_folder(
-            path=path, shared_link_url=shared_link_url, session=session
-        )
+        AtCoderService._update_branch(branch=self.contest_id)
 
         # zip files
         testcases: List[TestCase] = []
-        for entry in in_files:
-            logger.debug("entry: %s", entry)
-            path_in = "/{}/{}/in/{}".format(
-                contest_folder["name"], problem_folder["name"], entry["name"]
-            )
-            data_in = self._get_dropbox_shared_link_file(
-                path=path_in, shared_link_url=shared_link_url, session=session
-            )
-            path_out = "/{}/{}/out/{}".format(
-                contest_folder["name"], problem_folder["name"], entry["name"]
-            )
-            data_out = self._get_dropbox_shared_link_file(
-                path=path_out, shared_link_url=shared_link_url, session=session
-            )
-            testcases.append(
-                TestCase(
-                    entry["name"],
-                    path_in,
-                    data_in,
-                    path_out,
-                    data_out,
-                )
-            )
-        return testcases
+        path = self._get_problem_directory_path()
+        files = []  # type: List[Tuple[str, bytes]]
+        files += [(file.name, file.read_bytes()) for file in path.glob("in/*.in")]
+        files += [(file.name, file.read_bytes()) for file in path.glob("out/*.out")]
+        return onlinejudge._implementation.testcase_zipper.extract_from_files(
+            iter(files)
+        )
 
     def get_url(self, *, type: Optional[str] = None, lang: Optional[str] = None) -> str:
         if type is None or type == "beta":
