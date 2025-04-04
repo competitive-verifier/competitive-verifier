@@ -61,9 +61,9 @@ def _run_atcoder(
     directory: pathlib.Path,
     dry_run: bool = False,
 ) -> bool:
-    problem._update_branch()  # pyright: ignore[reportPrivateUsage]
-    path = problem._get_problem_directory_path()  # pyright: ignore[reportPrivateUsage]
-    for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
+    problem.update_branch()
+    path = problem.get_problem_directory_path()
+    for file in chain(path.glob("in/*"), path.glob("out/*")):
         dst = directory / "test" / file.name
         if dst.exists():
             logger.error("Failed to download since file already exists: %s", str(dst))

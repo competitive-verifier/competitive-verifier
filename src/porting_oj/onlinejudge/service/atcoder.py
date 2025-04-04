@@ -68,45 +68,6 @@ def _request(*args, **kwargs):
 
 
 class AtCoderService(onlinejudge.type.Service):
-    def login(
-        self,
-        *,
-        get_credentials: onlinejudge.type.CredentialsProvider,
-        session: Optional[requests.Session] = None,
-    ) -> None:
-        """
-        :raises LoginError:
-        """
-
-        session = session or utils.get_default_session()
-        if self.is_logged_in(session=session):
-            return
-
-        # get
-        url = "https://atcoder.jp/login"
-        resp = _request("GET", url, session=session, allow_redirects=False)
-
-        # parse
-        soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
-        form = soup.find("form", action="")
-        if not form:
-            raise LoginError("something wrong")
-
-        # post
-        username, password = get_credentials()
-        form = utils.FormSender(form, url=resp.url)
-        form.set("username", username)
-        form.set("password", password)
-        resp = form.request(session)
-        _list_alert(resp, print_=True)
-
-        # result
-        if "login" not in resp.url:
-            logger.info("Welcome,")  # AtCoder redirects to the top page if success
-        else:
-            logger.error("Username or Password is incorrect.")
-            raise LoginError
-
     def get_url_of_login_page(self) -> str:
         return "https://atcoder.jp/login"
 
@@ -141,15 +102,10 @@ class AtCoderService(onlinejudge.type.Service):
 
     @classmethod
     def _get_cloned_repository_path(cls) -> pathlib.Path:
-        return utils.user_cache_dir / "atcoder-problems"
-
-    updated_branches = []
+        return utils.user_cache_dir / "atcoder-testcases"
 
     @classmethod
-    def _update_branch(cls, branch: str) -> None:
-        if branch in cls.updated_branches:
-            return
-
+    def update_branch(cls, branch: str) -> None:
         # check git command
         try:
             subprocess.check_call(
@@ -160,30 +116,22 @@ class AtCoderService(onlinejudge.type.Service):
             raise
 
         path = AtCoderService._get_cloned_repository_path() / branch
-        if not path.exists():
-            # init the problem repository
-            try:
-                url = "https://github.com/conlacda/atcoder-testcases"
-                logger.info(
-                    "$ git clone --single-branch -b %s %s %s", branch, url, path
-                )
-                subprocess.check_call(
-                    ["git", "clone", "--single-branch", "-b", branch, url, str(path)],
-                    stdout=sys.stderr,
-                    stderr=sys.stderr,
-                )
-            except subprocess.CalledProcessError:
-                logger.error(
-                    "Failed to clone the repository. This contest may not be supported."
-                )
-                raise
-        else:
-            # sync the problem repository
-            logger.info("$ git -C %s pull", str(path))
+        if path.exists():
+            return
+        # init the problem repository
+        try:
+            url = "https://github.com/conlacda/atcoder-testcases"
+            logger.info("$ git clone --single-branch -b %s %s %s", branch, url, path)
             subprocess.check_call(
-                ["git", "-C", str(path), "pull"], stdout=sys.stderr, stderr=sys.stderr
+                ["git", "clone", "--single-branch", "-b", branch, url, str(path)],
+                stdout=sys.stderr,
+                stderr=sys.stderr,
             )
-        cls.updated_branches.append(branch)
+        except subprocess.CalledProcessError:
+            logger.error(
+                "Failed to clone the repository. This contest may not be supported."
+            )
+            raise
 
     def iterate_contest_data(
         self, *, lang: str = "ja", session: Optional[requests.Session] = None
@@ -945,7 +893,7 @@ class AtCoderProblem(onlinejudge.type.Problem):
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
         return AtCoderProblemDetailedData._parse_sample_cases(soup)
 
-    def _get_problem_directory_path(self) -> pathlib.Path:
+    def get_problem_directory_path(self) -> pathlib.Path:
         return (
             AtCoderService._get_cloned_repository_path()
             / self.contest_id
@@ -953,8 +901,8 @@ class AtCoderProblem(onlinejudge.type.Problem):
             / self.problem_id
         )
 
-    def _update_branch(self) -> None:
-        AtCoderService._update_branch(branch=self.contest_id)
+    def update_branch(self) -> None:
+        AtCoderService.update_branch(branch=self.contest_id)
 
     def download_system_cases(
         self, *, session: Optional[requests.Session] = None
@@ -964,7 +912,7 @@ class AtCoderProblem(onlinejudge.type.Problem):
         :raises subprocess.CalledProcessError: if problem is not found
         :raises SampleParseError: if parsing failed
         """
-        self._update_branch()
+        self.update_branch()
 
         # zip files
         testcases: List[TestCase] = []

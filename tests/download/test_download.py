@@ -101,7 +101,7 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
                 ),
                 update_branch=mocker.patch.object(
                     atcoder.AtCoderProblem,
-                    "_update_branch",
+                    "update_branch",
                     return_value=None,
                 ),
             )

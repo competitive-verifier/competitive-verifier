@@ -89,7 +89,7 @@ class TestCommandDownload:
         url = "https://atcoder.jp/contests/abc322/tasks/abc322_a"
         dst_path = set_config_dir("download/atcoder")
         problem_path = (
-            config.get_cache_dir() / "atcoder-problems" / "abc322" / "abc322" / "A"
+            config.get_cache_dir() / "atcoder-testcases" / "abc322" / "abc322" / "A"
         )
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(dst_path)
