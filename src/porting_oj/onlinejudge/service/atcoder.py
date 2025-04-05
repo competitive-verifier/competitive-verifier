@@ -105,7 +105,8 @@ class AtCoderService(onlinejudge.type.Service):
         return utils.user_cache_dir / "atcoder-testcases"
 
     @classmethod
-    def update_branch(cls, branch: str) -> None:
+    def update_branch(cls, branch: str = "abc322") -> None:
+        # use abc322 as default branch due to tests.
         # check git command
         try:
             subprocess.check_call(

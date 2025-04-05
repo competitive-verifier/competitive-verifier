@@ -5,6 +5,7 @@ import pathlib
 import shutil
 from typing import Optional
 
+import onlinejudge.service.atcoder as atcoder
 import onlinejudge.service.library_checker as library_checker
 import pytest
 import requests
@@ -121,6 +122,12 @@ def mock_verification(mocker: MockerFixture):
         library_checker.LibraryCheckerService,
         "_update_cloned_repository",
         side_effect=update_cloned_repository,
+    )
+
+    mocker.patch.object(
+        atcoder.AtCoderService,
+        "update_branch",
+        # side_effect=update_cloned_repository,
     )
 
 
