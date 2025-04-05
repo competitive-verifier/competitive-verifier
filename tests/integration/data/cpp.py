@@ -28,11 +28,11 @@ class CppWithoutConfigData(IntegrationData):
         gcc_path = shutil.which("g++")
         clang_path = shutil.which("clang++")
 
-        expand_stack = ""
+        stack_expand_args = ""
         if platform.system() == "Windows" or "CYGWIN" in platform.system():
-            expand_stack = "-Wl,-stack,0x10000000 "
+            stack_expand_args = "-Wl,-stack,0x10000000 "
         if platform.system() == "Darwin":
-            expand_stack = "-Wl,-stack_size,0x10000000 "
+            stack_expand_args = "-Wl,-stack_size,0x10000000 "
 
         return dict(
             {
@@ -72,7 +72,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "compile": f"{gcc_path} "
                                 "--std=c++17 -O2 "
                                 "-Wall -g "
-                                f"{expand_stack}"
+                                f"{stack_expand_args}"
                                 "-I "
                                 f"{self.targets_path} "
                                 "-o "
@@ -87,7 +87,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "compile": f"{clang_path} "
                                 "--std=c++17 -O2 "
                                 "-Wall -g "
-                                f"{expand_stack}"
+                                f"{stack_expand_args}"
                                 "-I "
                                 f"{self.targets_path} "
                                 "-o "
@@ -119,7 +119,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "compile": f"{gcc_path} "
                                 "--std=c++17 -O2 -Wall -g "
-                                f"{expand_stack}"
+                                f"{stack_expand_args}"
                                 "-I "
                                 f"{self.targets_path} "
                                 "-o "
@@ -133,7 +133,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "compile": f"{clang_path} "
                                 "--std=c++17 -O2 -Wall -g "
-                                f"{expand_stack}"
+                                f"{stack_expand_args}"
                                 "-I "
                                 f"{self.targets_path} "
                                 "-o "
