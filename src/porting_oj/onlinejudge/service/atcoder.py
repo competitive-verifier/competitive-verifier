@@ -15,8 +15,11 @@ the module for AtCoder (https://atcoder.jp/)
 
 import itertools
 import json
+import pathlib
 import posixpath
 import re
+import subprocess
+import sys
 import time
 import urllib.parse
 from logging import getLogger
@@ -33,14 +36,18 @@ from onlinejudge.type import *
 logger = getLogger(__name__)
 
 
-def _list_alert(resp: requests.Response, soup: Optional[bs4.BeautifulSoup] = None, print_: bool = False) -> List[str]:
+def _list_alert(
+    resp: requests.Response,
+    soup: Optional[bs4.BeautifulSoup] = None,
+    print_: bool = False,
+) -> List[str]:
     if soup is None:
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
     msgs = []  # type: List[str]
-    for alert in soup.find_all('div', attrs={'role': 'alert'}):
-        msg = ' '.join([s.strip() for s in alert.strings if s.strip()])
+    for alert in soup.find_all("div", attrs={"role": "alert"}):
+        msg = " ".join([s.strip() for s in alert.strings if s.strip()])
         if print_:
-            logger.warning('AtCoder says: %s', msg)
+            logger.warning("AtCoder says: %s", msg)
         msgs += [msg]
     return msgs
 
@@ -51,64 +58,33 @@ def _request(*args, **kwargs):
     see https://github.com/kmyk/online-judge-tools/issues/28 and https://github.com/kmyk/online-judge-tools/issues/232
     """
     resp = utils.request(*args, **kwargs)
-    logger.debug('AtCoder\'s server said "Content-Type: %s"', resp.headers.get('Content-Type', '(not sent)'))
-    resp.encoding = 'UTF-8'
+    logger.debug(
+        'AtCoder\'s server said "Content-Type: %s"',
+        resp.headers.get("Content-Type", "(not sent)"),
+    )
+    resp.encoding = "UTF-8"
     _list_alert(resp, print_=True)
     return resp
 
 
 class AtCoderService(onlinejudge.type.Service):
-    def login(self, *, get_credentials: onlinejudge.type.CredentialsProvider, session: Optional[requests.Session] = None) -> None:
-        """
-        :raises LoginError:
-        """
-
-        session = session or utils.get_default_session()
-        if self.is_logged_in(session=session):
-            return
-
-        # get
-        url = 'https://atcoder.jp/login'
-        resp = _request('GET', url, session=session, allow_redirects=False)
-
-        # parse
-        soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
-        form = soup.find('form', action='')
-        if not form:
-            raise LoginError('something wrong')
-
-        # post
-        username, password = get_credentials()
-        form = utils.FormSender(form, url=resp.url)
-        form.set('username', username)
-        form.set('password', password)
-        resp = form.request(session)
-        _list_alert(resp, print_=True)
-
-        # result
-        if 'login' not in resp.url:
-            logger.info('Welcome,')  # AtCoder redirects to the top page if success
-        else:
-            logger.error('Username or Password is incorrect.')
-            raise LoginError
-
     def get_url_of_login_page(self) -> str:
-        return 'https://atcoder.jp/login'
+        return "https://atcoder.jp/login"
 
     def is_logged_in(self, *, session: Optional[requests.Session] = None) -> bool:
         session = session or utils.get_default_session()
-        url = 'https://atcoder.jp/contests/agc001/submit'
-        resp = _request('GET', url, session=session, allow_redirects=False)
+        url = "https://atcoder.jp/contests/agc001/submit"
+        resp = _request("GET", url, session=session, allow_redirects=False)
         return resp.status_code == 200
 
     def get_url(self) -> str:
-        return 'https://atcoder.jp/'
+        return "https://atcoder.jp/"
 
     def get_name(self) -> str:
-        return 'AtCoder'
+        return "AtCoder"
 
     @classmethod
-    def from_url(cls, url: str) -> Optional['AtCoderService']:
+    def from_url(cls, url: str) -> Optional["AtCoderService"]:
         """
         :param url: example:
 
@@ -117,19 +93,57 @@ class AtCoderService(onlinejudge.type.Service):
         """
 
         result = urllib.parse.urlparse(url)
-        if result.scheme in ('', 'http', 'https') \
-                and (result.netloc in ('atcoder.jp', 'beta.atcoder.jp') or result.netloc.endswith('.contest.atcoder.jp')):
+        if result.scheme in ("", "http", "https") and (
+            result.netloc in ("atcoder.jp", "beta.atcoder.jp")
+            or result.netloc.endswith(".contest.atcoder.jp")
+        ):
             return cls()
         return None
 
-    def iterate_contest_data(self, *, lang: str = 'ja', session: Optional[requests.Session] = None) -> Iterator['AtCoderContestData']:
+    @classmethod
+    def _get_cloned_repository_path(cls) -> pathlib.Path:
+        return utils.user_cache_dir / "atcoder-testcases"
+
+    @classmethod
+    def update_branch(cls, branch: str = "abc322") -> None:
+        # use abc322 as default branch due to tests.
+        # check git command
+        try:
+            subprocess.check_call(
+                ["git", "--version"], stdout=sys.stderr, stderr=sys.stderr
+            )
+        except FileNotFoundError:
+            logger.error("git command not found")
+            raise
+
+        path = AtCoderService._get_cloned_repository_path() / branch
+        if path.exists():
+            return
+        # init the problem repository
+        try:
+            url = "https://github.com/conlacda/atcoder-testcases"
+            logger.info("$ git clone --single-branch -b %s %s %s", branch, url, path)
+            subprocess.check_call(
+                ["git", "clone", "--single-branch", "-b", branch, url, str(path)],
+                stdout=sys.stderr,
+                stderr=sys.stderr,
+            )
+        except subprocess.CalledProcessError:
+            logger.error(
+                "Failed to clone the repository. This contest may not be supported."
+            )
+            raise
+
+    def iterate_contest_data(
+        self, *, lang: str = "ja", session: Optional[requests.Session] = None
+    ) -> Iterator["AtCoderContestData"]:
         """
         :param lang: must be `ja` (default) or `en`.
         :note: `lang=ja` is required to see some Japanese-local contests.
         :note: You can use `lang=en` to see the English names of contests.
         """
 
-        assert lang in ('ja', 'en')
+        assert lang in ("ja", "en")
         session = session or utils.get_default_session()
         last_page = None
         first = True
@@ -138,28 +152,36 @@ class AtCoderService(onlinejudge.type.Service):
                 break
 
             # get
-            url = 'https://atcoder.jp/contests/archive?lang={}&page={}'.format(lang, page)
+            url = "https://atcoder.jp/contests/archive?lang={}&page={}".format(
+                lang, page
+            )
             if not first:
                 time.sleep(0.1)
-            resp = _request('GET', url, session=session)
+            resp = _request("GET", url, session=session)
             first = False
             timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone()
 
             # parse
             soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
             if last_page is None:
-                last_page = int(soup.find('ul', class_='pagination').find_all('li')[-1].text)
-                logger.debug('last page: %s', last_page)
-            tbody = soup.find('tbody')
-            for tr in tbody.find_all('tr'):
-                yield AtCoderContestData._from_table_row(tr, lang=lang, response=resp, session=session, timestamp=timestamp)
+                last_page = int(
+                    soup.find("ul", class_="pagination").find_all("li")[-1].text
+                )
+                logger.debug("last page: %s", last_page)
+            tbody = soup.find("tbody")
+            for tr in tbody.find_all("tr"):
+                yield AtCoderContestData._from_table_row(
+                    tr, lang=lang, response=resp, session=session, timestamp=timestamp
+                )
 
-    def iterate_contests(self, *, lang: str = 'ja', session: Optional[requests.Session] = None) -> Iterator['AtCoderContest']:
+    def iterate_contests(
+        self, *, lang: str = "ja", session: Optional[requests.Session] = None
+    ) -> Iterator["AtCoderContest"]:
         for data in self.iterate_contest_data(lang=lang, session=session):
             yield data.contest
 
     def get_user_history_url(self, user_id: str) -> str:
-        return 'https://atcoder.jp/users/{}/history/json'.format(user_id)
+        return "https://atcoder.jp/users/{}/history/json".format(user_id)
 
 
 class AtCoderContestData(ContestData):
@@ -261,28 +283,45 @@ class AtCoderContestDetailedData(AtCoderContestData):
     :ivar can_participate: :py:class:`str`
     :ivar penalty: :py:class:`datetime.timedelta`
     """
+
     def __init__(self, *, can_participate: str, penalty: datetime.timedelta, **kwargs):
         super().__init__(**kwargs)
         self.can_participate = can_participate
         self.penalty = penalty
 
     @classmethod
-    def _from_response(cls, *, contest: 'AtCoderContest', lang: str, session: requests.Session, response: requests.Response, timestamp: datetime.datetime):
+    def _from_response(
+        cls,
+        *,
+        contest: "AtCoderContest",
+        lang: str,
+        session: requests.Session,
+        response: requests.Response,
+        timestamp: datetime.datetime,
+    ):
         soup = bs4.BeautifulSoup(response.text, utils.HTML_PARSER)
-        name, _, _ = soup.find('title').text.rpartition(' - ')
-        contest_duration = soup.find('small', class_='contest-duration')
-        start_time, end_time = [cls._parse_start_time(a['href']) for a in contest_duration.find_all('a')]
+        name, _, _ = soup.find("title").text.rpartition(" - ")
+        contest_duration = soup.find("small", class_="contest-duration")
+        start_time, end_time = [
+            cls._parse_start_time(a["href"]) for a in contest_duration.find_all("a")
+        ]
         duration = end_time - start_time
-        _, _, can_participate = soup.find('span', text=re.compile(r'^(Can Participate|参加対象): ')).text.partition(': ')
-        _, _, rated_range = soup.find('span', text=re.compile(r'^(Rated Range|Rated対象): ')).text.partition(': ')
+        _, _, can_participate = soup.find(
+            "span", text=re.compile(r"^(Can Participate|参加対象): ")
+        ).text.partition(": ")
+        _, _, rated_range = soup.find(
+            "span", text=re.compile(r"^(Rated Range|Rated対象): ")
+        ).text.partition(": ")
 
-        penalty_text = soup.find('span', text=re.compile(r'^(Penalty|ペナルティ): ')).text
-        if lang == 'en' and penalty_text == 'Penalty: None':
+        penalty_text = soup.find(
+            "span", text=re.compile(r"^(Penalty|ペナルティ): ")
+        ).text
+        if lang == "en" and penalty_text == "Penalty: None":
             minutes = 0
-        elif lang == 'ja' and penalty_text == 'ペナルティ: なし':
+        elif lang == "ja" and penalty_text == "ペナルティ: なし":
             minutes = 0
         else:
-            m = re.match(r'(Penalty|ペナルティ): (\d+)( minutes?|分)', penalty_text)
+            m = re.match(r"(Penalty|ペナルティ): (\d+)( minutes?|分)", penalty_text)
             assert m
             minutes = int(m.group(2))
         penalty = datetime.timedelta(minutes=minutes)
@@ -306,25 +345,28 @@ class AtCoderContest(onlinejudge.type.Contest):
     """
     :ivar contest_id: :py:class:`str`
     """
+
     def __init__(self, *, contest_id: str):
-        if contest_id.startswith('http'):
+        if contest_id.startswith("http"):
             # an exception should be raised since mypy cannot check this kind of failure
-            raise ValueError('You should use AtCoderContest.from_url(url) instead of AtCoderContest(url)')
+            raise ValueError(
+                "You should use AtCoderContest.from_url(url) instead of AtCoderContest(url)"
+            )
         self.contest_id = contest_id
 
     def get_url(self, *, type: Optional[str] = None, lang: Optional[str] = None) -> str:
-        if type is None or type == 'beta':
-            url = 'https://atcoder.jp/contests/{}'.format(self.contest_id)
-        elif type == 'old':
-            url = 'http://{}.contest.atcoder.jp/'.format(self.contest_id)
+        if type is None or type == "beta":
+            url = "https://atcoder.jp/contests/{}".format(self.contest_id)
+        elif type == "old":
+            url = "http://{}.contest.atcoder.jp/".format(self.contest_id)
         else:
             assert False
         if lang is not None:
-            url += '?lang={}'.format(lang)
+            url += "?lang={}".format(lang)
         return url
 
     @classmethod
-    def from_url(cls, url: str) -> Optional['AtCoderContest']:
+    def from_url(cls, url: str) -> Optional["AtCoderContest"]:
         """
         :param url: example:
 
@@ -337,46 +379,64 @@ class AtCoderContest(onlinejudge.type.Contest):
             return None
 
         # example: https://kupc2014.contest.atcoder.jp/tasks/kupc2014_d
-        if result.scheme in ('', 'http', 'https') and result.hostname.endswith('.contest.atcoder.jp'):
-            contest_id = utils.remove_suffix(result.hostname, '.contest.atcoder.jp')
+        if result.scheme in ("", "http", "https") and result.hostname.endswith(
+            ".contest.atcoder.jp"
+        ):
+            contest_id = utils.remove_suffix(result.hostname, ".contest.atcoder.jp")
             return cls(contest_id=contest_id)
 
         # example: https://atcoder.jp/contests/agc030
-        if result.scheme in ('', 'http', 'https') and result.hostname in ('atcoder.jp', 'beta.atcoder.jp'):
-            m = re.match(r'/contests/([\w\-_]+)/?.*', utils.normpath(result.path))
+        if result.scheme in ("", "http", "https") and result.hostname in (
+            "atcoder.jp",
+            "beta.atcoder.jp",
+        ):
+            m = re.match(r"/contests/([\w\-_]+)/?.*", utils.normpath(result.path))
             if m:
                 contest_id = m.group(1)
                 return cls(contest_id=contest_id)
 
         return None
 
-    def download_data(self, *, session: Optional[requests.Session] = None, lang: str = 'en') -> AtCoderContestDetailedData:
-        assert lang in ('en', 'ja')
+    def download_data(
+        self, *, session: Optional[requests.Session] = None, lang: str = "en"
+    ) -> AtCoderContestDetailedData:
+        assert lang in ("en", "ja")
         session = session or utils.get_default_session()
-        resp = _request('GET', self.get_url(type='beta', lang=lang), session=session)
+        resp = _request("GET", self.get_url(type="beta", lang=lang), session=session)
         timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone()
-        return AtCoderContestDetailedData._from_response(contest=self, lang=lang, session=session, response=resp, timestamp=timestamp)
+        return AtCoderContestDetailedData._from_response(
+            contest=self, lang=lang, session=session, response=resp, timestamp=timestamp
+        )
 
     def get_service(self) -> AtCoderService:
         return AtCoderService()
 
-    def list_problem_data(self, *, session: Optional[requests.Session] = None) -> List['AtCoderProblemData']:
+    def list_problem_data(
+        self, *, session: Optional[requests.Session] = None
+    ) -> List["AtCoderProblemData"]:
         """
         :raises Exception: if logging in is required to see the tasks page
         """
 
         # get
         session = session or utils.get_default_session()
-        url = 'https://atcoder.jp/contests/{}/tasks'.format(self.contest_id)
-        resp = _request('GET', url, session=session)
+        url = "https://atcoder.jp/contests/{}/tasks".format(self.contest_id)
+        resp = _request("GET", url, session=session)
         timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone()
 
         # parse
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
-        tbody = soup.find('tbody')
-        return [AtCoderProblemData._from_table_row(tr, session=session, response=resp, timestamp=timestamp) for tr in tbody.find_all('tr')]
+        tbody = soup.find("tbody")
+        return [
+            AtCoderProblemData._from_table_row(
+                tr, session=session, response=resp, timestamp=timestamp
+            )
+            for tr in tbody.find_all("tr")
+        ]
 
-    def list_problems(self, *, session: Optional[requests.Session] = None) -> Sequence['AtCoderProblem']:
+    def list_problems(
+        self, *, session: Optional[requests.Session] = None
+    ) -> Sequence["AtCoderProblem"]:
         # Even without logging in, we can list problems of some contests via standings pages, but some contests have no standings pages
         return tuple(data.problem for data in self.list_problem_data(session=session))
 
@@ -797,175 +857,87 @@ class AtCoderProblem(onlinejudge.type.Problem):
 
     :note: AtCoder has problems independently from contests. Therefore the notions `contest_id`, `alphabet`, and `url` don't belong to problems itself.
     """
+
     def __init__(self, *, contest_id: str, problem_id: str):
         self.contest_id = contest_id
         self.problem_id = problem_id  # NOTE: AtCoder calls this as "task_screen_name"
 
-    def download_data(self, *, session: Optional[requests.Session] = None) -> AtCoderProblemDetailedData:
+    def download_data(
+        self, *, session: Optional[requests.Session] = None
+    ) -> AtCoderProblemDetailedData:
         """
         :raises Exception: if no such problem exists
         """
 
         session = session or utils.get_default_session()
-        resp = _request('GET', self.get_url(type='beta'), raise_for_status=False, session=session)
+        resp = _request(
+            "GET", self.get_url(type="beta"), raise_for_status=False, session=session
+        )
         timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone()
         if _list_alert(resp):
-            logger.warning('are you logged in?')
+            logger.warning("are you logged in?")
         resp.raise_for_status()
         html = resp.text.encode()  # ensure UTF-8
-        return AtCoderProblemDetailedData.from_html(html, problem=self, session=session, response=resp, timestamp=timestamp)
+        return AtCoderProblemDetailedData.from_html(
+            html, problem=self, session=session, response=resp, timestamp=timestamp
+        )
 
-    def download_sample_cases(self, *, session: Optional[requests.Session] = None) -> List[onlinejudge.type.TestCase]:
+    def download_sample_cases(
+        self, *, session: Optional[requests.Session] = None
+    ) -> List[onlinejudge.type.TestCase]:
         """
         :raises requests.exceptions.HTTPError: if no such problem exists
         :raises SampleParseError: if parsing failed
         """
         session = session or utils.get_default_session()
-        resp = _request('GET', self.get_url(type='beta'), session=session)
+        resp = _request("GET", self.get_url(type="beta"), session=session)
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
         return AtCoderProblemDetailedData._parse_sample_cases(soup)
 
-    def _match_system_cases_contest_folder(self, *, contest_folder_name: str) -> bool:
-        # TODO: improve this function
-        return self.contest_id in contest_folder_name.lower()
+    def get_problem_directory_path(self) -> pathlib.Path:
+        return (
+            AtCoderService._get_cloned_repository_path()
+            / self.contest_id
+            / self.contest_id
+            / self.problem_id
+        )
 
-    def _match_system_cases_problem_folder(self, *, contest_folder_name: str, problem_folder_name: str) -> bool:
-        # TODO: improve this function
-        return self.problem_id[-1] == problem_folder_name.lower()[-1]
+    def update_branch(self) -> None:
+        AtCoderService.update_branch(branch=self.contest_id)
 
-    def _list_dropbox_folder(self, *, path: str, shared_link_url: str, session: requests.Session) -> List[Dict[str, str]]:
+    def download_system_cases(
+        self, *, session: Optional[requests.Session] = None
+    ) -> List[onlinejudge.type.TestCase]:
         """
-        :raises requests.exceptions.HTTPError: if no such problem exists
-
-        https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_folders
-        """
-
-        time.sleep(0.5)  # at most two requests per a second
-
-        url = 'https://api.dropboxapi.com/2/files/list_folder'
-        payload = {
-            "path": path,
-            "shared_link": {
-                "url": shared_link_url,
-            },
-        }
-
-        entries: List[Dict[str, str]] = []
-        while True:
-            resp = utils.request('POST', url, json=payload, session=session, raise_for_status=False)
-            try:
-                resp.raise_for_status()
-            except:
-                logger.debug('%s', resp.content.decode())
-                raise
-            result = json.loads(resp.content)
-            entries.extend(result['entries'])
-
-            if result['has_more']:
-                url = 'https://api.dropboxapi.com/2/files/list_folder/continue'
-                payload = {
-                    "cursor": result['cursor'],
-                }
-            else:
-                break
-        return entries
-
-    def _get_dropbox_shared_link_file(self, *, path: str, shared_link_url: str, session: requests.Session) -> bytes:
-        """
-        :raises requests.exceptions.HTTPError: if no such problem exists
-
-        https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file
-        """
-
-        time.sleep(0.5)  # at most two requests per a second
-
-        url = 'https://content.dropboxapi.com/2/sharing/get_shared_link_file'
-        headers = {
-            "Dropbox-API-Arg": json.dumps({
-                "path": path,
-                "url": shared_link_url,
-            }),
-        }
-        resp = utils.request('POST', url, headers=headers, session=session, raise_for_status=False)
-        try:
-            resp.raise_for_status()
-        except:
-            logger.debug('%s', resp.content.decode())
-            raise
-        return resp.content
-
-    def download_system_cases(self, *, session: Optional[requests.Session] = None) -> List[onlinejudge.type.TestCase]:
-        """
-        :raises requests.exceptions.HTTPError: if no such problem exists
+        :raises FileNotFoundError: if git is not installed
+        :raises subprocess.CalledProcessError: if problem is not found
         :raises SampleParseError: if parsing failed
         """
-
-        # Dropbox API documentation: https://www.dropbox.com/developers/documentation/http/documentation
-        session = session or utils.get_default_session()
-        shared_link_url = 'https://www.dropbox.com/sh/nx3tnilzqz7df8a/AAAYlTq2tiEHl5hsESw6-yfLa'
-
-        # list folders
-        path = ""
-        contest_folders = self._list_dropbox_folder(path=path, shared_link_url=shared_link_url, session=session)
-
-        # find the content folder
-        contest_folder: Optional[Dict[str, str]] = None
-        for entry in contest_folders:
-            logger.debug('entry: %s', entry)
-            if self._match_system_cases_contest_folder(contest_folder_name=entry['name']):
-                if contest_folder is not None:
-                    raise SampleParseError('two folders match the contest: {} and {}'.format(contest_folder, entry))
-                contest_folder = entry
-        if contest_folder is None:
-            raise SampleParseError('no folder matches the contest')
-        logger.info('contest folder found: %s', entry)
-
-        # list folders
-        path = "/{}".format(contest_folder['name'])
-        problem_folders = self._list_dropbox_folder(path=path, shared_link_url=shared_link_url, session=session)
-
-        # find the problem folder
-        problem_folder: Optional[Dict[str, str]] = None
-        for entry in problem_folders:
-            logger.debug('entry: %s', entry)
-            if self._match_system_cases_problem_folder(contest_folder_name=contest_folder['name'], problem_folder_name=entry['name']):
-                if problem_folder is not None:
-                    raise SampleParseError('two folders match the problem: {} and {}'.format(problem_folder, entry))
-                problem_folder = entry
-        if problem_folder is None:
-            raise SampleParseError('no folder matches the problem')
-        logger.info('problem folder found: %s', entry)
-
-        # list folders
-        path = "/{}/{}/in".format(contest_folder['name'], problem_folder['name'])
-        in_files = self._list_dropbox_folder(path=path, shared_link_url=shared_link_url, session=session)
+        self.update_branch()
 
         # zip files
         testcases: List[TestCase] = []
-        for entry in in_files:
-            logger.debug('entry: %s', entry)
-            path_in = "/{}/{}/in/{}".format(contest_folder['name'], problem_folder['name'], entry['name'])
-            data_in = self._get_dropbox_shared_link_file(path=path_in, shared_link_url=shared_link_url, session=session)
-            path_out = "/{}/{}/out/{}".format(contest_folder['name'], problem_folder['name'], entry['name'])
-            data_out = self._get_dropbox_shared_link_file(path=path_out, shared_link_url=shared_link_url, session=session)
-            testcases.append(TestCase(
-                entry['name'],
-                path_in,
-                data_in,
-                path_out,
-                data_out,
-            ))
-        return testcases
+        path = self._get_problem_directory_path()
+        files = []  # type: List[Tuple[str, bytes]]
+        files += [(file.name, file.read_bytes()) for file in path.glob("in/*.in")]
+        files += [(file.name, file.read_bytes()) for file in path.glob("out/*.out")]
+        return onlinejudge._implementation.testcase_zipper.extract_from_files(
+            iter(files)
+        )
 
     def get_url(self, *, type: Optional[str] = None, lang: Optional[str] = None) -> str:
-        if type is None or type == 'beta':
-            url = 'https://atcoder.jp/contests/{}/tasks/{}'.format(self.contest_id, self.problem_id)
-        elif type == 'old':
-            url = 'http://{}.contest.atcoder.jp/tasks/{}'.format(self.contest_id, self.problem_id)
+        if type is None or type == "beta":
+            url = "https://atcoder.jp/contests/{}/tasks/{}".format(
+                self.contest_id, self.problem_id
+            )
+        elif type == "old":
+            url = "http://{}.contest.atcoder.jp/tasks/{}".format(
+                self.contest_id, self.problem_id
+            )
         else:
             assert False
         if lang is not None:
-            url += '?lang={}'.format(lang)
+            url += "?lang={}".format(lang)
         return url
 
     def get_service(self) -> AtCoderService:
@@ -975,99 +947,130 @@ class AtCoderProblem(onlinejudge.type.Problem):
         return AtCoderContest(contest_id=self.contest_id)
 
     @classmethod
-    def from_url(cls, s: str) -> Optional['AtCoderProblem']:
+    def from_url(cls, s: str) -> Optional["AtCoderProblem"]:
         # example: http://agc012.contest.atcoder.jp/tasks/agc012_d
         result = urllib.parse.urlparse(s)
         dirname, basename = posixpath.split(utils.normpath(result.path))
-        if result.scheme in ('', 'http', 'https') \
-                and result.netloc.count('.') == 3 \
-                and result.netloc.endswith('.contest.atcoder.jp') \
-                and result.netloc.split('.')[0] \
-                and dirname == '/tasks' \
-                and basename:
-            contest_id = result.netloc.split('.')[0]
+        if (
+            result.scheme in ("", "http", "https")
+            and result.netloc.count(".") == 3
+            and result.netloc.endswith(".contest.atcoder.jp")
+            and result.netloc.split(".")[0]
+            and dirname == "/tasks"
+            and basename
+        ):
+            contest_id = result.netloc.split(".")[0]
             problem_id = basename
             return cls(contest_id=contest_id, problem_id=problem_id)
 
         # example: https://beta.atcoder.jp/contests/abc073/tasks/abc073_a
-        m = re.match(r'^/contests/([\w\-_]+)/tasks/([\w\-_]+)$', utils.normpath(result.path))
-        if result.scheme in ('', 'http', 'https') \
-                and result.netloc in ('atcoder.jp', 'beta.atcoder.jp') \
-                and m:
+        m = re.match(
+            r"^/contests/([\w\-_]+)/tasks/([\w\-_]+)$", utils.normpath(result.path)
+        )
+        if (
+            result.scheme in ("", "http", "https")
+            and result.netloc in ("atcoder.jp", "beta.atcoder.jp")
+            and m
+        ):
             contest_id = m.group(1)
             problem_id = m.group(2)
             return cls(contest_id=contest_id, problem_id=problem_id)
 
         return None
 
-    def download_input_format(self, *, session: Optional[requests.Session] = None) -> Optional[str]:
+    def download_input_format(
+        self, *, session: Optional[requests.Session] = None
+    ) -> Optional[str]:
         """
         :raises Exception: if no such problem exists
         """
         return self.download_data(session=session).input_format
 
-    def get_available_languages(self, *, session: Optional[requests.Session] = None) -> List[Language]:
+    def get_available_languages(
+        self, *, session: Optional[requests.Session] = None
+    ) -> List[Language]:
         """
         :raises NotLoggedInError:
         """
         data = self.download_data(session=session)
         if data.available_languages is None:
-            logger.error('not logged in')
+            logger.error("not logged in")
             raise NotLoggedInError
         return data.available_languages
 
-    def submit_code(self, code: bytes, language_id: LanguageId, *, filename: Optional[str] = None, session: Optional[requests.Session] = None) -> 'AtCoderSubmission':
+    def submit_code(
+        self,
+        code: bytes,
+        language_id: LanguageId,
+        *,
+        filename: Optional[str] = None,
+        session: Optional[requests.Session] = None,
+    ) -> "AtCoderSubmission":
         """
         :raises NotLoggedInError:
         :raises SubmissionError:
         """
 
         session = session or utils.get_default_session()
-        assert language_id in [language.id for language in self.get_available_languages(session=session)]
+        assert language_id in [
+            language.id for language in self.get_available_languages(session=session)
+        ]
 
         # get
-        url = 'https://atcoder.jp/contests/{}/submit'.format(self.contest_id)
-        resp = _request('GET', url, session=session)
+        url = "https://atcoder.jp/contests/{}/submit".format(self.contest_id)
+        resp = _request("GET", url, session=session)
 
         # check whether logged in
-        if 'login' in resp.url:
+        if "login" in resp.url:
             raise NotLoggedInError
 
         # parse
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
-        form = soup.find('form', action='/contests/{}/submit'.format(self.contest_id))
+        form = soup.find("form", action="/contests/{}/submit".format(self.contest_id))
         if not form:
-            raise SubmissionError('something wrong')
-        logger.debug('form: %s', str(form))
+            raise SubmissionError("something wrong")
+        logger.debug("form: %s", str(form))
 
         # post
         form = utils.FormSender(form, url=resp.url)
-        form.set('data.TaskScreenName', self.problem_id)
-        form.set('data.LanguageId', str(language_id))
-        form.set('sourceCode', code)
+        form.set("data.TaskScreenName", self.problem_id)
+        form.set("data.LanguageId", str(language_id))
+        form.set("sourceCode", code)
         resp = form.request(session=session)
         timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone()
         _list_alert(resp, print_=True)
 
         # result
-        if '/submissions/me' in resp.url:
-            submission = next(AtCoderContest(contest_id=self.contest_id)._iterate_submission_data_from_response(resp=resp, session=session, timestamp=timestamp)).submission
-            logger.info('success: result: %s', submission.get_url())
+        if "/submissions/me" in resp.url:
+            submission = next(
+                AtCoderContest(
+                    contest_id=self.contest_id
+                )._iterate_submission_data_from_response(
+                    resp=resp, session=session, timestamp=timestamp
+                )
+            ).submission
+            logger.info("success: result: %s", submission.get_url())
             return submission
         else:
-            raise SubmissionError('it may be a rate limit')
+            raise SubmissionError("it may be a rate limit")
 
     def get_name(self, *, session: Optional[requests.Session] = None) -> str:
         return self.download_data(session=session).name
 
-    def iterate_submissions(self, *, session: Optional[requests.Session] = None) -> Iterator['AtCoderSubmission']:
+    def iterate_submissions(
+        self, *, session: Optional[requests.Session] = None
+    ) -> Iterator["AtCoderSubmission"]:
         """
         :note: in implementation, use "ORDER BY created DESC" to list all submissions even when there are new submissions
         """
-        yield from self.get_contest().iterate_submissions_where(problem_id=self.problem_id, order='created', desc=False, session=session)
+        yield from self.get_contest().iterate_submissions_where(
+            problem_id=self.problem_id, order="created", desc=False, session=session
+        )
 
-    def iterate_submissions_where(self, **kwargs) -> Iterator['AtCoderSubmission']:
-        yield from self.get_contest().iterate_submissions_where(problem_id=self.problem_id, **kwargs)
+    def iterate_submissions_where(self, **kwargs) -> Iterator["AtCoderSubmission"]:
+        yield from self.get_contest().iterate_submissions_where(
+            problem_id=self.problem_id, **kwargs
+        )
 
 
 class AtCoderSubmissionData(SubmissionData):
@@ -1215,23 +1218,26 @@ class AtCoderSubmission(onlinejudge.type.Submission):
     :ivar contest_id: :py:class:`str`
     :ivar submission_id: :py:class:`str`
     """
+
     def __init__(self, *, contest_id: str, submission_id: int):
         self.contest_id = contest_id
         self.submission_id = submission_id
 
     @classmethod
-    def from_url(cls, s: str) -> Optional['AtCoderSubmission']:
+    def from_url(cls, s: str) -> Optional["AtCoderSubmission"]:
         submission_id = None  # type: Optional[int]
 
         # example: http://agc001.contest.atcoder.jp/submissions/1246803
         result = urllib.parse.urlparse(s)
         dirname, basename = posixpath.split(utils.normpath(result.path))
-        if result.scheme in ('', 'http', 'https') \
-                and result.netloc.count('.') == 3 \
-                and result.netloc.endswith('.contest.atcoder.jp') \
-                and result.netloc.split('.')[0] \
-                and dirname == '/submissions':
-            contest_id = result.netloc.split('.')[0]
+        if (
+            result.scheme in ("", "http", "https")
+            and result.netloc.count(".") == 3
+            and result.netloc.endswith(".contest.atcoder.jp")
+            and result.netloc.split(".")[0]
+            and dirname == "/submissions"
+        ):
+            contest_id = result.netloc.split(".")[0]
             try:
                 submission_id = int(basename)
             except ValueError:
@@ -1240,10 +1246,14 @@ class AtCoderSubmission(onlinejudge.type.Submission):
                 return cls(contest_id=contest_id, submission_id=submission_id)
 
         # example: https://beta.atcoder.jp/contests/abc073/submissions/1592381
-        m = re.match(r'^/contests/([\w\-_]+)/submissions/(\d+)$', utils.normpath(result.path))
-        if result.scheme in ('', 'http', 'https') \
-                and result.netloc in ('atcoder.jp', 'beta.atcoder.jp') \
-                and m:
+        m = re.match(
+            r"^/contests/([\w\-_]+)/submissions/(\d+)$", utils.normpath(result.path)
+        )
+        if (
+            result.scheme in ("", "http", "https")
+            and result.netloc in ("atcoder.jp", "beta.atcoder.jp")
+            and m
+        ):
             contest_id = m.group(1)
             try:
                 submission_id = int(m.group(2))
@@ -1255,24 +1265,32 @@ class AtCoderSubmission(onlinejudge.type.Submission):
         return None
 
     def get_url(self, *, type: Optional[str] = None, lang: Optional[str] = None) -> str:
-        if type is None or type == 'beta':
-            url = 'https://atcoder.jp/contests/{}/submissions/{}'.format(self.contest_id, self.submission_id)
-        elif type == 'old':
-            url = 'https://{}.contest.atcoder.jp/submissions/{}'.format(self.contest_id, self.submission_id)
+        if type is None or type == "beta":
+            url = "https://atcoder.jp/contests/{}/submissions/{}".format(
+                self.contest_id, self.submission_id
+            )
+        elif type == "old":
+            url = "https://{}.contest.atcoder.jp/submissions/{}".format(
+                self.contest_id, self.submission_id
+            )
         else:
             assert False
         if lang is not None:
-            url += '?lang={}'.format(lang)
+            url += "?lang={}".format(lang)
         return url
 
     def get_service(self) -> AtCoderService:
         return AtCoderService()
 
-    def download_problem(self, *, session: Optional[requests.Session] = None) -> AtCoderProblem:
+    def download_problem(
+        self, *, session: Optional[requests.Session] = None
+    ) -> AtCoderProblem:
         problem_id = self.download_data(session=session).problem_id
         return AtCoderProblem(contest_id=self.contest_id, problem_id=problem_id)
 
-    def download_data(self, *, session: Optional[requests.Session] = None) -> AtCoderSubmissionDetailedData:
+    def download_data(
+        self, *, session: Optional[requests.Session] = None
+    ) -> AtCoderSubmissionDetailedData:
         """
         :raises NotImplementedError:
 
@@ -1292,14 +1310,22 @@ class AtCoderSubmissionTestSet:
     .. deprecated:: 10.5
        The feature has been broken at https://github.com/online-judge-tools/api-client/issues/110
     """
-    def __init__(self, *, set_name: str, score: float, max_score: float, test_case_names: List[str]):
+
+    def __init__(
+        self,
+        *,
+        set_name: str,
+        score: float,
+        max_score: float,
+        test_case_names: List[str],
+    ):
         self.set_name = set_name
         self.score = score
         self.max_score = max_score
         self.test_case_names = test_case_names
 
     @classmethod
-    def _from_table_row(cls, tr: bs4.Tag) -> 'AtCoderSubmissionTestSet':
+    def _from_table_row(cls, tr: bs4.Tag) -> "AtCoderSubmissionTestSet":
         """
         :raises NotImplementedError:
         """
@@ -1316,14 +1342,22 @@ class AtCoderSubmissionTestCaseResult:
     .. deprecated:: 10.5
        The feature has been broken at https://github.com/online-judge-tools/api-client/issues/110
     """
-    def __init__(self, *, case_name: str, status: str, exec_time_msec: Optional[int], memory_byte: Optional[int]):
+
+    def __init__(
+        self,
+        *,
+        case_name: str,
+        status: str,
+        exec_time_msec: Optional[int],
+        memory_byte: Optional[int],
+    ):
         self.case_name = case_name
         self.status = status
         self.exec_time_msec = exec_time_msec
         self.memory_byte = memory_byte
 
     @classmethod
-    def _from_table_row(cls, tr: bs4.Tag) -> 'AtCoderSubmissionTestCaseResult':
+    def _from_table_row(cls, tr: bs4.Tag) -> "AtCoderSubmissionTestCaseResult":
         """
         :raises NotImplementedError:
         """

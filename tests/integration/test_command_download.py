@@ -5,6 +5,7 @@ import subprocess
 
 import pytest
 
+import competitive_verifier.config as config
 import competitive_verifier.oj as oj
 
 from .types import ConfigDirSetter
@@ -21,12 +22,12 @@ class TestCommandDownload:
     def test_library_checker(self, set_config_dir: ConfigDirSetter):
         url = "https://judge.yosupo.jp/problem/aplusb"
         dst_path = set_config_dir("download/library_checker")
-        promlem_path = oj.get_directory(url)
+        problem_path = oj.get_directory(url)
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
-        assert promlem_path.is_relative_to(dst_path)
+        assert problem_path.is_relative_to(dst_path)
         oj.download(url)
-        checker = promlem_path / "checker"
-        outputs = list(promlem_path.glob("test/*.out"))
+        checker = problem_path / "checker"
+        outputs = list(problem_path.glob("test/*.out"))
         assert outputs
         for out_path in outputs:
             in_path = out_path.with_suffix(".out")
@@ -52,13 +53,13 @@ class TestCommandDownload:
         url = "https://yukicoder.me/problems/no/1088"
         dst_path = set_config_dir("download/yukicoder")
 
-        promlem_path = oj.get_directory(url)
+        problem_path = oj.get_directory(url)
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
-        assert promlem_path.is_relative_to(dst_path)
+        assert problem_path.is_relative_to(dst_path)
 
         oj.download(url)
 
-        outputs = list(promlem_path.glob("test/*.out"))
+        outputs = list(problem_path.glob("test/*.out"))
         assert outputs
         for out_path in outputs:
             in_path = out_path.with_suffix(".out")
@@ -70,15 +71,32 @@ class TestCommandDownload:
         url = "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
         dst_path = set_config_dir("download/aoj")
 
-        promlem_path = oj.get_directory(url)
+        problem_path = oj.get_directory(url)
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
-        assert promlem_path.is_relative_to(dst_path)
+        assert problem_path.is_relative_to(dst_path)
 
         oj.download(url)
 
-        outputs = list(promlem_path.glob("test/*.out"))
+        outputs = list(problem_path.glob("test/*.out"))
         assert outputs
         for out_path in outputs:
             in_path = out_path.with_suffix(".out")
             assert in_path.exists()
             assert out_path.read_bytes().strip() == b"Hello World"
+
+    @pytest.mark.integration
+    def test_atcoder(self, set_config_dir: ConfigDirSetter):
+        url = "https://atcoder.jp/contests/abc322/tasks/abc322_a"
+        dst_path = set_config_dir("download/atcoder")
+        problem_path = (
+            config.get_cache_dir() / "atcoder-testcases" / "abc322" / "abc322" / "A"
+        )
+        assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
+        assert problem_path.is_relative_to(dst_path)
+
+        oj.download(url)
+
+        inputs = list(problem_path.glob("in/*"))
+        outputs = list(problem_path.glob("out/*"))
+        assert inputs
+        assert outputs
