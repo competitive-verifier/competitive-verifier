@@ -1,7 +1,7 @@
-import platform
 import shutil
 from typing import Any, Optional
 
+import platform
 import pytest
 
 from ..types import ConfigDirSetter, FilePaths
