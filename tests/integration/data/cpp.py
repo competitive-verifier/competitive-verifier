@@ -1,3 +1,4 @@
+import platform
 import shutil
 from typing import Any, Optional
 
@@ -24,6 +25,15 @@ class CppWithoutConfigData(IntegrationData):
         return "CppData"
 
     def expected_verify_json(self) -> dict[str, Any]:
+        gcc_path = shutil.which("g++")
+        clang_path = shutil.which("clang++")
+
+        stack_expand_args = ""
+        if platform.system() == "Windows" or "CYGWIN" in platform.system():
+            stack_expand_args = "-Wl,-stack,0x10000000 "
+        if platform.system() == "Darwin":
+            stack_expand_args = "-Wl,-stack_size,0x10000000 "
+
         return dict(
             {
                 "files": {
@@ -59,9 +69,11 @@ class CppWithoutConfigData(IntegrationData):
                         "verification": [
                             {
                                 "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "/usr/bin/g++ "
+                                "compile": f"{gcc_path} "
                                 "--std=c++17 -O2 "
-                                "-Wall -g -I "
+                                "-Wall -g "
+                                f"{stack_expand_args}"
+                                "-I "
                                 f"{self.targets_path} "
                                 "-o "
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
@@ -72,9 +84,11 @@ class CppWithoutConfigData(IntegrationData):
                             },
                             {
                                 "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "/usr/bin/clang++ "
+                                "compile": f"{clang_path} "
                                 "--std=c++17 -O2 "
-                                "-Wall -g -I "
+                                "-Wall -g "
+                                f"{stack_expand_args}"
+                                "-I "
                                 f"{self.targets_path} "
                                 "-o "
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
@@ -103,8 +117,10 @@ class CppWithoutConfigData(IntegrationData):
                         "verification": [
                             {
                                 "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "/usr/bin/g++ "
-                                "--std=c++17 -O2 -Wall -g -I "
+                                "compile": f"{gcc_path} "
+                                "--std=c++17 -O2 -Wall -g "
+                                f"{stack_expand_args}"
+                                "-I "
                                 f"{self.targets_path} "
                                 "-o "
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
@@ -115,8 +131,10 @@ class CppWithoutConfigData(IntegrationData):
                             },
                             {
                                 "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "/usr/bin/clang++ "
-                                "--std=c++17 -O2 -Wall -g -I "
+                                "compile": f"{clang_path} "
+                                "--std=c++17 -O2 -Wall -g "
+                                f"{stack_expand_args}"
+                                "-I "
                                 f"{self.targets_path} "
                                 "-o "
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
