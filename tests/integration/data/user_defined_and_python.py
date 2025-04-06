@@ -86,6 +86,31 @@ class UserDefinedAndPythonData(IntegrationData):
                             }
                         ],
                     },
+                    "awk/div2ceil.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/div2ceil.awk"],
+                        "document_attributes": {},
+                        "verification": [],
+                    },
+                    "awk/div2ceil.test.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/div2ceil.awk", "awk/div2ceil.test.awk"],
+                        "document_attributes": {
+                            "PROBLEM": "https://atcoder.jp/contests/abc157/tasks/abc157_a"
+                        },
+                        "verification": [
+                            {
+                                "command": {
+                                    "command": f"awk -f {pathlib.Path('awk/div2ceil.test.awk')}",
+                                    "env": {"AWKPATH": str(self.targets_path)},
+                                },
+                                "compile": f"ls {self.config_dir_path / 'cache/problems/c419be88c7d7bdcd3528081b080737ba'}",
+                                "name": "awk",
+                                "problem": "https://atcoder.jp/contests/abc157/tasks/abc157_a",
+                                "type": "problem",
+                            }
+                        ],
+                    },
                     "encoding/EUC-KR.txt": {
                         "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
                         "verification": [],
@@ -300,7 +325,7 @@ class UserDefinedAndPythonData(IntegrationData):
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {
-            "total_seconds": 11189.039999999999,
+            "total_seconds": 12423.599999999999,
             "files": {
                 "awk/aplusb.test.awk": {
                     "newest": True,
@@ -469,6 +494,81 @@ class UserDefinedAndPythonData(IntegrationData):
                                     "elapsed": 7.36,
                                     "memory": 98.49,
                                     "name": "random_09",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        }
+                    ],
+                },
+                "awk/div2ceil.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 167.0,
+                            "heaviest": 369.0,
+                            "last_execution_time": "1992-07-21T01:19:09.640000+02:00",
+                            "slowest": 16.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 7.31,
+                                    "memory": 81.22,
+                                    "name": "00-sample-00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.44,
+                                    "memory": 2.25,
+                                    "name": "00-sample-01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.36,
+                                    "memory": 2.22,
+                                    "name": "00-sample-02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.01,
+                                    "memory": 69.3,
+                                    "name": "01-handmade-00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.4,
+                                    "memory": 96.29,
+                                    "name": "01-handmade-01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.01,
+                                    "memory": 65.16,
+                                    "name": "01-handmade-02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.36,
+                                    "memory": 6.38,
+                                    "name": "01-handmade-03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.1,
+                                    "memory": 68.71,
+                                    "name": "01-handmade-04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.63,
+                                    "memory": 41.47,
+                                    "name": "01-handmade-05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 3.09,
+                                    "memory": 40.57,
+                                    "name": "01-handmade-06",
                                     "status": "AC",
                                 },
                             ],

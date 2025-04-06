@@ -331,6 +331,162 @@ def data(
                 },
             ),
             MarkdownData(
+                path="awk/div2ceil.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {},
+                        "dependencies": [
+                            {"files": [], "type": "Depends on"},
+                            {"files": [], "type": "Required by"},
+                            {
+                                "files": [
+                                    {
+                                        "filename": "div2ceil.test.awk",
+                                        "icon": "TEST_ACCEPTED",
+                                        "path": "awk/div2ceil.test.awk",
+                                    }
+                                ],
+                                "type": "Verified with",
+                            },
+                        ],
+                        "dependsOn": [],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("awk/div2ceil.awk").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": False,
+                        "path": "awk/div2ceil.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "timestamp": "2037-03-09 07:25:23.140000+02:00",
+                        "verificationStatus": "LIBRARY_ALL_AC",
+                        "verifiedWith": ["awk/div2ceil.test.awk"],
+                    },
+                    "documentation_of": "awk/div2ceil.awk",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
+                path="awk/div2ceil.test.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "PROBLEM": "https://atcoder.jp/contests/abc157/tasks/abc157_a"
+                        },
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "div2ceil.awk",
+                                        "icon": "LIBRARY_ALL_AC",
+                                        "path": "awk/div2ceil.awk",
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": ["awk/div2ceil.awk"],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path("awk/div2ceil.test.awk").read_text(
+                                    encoding="utf-8"
+                                ),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": True,
+                        "path": "awk/div2ceil.test.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 7.31,
+                                "environment": "awk",
+                                "memory": 81.22,
+                                "name": "00-sample-00",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 9.44,
+                                "environment": "awk",
+                                "memory": 2.25,
+                                "name": "00-sample-01",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 7.36,
+                                "environment": "awk",
+                                "memory": 2.22,
+                                "name": "00-sample-02",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.01,
+                                "environment": "awk",
+                                "memory": 69.3,
+                                "name": "01-handmade-00",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 0.4,
+                                "environment": "awk",
+                                "memory": 96.29,
+                                "name": "01-handmade-01",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 7.01,
+                                "environment": "awk",
+                                "memory": 65.16,
+                                "name": "01-handmade-02",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 9.36,
+                                "environment": "awk",
+                                "memory": 6.38,
+                                "name": "01-handmade-03",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 1.1,
+                                "environment": "awk",
+                                "memory": 68.71,
+                                "name": "01-handmade-04",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.63,
+                                "environment": "awk",
+                                "memory": 41.47,
+                                "name": "01-handmade-05",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 3.09,
+                                "environment": "awk",
+                                "memory": 40.57,
+                                "name": "01-handmade-06",
+                                "status": "AC",
+                            },
+                        ],
+                        "timestamp": "2001-08-06 11:58:27.530000-09:00",
+                        "verificationStatus": "TEST_ACCEPTED",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/div2ceil.test.awk",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
                 path="encoding/EUC-KR.txt.md",
                 front_matter={
                     "data": {
