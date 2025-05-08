@@ -167,6 +167,7 @@ disable = """
 [tool.black]
 target-version = ['py39']
 line-length = 88
+force-exclude = "src/porting_oj"
 
 [tool.isort]
 line_length = 88
