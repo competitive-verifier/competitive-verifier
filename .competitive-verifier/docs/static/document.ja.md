@@ -21,7 +21,7 @@ Online Judge Verification Helper の機能を使って、ソースコードを�
 
 | 言語 | 認識される拡張子 | 属性の指定方法 | 対応機能 (verify / bundle / doc) | ファイル例 |
 |---|---|---|---|---|
-| C++ | `.cpp` `.hpp` | `#define [KEY] [VALUE]` | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
+| C++ | `.cpp` `.hpp` | `// competitive-verifier: [KEY] [VALUE]` or `#define [KEY] [VALUE]`(非推奨) | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
 | Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_tree_yosupo_test.nim](https://github.com/online-judge-tools/verification-helper/blob/master/examples/nim/union_find_tree_yosupo_test.nim) |
 | Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.test.py](https://github.com/online-judge-tools/verification-helper/blob/master/examples/python/union_find_yosupo.test.py) |
 | Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld.test.hs](https://github.com/online-judge-tools/verification-helper/blob/master/Examples2/Haskell/HelloWorld.test.hs) |
@@ -167,7 +167,7 @@ C++ のように main 関数で実行されるユニットテストがある場�
 
 {% raw %}
 ```cpp
-#define STANDALONE
+// competitive-verifier: STANDALONE
 #include <iostream>
 #include <cassert>
 #include <random>
