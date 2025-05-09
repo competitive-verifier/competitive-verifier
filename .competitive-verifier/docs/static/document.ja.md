@@ -61,6 +61,14 @@ compile_to = "cpp"
 NIMFLAGS = ["--warning:on", "--opt:none"]
 ```
 
+**Default**
+
+``` toml
+[[languages.nim.environments]]
+compile_to = "cpp"
+NIMFLAGS = ["-d:release", "--opt:speed"]
+```
+
 #### Python 3 の設定
 
 設定項目は特にありません。
@@ -200,7 +208,6 @@ int main()
 |---|---|
 | [Library Checker](https://judge.yosupo.jp/) | |
 | [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp/home) | |
-| [AtCoder](https://atcoder.jp) | 環境変数 `DROPBOX_TOKEN` の設定が必要です。token の値は `$ oj d --system https://atcoder.jp/contests/agc001/tasks/agc001_a` として表示されるヒントに従って取得してください。 |
 | [yukicoder](https://yukicoder.me) | 環境変数 `YUKICODER_TOKEN` の設定が必要です。[ヘルプ - yukicoder](https://yukicoder.me/help) の「ログインしてないと使えない機能をAPIとして使いたい」の節や [暗号化されたシークレットの作成と利用 - GitHub ヘルプ](https://help.github.com/ja/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets) 参考にして設定してください。 |
 
 これらの他サービスはテストケースを利用できる形で公開してくれていないため利用できません。
