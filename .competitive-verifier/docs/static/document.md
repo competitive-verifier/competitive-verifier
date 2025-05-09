@@ -20,14 +20,14 @@ Summary:
 
 | Language | Available file extensions | How to specify attributes | Features (verify / bundle / doc) | Example file |
 |---|---|---|---|---|
-| C++ | `.cpp` `.hpp` | `// competitive-verifier: [KEY] [VALUE]` or `#define [KEY] [VALUE]`(deprecated) | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
-| Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_tree_yosupo_test.nim](https://github.com/online-judge-tools/verification-helper/blob/master/examples/nim/union_find_tree_yosupo_test.nim) |
-| Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.test.py](https://github.com/online-judge-tools/verification-helper/blob/master/examples/python/union_find_yosupo.test.py) |
-| Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld.test.hs](https://github.com/online-judge-tools/verification-helper/blob/master/Examples2/Haskell/HelloWorld.test.hs) |
-| Ruby | `.rb` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [hello_world.test.rb](https://github.com/online-judge-tools/verification-helper/blob/master/examples/ruby/hello_world.test.rb) |
-| Go | `.go` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [helloworld.test.go](https://github.com/online-judge-tools/verification-helper/blob/master/examples/go/helloworld.test.go) |
-| Java | `.java` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld_test.java](https://github.com/online-judge-tools/verification-helper/blob/master/examples/java/HelloWorld_test.java) |
-| Rust | `.rs` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [itp1-1-a.rs](https://github.com/online-judge-tools/verification-helper/blob/master/examples/rust/verification/src/bin/aizu-online-judge-itp1-1-a.rs) |
+| C++ | `.cpp` `.hpp` | `// competitive-verifier: [KEY] [VALUE]` <br> `#define [KEY] [VALUE]` (deprecated) | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.cpp](examples/cpp/segment_tree_tests/segment_tree.range_sum_query.cpp) |
+| Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | - |
+| Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find.yosupo.py](examples/python/union_find.yosupo.py) |
+| Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | - |
+| Ruby | `.rb` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | - |
+| Go | `.go` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [helloworld_test.go](examples/go/helloworld_test.go) |
+| Java | `.java` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld_test.java](examples/java/HelloWorld_test.java) |
+| Rust | `.rs` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [itp1-1-a.rs](examples/rust/verification/src/bin/aizu-online-judge-itp1-1-a.rs) |
 
 #### Settings for C++
 
@@ -76,8 +76,8 @@ You can customize the method to list depending files with `languages.rust.list_d
     For each target, all `.rs` files in the target is treated as a block. The dependency relationship of files in each target are not analyzed.
 
     ```toml
-    [languages.rust.list_dependencies_backend]
-    kind = "none"
+  [languages.rust.list_dependencies_backend]
+  kind = "none"
     ```
 
     - For a file which is a root source file of a target, the file depends all `.rs` files in its target and all depending local crates.
@@ -88,14 +88,14 @@ You can customize the method to list depending files with `languages.rust.list_d
     This method is similar to `kind = "none"`, but uses [cargo-udeps](https://github.com/est31/cargo-udeps) in `$PATH` to narrow down dependencies. It computes the dependency relationship of files using the dependencies relationship between crates.
 
     ```toml
-    [languages.rust.list_dependencies_backend]
-    kind = "cargo-udeps"
-    toolchain = "nightly-yyyy-mm-dd" # defaults to "nightly"
+  [languages.rust.list_dependencies_backend]
+  kind = "cargo-udeps"
+  toolchain = "nightly-yyyy-mm-dd" # defaults to "nightly"
     ```
 
 #### Settings for other languages
 
-You can use languages other than above (e.g. AWK [examples/awk/circle.test.awk](https://github.com/online-judge-tools/verification-helper/blob/master/examples/awk/circle.test.awk)). Please write commands to compile and execute in the config file `config.toml` (e.g. [config.toml](https://github.com/competitive-verifier/competitive-verifier/blob/HEAD/examples/config.toml)).
+You can use languages other than above (e.g. AWK [examples/awk/circle_test.awk](examples/awk/circle_test.awk)). Please write commands to compile and execute in the config file `config.toml` (e.g. [config.toml](https://github.com/competitive-verifier/competitive-verifier/blob/HEAD/examples/config.toml)).
 `execute` field are required, and other fields are optional.
 
 ``` toml

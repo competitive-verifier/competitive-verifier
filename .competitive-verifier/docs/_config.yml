@@ -4,3 +4,18 @@ filename-index: true
 remote_theme: vaibhavvikas/jekyll-theme-minimalistic
 consolidate:
 - examples/rust
+navigation:
+  - name: Index
+    link: ./index.html
+  - name: Getting Started
+    link: ./installer.html
+    sublist:
+      - name: 日本語
+        link: ./installer.ja.html
+  - name: Reference
+    link: ./document.html
+    sublist:
+      - name: 日本語
+        link: ./document.ja.html
+  - name: DESIGN(日本語)
+    link: ./DESIGN.html

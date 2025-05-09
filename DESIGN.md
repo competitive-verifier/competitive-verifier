@@ -38,7 +38,7 @@
 
 2022年現在、[oj-verify](https://github.com/online-judge-tools/verification-helper) は開発停止となっているため、機能改善が見込めない状態となっている。
 
-また、oj-verify には下記のような課題があった。また、透過的な実装をする
+また、oj-verify には下記のような課題があった。
 
 - resolve, verify, documentation などの機能がひとまとめになっているため開発しづらい。
 - 言語ごとの実装がコマンドに埋め込まれており、外部から機能を注入することが難しい。
@@ -48,7 +48,7 @@
 - ユニットテストとの統合が困難。
   - 特に .NET や Go などの `main()` と無関係なユニットテストを持つ言語で非常に厳しい。
 
-これらのなかには [verification-helper#116](https://github.com/online-judge-tools/verification-helper/issues/116) のように透過的な実装を目指してあえてそうなっているものもある。
+これらのなかには [verification-helper#116](https://github.com/online-judge-tools/verification-helper/issues/116) のように透過的な実装(ユーザーがツールの使い方を意識しないで済むような実装)を目指してあえてそうなっているものもある。
 
 
 ### competitive-verifier の設計
@@ -66,3 +66,4 @@
 
 ## 更新日
 - 2022-12-12: 初版
+- 2025-05-09: 文意がわかりづらい箇所を修正

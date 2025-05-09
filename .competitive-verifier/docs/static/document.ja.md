@@ -21,14 +21,14 @@ Online Judge Verification Helper の機能を使って、ソースコードを�
 
 | 言語 | 認識される拡張子 | 属性の指定方法 | 対応機能 (verify / bundle / doc) | ファイル例 |
 |---|---|---|---|---|
-| C++ | `.cpp` `.hpp` | `// competitive-verifier: [KEY] [VALUE]` or `#define [KEY] [VALUE]`(非推奨) | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.test.cpp](https://github.com/online-judge-tools/verification-helper/blob/master/examples/segment_tree.range_sum_query.test.cpp) |
-| Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_tree_yosupo_test.nim](https://github.com/online-judge-tools/verification-helper/blob/master/examples/nim/union_find_tree_yosupo_test.nim) |
-| Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.test.py](https://github.com/online-judge-tools/verification-helper/blob/master/examples/python/union_find_yosupo.test.py) |
-| Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld.test.hs](https://github.com/online-judge-tools/verification-helper/blob/master/Examples2/Haskell/HelloWorld.test.hs) |
-| Ruby | `.rb` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [hello_world.test.rb](https://github.com/online-judge-tools/verification-helper/blob/master/examples/ruby/hello_world.test.rb) |
-| Go | `.go` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [helloworld.test.go](https://github.com/online-judge-tools/verification-helper/blob/master/examples/go/helloworld.test.go) |
-| Java | `.java` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld_test.java](https://github.com/online-judge-tools/verification-helper/blob/master/examples/java/HelloWorld_test.java) |
-| Rust | `.rs` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [itp1-1-a.rs](https://github.com/online-judge-tools/verification-helper/blob/master/examples/rust/verification/src/bin/aizu-online-judge-itp1-1-a.rs) |
+| C++ | `.cpp` `.hpp` | `// competitive-verifier: [KEY] [VALUE]` <br> `#define [KEY] [VALUE]` (非推奨) | :heavy_check_mark: / :heavy_check_mark: / :heavy_check_mark: | [segment_tree.range_sum_query.cpp](examples/cpp/segment_tree_tests/segment_tree.range_sum_query.cpp) |
+| Nim | `.nim` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | - |
+| Python 3 | `.py` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :heavy_check_mark: | [union_find_yosupo.py](examples/python/union_find.yosupo.py) |
+| Haskell | `.hs` |  `-- competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | - |
+| Ruby | `.rb` |  `# competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | - |
+| Go | `.go` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [helloworld_test.go](examples/go/helloworld_test.go) |
+| Java | `.java` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [HelloWorld_test.java](examples/java/HelloWorld_test.java) |
+| Rust | `.rs` | `// competitive-verifier: [KEY] [VALUE]` | :heavy_check_mark: / :x: / :warning: | [itp1-1-a.rs](examples/rust/verification/src/bin/aizu-online-judge-itp1-1-a.rs) |
 
 #### C++ の設定
 
@@ -77,8 +77,8 @@ NIMFLAGS = ["--warning:on", "--opt:none"]
     それぞれのターゲットに関連する `.rs` ファイルはすべてひとまとまりとして扱われ、それぞれのターゲット内のファイルの間の依存関係などについては調べません。
 
     ```toml
-    [languages.rust.list_dependencies_backend]
-    kind = "none"
+  [languages.rust.list_dependencies_backend]
+  kind = "none"
     ```
 
     - あるターゲットの root source file であるようなソースファイルについては、そのターゲット及びローカルにある依存クレートの `.rs` ファイルすべてを依存ファイルとして扱います。
@@ -89,14 +89,14 @@ NIMFLAGS = ["--warning:on", "--opt:none"]
     基本的に `kind = "none"` と同じですが、 `$PATH` 内にある [cargo-udeps](https://github.com/est31/cargo-udeps) を利用します。クレート間の依存関係を解析し、より適切なファイル間の依存関係を求めます。
 
     ```toml
-    [languages.rust.list_dependencies_backend]
-    kind = "cargo-udeps"
-    toolchain = "nightly-yyyy-mm-dd" # defaults to "nightly"
+  [languages.rust.list_dependencies_backend]
+  kind = "cargo-udeps"
+  toolchain = "nightly-yyyy-mm-dd" # defaults to "nightly"
     ```
 
 #### その他の言語の設定
 
-上記以外の言語でも実行可能です (例: [examples/awk/circle.test.awk](https://github.com/online-judge-tools/verification-helper/blob/master/examples/awk/circle.test.awk))。
+上記以外の言語でも実行可能です (例: [examples/awk/circle_test.awk](examples/awk/circle_test.awk))。
 `config.toml` というファイルを作って、以下のようにコンパイルや実行のためのコマンドを書いてください (例: [config.toml](https://github.com/competitive-verifier/competitive-verifier/blob/HEAD/examples/config.toml))。
 `execute` のフィールドは必須で、その他は省略可能です。
 
