@@ -1,4 +1,4 @@
-#define STANDALONE
+// competitive-verifier: STANDALONE
 #include <iostream>
 #include <cassert>
 #include <random>

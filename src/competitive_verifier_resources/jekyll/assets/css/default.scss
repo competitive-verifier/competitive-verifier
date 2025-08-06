@@ -1,7 +1,7 @@
 ---
 ---
 
-{% if site.theme == "jekyll-theme-minimal" %}
+{% if site.theme == "jekyll-theme-minimalistic" or site.theme == "jekyll-theme-minimal" %}
 @media screen and (min-width: 900px) {
     div.wrapper {
         width: 100%;

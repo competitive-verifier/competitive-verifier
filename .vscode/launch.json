@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "download",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "src/competitive_verifier/download/main.py",
             "args": [
