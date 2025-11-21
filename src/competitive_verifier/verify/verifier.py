@@ -197,14 +197,13 @@ class BaseVerifier(InputContainer):
 
             def enumerate_verifications() -> list[VerificationResult]:
                 logger.debug(repr(f))
-                prev_time = self.now()
                 verifications = list[VerificationResult]()
                 try:
                     if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
                 except BaseException as e:
                     verifications.append(
-                        self.create_command_result(ResultStatus.FAILURE, prev_time)
+                        self.create_command_result(ResultStatus.FAILURE, self.now())
                     )
                     logger.exception("Failed to download", e)
                     return verifications
