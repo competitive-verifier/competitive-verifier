@@ -9,7 +9,6 @@ from pydantic import RootModel
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
-import competitive_verifier.models
 import competitive_verifier.oj.tools.test_command
 from competitive_verifier.models import (
     CommandVerification,
