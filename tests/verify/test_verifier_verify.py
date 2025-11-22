@@ -44,6 +44,12 @@ class MockVerifier(BaseVerifier):
             timeout=10,
         )
         self.mock_current_time = datetime.datetime(2006, 1, 2, 15, 4, 5)
+        self.mock_perf_counter = 0.0
+
+    def perf_counter(self) -> float:
+        pc = self.mock_perf_counter
+        self.mock_perf_counter += 1.0
+        return pc
 
     def now(self) -> datetime.datetime:
         dt = self.mock_current_time

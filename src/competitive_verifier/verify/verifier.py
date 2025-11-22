@@ -1,5 +1,6 @@
 import datetime
 import pathlib
+import time
 import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
@@ -44,8 +45,7 @@ class InputContainer(ABC):
         self.split_state = split_state
 
     @abstractmethod
-    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        ...
+    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
 
     def file_need_verification(
         self,
@@ -168,11 +168,14 @@ class BaseVerifier(InputContainer):
             return True
         return self.split_state.index == 0
 
+    def perf_counter(self) -> float:
+        return time.perf_counter()
+
     def now(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
 
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
-        start_time = self.now()
+        start_time = self.perf_counter()
         with log.group("current_verification_files"):
             current_verification_files = self.current_verification_files
         logger.info(
@@ -203,15 +206,17 @@ class BaseVerifier(InputContainer):
                         raise Exception()
                 except BaseException as e:
                     verifications.append(
-                        self.create_command_result(ResultStatus.FAILURE, self.now())
+                        self.create_command_result(
+                            ResultStatus.FAILURE, self.perf_counter()
+                        )
                     )
                     logger.exception("Failed to download", e)
                     return verifications
 
                 for ve in f.verification_list:
                     logger.debug("command=%s", repr(ve))
-                    prev_time = self.now()
-                    if (prev_time - start_time).total_seconds() > self.timeout:
+                    prev_time = self.perf_counter()
+                    if prev_time - start_time > self.timeout:
                         logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
                         verifications.append(
                             self.create_command_result(
@@ -256,7 +261,7 @@ class BaseVerifier(InputContainer):
 
         sippable_file_results = self.skippable_results()
         self._result = VerifyCommandResult(
-            total_seconds=(self.now() - start_time).total_seconds(),
+            total_seconds=self.perf_counter() - start_time,
             files=file_results | sippable_file_results,
         )
         return self._result
@@ -287,7 +292,7 @@ class BaseVerifier(InputContainer):
             for p, f in self.skippable_verification_files.items():
                 logger.info("Start skippable: %s", p.as_posix())
                 verifications = list[VerificationResult]()
-                prev_time = self.now()
+                prev_time = self.perf_counter()
 
                 for v in f.verification_list:
                     rs = self.run_verification(v)[0]
@@ -303,14 +308,14 @@ class BaseVerifier(InputContainer):
     def create_command_result(
         self,
         status_or_result: Union[ResultStatus, VerificationResult],
-        prev_time: datetime.datetime,
+        prev_time: float,
         *,
         name: Optional[str] = None,
     ) -> VerificationResult:
         if isinstance(status_or_result, VerificationResult):
             return status_or_result
 
-        elapsed = (self.now() - prev_time).total_seconds()
+        elapsed = self.perf_counter() - prev_time
         return VerificationResult(
             verification_name=name,
             status=status_or_result,
