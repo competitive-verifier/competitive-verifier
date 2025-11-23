@@ -26,7 +26,7 @@ class BaseVerification(BaseModel, ABC):
         self,
         params: Optional[VerificationParams] = None,
         *,
-        deadline: Optional[float] = None,
+        deadline: float = float("inf"),
     ) -> Union[ResultStatus, VerificationResult]:
         ...
 
@@ -59,7 +59,7 @@ class ConstVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
         *,
-        deadline: Optional[float] = None,
+        deadline: float = float("inf"),
     ) -> ResultStatus:
         return self.status
 
@@ -94,7 +94,7 @@ class CommandVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
         *,
-        deadline: Optional[float] = None,
+        deadline: float = float("inf"),
     ) -> ResultStatus:
         if self.tempdir:
             self.tempdir.mkdir(parents=True, exist_ok=True)
@@ -161,7 +161,7 @@ class ProblemVerification(BaseVerification):
         self,
         params: Optional[VerificationParams] = None,
         *,
-        deadline: Optional[float] = None,
+        deadline: float = float("inf"),
     ) -> VerificationResult:
         import competitive_verifier.oj as oj
 

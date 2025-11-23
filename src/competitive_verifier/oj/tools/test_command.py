@@ -589,7 +589,7 @@ def run_wrapper(
     tle: Optional[float],
     mle: Optional[float],
     error: Optional[float],
-    deadline: Optional[float] = None,
+    deadline: float = float("inf"),
 ) -> VerificationResult:
     directory = get_directory(url)
     test_directory = directory / "test"
@@ -608,7 +608,7 @@ def run_wrapper(
         error=error,
         print_input=True,
         judge=checker_path,
-        deadline=deadline if deadline else float("inf"),
+        deadline=deadline,
     )
     result = run(args)
 
