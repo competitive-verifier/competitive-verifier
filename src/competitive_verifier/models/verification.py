@@ -9,6 +9,10 @@ from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
 
 
+class VerifcationTimeoutException(Exception):
+    pass
+
+
 class VerificationParams(Protocol):
     default_tle: Optional[float]
     default_mle: Optional[float]
@@ -21,6 +25,8 @@ class BaseVerification(BaseModel, ABC):
     def run(
         self,
         params: Optional[VerificationParams] = None,
+        *,
+        deadline: float = float("inf"),
     ) -> Union[ResultStatus, VerificationResult]:
         ...
 
@@ -52,6 +58,8 @@ class ConstVerification(BaseVerification):
     def run(
         self,
         params: Optional[VerificationParams] = None,
+        *,
+        deadline: float = float("inf"),
     ) -> ResultStatus:
         return self.status
 
@@ -85,6 +93,8 @@ class CommandVerification(BaseVerification):
     def run(
         self,
         params: Optional[VerificationParams] = None,
+        *,
+        deadline: float = float("inf"),
     ) -> ResultStatus:
         if self.tempdir:
             self.tempdir.mkdir(parents=True, exist_ok=True)
@@ -150,6 +160,8 @@ class ProblemVerification(BaseVerification):
     def run(
         self,
         params: Optional[VerificationParams] = None,
+        *,
+        deadline: float = float("inf"),
     ) -> VerificationResult:
         import competitive_verifier.oj as oj
 
@@ -164,6 +176,7 @@ class ProblemVerification(BaseVerification):
             tle=self.tle or params.default_tle,
             error=self.error,
             mle=self.mle or params.default_mle,
+            deadline=deadline,
         )
         result.verification_name = self.name
         return result

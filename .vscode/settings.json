@@ -18,7 +18,6 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true
     },
-    "python.analysis.typeCheckingMode": "strict",
     "python.testing.pytestArgs": [
         "tests"
     ],

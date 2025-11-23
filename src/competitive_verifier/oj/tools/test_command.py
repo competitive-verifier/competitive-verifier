@@ -23,6 +23,7 @@ from competitive_verifier.models import (
     JudgeStatus,
     ResultStatus,
     TestcaseResult,
+    VerifcationTimeoutException,
     VerificationResult,
 )
 
@@ -50,6 +51,7 @@ class OjTestArguments(BaseModel):
     log_file: Optional[pathlib.Path] = None
     silent: bool = False
     ignore_backup: bool = True
+    deadline: float = float("inf")
 
 
 class OjExecInfo(BaseModel):
@@ -523,6 +525,9 @@ def run(args: OjTestArguments) -> OjTestResult:
     # run tests
     history: list[OjTestcaseResult] = []
     for name, paths in sorted(tests.items()):
+        if time.perf_counter() > args.deadline:
+            raise VerifcationTimeoutException()
+
         history.append(
             OjTestcaseResult.model_validate(
                 test_single_case(name, paths["in"], paths.get("out"), args=args),
@@ -584,6 +589,7 @@ def run_wrapper(
     tle: Optional[float],
     mle: Optional[float],
     error: Optional[float],
+    deadline: float = float("inf"),
 ) -> VerificationResult:
     directory = get_directory(url)
     test_directory = directory / "test"
@@ -602,6 +608,7 @@ def run_wrapper(
         error=error,
         print_input=True,
         judge=checker_path,
+        deadline=deadline,
     )
     result = run(args)
 

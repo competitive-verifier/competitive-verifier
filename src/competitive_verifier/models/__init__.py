@@ -13,6 +13,7 @@ from .verification import (
     CommandVerification,
     ConstVerification,
     ProblemVerification,
+    VerifcationTimeoutException,
     Verification,
     VerificationParams,
 )
@@ -40,4 +41,5 @@ __all__ = [
     "VerificationResult",
     "VerificationParams",
     "DocumentOutputMode",
+    "VerifcationTimeoutException",
 ]

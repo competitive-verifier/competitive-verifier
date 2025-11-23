@@ -79,14 +79,14 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=None,
         ),
         {
-            "total_seconds": 6.0,
+            "total_seconds": 7.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=True,
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -96,7 +96,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -146,14 +146,14 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=SplitState(size=2, index=0),
         ),
         {
-            "total_seconds": 9.0,
+            "total_seconds": 10.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=True,
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -163,7 +163,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -173,7 +173,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -230,7 +230,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -240,7 +240,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -287,7 +287,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             },
             prev_result=VerifyCommandResult.model_validate(
                 {
-                    "total_seconds": 7.0,
+                    "total_seconds": 6.0,
                     "files": {
                         "test/foo.py": FileResult(
                             newest=True,
@@ -356,7 +356,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=None,
         ),
         {
-            "total_seconds": 6.0,
+            "total_seconds": 7.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=False,
@@ -399,7 +399,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -409,7 +409,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
-                            elapsed=1.0,
+                            elapsed=2.0,
                             last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
                         ),
                     ],
@@ -420,6 +420,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 ]
 
 
+@pytest.mark.usefixtures("mock_perf_counter")
 @pytest.mark.parametrize(
     "verifier, expected",
     test_verify_params,
