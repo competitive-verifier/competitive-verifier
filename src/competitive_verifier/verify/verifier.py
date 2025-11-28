@@ -204,7 +204,9 @@ class BaseVerifier(InputContainer):
                 verifications = list[VerificationResult]()
                 skip_download = time.perf_counter() > deadline
                 try:
-                    if not skip_download and download and not run_download(f, check=True, group_log=False):
+                    if time.perf_counter() > deadline:
+                            raise VerifcationTimeoutException()
+                    if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
                 except BaseException as e:
                     verifications.append(
