@@ -202,12 +202,19 @@ class BaseVerifier(InputContainer):
             def enumerate_verifications() -> list[VerificationResult]:
                 logger.debug(repr(f))
                 verifications = list[VerificationResult]()
-                skip_download = time.perf_counter() > deadline
                 try:
                     if time.perf_counter() > deadline:
-                            raise VerifcationTimeoutException()
+                        raise VerifcationTimeoutException()
                     if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
+                except VerifcationTimeoutException:
+                    verifications.append(
+                        self.create_command_result(
+                            ResultStatus.SKIPPED, time.perf_counter()
+                        )
+                    )
+                    logger.warning("Skip[Timeout]: %s", p)
+                    return verifications
                 except BaseException as e:
                     verifications.append(
                         self.create_command_result(
@@ -221,7 +228,7 @@ class BaseVerifier(InputContainer):
                     logger.debug("command=%s", repr(ve))
                     prev_time = time.perf_counter()
                     try:
-                        if skip_download or prev_time > deadline:
+                        if prev_time > deadline:
                             raise VerifcationTimeoutException()
 
                         rs, error_message = self.run_verification(ve, deadline=deadline)
