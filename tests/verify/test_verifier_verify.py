@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 import pytest
+from pytest_mock import MockerFixture
 
 from competitive_verifier.models import (
     ConstVerification,
@@ -433,3 +434,241 @@ def test_verify(
 ):
     mock_exists(True)
     assert verifier.verify() == VerifyCommandResult.model_validate(expected)
+
+
+class TimeoutPerfCounter:
+    """Mock perf_counter that returns values from a sequence for timeout testing"""
+
+    def __init__(self, sequence: list[float]) -> None:
+        self.sequence = sequence
+        self.call_count = 0
+
+    def __call__(self) -> float:
+        if self.call_count < len(self.sequence):
+            result = self.sequence[self.call_count]
+            self.call_count += 1
+            return result
+        return self.sequence[-1] + (self.call_count - len(self.sequence) + 1)
+
+
+test_verify_timeout_params: list[
+    tuple[
+        MockVerifier,
+        TimeoutPerfCounter,
+        dict[str, Any],
+    ]
+] = [
+    (
+        MockVerifier(
+            {
+                "files": {
+                    "lib/hoge1.py": {},
+                    "test/foo.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS)
+                        ],
+                    },
+                }
+            },
+            prev_result=None,
+            verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            split_state=None,
+        ),
+        TimeoutPerfCounter([0.0, 11.0, 12.0, 13.0, 14.0]),
+        {
+            "total_seconds": 14.0,
+            "files": {
+                "test/foo.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=1.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+            },
+        },
+    ),
+    (
+        MockVerifier(
+            {
+                "files": {
+                    "lib/hoge1.py": {},
+                    "test/foo.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS)
+                        ],
+                    },
+                }
+            },
+            prev_result=None,
+            verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            split_state=None,
+        ),
+        TimeoutPerfCounter([0.0, 5.0, 11.0, 12.0, 13.0]),
+        {
+            "total_seconds": 13.0,
+            "files": {
+                "test/foo.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=1.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+            },
+        },
+    ),
+    (
+        MockVerifier(
+            {
+                "files": {
+                    "lib/hoge1.py": {},
+                    "test/foo.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS)
+                        ],
+                    },
+                }
+            },
+            prev_result=None,
+            verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            split_state=None,
+        ),
+        TimeoutPerfCounter([0.0, 5.0, 6.0, 11.0, 12.0, 13.0]),
+        {
+            "total_seconds": 13.0,
+            "files": {
+                "test/foo.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=6.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+            },
+        },
+    ),
+    (
+        MockVerifier(
+            {
+                "files": {
+                    "lib/hoge1.py": {},
+                    "test/foo1.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS)
+                        ],
+                    },
+                    "test/foo2.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS)
+                        ],
+                    },
+                }
+            },
+            prev_result=None,
+            verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            split_state=None,
+        ),
+        TimeoutPerfCounter([0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0, 14.0]),
+        {
+            "total_seconds": 14.0,
+            "files": {
+                "test/foo1.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SUCCESS,
+                            elapsed=2.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+                "test/foo2.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=1.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+            },
+        },
+    ),
+    (
+        MockVerifier(
+            {
+                "files": {
+                    "lib/hoge1.py": {},
+                    "test/foo.py": {
+                        "dependencies": ["lib/hoge1.py"],
+                        "verification": [
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS),
+                            NotSkippableConstVerification(status=ResultStatus.SUCCESS),
+                        ],
+                    },
+                }
+            },
+            prev_result=None,
+            verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            split_state=None,
+        ),
+        TimeoutPerfCounter([0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0]),
+        {
+            "total_seconds": 13.0,
+            "files": {
+                "test/foo.py": FileResult(
+                    newest=True,
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SUCCESS,
+                            elapsed=2.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=1.0,
+                            last_execution_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        ),
+                    ],
+                ),
+            },
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "verifier, mock_perf_counter_func, expected",
+    test_verify_timeout_params,
+    ids=range(len(test_verify_timeout_params)),
+)
+def test_verify_timeout(
+    mocker: MockerFixture,
+    mock_exists: Callable[[bool], Any],
+    verifier: MockVerifier,
+    mock_perf_counter_func: TimeoutPerfCounter,
+    expected: dict[str, Any],
+):
+    """Test timeout exception scenarios in enumerate_verifications"""
+    mock_exists(True)
+    mocker.patch("time.perf_counter", side_effect=mock_perf_counter_func)
+    mocker.patch("competitive_verifier.verify.verifier.run_download", return_value=True)
+
+    result = verifier.verify()
+    assert result == VerifyCommandResult.model_validate(expected)
