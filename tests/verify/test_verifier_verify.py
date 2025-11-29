@@ -436,25 +436,10 @@ def test_verify(
     assert verifier.verify() == VerifyCommandResult.model_validate(expected)
 
 
-class TimeoutPerfCounter:
-    """Mock perf_counter that returns values from a sequence for timeout testing"""
-
-    def __init__(self, sequence: list[float]) -> None:
-        self.sequence = sequence
-        self.call_count = 0
-
-    def __call__(self) -> float:
-        if self.call_count < len(self.sequence):
-            result = self.sequence[self.call_count]
-            self.call_count += 1
-            return result
-        return self.sequence[-1] + (self.call_count - len(self.sequence) + 1)
-
-
 test_verify_timeout_params: list[
     tuple[
         MockVerifier,
-        TimeoutPerfCounter,
+        list[float],
         dict[str, Any],
     ]
 ] = [
@@ -475,7 +460,7 @@ test_verify_timeout_params: list[
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
             split_state=None,
         ),
-        TimeoutPerfCounter([0.0, 11.0, 12.0, 13.0, 14.0]),
+        [0.0, 11.0, 12.0, 13.0, 14.0],
         {
             "total_seconds": 14.0,
             "files": {
@@ -509,7 +494,7 @@ test_verify_timeout_params: list[
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
             split_state=None,
         ),
-        TimeoutPerfCounter([0.0, 5.0, 11.0, 12.0, 13.0]),
+        [0.0, 5.0, 11.0, 12.0, 13.0],
         {
             "total_seconds": 13.0,
             "files": {
@@ -543,7 +528,7 @@ test_verify_timeout_params: list[
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
             split_state=None,
         ),
-        TimeoutPerfCounter([0.0, 5.0, 6.0, 11.0, 12.0, 13.0]),
+        [0.0, 5.0, 6.0, 11.0, 12.0, 13.0],
         {
             "total_seconds": 13.0,
             "files": {
@@ -583,7 +568,7 @@ test_verify_timeout_params: list[
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
             split_state=None,
         ),
-        TimeoutPerfCounter([0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0, 14.0]),
+        [0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0, 14.0],
         {
             "total_seconds": 14.0,
             "files": {
@@ -628,7 +613,7 @@ test_verify_timeout_params: list[
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
             split_state=None,
         ),
-        TimeoutPerfCounter([0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0]),
+        [0.0, 5.0, 6.0, 7.0, 8.0, 11.0, 12.0, 13.0],
         {
             "total_seconds": 13.0,
             "files": {
@@ -654,7 +639,7 @@ test_verify_timeout_params: list[
 
 
 @pytest.mark.parametrize(
-    "verifier, mock_perf_counter_func, expected",
+    "verifier, perf_counter_sequence, expected",
     test_verify_timeout_params,
     ids=range(len(test_verify_timeout_params)),
 )
@@ -662,12 +647,12 @@ def test_verify_timeout(
     mocker: MockerFixture,
     mock_exists: Callable[[bool], Any],
     verifier: MockVerifier,
-    mock_perf_counter_func: TimeoutPerfCounter,
+    perf_counter_sequence: list[float],
     expected: dict[str, Any],
 ):
     """Test timeout exception scenarios in enumerate_verifications"""
     mock_exists(True)
-    mocker.patch("time.perf_counter", side_effect=mock_perf_counter_func)
+    mocker.patch("time.perf_counter", side_effect=perf_counter_sequence)
     mocker.patch("competitive_verifier.verify.verifier.run_download", return_value=True)
 
     result = verifier.verify()
