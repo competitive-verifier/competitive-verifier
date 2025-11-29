@@ -79,7 +79,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=None,
         ),
         {
-            "total_seconds": 7.0,
+            "total_seconds": 8.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=True,
@@ -146,7 +146,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=SplitState(size=2, index=0),
         ),
         {
-            "total_seconds": 10.0,
+            "total_seconds": 12.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=True,
@@ -223,7 +223,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=SplitState(size=2, index=1),
         ),
         {
-            "total_seconds": 7.0,
+            "total_seconds": 9.0,
             "files": {
                 "test/foo2.py": FileResult(
                     newest=True,
@@ -356,7 +356,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
             split_state=None,
         ),
         {
-            "total_seconds": 7.0,
+            "total_seconds": 8.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=False,
