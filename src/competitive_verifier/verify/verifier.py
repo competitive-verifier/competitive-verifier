@@ -203,8 +203,18 @@ class BaseVerifier(InputContainer):
                 logger.debug(repr(f))
                 verifications = list[VerificationResult]()
                 try:
+                    if time.perf_counter() > deadline:
+                        raise VerifcationTimeoutException()
                     if download and not run_download(f, check=True, group_log=False):
                         raise Exception()
+                except VerifcationTimeoutException:
+                    verifications.append(
+                        self.create_command_result(
+                            ResultStatus.SKIPPED, time.perf_counter()
+                        )
+                    )
+                    logger.warning("Skip[Timeout]: %s", p)
+                    return verifications
                 except BaseException as e:
                     verifications.append(
                         self.create_command_result(
