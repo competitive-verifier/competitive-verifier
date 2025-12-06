@@ -6,16 +6,16 @@ consolidate:
 - examples/rust
 navigation:
   - name: Index
-    link: ./index.html
+    link: /index.html
   - name: Getting Started
-    link: ./installer.html
+    link: /installer.html
     sublist:
       - name: 日本語
-        link: ./installer.ja.html
+        link: /installer.ja.html
   - name: Reference
-    link: ./document.html
+    link: /document.html
     sublist:
       - name: 日本語
-        link: ./document.ja.html
+        link: /document.ja.html
   - name: DESIGN(日本語)
-    link: ./DESIGN.html
+    link: /DESIGN.html
