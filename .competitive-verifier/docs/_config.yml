@@ -6,16 +6,16 @@ consolidate:
 - examples/rust
 navigation:
   - name: Index
-    link: ./index.html
+    link: /competitive-verifier/index.html
   - name: Getting Started
-    link: ./installer.html
+    link: /competitive-verifier/installer.html
     sublist:
       - name: 日本語
-        link: ./installer.ja.html
+        link: /competitive-verifier/installer.ja.html
   - name: Reference
-    link: ./document.html
+    link: /competitive-verifier/document.html
     sublist:
       - name: 日本語
-        link: ./document.ja.html
+        link: /competitive-verifier/document.ja.html
   - name: DESIGN(日本語)
-    link: ./DESIGN.html
+    link: /competitive-verifier/DESIGN.html
