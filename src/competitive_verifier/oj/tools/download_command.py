@@ -1,7 +1,6 @@
 import os
 import pathlib
 import shutil
-import textwrap
 from contextlib import nullcontext
 from itertools import chain
 from logging import getLogger
@@ -56,6 +55,25 @@ def _run_library_checker(
     return True
 
 
+def _run_atcoder(
+    *,
+    problem: AtCoderProblem,
+    directory: pathlib.Path,
+    dry_run: bool = False,
+) -> bool:
+    problem.update_branch()
+    path = problem.get_problem_directory_path()
+    for file in chain(path.glob("in/*"), path.glob("out/*")):
+        dst = directory / "test" / file.name
+        if dst.exists():
+            logger.error("Failed to download since file already exists: %s", str(dst))
+            return False
+        if not dry_run:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(file, dst)
+    return True
+
+
 # flake8: noqa: C901
 def run(
     *,
@@ -80,34 +98,14 @@ def run(
             problem=problem,
             directory=directory,
         )
+    elif isinstance(problem, AtCoderProblem):
+        return _run_atcoder(
+            problem=problem,
+            directory=directory,
+        )
 
     # get samples from the server
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
-        if isinstance(problem, AtCoderProblem) and system:
-            DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")
-            if not DROPBOX_TOKEN:
-                logger.info(
-                    utils.HINT
-                    + "You need to give the access token. Please do the following:\n%s",
-                    textwrap.dedent(
-                        """
-                        1. Open the following URL in your browser:
-                            https://www.dropbox.com/oauth2/authorize?client_id=153gig8dqgk3ujg&response_type=code
-                        2. Authorize the app and take the access code.
-                        3. Run the following command with replacing the "${YOUR_ACCESS_CODE}":
-                            $ curl https://api.dropbox.com/oauth2/token --user 153gig8dqgk3ujg:5l7o7lh73o8i9ux --data grant_type=authorization_code --data code=${YOUR_ACCESS_CODE}
-                        4. Get the access token from the JSON. It is in the "access_token" field.
-                        5. Use the access token. For example:
-                            $ oj download """
-                        + problem.get_url()
-                        + """ --system --dropbox-token=${YOUR_ACCESS_TOKEN}
-
-                    (Please take care that the access code and the access token are CONFIDENTIAL information. DON'T SHARE with other people!)
-                """
-                    ),
-                )
-                raise SampleParseError("--dropbox-token is not given")
-            sess.headers["Authorization"] = "Bearer {}".format(DROPBOX_TOKEN)
         if isinstance(problem, YukicoderProblem):
             YUKICODER_TOKEN = os.environ.get("YUKICODER_TOKEN")
             if YUKICODER_TOKEN:

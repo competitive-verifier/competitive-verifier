@@ -37,7 +37,7 @@ def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
 
 
 def get_checker_path(
-    url_or_problem: Union[str, LibraryCheckerProblem, None]
+    url_or_problem: Union[str, LibraryCheckerProblem, None],
 ) -> Optional[pathlib.Path]:
     if isinstance(url_or_problem, str):
         checker_problem = get_checker_problem(url_or_problem)

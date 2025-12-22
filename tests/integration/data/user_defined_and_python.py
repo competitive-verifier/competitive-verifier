@@ -50,7 +50,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     },
                     "awk/aplusb.test.awk": {
                         "additonal_sources": [],
-                        "dependencies": ["awk/aplusb.awk", "awk/aplusb.test.awk"],
+                        "dependencies": ["awk/aplusb.test.awk"],
                         "document_attributes": {
                             "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
                         },
@@ -82,6 +82,31 @@ class UserDefinedAndPythonData(IntegrationData):
                                 "compile": f"ls {self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
                                 "name": "awk",
                                 "problem": "https://judge.yosupo.jp/problem/aplusb",
+                                "type": "problem",
+                            }
+                        ],
+                    },
+                    "awk/div2ceil.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/div2ceil.awk"],
+                        "document_attributes": {},
+                        "verification": [],
+                    },
+                    "awk/div2ceil.test.awk": {
+                        "additonal_sources": [],
+                        "dependencies": ["awk/div2ceil.awk", "awk/div2ceil.test.awk"],
+                        "document_attributes": {
+                            "PROBLEM": "https://atcoder.jp/contests/abc157/tasks/abc157_a"
+                        },
+                        "verification": [
+                            {
+                                "command": {
+                                    "command": f"awk -f {pathlib.Path('awk/div2ceil.test.awk')}",
+                                    "env": {"AWKPATH": str(self.targets_path)},
+                                },
+                                "compile": f"ls {self.config_dir_path / 'cache/problems/c419be88c7d7bdcd3528081b080737ba'}",
+                                "name": "awk",
+                                "problem": "https://atcoder.jp/contests/abc157/tasks/abc157_a",
                                 "type": "problem",
                             }
                         ],
@@ -300,89 +325,89 @@ class UserDefinedAndPythonData(IntegrationData):
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {
-            "total_seconds": 11189.039999999999,
+            "total_seconds": 12423.599999999999,
             "files": {
                 "awk/aplusb.test.awk": {
                     "newest": True,
                     "verifications": [
                         {
-                            "elapsed": 5030.0,
-                            "heaviest": 48.0,
-                            "last_execution_time": "2016-04-01T06:51:05.550000-07:00",
-                            "slowest": 503.0,
-                            "status": "success",
+                            "elapsed": 6605.0,
+                            "heaviest": 706.0,
+                            "last_execution_time": "2021-04-10T08:08:54.390000+02:00",
+                            "slowest": 660.0,
+                            "status": "failure",
                             "testcases": [
                                 {
-                                    "elapsed": 5.28,
-                                    "memory": 84.4,
+                                    "elapsed": 3.96,
+                                    "memory": 10.63,
                                     "name": "example_00",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 4.32,
-                                    "memory": 8.22,
+                                    "elapsed": 4.87,
+                                    "memory": 57.66,
                                     "name": "example_01",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 4.07,
-                                    "memory": 9.44,
+                                    "elapsed": 9.41,
+                                    "memory": 55.5,
                                     "name": "random_00",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 2.2,
-                                    "memory": 92.03,
+                                    "elapsed": 8.94,
+                                    "memory": 5.09,
                                     "name": "random_01",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 5.74,
-                                    "memory": 7.33,
+                                    "elapsed": 6.02,
+                                    "memory": 50.45,
                                     "name": "random_02",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 1.63,
-                                    "memory": 68.03,
+                                    "elapsed": 0.29,
+                                    "memory": 48.46,
                                     "name": "random_03",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 4.1,
-                                    "memory": 22.03,
+                                    "elapsed": 7.92,
+                                    "memory": 57.15,
                                     "name": "random_04",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 3.08,
-                                    "memory": 62.59,
+                                    "elapsed": 2.76,
+                                    "memory": 6.76,
                                     "name": "random_05",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 3.28,
-                                    "memory": 50.1,
+                                    "elapsed": 8.25,
+                                    "memory": 23.66,
                                     "name": "random_06",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 1.77,
-                                    "memory": 78.42,
+                                    "elapsed": 6.99,
+                                    "memory": 66.49,
                                     "name": "random_07",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 9.28,
-                                    "memory": 72.85,
+                                    "elapsed": 8.71,
+                                    "memory": 16.96,
                                     "name": "random_08",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                                 {
-                                    "elapsed": 2.38,
-                                    "memory": 82.09,
+                                    "elapsed": 5.17,
+                                    "memory": 36.25,
                                     "name": "random_09",
-                                    "status": "AC",
+                                    "status": "RE",
                                 },
                             ],
                             "verification_name": "awk",
@@ -469,6 +494,81 @@ class UserDefinedAndPythonData(IntegrationData):
                                     "elapsed": 7.36,
                                     "memory": 98.49,
                                     "name": "random_09",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        }
+                    ],
+                },
+                "awk/div2ceil.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 167.0,
+                            "heaviest": 369.0,
+                            "last_execution_time": "1992-07-21T01:19:09.640000+02:00",
+                            "slowest": 16.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 7.31,
+                                    "memory": 81.22,
+                                    "name": "00-sample-00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.44,
+                                    "memory": 2.25,
+                                    "name": "00-sample-01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.36,
+                                    "memory": 2.22,
+                                    "name": "00-sample-02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.01,
+                                    "memory": 69.3,
+                                    "name": "01-handmade-00",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.4,
+                                    "memory": 96.29,
+                                    "name": "01-handmade-01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.01,
+                                    "memory": 65.16,
+                                    "name": "01-handmade-02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.36,
+                                    "memory": 6.38,
+                                    "name": "01-handmade-03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.1,
+                                    "memory": 68.71,
+                                    "name": "01-handmade-04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.63,
+                                    "memory": 41.47,
+                                    "name": "01-handmade-05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 3.09,
+                                    "memory": 40.57,
+                                    "name": "01-handmade-06",
                                     "status": "AC",
                                 },
                             ],
