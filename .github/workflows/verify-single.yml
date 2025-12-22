@@ -65,14 +65,14 @@ jobs:
           java-version: "17"
 
       - name: Install dependencies (Go)
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         if: ${{ inputs.name == 'go' }}
         with:
           # go.mod などもないのでキャッシュできない
           cache: false
 
       - name: Install dependencies (Nim)
-        uses: jiro4989/setup-nim-action@v1
+        uses: jiro4989/setup-nim-action@v2
         if: ${{ inputs.name == 'nim' }}
 
       - name: Install dependencies (Haskell)
@@ -96,7 +96,7 @@ jobs:
           YUKICODER_TOKEN: ${{secrets.YUKICODER_TOKEN}}
 
       - name: Upload result artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Result-${{ runner.os }}-${{ inputs.name }}
           path: |
@@ -109,7 +109,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-${{ runner.os }}-${{ inputs.name }}
