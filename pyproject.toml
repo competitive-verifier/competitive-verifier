@@ -165,7 +165,7 @@ disable = """
 """
 
 [tool.black]
-target-version = ['py39']
+target-version = ['py310']
 line-length = 88
 force-exclude = "src/porting_oj"
 

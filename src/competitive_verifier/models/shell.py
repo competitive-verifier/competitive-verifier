@@ -41,7 +41,7 @@ class ShellCommand(BaseModel):
     @overload
     def exec_command(
         self,
-        text: Literal[True] = True,
+        text: Literal[True],
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,

@@ -17,7 +17,7 @@ from tests.integration.utils import md5_number
 
 
 class MockVerifyCommandResult(verifier.VerifyCommandResult):
-    def model_dump_json(
+    def model_dump_json(  # type: ignore[override]
         self,
         *,
         indent: Any = None,
@@ -28,9 +28,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        context: Any = None,
         warnings: Union[bool, Literal["none", "warn", "error"]] = True,
-        serialize_as_any: bool = False,
     ) -> str:
         return self.model_copy()._dump_super(
             indent=indent,

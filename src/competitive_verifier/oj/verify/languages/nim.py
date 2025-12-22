@@ -23,7 +23,9 @@ class OjVerifyNimConfigEnv(BaseModel):
 
 
 class OjVerifyNimConfig(OjVerifyLanguageConfig):
-    environments: list[OjVerifyNimConfigEnv] = Field(default_factory=list)
+    environments: list[OjVerifyNimConfigEnv] = Field(
+        default_factory=list[OjVerifyNimConfigEnv]
+    )
 
 
 class NimLanguageEnvironment(LanguageEnvironment):

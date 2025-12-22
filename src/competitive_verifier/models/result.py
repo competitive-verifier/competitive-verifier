@@ -106,7 +106,7 @@ class VerificationResult(BaseModel):
 
 class FileResult(BaseModel):
     verifications: list[VerificationResult] = Field(
-        default_factory=list,
+        default_factory=list[VerificationResult],
         description="The results of each verification.",
     )
     """The results of each verification.
@@ -139,7 +139,7 @@ class VerifyCommandResult(BaseModel):
     """
 
     files: dict[ForcePosixPath, FileResult] = Field(
-        default_factory=dict,
+        default_factory=dict[ForcePosixPath, FileResult],
         description="The files to be verified.",
     )
     """The files to be verified.
