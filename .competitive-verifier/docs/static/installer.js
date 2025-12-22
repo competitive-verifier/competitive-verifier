@@ -144,7 +144,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Go)',
-            '  uses: actions/setup-go@v5',
+            '  uses: actions/setup-go@v6',
           )
         }
         if (useRuby) {
@@ -160,7 +160,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Nim)',
-            '  uses: jiro4989/setup-nim-action@v1',
+            '  uses: jiro4989/setup-nim-action@v2',
           )
         }
         if (useHaskel) {
@@ -318,7 +318,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-\${{ runner.os }}
@@ -389,7 +389,7 @@ jobs:
 
       actionYaml += `
       - name: Upload result artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Result-\${{ runner.os }}-\${{ matrix.index }}
           path: \${{runner.temp}}/result.json
