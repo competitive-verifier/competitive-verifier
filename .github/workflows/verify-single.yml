@@ -65,7 +65,7 @@ jobs:
           java-version: "17"
 
       - name: Install dependencies (Go)
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         if: ${{ inputs.name == 'go' }}
         with:
           # go.mod などもないのでキャッシュできない
