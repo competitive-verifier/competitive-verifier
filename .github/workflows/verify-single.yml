@@ -72,7 +72,7 @@ jobs:
           cache: false
 
       - name: Install dependencies (Nim)
-        uses: jiro4989/setup-nim-action@v1
+        uses: jiro4989/setup-nim-action@v2
         if: ${{ inputs.name == 'nim' }}
 
       - name: Install dependencies (Haskell)
