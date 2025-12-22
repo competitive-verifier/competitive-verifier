@@ -28,7 +28,7 @@ jobs:
         id: create-hash
         run: |
           echo "hash=${{ hashFiles('**/*verify-files.json') }}" > $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: setup-${{ runner.os }}
           path: ${{ env.artifact-path }}
