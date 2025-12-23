@@ -20,7 +20,10 @@ def get_problem_cache_dir() -> pathlib.Path:
 
 
 def get_directory(url: str) -> pathlib.Path:
-    return get_problem_cache_dir() / hashlib.md5(url.encode()).hexdigest()
+    return (
+        get_problem_cache_dir()
+        / hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
+    )
 
 
 def is_yukicoder(url: str) -> bool:

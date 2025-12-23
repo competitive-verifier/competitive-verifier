@@ -136,7 +136,9 @@ class OjResolver:
                     tempdir = (
                         config.get_cache_dir()
                         / "standalone"
-                        / hashlib.md5(path.as_posix().encode("utf-8")).hexdigest()
+                        / hashlib.md5(
+                            path.as_posix().encode("utf-8"), usedforsecurity=False
+                        ).hexdigest()
                     )
                     yield CommandVerification(
                         name=env.name,
