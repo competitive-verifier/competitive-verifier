@@ -68,7 +68,7 @@ def oj_exec_command(
     *,
     env: dict[str, str] | None,
     stdin: BinaryIO | None = None,
-    input: bytes | None = None,
+    input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: str | None = None,
 ) -> tuple[OjExecInfo, Popen[bytes]]:

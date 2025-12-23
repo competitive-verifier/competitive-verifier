@@ -613,7 +613,7 @@ def test_resolve_dependency(
         dep_result = VerifyCommandResult.model_validate(dep_result_obj)
 
         resolved = SourceCodeStat.resolve_dependency(
-            input=dep_input,
+            verifications=dep_input,
             result=dep_result,
             included_files={Path(s) for s in included_files_str},
         )

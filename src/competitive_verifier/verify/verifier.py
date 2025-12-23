@@ -26,7 +26,7 @@ logger = getLogger(__name__)
 
 
 class InputContainer(ABC):
-    input: VerificationInput
+    verifications: VerificationInput
     verification_time: datetime.datetime
     prev_result: VerifyCommandResult | None
     split_state: SplitState | None
@@ -34,12 +34,12 @@ class InputContainer(ABC):
     def __init__(
         self,
         *,
-        input: VerificationInput,
+        verifications: VerificationInput,
         verification_time: datetime.datetime,
         prev_result: VerifyCommandResult | None,
         split_state: SplitState | None,
     ) -> None:
-        self.input = input
+        self.verifications = verifications
         self.verification_time = verification_time
         self.prev_result = prev_result
         self.split_state = split_state
@@ -71,7 +71,7 @@ class InputContainer(ABC):
     @cached_property
     def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
         """List of verification files."""
-        return {p: f for p, f in self.input.files.items() if f.is_verification()}
+        return {p: f for p, f in self.verifications.files.items() if f.is_verification()}
 
     @cached_property
     def skippable_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
@@ -95,7 +95,7 @@ class InputContainer(ABC):
 
         not_updated_files = {
             k
-            for k, v in self.input.filterd_files(self.prev_result.files)
+            for k, v in self.verifications.filterd_files(self.prev_result.files)
             if not self.file_need_verification(k, v)
         }
         verification_files = {
@@ -130,7 +130,7 @@ class BaseVerifier(InputContainer):
 
     def __init__(
         self,
-        input: VerificationInput,
+        verifications: VerificationInput,
         *,
         timeout: float,
         default_tle: float | None,
@@ -140,12 +140,12 @@ class BaseVerifier(InputContainer):
         verification_time: datetime.datetime | None = None,
     ) -> None:
         super().__init__(
-            input=input,
+            verifications=verifications,
             verification_time=verification_time or self.now().astimezone(),
             prev_result=prev_result,
             split_state=split_state,
         )
-        self._input = input
+        self._input = verifications
         self.timeout = timeout
         self.default_tle = default_tle
         self.default_mle = default_mle
@@ -184,7 +184,7 @@ class BaseVerifier(InputContainer):
         if self.prev_result:
             file_results = {
                 k: v.model_copy(update={"newest": False})
-                for k, v in self.input.filterd_files(self.prev_result.files)
+                for k, v in self.verifications.filterd_files(self.prev_result.files)
                 if k.exists()
             }
         else:
@@ -338,7 +338,7 @@ class Verifier(BaseVerifier):
 
     def __init__(
         self,
-        input: VerificationInput,
+        verifications: VerificationInput,
         *,
         timeout: float,
         default_tle: float | None,
@@ -349,7 +349,7 @@ class Verifier(BaseVerifier):
         use_git_timestamp: bool,
     ) -> None:
         super().__init__(
-            input=input,
+            verifications=verifications,
             verification_time=verification_time or self.now().astimezone(),
             prev_result=prev_result,
             split_state=split_state,
@@ -361,9 +361,9 @@ class Verifier(BaseVerifier):
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         if self.use_git_timestamp:
-            return git.get_commit_time(self.input.transitive_depends_on[path])
+            return git.get_commit_time(self.verifications.transitive_depends_on[path])
         else:
-            dependicies = self.input.transitive_depends_on[path]
+            dependicies = self.verifications.transitive_depends_on[path]
 
             timestamp = max(x.stat().st_mtime for x in dependicies)
             system_local_timezone = self.now().astimezone().tzinfo

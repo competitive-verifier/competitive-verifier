@@ -21,7 +21,7 @@ _DOC_USAGE_PATH = "doc_usage.txt"
 
 
 class DocumentBuilder(BaseModel):
-    input: VerificationInput
+    verifications: VerificationInput
     result: VerifyCommandResult
     docs_dir: pathlib.Path
     destination_dir: pathlib.Path
@@ -119,7 +119,7 @@ class DocumentBuilder(BaseModel):
         # yield source.with_suffix(source.suffix + ".md"), source.read_bytes()
         for job in RenderJob.enumerate_jobs(
             sources=sources,
-            input=self.input,
+            verifications=self.verifications,
             result=self.result,
             config=config_yml,
             index_md=index_md,

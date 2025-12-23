@@ -260,13 +260,13 @@ class SourceCodeStat(BaseModel):
     @staticmethod
     def resolve_dependency(
         *,
-        input: VerificationInput,
+        verifications: VerificationInput,
         result: VerifyCommandResult,
         included_files: AbstractSet[pathlib.Path],
     ) -> dict[pathlib.Path, "SourceCodeStat"]:
         d: dict[pathlib.Path, SourceCodeStat] = {}
         statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
-            p: _VerificationStatusFlag.NOTHING for p in input.files.keys()
+            p: _VerificationStatusFlag.NOTHING for p in verifications.files.keys()
         }
         verification_results_dict: dict[pathlib.Path, list[VerificationResult]] = {}
 
@@ -284,7 +284,7 @@ class SourceCodeStat(BaseModel):
             statuses[p] = st
             verification_results_dict[p] = r.verifications
 
-        for group in input.scc():
+        for group in verifications.scc():
             group &= included_files
             if not group:
                 continue
@@ -296,15 +296,17 @@ class SourceCodeStat(BaseModel):
                 group_status |= statuses[path]
 
             for path in group:
-                depends_on = input.depends_on[path] & included_files
-                required_by = input.required_by[path] & included_files
-                verified_with = input.verified_with[path] & included_files
+                depends_on = verifications.depends_on[path] & included_files
+                required_by = verifications.required_by[path] & included_files
+                verified_with = verifications.verified_with[path] & included_files
 
                 for dep in depends_on:
                     statuses[dep] |= group_status
 
-                timestamp = git.get_commit_time(input.transitive_depends_on[path])
-                file_input = input.files[path]
+                timestamp = git.get_commit_time(
+                    verifications.transitive_depends_on[path]
+                )
+                file_input = verifications.files[path]
                 is_verification = file_input.is_verification()
 
                 verification_results = verification_results_dict.get(path)
@@ -349,7 +351,7 @@ class RenderJob(ABC):
     def enumerate_jobs(
         *,
         sources: set[pathlib.Path],
-        input: VerificationInput,
+        verifications: VerificationInput,
         result: VerifyCommandResult,
         config: ConfigYaml,
         index_md: Markdown | None = None,
@@ -385,7 +387,7 @@ class RenderJob(ABC):
         )
         with log.group("Resolve dependency"):
             stats_dict = SourceCodeStat.resolve_dependency(
-                input=input,
+                verifications=verifications,
                 result=result,
                 included_files=sources,
             )
@@ -416,7 +418,7 @@ class RenderJob(ABC):
                 group_dir=group_dir or source.parent,
                 markdown=markdown,
                 stat=stat,
-                input=input,
+                verifications=verifications,
                 result=result,
                 page_jobs=page_jobs,
             )
@@ -493,7 +495,7 @@ class PageRenderJob(RenderJob):
     group_dir: pathlib.Path
     markdown: Markdown
     stat: SourceCodeStat
-    input: VerificationInput
+    verifications: VerificationInput
     result: VerifyCommandResult
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
 
@@ -542,7 +544,7 @@ class PageRenderJob(RenderJob):
         if not front_matter.layout:
             front_matter.layout = "document"
 
-        input_file = self.input.files.get(self.source_path)
+        input_file = self.verifications.files.get(self.source_path)
         if not front_matter.title and (input_file and input_file.title):
             front_matter.title = input_file.title
         if not front_matter.display and (input_file and input_file.display):

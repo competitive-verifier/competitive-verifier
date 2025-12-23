@@ -21,7 +21,7 @@ logger = getLogger(__name__)
 
 
 def run_impl(
-    input: VerificationInput,
+    verifications: VerificationInput,
     *,
     prev_result: VerifyCommandResult | None,
     timeout: float = math.inf,
@@ -40,7 +40,7 @@ def run_impl(
         timeout = math.inf
 
     verifier = Verifier(
-        input,
+        verifications,
         use_git_timestamp=github.env.is_in_github_actions(),
         timeout=timeout,
         default_tle=default_tle,

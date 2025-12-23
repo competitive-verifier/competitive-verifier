@@ -37,7 +37,7 @@ class MockVerifier(BaseVerifier):
         split_state: SplitState | None,
     ) -> None:
         super().__init__(
-            input=VerificationInput.model_validate(obj),
+            verifications=VerificationInput.model_validate(obj),
             verification_time=verification_time,
             prev_result=prev_result,
             split_state=split_state,

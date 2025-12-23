@@ -96,12 +96,12 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("url_or_file", "expected"),
     test_parse_urls_params,
     ids=range(len(test_parse_urls_params)),
 )
 def test_parse_urls(
-    input: _SomeUrlOrVerificationFile,
+    url_or_file: _SomeUrlOrVerificationFile,
     expected: set[str],
 ):
-    assert set(parse_urls(input)) == expected
+    assert set(parse_urls(url_or_file)) == expected

@@ -32,7 +32,7 @@ def get_default_docs_dir() -> pathlib.Path:
 
 
 def run_impl(
-    input: VerificationInput,
+    verifications: VerificationInput,
     result: VerifyCommandResult,
     *,
     destination_dir: pathlib.Path,
@@ -40,10 +40,10 @@ def run_impl(
     include: list[str] | None,
     exclude: list[str] | None,
 ) -> bool:
-    logger.debug("input=%s", input.model_dump_json(exclude_none=True))
+    logger.debug("verifications=%s", verifications.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
     builder = DocumentBuilder(
-        input=input,
+        verifications=verifications,
         result=result,
         docs_dir=docs_dir or get_default_docs_dir(),
         destination_dir=destination_dir,

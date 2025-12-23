@@ -94,7 +94,7 @@ def test_oj_download(
     mock_problem: dict[type[onlinejudge.type.Problem], MockProblem],
 ):
     download(
-        input=[
+        url_or_file=[
             "https://judge.yosupo.jp/problem/aplusb",
             "https://judge.yosupo.jp/problem/aplusb",
             "https://yukicoder.me/problems/no/1088",
@@ -121,7 +121,6 @@ def test_oj_download(
         atcoder.AtCoderProblem,
     }
 
-    #
     mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
     mock_library_checker.download_sample_cases.assert_not_called()
     mock_library_checker.download_system_cases.assert_not_called()

@@ -25,8 +25,8 @@ class PathContainer(BaseModel):
     basedir: StrPath
     tempdir: StrPath
 
-    def _format(self, input: str):
-        return input.format(
+    def _format(self, fmt: str):
+        return fmt.format(
             path=str(self.path),
             dir=str(pathlib.Path(self.path).parent),
             basedir=str(self.basedir),
@@ -40,10 +40,11 @@ class PathContainer(BaseModel):
         if not isinstance(command, ShellCommand):
             return list(map(self._format, command))
 
-        if isinstance(command.command, str):
-            cmd = self._format(command.command)
-        else:
-            cmd = list(map(self._format, command.command))
+        cmd = (
+            self._format(command.command)
+            if isinstance(command.command, str)
+            else list(map(self._format, command.command))
+        )
 
         env = (
             {self._format(k): self._format(v) for k, v in command.env.items()}

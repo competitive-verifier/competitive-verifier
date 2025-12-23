@@ -151,7 +151,7 @@ class VerificationInput(BaseModel):
         impl.files = new_files
         return impl
 
-    def scc(self, *, reversed: bool = False) -> list[set[pathlib.Path]]:
+    def scc(self, *, reverse: bool = False) -> list[set[pathlib.Path]]:
         """Strongly Connected Component.
 
         Args:
@@ -166,7 +166,7 @@ class VerificationInput(BaseModel):
             for e in file.dependencies:
                 t = vers_rev.get(e, -1)
                 if 0 <= t:
-                    if reversed:
+                    if reverse:
                         g.add_edge(t, vers_rev[p])
                     else:
                         g.add_edge(vers_rev[p], t)
@@ -175,7 +175,7 @@ class VerificationInput(BaseModel):
     @cached_property
     def transitive_depends_on(self) -> _DependencyEdges:
         d: _DependencyEdges = {}
-        g = self.scc(reversed=True)
+        g = self.scc(reverse=True)
         for group in g:
             result = group.copy()
             for p in group:

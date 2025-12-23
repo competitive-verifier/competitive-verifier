@@ -53,7 +53,7 @@ def exec_command(
     command_str: str,
     *,
     stdin: BinaryIO | None = None,
-    input: bytes | None = None,
+    input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: str | None = None,
 ) -> tuple[dict[str, Any], subprocess.Popen[bytes]]:
@@ -68,9 +68,6 @@ def exec_command(
         command = shlex.split(command_str)
         if gnu_time is not None:
             command = [gnu_time, "-f", "%M", "-o", fh.name, "--", *command]
-        if os.name == "nt":
-            # HACK: without this encoding and decoding, something randomly fails with multithreading; see https://github.com/kmyk/online-judge-tools/issues/468
-            command = command_str.encode().decode()  # type: ignore
         begin = time.perf_counter()
 
         # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
