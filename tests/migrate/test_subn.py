@@ -103,7 +103,7 @@ test_problem_subn_params = {
 
 
 @pytest.mark.parametrize(
-    "content, expected",
+    ("content", "expected"),
     test_problem_subn_params.values(),
     ids=test_problem_subn_params.keys(),
 )

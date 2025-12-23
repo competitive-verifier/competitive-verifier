@@ -19,7 +19,7 @@ test_get_split_state_params = [
 
 
 @pytest.mark.parametrize(
-    "size, index, expected",
+    ("size", "index", "expected"),
     test_get_split_state_params,
     ids=range(len(test_get_split_state_params)),
 )
@@ -56,7 +56,7 @@ get_split_state_error_params = {
 
 
 @pytest.mark.parametrize(
-    "args, message",
+    ("args", "message"),
     get_split_state_error_params.values(),
     ids=get_split_state_error_params.keys(),
 )

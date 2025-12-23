@@ -23,7 +23,7 @@ test_to_human_str_seconds_params: list[tuple[timedelta, str]] = [
 
 
 @pytest.mark.parametrize(
-    "td, expected",
+    ("td", "expected"),
     test_to_human_str_seconds_params,
     ids=str,
 )
@@ -45,7 +45,7 @@ test_to_human_str_mega_bytes_params: list[tuple[float, str]] = [
 
 
 @pytest.mark.parametrize(
-    "megabytes, expected",
+    ("megabytes", "expected"),
     test_to_human_str_mega_bytes_params,
 )
 def test_to_human_str_mega_bytes(megabytes: float, expected: str):

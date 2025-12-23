@@ -126,7 +126,7 @@ test_merge_params: list[tuple[list[VerifyCommandResult], VerifyCommandResult]] =
 
 
 @pytest.mark.parametrize(
-    "results, expected",
+    ("results", "expected"),
     test_merge_params,
     ids=range(len(test_merge_params)),
 )

@@ -98,7 +98,7 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("input", "expected"),
     test_parse_urls_params,
     ids=range(len(test_parse_urls_params)),
 )

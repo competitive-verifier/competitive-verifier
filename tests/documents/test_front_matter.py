@@ -127,7 +127,7 @@ additional-extra-property: "CDE"
 
 
 @pytest.mark.parametrize(
-    "content, front_matter, markdown_content",
+    ("content", "front_matter", "markdown_content"),
     test_markdown_params,
     ids=range(len(test_markdown_params)),
 )
@@ -549,7 +549,7 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
 
 
 @pytest.mark.parametrize(
-    "front_matter, expected",
+    ("front_matter", "expected"),
     test_front_matter_dump_yml_params,
     ids=range(len(test_front_matter_dump_yml_params)),
 )

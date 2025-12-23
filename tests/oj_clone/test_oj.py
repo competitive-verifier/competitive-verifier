@@ -57,7 +57,7 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("input", "expected"),
     test_oj_test_params.values(),
     ids=test_oj_test_params.keys(),
 )

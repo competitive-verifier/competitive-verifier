@@ -141,7 +141,7 @@ test_parse_VerificationFile_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, raw_dict, output_dict",
+    ("obj", "raw_dict", "output_dict"),
     test_parse_VerificationFile_params,
     ids=range(len(test_parse_VerificationFile_params)),
 )
@@ -200,7 +200,7 @@ test_is_verification_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, is_verification, is_lightweight_verification",
+    ("obj", "is_verification", "is_lightweight_verification"),
     test_is_verification_params,
     ids=range(len(test_is_verification_params)),
 )

@@ -123,7 +123,7 @@ test_parse_FileResult_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, raw_dict, output_dict, output_json",
+    ("obj", "raw_dict", "output_dict", "output_json"),
     test_parse_FileResult_params,
 )
 def test_parse_FileResult(
@@ -241,7 +241,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
 
 
 @pytest.mark.parametrize(
-    "obj, dt, expected",
+    ("obj", "dt", "expected"),
     test_file_result_need_verification_params,
 )
 def test_file_result_need_verification(
@@ -284,7 +284,7 @@ test_is_success_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, expected",
+    ("obj", "expected"),
     test_is_success_params,
 )
 def test_is_success(
@@ -682,7 +682,7 @@ test_merge_params = [
 
 
 @pytest.mark.parametrize(
-    "obj1, obj2, expected",
+    ("obj1", "obj2", "expected"),
     test_merge_params,
 )
 def test_merge(

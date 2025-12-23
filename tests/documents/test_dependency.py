@@ -594,7 +594,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
 
 
 @pytest.mark.parametrize(
-    "name, dep_input_obj, dep_result_obj, included_files_str, expected_obj",
+    ("name", "dep_input_obj", "dep_result_obj", "included_files_str", "expected_obj"),
     test_resolve_dependency_params,
     ids=[tup[0] for tup in test_resolve_dependency_params],
 )
@@ -634,7 +634,7 @@ test_StatusIcon_is_success_params: list[tuple[StatusIcon, bool]] = [
 
 
 @pytest.mark.parametrize(
-    "status, is_success",
+    ("status", "is_success"),
     test_StatusIcon_is_success_params,
 )
 def test_StatusIcon_is_success(

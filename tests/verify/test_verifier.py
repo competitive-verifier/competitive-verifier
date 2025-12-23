@@ -132,7 +132,7 @@ test_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, expected",
+    ("resolver", "expected"),
     test_verification_files_params,
     ids=range(len(test_verification_files_params)),
 )
@@ -264,7 +264,7 @@ test_file_need_verification_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, path, file_result, expected",
+    ("resolver", "path", "file_result", "expected"),
     test_file_need_verification_params,
     ids=range(len(test_file_need_verification_params)),
 )
@@ -280,7 +280,7 @@ def test_file_need_verification(
 
 
 @pytest.mark.parametrize(
-    "resolver, path, file_result, _",
+    ("resolver", "path", "file_result", "_"),
     test_file_need_verification_params,
     ids=range(len(test_file_need_verification_params)),
 )
@@ -392,7 +392,7 @@ test_remaining_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, expected",
+    ("resolver", "expected"),
     test_remaining_verification_files_params,
     ids=range(len(test_remaining_verification_files_params)),
 )
@@ -470,7 +470,7 @@ test_current_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "index, expected",
+    ("index", "expected"),
     test_current_verification_files_params,
     ids=range(len(test_current_verification_files_params)),
 )

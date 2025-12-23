@@ -130,7 +130,7 @@ test_merge_params: list[tuple[list[VerificationInput], VerificationInput]] = [
 
 
 @pytest.mark.parametrize(
-    "inputs, expected",
+    ("inputs", "expected"),
     test_merge_params,
     ids=range(len(test_merge_params)),
 )
