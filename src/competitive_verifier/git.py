@@ -10,9 +10,7 @@ if TYPE_CHECKING:
 
 
 def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
-    code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--"] + list(
-        map(str, files)
-    )
+    code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--", *map(str, files)]
     stdout = exec_command(code, text=True, capture_output=True).stdout
     timestamp = stdout.strip()
     if not timestamp:

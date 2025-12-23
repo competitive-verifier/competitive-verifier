@@ -6,9 +6,6 @@ from subprocess import CompletedProcess
 from typing import TYPE_CHECKING, Optional
 
 from competitive_verifier.exec import exec_command as _exec_command
-from competitive_verifier.util import (
-    read_text_normalized,  # pyright: ignore[reportUnusedImport]  # noqa: F401
-)
 
 if TYPE_CHECKING:
     from _typeshed import StrOrBytesPath

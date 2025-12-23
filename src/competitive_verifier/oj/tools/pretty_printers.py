@@ -641,7 +641,7 @@ def _add_dots_between_gaps(
             min_right_lineno = min(min_right_lineno, op.right_lineno)
             max_right_lineno = op.right_lineno
     if min_left_lineno != 0 or min_right_lineno != 0:
-        result = [_MergedDiffOpDots] + result
+        result = [_MergedDiffOpDots, *result]
     if max_left_lineno != len(lines_a) - 1 or max_right_lineno != len(lines_b) - 1:
         result += [_MergedDiffOpDots]
 

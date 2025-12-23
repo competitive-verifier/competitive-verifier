@@ -506,7 +506,7 @@ class PageRenderJob(RenderJob):
         return self.front_matter.display or DocumentOutputMode.visible
 
     def __str__(self) -> str:
-        return f"PageRenderJob(source_path={repr(self.source_path)},markdown={repr(self.markdown)},stat={repr(self.stat)})"
+        return f"PageRenderJob(source_path={self.source_path!r},markdown={self.markdown!r},stat={self.stat!r})"
 
     def validate_front_matter(self):
         front_matter = self.markdown.front_matter
@@ -633,7 +633,7 @@ class MultiCodePageRenderJob(RenderJob):
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
 
     def __str__(self) -> str:
-        return f"MultiCodePageRenderJob(multi_documentation_of={repr(self.markdown.multi_documentation_of)})"
+        return f"MultiCodePageRenderJob(multi_documentation_of={self.markdown.multi_documentation_of!r})"
 
     @cached_property
     def jobs(self) -> list[PageRenderJob]:

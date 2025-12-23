@@ -19,7 +19,8 @@ from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import exec_command, read_text_normalized
+from competitive_verifier.oj.verify.utils import exec_command
+from competitive_verifier.util import read_text_normalized
 
 logger = getLogger(__name__)
 
@@ -378,7 +379,7 @@ class RustLanguageEnvironment(LanguageEnvironment):
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)
-        return f"cd {str(path.parent.resolve())} && " + shlex.join(
+        return f"cd {path.parent.resolve()!s} && " + shlex.join(
             ["cargo", "build", "--release", *_target_option(target)]
         )
 

@@ -11,7 +11,7 @@ from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import read_text_normalized
+from competitive_verifier.util import read_text_normalized
 
 logger = getLogger(__name__)
 
@@ -47,11 +47,11 @@ class NimLanguageEnvironment(LanguageEnvironment):
                 "nim",
                 self.compile_to,
                 "-p:.",
-                f"-o:{str(tempdir / 'a.out')}",
-                f"--nimcache:{str(tempdir)}",
+                f"-o:{tempdir / 'a.out'!s}",
+                f"--nimcache:{tempdir!s}",
+                *self.nim_flags,
+                str(path),
             ]
-            + self.nim_flags
-            + [str(path)]
         )
 
     def get_execute_command(
