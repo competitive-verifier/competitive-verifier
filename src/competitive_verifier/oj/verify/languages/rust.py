@@ -6,9 +6,10 @@ import json
 import pathlib
 import shutil
 from collections import defaultdict
+from collections.abc import Sequence
 from enum import Enum
 from logging import getLogger
-from typing import Any, Literal, Optional, Sequence
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -31,11 +32,11 @@ _related_source_files_by_workspace: dict[
 
 class OjVerifyRustListDependenciesBackend(BaseModel):
     kind: Literal["none", "cargo-udeps"]
-    toolchain: Optional[str] = None
+    toolchain: str | None = None
 
 
 class OjVerifyRustConfig(OjVerifyLanguageConfig):
-    list_dependencies_backend: Optional[OjVerifyRustListDependenciesBackend] = None
+    list_dependencies_backend: OjVerifyRustListDependenciesBackend | None = None
 
 
 class _ListDependenciesBackend:
@@ -58,7 +59,7 @@ class _NoBackend(_ListDependenciesBackend):
 class _CargoUdeps(_ListDependenciesBackend):
     toolchain: str = "nightly"
 
-    def __init__(self, *, toolchain: Optional[str]):
+    def __init__(self, *, toolchain: str | None):
         if toolchain is not None:
             self.toolchain = toolchain
 
@@ -72,7 +73,7 @@ class _CargoUdeps(_ListDependenciesBackend):
 
 @functools.lru_cache(maxsize=None)
 def _list_dependencies_by_crate(
-    path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: Optional[str]
+    path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: str | None
 ) -> list[pathlib.Path]:
     """The `list_dependencies` implementation for `_NoBackend` and `CargoUdeps`.
 
@@ -373,7 +374,7 @@ class RustLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[str]:
+    ) -> str | None:
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)
@@ -400,7 +401,7 @@ class RustLanguageEnvironment(LanguageEnvironment):
 class RustLanguage(Language):
     _list_dependencies_backend: _ListDependenciesBackend
 
-    def __init__(self, *, config: Optional[OjVerifyRustConfig]):
+    def __init__(self, *, config: OjVerifyRustConfig | None):
         if config and config.list_dependencies_backend:
             list_dependencies_backend = config.list_dependencies_backend
 
@@ -520,7 +521,7 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
 def _find_target(
     metadata: dict[str, Any],
     src_path: pathlib.Path,
-) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
     for package in metadata["packages"]:
         for target in package["targets"]:
             # A `src_path` may contain `..`

@@ -2,13 +2,13 @@ import os
 import pathlib
 import shutil
 import textwrap
+from collections.abc import Iterator
 from contextlib import nullcontext
 from itertools import chain
 from logging import getLogger
-from typing import Iterator
 
-import onlinejudge.dispatch as dispatch
 import requests.exceptions
+from onlinejudge import dispatch
 from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderProblem

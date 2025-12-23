@@ -6,8 +6,8 @@ import os
 import pathlib
 import platform
 import sys
+from collections.abc import Sequence
 from logging import getLogger
-from typing import Sequence
 
 import importlab.environment
 import importlab.fs

@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -35,7 +35,7 @@ class TestcaseResult(BaseModel):
     """Number of seconds elapsed for the test case.
     """
 
-    memory: Optional[float] = Field(
+    memory: float | None = Field(
         default=None,
         description="The size of memory used in megabytes.",
     )
@@ -44,7 +44,7 @@ class TestcaseResult(BaseModel):
 
 
 class VerificationResult(BaseModel):
-    verification_name: Optional[str] = Field(
+    verification_name: str | None = Field(
         default=None,
         description="The name of verification.",
     )
@@ -62,21 +62,21 @@ class VerificationResult(BaseModel):
     """Total number of seconds elapsed for all test cases.
     """
 
-    slowest: Optional[float] = Field(
+    slowest: float | None = Field(
         default=None,
         description="Maximum number of seconds elapsed for each test cases.",
     )
     """Maximum number of seconds elapsed for each test cases.
     """
 
-    heaviest: Optional[float] = Field(
+    heaviest: float | None = Field(
         default=None,
         description="Maximum size of memory used in megabytes.",
     )
     """Maximum size of memory used in megabytes.
     """
 
-    testcases: Optional[list[TestcaseResult]] = Field(
+    testcases: list[TestcaseResult] | None = Field(
         default=None,
         description="The results of each test case.",
     )

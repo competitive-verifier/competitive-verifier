@@ -2,14 +2,11 @@ import contextlib
 import os
 import pathlib
 from dataclasses import dataclass
-from typing import Optional
 
-import onlinejudge.service.atcoder as atcoder
-import onlinejudge.service.library_checker as library_checker
-import onlinejudge.service.yukicoder as yukicoder
 import onlinejudge.type
 import pytest
 import requests
+from onlinejudge.service import atcoder, library_checker, yukicoder
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
@@ -20,7 +17,7 @@ from competitive_verifier.download.main import run_impl as download
 class MockProblem:
     download_system_cases: MockType
     download_sample_cases: MockType
-    generate_test_cases_in_cloned_repository: Optional[MockType] = None
+    generate_test_cases_in_cloned_repository: MockType | None = None
 
 
 @pytest.fixture

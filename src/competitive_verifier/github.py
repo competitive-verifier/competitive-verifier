@@ -3,10 +3,10 @@ import pathlib
 import re
 import uuid
 from contextlib import contextmanager
-from typing import Optional, TextIO
+from typing import TextIO
 
 
-def _optional_path(strpath: Optional[str]) -> Optional[pathlib.Path]:
+def _optional_path(strpath: str | None) -> pathlib.Path | None:
     return pathlib.Path(strpath) if strpath else None
 
 
@@ -20,52 +20,52 @@ class env:
         return os.getenv("GITHUB_ACTIONS") == "1"
 
     @classmethod
-    def get_ref_name(cls) -> Optional[str]:
+    def get_ref_name(cls) -> str | None:
         return os.getenv("GITHUB_REF_NAME")
 
     @classmethod
-    def get_api_token(cls) -> Optional[str]:
+    def get_api_token(cls) -> str | None:
         return os.getenv("GITHUB_TOKEN")
 
     @classmethod
-    def get_event_name(cls) -> Optional[str]:
+    def get_event_name(cls) -> str | None:
         return os.getenv("GITHUB_EVENT_NAME")
 
     @classmethod
-    def get_api_url(cls) -> Optional[str]:
+    def get_api_url(cls) -> str | None:
         return os.getenv("GITHUB_API_URL")
 
     @classmethod
-    def get_repository(cls) -> Optional[str]:
+    def get_repository(cls) -> str | None:
         return os.getenv("GITHUB_REPOSITORY")
 
     @classmethod
-    def get_workflow_name(cls) -> Optional[str]:
+    def get_workflow_name(cls) -> str | None:
         return os.getenv("GITHUB_WORKFLOW")
 
     @classmethod
-    def get_workflow_ref(cls) -> Optional[str]:
+    def get_workflow_ref(cls) -> str | None:
         return os.getenv("GITHUB_WORKFLOW_REF")
 
     @classmethod
-    def get_workflow_filename(cls) -> Optional[str]:
+    def get_workflow_filename(cls) -> str | None:
         ref = cls.get_workflow_ref()
         if not ref:
             return None
         return re.sub(r".*/([^/]+\.yml)@.*$", r"\1", ref)
 
     @classmethod
-    def get_output_path(cls) -> Optional[pathlib.Path]:
+    def get_output_path(cls) -> pathlib.Path | None:
         strpath = os.getenv("GITHUB_OUTPUT")
         return _optional_path(strpath)
 
     @classmethod
-    def get_workspace_path(cls) -> Optional[pathlib.Path]:
+    def get_workspace_path(cls) -> pathlib.Path | None:
         strpath = os.getenv("GITHUB_WORKSPACE")
         return _optional_path(strpath)
 
     @classmethod
-    def get_step_summary_path(cls) -> Optional[pathlib.Path]:
+    def get_step_summary_path(cls) -> pathlib.Path | None:
         strpath = os.getenv("GITHUB_STEP_SUMMARY")
         return _optional_path(strpath)
 
@@ -73,14 +73,14 @@ class env:
 def print_debug(
     message: str,
     *,
-    title: Optional[str] = None,
-    file: Optional[str] = None,
-    col: Optional[int] = None,
-    end_column: Optional[int] = None,
-    line: Optional[int] = None,
-    end_line: Optional[int] = None,
+    title: str | None = None,
+    file: str | None = None,
+    col: int | None = None,
+    end_column: int | None = None,
+    line: int | None = None,
+    end_line: int | None = None,
     force: bool = False,
-    stream: Optional[TextIO] = None,
+    stream: TextIO | None = None,
 ) -> None:
     _print_github(
         "debug",
@@ -99,14 +99,14 @@ def print_debug(
 def print_warning(
     message: str,
     *,
-    title: Optional[str] = None,
-    file: Optional[str] = None,
-    col: Optional[int] = None,
-    end_column: Optional[int] = None,
-    line: Optional[int] = None,
-    end_line: Optional[int] = None,
+    title: str | None = None,
+    file: str | None = None,
+    col: int | None = None,
+    end_column: int | None = None,
+    line: int | None = None,
+    end_line: int | None = None,
     force: bool = False,
-    stream: Optional[TextIO] = None,
+    stream: TextIO | None = None,
 ) -> None:
     _print_github(
         "warning",
@@ -125,14 +125,14 @@ def print_warning(
 def print_error(
     message: str,
     *,
-    title: Optional[str] = None,
-    file: Optional[str] = None,
-    col: Optional[int] = None,
-    end_column: Optional[int] = None,
-    line: Optional[int] = None,
-    end_line: Optional[int] = None,
+    title: str | None = None,
+    file: str | None = None,
+    col: int | None = None,
+    end_column: int | None = None,
+    line: int | None = None,
+    end_line: int | None = None,
     force: bool = False,
-    stream: Optional[TextIO] = None,
+    stream: TextIO | None = None,
 ) -> None:
     _print_github(
         "error",
@@ -152,14 +152,14 @@ def _print_github(
     command: str,
     message: str,
     *,
-    title: Optional[str] = None,
-    file: Optional[str] = None,
-    col: Optional[int] = None,
-    end_column: Optional[int] = None,
-    line: Optional[int] = None,
-    end_line: Optional[int] = None,
+    title: str | None = None,
+    file: str | None = None,
+    col: int | None = None,
+    end_column: int | None = None,
+    line: int | None = None,
+    end_line: int | None = None,
     force: bool = False,
-    stream: Optional[TextIO] = None,
+    stream: TextIO | None = None,
 ) -> None:
     """Print Github Actions style message.
 
@@ -172,7 +172,7 @@ def _print_github(
         title: Custom title
         file: Filename
         col: Column number, starting at 1
-        endColumn: End column number
+        end_column: End column number
         line: Line number, starting at 1
         end_line: End line number
         force: If True, print the message even outside GitHub Actions
@@ -195,11 +195,11 @@ def _print_github(
         print(f"::{command} {annotation}::{message}", file=stream)
 
 
-def begin_group(title: str, *, stream: Optional[TextIO] = None):
+def begin_group(title: str, *, stream: TextIO | None = None):
     print(f"::group::{title}", file=stream)
 
 
-def end_group(*, stream: Optional[TextIO] = None):
+def end_group(*, stream: TextIO | None = None):
     print("::endgroup::", file=stream)
 
 
@@ -218,7 +218,7 @@ def set_output(name: str, value: str) -> bool:
 
 
 @contextmanager
-def group(title: str, *, stream: Optional[TextIO] = None):
+def group(title: str, *, stream: TextIO | None = None):
     try:
         begin_group(title, stream=stream)
         yield

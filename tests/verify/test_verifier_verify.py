@@ -1,7 +1,8 @@
 # pyright: reportPrivateUsage=none
 import datetime
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
@@ -31,9 +32,9 @@ class MockVerifier(BaseVerifier):
         self,
         obj: Any = None,
         *,
-        prev_result: Optional[VerifyCommandResult],
+        prev_result: VerifyCommandResult | None,
         verification_time: datetime.datetime,
-        split_state: Optional[SplitState],
+        split_state: SplitState | None,
     ) -> None:
         super().__init__(
             input=VerificationInput.model_validate(obj),

@@ -1,6 +1,6 @@
 import pathlib
 from subprocess import CompletedProcess
-from typing import Annotated, Literal, Optional, Union, overload
+from typing import Annotated, Literal, overload
 
 from pydantic import BaseModel, Field
 
@@ -8,20 +8,20 @@ from competitive_verifier.exec import exec_command
 
 
 class ShellCommand(BaseModel):
-    command: Union[list[str], str] = Field(
+    command: list[str] | str = Field(
         description="Shell command",
     )
     """Shell command
     """
 
-    env: Optional[dict[str, str]] = Field(
+    env: dict[str, str] | None = Field(
         default=None,
         description="Envitonment variables for command",
     )
     """Envitonment variables for command
     """
 
-    cwd: Optional[pathlib.Path] = Field(
+    cwd: pathlib.Path | None = Field(
         default=None,
         description="The working directory of child process.",
     )
@@ -52,7 +52,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> Union[CompletedProcess[str], CompletedProcess[bytes]]:
+    ) -> CompletedProcess[str] | CompletedProcess[bytes]:
         return exec_command(
             command=self.command,
             env=self.env,
@@ -71,7 +71,7 @@ class ShellCommand(BaseModel):
 
 
 ShellCommandLike = Annotated[
-    Union[ShellCommand, Union[list[str], str]],
+    ShellCommand | list[str] | str,
     Field(
         examples=[
             "command",

@@ -1,6 +1,6 @@
 import pathlib
 from abc import ABC
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -32,13 +32,13 @@ class IntegrationData(ABC):
         return cls.__name__
 
     @property
-    def config_path(self) -> Optional[str]: ...
+    def config_path(self) -> str | None: ...
 
     @property
-    def include_path(self) -> Optional[list[str]]: ...
+    def include_path(self) -> list[str] | None: ...
 
     @property
-    def exclude_path(self) -> Optional[list[str]]: ...
+    def exclude_path(self) -> list[str] | None: ...
 
     def assert_extra(self):
         pass

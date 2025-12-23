@@ -3,10 +3,9 @@ import logging
 import pathlib
 import sys
 from logging import getLogger
-from typing import Optional
 
-import competitive_verifier.config as config
 import competitive_verifier.merge_result.main as merge_result
+from competitive_verifier import config
 from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_include_exclude_argument,
@@ -37,9 +36,9 @@ def run_impl(
     result: VerifyCommandResult,
     *,
     destination_dir: pathlib.Path,
-    docs_dir: Optional[pathlib.Path],
-    include: Optional[list[str]],
-    exclude: Optional[list[str]],
+    docs_dir: pathlib.Path | None,
+    include: list[str] | None,
+    exclude: list[str] | None,
 ) -> bool:
     logger.debug("input=%s", input.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
@@ -105,7 +104,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
@@ -16,5 +14,5 @@ class OjVerifyHaskellConfig(OjVerifyUserDefinedConfig):
 
 
 class HaskellLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: Optional[OjVerifyHaskellConfig]):
+    def __init__(self, *, config: OjVerifyHaskellConfig | None):
         super().__init__(extension="hs", config=config or OjVerifyHaskellConfig())

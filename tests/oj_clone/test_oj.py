@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-import competitive_verifier.oj as oj
+from competitive_verifier import oj
 from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {

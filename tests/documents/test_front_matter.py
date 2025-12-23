@@ -2,7 +2,7 @@ import datetime
 import pathlib
 import textwrap
 from io import BytesIO
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 import yaml
@@ -27,7 +27,7 @@ from competitive_verifier.documents.render_data import (
 )
 from competitive_verifier.models import JudgeStatus
 
-test_markdown_params: list[tuple[bytes, Optional[dict[str, Any]], bytes]] = [
+test_markdown_params: list[tuple[bytes, dict[str, Any] | None, bytes]] = [
     (
         b"""---
 ---""",
@@ -133,7 +133,7 @@ additional-extra-property: "CDE"
 )
 def test_markdown(
     content: bytes,
-    front_matter: Optional[dict[str, Any]],
+    front_matter: dict[str, Any] | None,
     markdown_content: bytes,
 ):
     with BytesIO(content) as fp:

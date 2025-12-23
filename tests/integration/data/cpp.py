@@ -1,5 +1,5 @@
 import shutil
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -345,7 +345,7 @@ class CppWithConfigData(CppWithoutConfigData):
         super().__init__(monkeypatch, set_config_dir, file_paths)
 
     @property
-    def config_path(self) -> Optional[str]:
+    def config_path(self) -> str | None:
         return (self.targets_path / "config.toml").as_posix()
 
     def expected_verify_json(self) -> dict[str, Any]:

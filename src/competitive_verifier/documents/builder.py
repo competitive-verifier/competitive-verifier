@@ -2,12 +2,10 @@ import importlib.resources
 import pathlib
 import shutil
 from logging import getLogger
-from typing import Optional
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.github as github
+from competitive_verifier import git, github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .config import ConfigYaml, load_config_yml
@@ -27,8 +25,8 @@ class DocumentBuilder(BaseModel):
     result: VerifyCommandResult
     docs_dir: pathlib.Path
     destination_dir: pathlib.Path
-    include: Optional[list[str]]
-    exclude: Optional[list[str]]
+    include: list[str] | None
+    exclude: list[str] | None
 
     def build(self) -> bool:
         logger.info(
@@ -105,8 +103,8 @@ class DocumentBuilder(BaseModel):
         self,
         *,
         config_yml: ConfigYaml,
-        index_md: Optional[Markdown],
-        static_dir: Optional[pathlib.Path],
+        index_md: Markdown | None,
+        static_dir: pathlib.Path | None,
     ):
         logger.info("Write document files...")
 

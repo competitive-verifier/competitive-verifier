@@ -6,7 +6,7 @@ import pathlib
 import re
 import shutil
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 
 from competitive_verifier.oj.verify.utils import exec_command
 
@@ -252,7 +252,7 @@ class Bundler:
     def __init__(
         self,
         *,
-        iquotes: Optional[list[pathlib.Path]] = None,
+        iquotes: list[pathlib.Path] | None = None,
         compiler: str = os.environ.get("CXX", "g++"),
     ) -> None:
         if iquotes is None:
@@ -364,7 +364,7 @@ class Bundler:
                     self._line(i + 2, path)
                     continue
 
-                matched: Optional[re.Match[bytes]]
+                matched: re.Match[bytes] | None
                 # #ifndef HOGE_H as guard
                 if (
                     not pragma_once_found

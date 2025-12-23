@@ -10,12 +10,12 @@ from logging import (
     LogRecord,
     basicConfig,
 )
-from typing import Optional, TextIO
+from typing import TextIO
 
 import colorlog
 from colorama import Fore, Style
 
-import competitive_verifier.github as github
+from competitive_verifier import github
 
 # _orig_stderr = sys.stderr
 
@@ -29,7 +29,7 @@ import competitive_verifier.github as github
 
 
 class GitHubActionsHandler(Handler):
-    def __init__(self, *, stream: Optional[TextIO] = None) -> None:
+    def __init__(self, *, stream: TextIO | None = None) -> None:
         super().__init__(DEBUG)
         self.stream = stream
 
@@ -59,8 +59,8 @@ class GitHubActionsHandler(Handler):
 
 
 def configure_logging(
-    default_level: Optional[int] = None,
-    in_github_actions: Optional[bool] = None,
+    default_level: int | None = None,
+    in_github_actions: bool | None = None,
 ) -> None:
     if in_github_actions is None:
         in_github_actions = github.env.is_in_github_actions()
@@ -86,7 +86,7 @@ def configure_logging(
     )
 
 
-def configure_stderr_logging(default_level: Optional[int] = None) -> None:
+def configure_stderr_logging(default_level: int | None = None) -> None:
     colorlog_handler = colorlog.StreamHandler(sys.stderr)
     colorlog_handler.setLevel(default_level or WARNING)
     colorlog_handler.setFormatter(
@@ -102,7 +102,7 @@ def configure_stderr_logging(default_level: Optional[int] = None) -> None:
     )
 
 
-def _console_group(category: str, *, title: str, file: Optional[TextIO]):
+def _console_group(category: str, *, title: str, file: TextIO | None):
     print(
         (
             f"<------------- {Fore.CYAN}{category}:"
@@ -114,7 +114,7 @@ def _console_group(category: str, *, title: str, file: Optional[TextIO]):
 
 
 @contextmanager
-def group(title: str, *, stream: Optional[TextIO] = None):
+def group(title: str, *, stream: TextIO | None = None):
     if stream is None:
         stream = sys.stderr
     if github.env.is_in_github_actions():

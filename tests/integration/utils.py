@@ -1,7 +1,7 @@
 import datetime
 import pathlib
+from collections.abc import Iterable
 from hashlib import md5
-from typing import Iterable
 
 
 def md5_number(seed: bytes):

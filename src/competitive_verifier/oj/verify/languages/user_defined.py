@@ -1,14 +1,14 @@
 # Python Version: 3.x
 import pathlib
+from collections.abc import Sequence
 from logging import getLogger
 from tempfile import TemporaryDirectory
-from typing import Optional, Sequence, Union
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.languages.special_comments as special_comments
-import competitive_verifier.oj.verify.utils as utils
 from competitive_verifier.models import ShellCommand, ShellCommandLike
+from competitive_verifier.oj.verify import utils
+from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
@@ -17,7 +17,7 @@ from competitive_verifier.oj.verify.models import (
 
 logger = getLogger(__name__)
 
-StrPath = Union[pathlib.Path, str]
+StrPath = pathlib.Path | str
 
 
 class PathContainer(BaseModel):
@@ -77,7 +77,7 @@ class UserDefinedLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[ShellCommandLike]:
+    ) -> ShellCommandLike | None:
         if self.config.compile:
             return PathContainer(
                 path=path, basedir=basedir, tempdir=tempdir
@@ -145,7 +145,7 @@ class UserDefinedLanguage(Language):
             dependencies.append(pathlib.Path(line.decode()))
         return dependencies
 
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
         if self.config.bundle is None:
             return None
         with TemporaryDirectory() as tempdir:

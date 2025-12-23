@@ -2,9 +2,9 @@ import argparse
 import logging
 import pathlib
 import sys
+from collections.abc import Iterable
 from functools import reduce
 from logging import getLogger
-from typing import Iterable, Optional
 
 from competitive_verifier.arg import add_verbose_argument
 from competitive_verifier.log import configure_stderr_logging
@@ -47,7 +47,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

@@ -1,8 +1,8 @@
 import argparse
 import importlib.metadata
 import sys
+from collections.abc import Callable
 from logging import getLogger
-from typing import Callable, Optional
 
 logger = getLogger(__name__)
 
@@ -79,7 +79,7 @@ def get_parser() -> argparse.ArgumentParser:
 
 def select_runner(
     subcommand: str,
-) -> Optional[Callable[[argparse.Namespace], bool]]:
+) -> Callable[[argparse.Namespace], bool] | None:
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
@@ -111,7 +111,7 @@ def select_runner(
     return None
 
 
-def main(args: Optional[list[str]] = None):
+def main(args: list[str] | None = None):
     parser = get_parser()
     parsed = parser.parse_args(args)
 

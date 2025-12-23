@@ -5,12 +5,12 @@ import pathlib
 import platform
 import shutil
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.languages.special_comments as special_comments
 import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj.verify.languages.cplusplus_bundle import Bundler
 from competitive_verifier.oj.verify.models import (
     Language,
@@ -24,11 +24,11 @@ logger = getLogger(__name__)
 
 class OjVerifyCPlusPlusConfigEnv(BaseModel):
     CXX: str
-    CXXFLAGS: Optional[list[str]] = None
+    CXXFLAGS: list[str] | None = None
 
 
 class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
-    environments: Optional[list[OjVerifyCPlusPlusConfigEnv]] = None
+    environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
 
 
 class CPlusPlusLanguageEnvironment(LanguageEnvironment):
@@ -127,7 +127,7 @@ _STANDALONE = "STANDALONE"
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig
 
-    def __init__(self, *, config: Optional[OjVerifyCPlusPlusConfig]):
+    def __init__(self, *, config: OjVerifyCPlusPlusConfig | None):
         self.config = config or OjVerifyCPlusPlusConfig()
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
@@ -245,7 +245,7 @@ class CPlusPlusLanguage(Language):
             path.resolve(), CXX=env.cxx, joined_CXXFLAGS=joined_CXXFLAGS
         )
 
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
         include_paths: list[pathlib.Path] = [basedir]
         assert isinstance(include_paths, list)
         bundler = Bundler(iquotes=include_paths)

@@ -1,13 +1,12 @@
 import hashlib
 import pathlib
 import sys
-from typing import Optional, Union
 
 from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 
-import competitive_verifier.config as config
+from competitive_verifier import config
 
 checker_exe_name = "checker.exe" if sys.platform == "win32" else "checker"
 
@@ -32,13 +31,13 @@ def is_atcoder(url: str) -> bool:
     return AtCoderService.from_url(url) is not None
 
 
-def get_checker_problem(url: str) -> Optional[LibraryCheckerProblem]:
+def get_checker_problem(url: str) -> LibraryCheckerProblem | None:
     return LibraryCheckerProblem.from_url(url)
 
 
 def get_checker_path(
-    url_or_problem: Union[str, LibraryCheckerProblem, None],
-) -> Optional[pathlib.Path]:
+    url_or_problem: str | LibraryCheckerProblem | None,
+) -> pathlib.Path | None:
     if isinstance(url_or_problem, str):
         checker_problem = get_checker_problem(url_or_problem)
     else:

@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from collections.abc import Iterable
 
 import pytest
 
@@ -10,9 +10,7 @@ def get_problem_command(url: str) -> ProblemVerification:
     return ProblemVerification(command="true", problem=url)
 
 
-_SomeUrlOrVerificationFile = Union[
-    UrlOrVerificationFile, Iterable[UrlOrVerificationFile]
-]
+_SomeUrlOrVerificationFile = UrlOrVerificationFile | Iterable[UrlOrVerificationFile]
 test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
     (
         "http://example.com",

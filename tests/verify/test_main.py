@@ -1,5 +1,4 @@
 import argparse
-from typing import Optional
 
 import pytest
 
@@ -24,9 +23,9 @@ test_get_split_state_params = [
     ids=range(len(test_get_split_state_params)),
 )
 def test_get_split_state(
-    size: Optional[int],
-    index: Optional[int],
-    expected: Optional[SplitState],
+    size: int | None,
+    index: int | None,
+    expected: SplitState | None,
 ):
     assert get_split_state(size, index) == expected
 

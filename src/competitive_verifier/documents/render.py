@@ -2,16 +2,17 @@ import datetime
 import enum
 import pathlib
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from logging import getLogger
-from typing import AbstractSet, BinaryIO, Iterable, Optional
+from typing import BinaryIO
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.log as log
+from competitive_verifier import git, log
 from competitive_verifier.models import (
     DocumentOutputMode,
     ForcePosixPath,
@@ -48,7 +49,7 @@ def resolve_documentation_of(
     documentation_of: str,
     *,
     basedir: pathlib.Path,
-) -> Optional[pathlib.Path]:
+) -> pathlib.Path | None:
     def inner():
         if documentation_of.startswith("."):
             # a relative path
@@ -80,7 +81,7 @@ def resolve_documentation_of(
 def _paths_to_render_links(
     paths: SortedPathSet, page_jobs: dict[pathlib.Path, "PageRenderJob"]
 ) -> list[RenderLink]:
-    def get_link(path: pathlib.Path) -> Optional[RenderLink]:
+    def get_link(path: pathlib.Path) -> RenderLink | None:
         job = page_jobs.get(path)
         if not job:
             return None
@@ -254,7 +255,7 @@ class SourceCodeStat(BaseModel):
     depends_on: SortedPathSet
     required_by: SortedPathSet
     verified_with: SortedPathSet
-    verification_results: Optional[list[VerificationResult]] = None
+    verification_results: list[VerificationResult] | None = None
 
     @staticmethod
     def resolve_dependency(
@@ -351,9 +352,9 @@ class RenderJob(ABC):
         input: VerificationInput,
         result: VerifyCommandResult,
         config: ConfigYaml,
-        index_md: Optional[Markdown] = None,
+        index_md: Markdown | None = None,
     ) -> list["RenderJob"]:
-        def plain_content(source: pathlib.Path) -> Optional[RenderJob]:
+        def plain_content(source: pathlib.Path) -> RenderJob | None:
             if source.suffix == ".md":
                 md = Markdown.load_file(source)
                 if md.front_matter and md.front_matter.documentation_of:
@@ -517,7 +518,7 @@ class PageRenderJob(RenderJob):
                     "PageRenderJob.path must equal front_matter.documentation_of."
                 )
 
-    def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
+    def to_render_link(self, *, index: bool = False) -> RenderLink | None:
         if (
             self.display == DocumentOutputMode.hidden
             or self.display == DocumentOutputMode.never
@@ -726,7 +727,7 @@ class MultiCodePageRenderJob(RenderJob):
 class IndexRenderJob(RenderJob):
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
     multicode_docs: list[MultiCodePageRenderJob]
-    index_md: Optional[Markdown] = None
+    index_md: Markdown | None = None
 
     def __str__(self) -> str:
         @dataclass

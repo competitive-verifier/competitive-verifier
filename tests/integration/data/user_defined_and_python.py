@@ -1,5 +1,5 @@
 import pathlib
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -27,11 +27,11 @@ class UserDefinedAndPythonData(IntegrationData):
         return self.config_dir_path / "bundled/encoding/cp932.txt"
 
     @property
-    def config_path(self) -> Optional[str]:
+    def config_path(self) -> str | None:
         return (self.targets_path / "config.toml").as_posix()
 
     @property
-    def exclude_path(self) -> Optional[list[str]]:
+    def exclude_path(self) -> list[str] | None:
         return ["dummy/"]
 
     def assert_extra(self):

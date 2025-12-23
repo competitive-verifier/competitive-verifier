@@ -5,7 +5,6 @@ import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
-from typing import Optional, Union
 
 from competitive_verifier import git, github, log
 from competitive_verifier.download.main import run_impl as run_download
@@ -29,16 +28,16 @@ logger = getLogger(__name__)
 class InputContainer(ABC):
     input: VerificationInput
     verification_time: datetime.datetime
-    prev_result: Optional[VerifyCommandResult]
-    split_state: Optional[SplitState]
+    prev_result: VerifyCommandResult | None
+    split_state: SplitState | None
 
     def __init__(
         self,
         *,
         input: VerificationInput,
         verification_time: datetime.datetime,
-        prev_result: Optional[VerifyCommandResult],
-        split_state: Optional[SplitState],
+        prev_result: VerifyCommandResult | None,
+        split_state: SplitState | None,
     ) -> None:
         self.input = input
         self.verification_time = verification_time
@@ -123,22 +122,22 @@ class InputContainer(ABC):
 
 class BaseVerifier(InputContainer):
     timeout: float
-    default_tle: Optional[float]
-    default_mle: Optional[float]
-    split_state: Optional[SplitState]
+    default_tle: float | None
+    default_mle: float | None
+    split_state: SplitState | None
 
-    _result: Optional[VerifyCommandResult]
+    _result: VerifyCommandResult | None
 
     def __init__(
         self,
         input: VerificationInput,
         *,
         timeout: float,
-        default_tle: Optional[float],
-        default_mle: Optional[float],
-        prev_result: Optional[VerifyCommandResult],
-        split_state: Optional[SplitState],
-        verification_time: Optional[datetime.datetime] = None,
+        default_tle: float | None,
+        default_mle: float | None,
+        prev_result: VerifyCommandResult | None,
+        split_state: SplitState | None,
+        verification_time: datetime.datetime | None = None,
     ) -> None:
         super().__init__(
             input=input,
@@ -277,7 +276,7 @@ class BaseVerifier(InputContainer):
         verification: Verification,
         *,
         deadline: float = float("inf"),
-    ) -> tuple[Union[ResultStatus, VerificationResult], Optional[str]]:
+    ) -> tuple[ResultStatus | VerificationResult, str | None]:
         """Run verification.
 
         Returns:
@@ -317,10 +316,10 @@ class BaseVerifier(InputContainer):
 
     def create_command_result(
         self,
-        status_or_result: Union[ResultStatus, VerificationResult],
+        status_or_result: ResultStatus | VerificationResult,
         prev_time: float,
         *,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> VerificationResult:
         if isinstance(status_or_result, VerificationResult):
             return status_or_result
@@ -342,11 +341,11 @@ class Verifier(BaseVerifier):
         input: VerificationInput,
         *,
         timeout: float,
-        default_tle: Optional[float],
-        default_mle: Optional[float],
-        prev_result: Optional[VerifyCommandResult],
-        split_state: Optional[SplitState],
-        verification_time: Optional[datetime.datetime] = None,
+        default_tle: float | None,
+        default_mle: float | None,
+        prev_result: VerifyCommandResult | None,
+        split_state: SplitState | None,
+        verification_time: datetime.datetime | None = None,
         use_git_timestamp: bool,
     ) -> None:
         super().__init__(

@@ -1,5 +1,5 @@
 import importlib.resources
-from typing import Iterable
+from collections.abc import Iterable
 
 _RESOURCE_PACKAGE = "competitive_verifier_resources"
 _RESOURCE_STATIC_FILE_PATHS: list[str] = [

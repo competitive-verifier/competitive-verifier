@@ -10,8 +10,9 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Iterator
 from logging import getLogger
-from typing import Any, BinaryIO, Iterator, Optional
+from typing import Any, BinaryIO
 
 import colorama
 import requests
@@ -52,10 +53,10 @@ def new_session_with_our_user_agent(
 def exec_command(
     command_str: str,
     *,
-    stdin: Optional[BinaryIO] = None,
-    input: Optional[bytes] = None,
-    timeout: Optional[float] = None,
-    gnu_time: Optional[str] = None,
+    stdin: BinaryIO | None = None,
+    input: bytes | None = None,
+    timeout: float | None = None,
+    gnu_time: str | None = None,
 ) -> tuple[dict[str, Any], subprocess.Popen[bytes]]:
     if input is not None:
         assert stdin is None
@@ -92,7 +93,7 @@ def exec_command(
         except PermissionError:
             logger.error("Permission denied: %s", command)
             sys.exit(1)
-        answer: Optional[bytes] = None
+        answer: bytes | None = None
         try:
             answer, _ = proc.communicate(input=input, timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -107,7 +108,7 @@ def exec_command(
                 proc.terminate()
 
         end = time.perf_counter()
-        memory: Optional[float] = None
+        memory: float | None = None
         if gnu_time is not None:
             with open(fh.name) as fh1:
                 reported = fh1.read()

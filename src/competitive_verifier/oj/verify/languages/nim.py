@@ -2,7 +2,6 @@
 import functools
 import pathlib
 from logging import getLogger
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,8 +17,8 @@ logger = getLogger(__name__)
 
 
 class OjVerifyNimConfigEnv(BaseModel):
-    compile_to: Optional[str]
-    NIMFLAGS: Optional[list[str]]
+    compile_to: str | None
+    NIMFLAGS: list[str] | None
 
 
 class OjVerifyNimConfig(OjVerifyLanguageConfig):
@@ -96,7 +95,7 @@ def _list_direct_dependencies(
 class NimLanguage(Language):
     config: OjVerifyNimConfig
 
-    def __init__(self, *, config: Optional[OjVerifyNimConfig]):
+    def __init__(self, *, config: OjVerifyNimConfig | None):
         self.config = config or OjVerifyNimConfig()
 
     def list_dependencies(

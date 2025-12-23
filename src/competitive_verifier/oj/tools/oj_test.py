@@ -10,9 +10,10 @@ import sys
 import tempfile
 import time
 import traceback
+from collections.abc import Callable
 from logging import getLogger
 from subprocess import PIPE, Popen, TimeoutExpired
-from typing import Annotated, Any, BinaryIO, Callable, Optional, Union
+from typing import Annotated, Any, BinaryIO
 
 import onlinejudge._implementation.format_utils as fmtutils
 from pydantic import BaseModel, Field
@@ -38,38 +39,38 @@ class OjTestArguments(BaseModel):
     Port of onlinejudge_command.subcommand.test.add_subparser.
     """
 
-    command: Union[str, list[str]]
+    command: str | list[str]
     cookie: pathlib.Path
-    env: Optional[dict[str, str]] = None
+    env: dict[str, str] | None = None
     directory: pathlib.Path
-    judge: Optional[pathlib.Path]
-    tle: Optional[float]
-    mle: Optional[float]
-    error: Optional[float]
+    judge: pathlib.Path | None
+    tle: float | None
+    mle: float | None
+    error: float | None
     print_input: bool = True
     format: str = "%s.%e"
     test: list[pathlib.Path] = Field(default_factory=list[pathlib.Path])
-    gnu_time: Optional[str] = None
-    log_file: Optional[pathlib.Path] = None
+    gnu_time: str | None = None
+    log_file: pathlib.Path | None = None
     silent: bool = False
     ignore_backup: bool = True
     deadline: float = float("inf")
 
 
 class OjExecInfo(BaseModel):
-    answer: Optional[bytes]
+    answer: bytes | None
     elapsed: float
-    memory: Optional[float]
+    memory: float | None
 
 
 def oj_exec_command(
-    command: Union[str, list[str]],
+    command: str | list[str],
     *,
-    env: Optional[dict[str, str]],
-    stdin: Optional[BinaryIO] = None,
-    input: Optional[bytes] = None,
-    timeout: Optional[float] = None,
-    gnu_time: Optional[str] = None,
+    env: dict[str, str] | None,
+    stdin: BinaryIO | None = None,
+    input: bytes | None = None,
+    timeout: float | None = None,
+    gnu_time: str | None = None,
 ) -> tuple[OjExecInfo, Popen[bytes]]:
     if input is not None:
         assert stdin is None
@@ -111,7 +112,7 @@ def oj_exec_command(
         except PermissionError:
             logger.error("Permission denied: %s", command)
             sys.exit(1)
-        answer: Optional[bytes] = None
+        answer: bytes | None = None
         try:
             answer, _ = proc.communicate(input=input, timeout=timeout)
         except TimeoutExpired:
@@ -127,7 +128,7 @@ def oj_exec_command(
                 proc.terminate()
 
         end = time.perf_counter()
-        memory: Optional[float] = None
+        memory: float | None = None
         if gnu_time is not None:
             with open(fh.name) as fh1:
                 reported = fh1.read()
@@ -147,14 +148,14 @@ def oj_exec_command(
 def display_result(
     proc: Popen[bytes],
     answer: bytes,
-    memory: Optional[float],
+    memory: float | None,
     test_input_path: pathlib.Path,
-    test_output_path: Optional[pathlib.Path],
+    test_output_path: pathlib.Path | None,
     *,
-    mle: Optional[float],
+    mle: float | None,
     does_print_input: bool,
     silent: bool,
-    match_result: Optional[bool],
+    match_result: bool | None,
 ) -> JudgeStatus:
     """display_result prints the result of the test and its statistics.
 
@@ -238,15 +239,15 @@ def display_result(
 class TestCase(BaseModel):
     name: str
     input: pathlib.Path
-    output: Optional[pathlib.Path] = None
+    output: pathlib.Path | None = None
 
 
 class OjTestcaseResult(BaseModel):
     status: JudgeStatus
     elapsed: float
-    memory: Optional[float] = None
+    memory: float | None = None
     exitcode: Annotated[
-        Optional[int], BeforeValidator(lambda v: v if isinstance(v, int) else None)
+        int | None, BeforeValidator(lambda v: v if isinstance(v, int) else None)
     ]
     testcase: TestCase
 
@@ -274,7 +275,7 @@ def get_gnu_time_command() -> str:
         return "time"
 
 
-def check_gnu_time(gnu_time: Optional[str] = None) -> bool:
+def check_gnu_time(gnu_time: str | None = None) -> bool:
     if not gnu_time:
         gnu_time = get_gnu_time_command()
     try:
@@ -305,7 +306,7 @@ class SpecialJudge:
         *,
         actual_output: bytes,
         input_path: pathlib.Path,
-        expected_output_path: Optional[pathlib.Path],
+        expected_output_path: pathlib.Path | None,
     ) -> bool:
         with tempfile.TemporaryDirectory() as tempdir:
             actual_output_path = pathlib.Path(tempdir) / "actual.out"
@@ -339,11 +340,11 @@ class SpecialJudge:
 
 def build_match_function(
     *,
-    error: Optional[float],
-    judge_command: Optional[str],
+    error: float | None,
+    judge_command: str | None,
     silent: bool,
     test_input_path: pathlib.Path,
-    test_output_path: Optional[pathlib.Path],
+    test_output_path: pathlib.Path | None,
 ) -> Callable[[bytes, bytes], bool]:
     """build_match_function builds the function to compare actual outputs and expected outputs.
 
@@ -397,10 +398,10 @@ def build_match_function(
 def run_checking_output(
     *,
     answer: bytes,
-    test_output_path: Optional[pathlib.Path],
+    test_output_path: pathlib.Path | None,
     is_special_judge: bool,
     match_function: Callable[[bytes, bytes], bool],
-) -> Optional[bool]:
+) -> bool | None:
     """run_checking_output executes matching of the actual output and the expected output.
 
     This function has file I/O including the execution of the judge command.
@@ -420,7 +421,7 @@ def run_checking_output(
 def test_single_case(
     test_name: str,
     test_input_path: pathlib.Path,
-    test_output_path: Optional[pathlib.Path],
+    test_output_path: pathlib.Path | None,
     *,
     args: OjTestArguments,
 ) -> dict[str, Any]:
@@ -437,7 +438,7 @@ def test_single_case(
         )
         answer = info.answer or b""
         elapsed: float = info.elapsed
-        memory: Optional[float] = info.memory
+        memory: float | None = info.memory
 
     if memory:
         logger.info("time: %f sec, memory: %f MB", elapsed, memory)
@@ -574,17 +575,17 @@ def run(args: OjTestArguments) -> OjTestResult:
 def run_wrapper(
     *,
     url: str,
-    command: Union[str, list[str]],
-    env: Optional[dict[str, str]],
-    tle: Optional[float],
-    mle: Optional[float],
-    error: Optional[float],
+    command: str | list[str],
+    env: dict[str, str] | None,
+    tle: float | None,
+    mle: float | None,
+    error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
     directory = get_directory(url)
     test_directory = directory / "test"
 
-    checker_path: Optional[pathlib.Path] = directory / checker_exe_name
+    checker_path: pathlib.Path | None = directory / checker_exe_name
     if not checker_path.exists():
         checker_path = None
 

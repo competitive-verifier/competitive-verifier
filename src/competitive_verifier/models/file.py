@@ -2,7 +2,7 @@ import enum
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from pydantic import BaseModel, Field
 
@@ -66,7 +66,7 @@ class VerificationFile(BaseModel):
     )
     """The list of dependent files as paths relative to root.
     """
-    verification: Union[list[Verification], Verification, None] = Field(
+    verification: list[Verification] | Verification | None = Field(
         default_factory=list[Verification]
     )
     document_attributes: dict[str, Any] = Field(
@@ -91,7 +91,7 @@ class VerificationFile(BaseModel):
     """
 
     @property
-    def title(self) -> Optional[str]:
+    def title(self) -> str | None:
         """The document title specified as a attributes."""
         title = self.document_attributes.get("TITLE")
         if not title:
@@ -99,7 +99,7 @@ class VerificationFile(BaseModel):
         return title
 
     @property
-    def display(self) -> Optional[DocumentOutputMode]:
+    def display(self) -> DocumentOutputMode | None:
         """The document output mode as a attributes."""
         d = self.document_attributes.get("DISPLAY")
         if not isinstance(d, str):

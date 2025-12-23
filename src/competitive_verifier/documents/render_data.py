@@ -1,6 +1,7 @@
 import datetime
 import enum
-from typing import Annotated, Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, PlainSerializer, model_validator
 from pydantic.alias_generators import to_camel
@@ -59,7 +60,7 @@ class RenderLink(RenderBaseModel):
     path: ForcePosixPath
     filename: str
     icon: StatusIcon
-    title: Optional[str] = None
+    title: str | None = None
 
     @model_validator(mode="after")
     def validate_title(self: "RenderLink") -> "RenderLink":
@@ -79,7 +80,7 @@ class EmbeddedCode(RenderBaseModel):
 
 
 class EnvTestcaseResult(RenderBaseModel, TestcaseResult):
-    environment: Optional[str]
+    environment: str | None
 
 
 class CategorizedIndex(RenderBaseModel):
@@ -95,7 +96,7 @@ class IndexFiles(RenderBaseModel):
 class PageRenderData(RenderBaseModel):
     path: ForcePosixPath
     path_extension: str
-    title: Optional[str]
+    title: str | None
     embedded: list[EmbeddedCode]
 
     timestamp: Annotated[
@@ -103,7 +104,7 @@ class PageRenderData(RenderBaseModel):
         PlainSerializer(lambda x: str(x), return_type=str, when_used="json"),
     ]
     attributes: dict[str, Any]
-    testcases: Optional[list[EnvTestcaseResult]] = None
+    testcases: list[EnvTestcaseResult] | None = None
 
     is_failed: bool
     is_verification_file: bool
@@ -113,12 +114,12 @@ class PageRenderData(RenderBaseModel):
     required_by: SortedPathList
     verified_with: SortedPathList
 
-    document_path: Optional[ForcePosixPath] = None
+    document_path: ForcePosixPath | None = None
     dependencies: list[Dependency]
 
 
 class CodePageData(PageRenderData):
-    document_content: Optional[str]
+    document_content: str | None
 
 
 class MultiCodePageData(RenderBaseModel):

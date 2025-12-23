@@ -4,7 +4,6 @@ import math
 import pathlib
 import sys
 from logging import getLogger
-from typing import Optional
 
 from competitive_verifier import github, summary
 from competitive_verifier.arg import (
@@ -24,14 +23,14 @@ logger = getLogger(__name__)
 def run_impl(
     input: VerificationInput,
     *,
-    prev_result: Optional[VerifyCommandResult],
+    prev_result: VerifyCommandResult | None,
     timeout: float = math.inf,
-    default_tle: Optional[float] = None,
-    default_mle: Optional[float] = None,
+    default_tle: float | None = None,
+    default_mle: float | None = None,
     download: bool = True,
-    split: Optional[int] = None,
-    split_index: Optional[int] = None,
-    output_path: Optional[pathlib.Path] = None,
+    split: int | None = None,
+    split_index: int | None = None,
+    output_path: pathlib.Path | None = None,
     write_summary: bool = False,
     ignore_error: bool = False,
 ) -> bool:
@@ -171,9 +170,9 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 
 def get_split_state(
-    split: Optional[int] = None,
-    split_index: Optional[int] = None,
-) -> Optional[SplitState]:
+    split: int | None = None,
+    split_index: int | None = None,
+) -> SplitState | None:
     if split_index is None and split is None:
         return None
 
@@ -195,7 +194,7 @@ def get_split_state(
     raise VerifierError("invalid state.")
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

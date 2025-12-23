@@ -1,7 +1,8 @@
 # Python Version: 3.x
 import abc
 import pathlib
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,7 +18,7 @@ class LanguageEnvironment(abc.ABC):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[ShellCommandLike]:
+    ) -> ShellCommandLike | None:
         return None
 
     @abc.abstractmethod
@@ -42,7 +43,7 @@ class Language:
     ) -> list[pathlib.Path]:
         raise NotImplementedError
 
-    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
+    def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
         return None
 
     @abc.abstractmethod
@@ -58,7 +59,7 @@ class OjVerifyLanguageConfig(BaseModel):
 
 class OjVerifyUserDefinedConfig(OjVerifyLanguageConfig):
     execute: ShellCommandLike
-    compile: Optional[ShellCommandLike] = None
-    bundle: Optional[ShellCommandLike] = None
-    list_attributes: Optional[ShellCommandLike] = None
-    list_dependencies: Optional[ShellCommandLike] = None
+    compile: ShellCommandLike | None = None
+    bundle: ShellCommandLike | None = None
+    list_attributes: ShellCommandLike | None = None
+    list_dependencies: ShellCommandLike | None = None

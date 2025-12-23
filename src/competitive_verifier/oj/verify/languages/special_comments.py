@@ -2,8 +2,8 @@
 import functools
 import pathlib
 import re
+from collections.abc import Iterable, Mapping
 from logging import getLogger
-from typing import Iterable, Mapping
 
 from competitive_verifier.oj.verify.utils import read_text_normalized
 

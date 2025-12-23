@@ -1,8 +1,9 @@
 import difflib
 import enum
 import shutil
+from collections.abc import Iterable
 from logging import getLogger
-from typing import Iterable, NamedTuple, Optional
+from typing import NamedTuple
 
 import colorama
 
@@ -367,8 +368,8 @@ def _make_diff_between_line_and_line(
 
 class _LineDiffOp(NamedTuple):
     lineno: int  # 0-based. This may be an index of the left side, the right side or the both sides.
-    left: Optional[list[_PrettyToken]]
-    right: Optional[list[_PrettyToken]]
+    left: list[_PrettyToken] | None
+    right: list[_PrettyToken] | None
 
 
 # This function assumes that the two strings have the same number of lines.
@@ -508,9 +509,9 @@ def _make_diff_between_file_and_file(
 
 
 class _MergedDiffOp(NamedTuple):
-    left_lineno: Optional[int]  # 0-based
+    left_lineno: int | None  # 0-based
     left: list[_PrettyToken]
-    right_lineno: Optional[int]  # 0-based
+    right_lineno: int | None  # 0-based
     right: list[_PrettyToken]
     has_diff: bool
 

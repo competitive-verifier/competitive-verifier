@@ -4,7 +4,6 @@ import abc
 import enum
 import math
 from logging import getLogger
-from typing import Optional
 
 logger = getLogger(__name__)
 
@@ -46,11 +45,11 @@ class FloatingPointNumberComparator(OutputComparator):
         True if the relative error or absolute error is smaller than the accepted error
         """
         try:
-            x: Optional[float] = float(actual)
+            x: float | None = float(actual)
         except ValueError:
             x = None
         try:
-            y: Optional[float] = float(expected)
+            y: float | None = float(expected)
         except ValueError:
             y = None
         if x is not None and y is not None:

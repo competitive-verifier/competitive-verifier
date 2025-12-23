@@ -1,7 +1,8 @@
 import pathlib
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional, Sequence, Union
+from typing import Any
 
 import pytest
 from pydantic import RootModel
@@ -22,8 +23,8 @@ from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 @dataclass
 class DataVerificationParams:
-    default_tle: Optional[float]
-    default_mle: Optional[float]
+    default_tle: float | None
+    default_mle: float | None
 
 
 test_command_union_json_params: list[tuple[Verification, str, str]] = [
@@ -117,9 +118,7 @@ def test_const_verification(mock_exec_command: MockType):
     mock_exec_command.assert_not_called()
 
 
-test_run_params: list[
-    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any]]
-] = [
+test_run_params: list[tuple[Verification, tuple[str | list[str]], dict[str, Any]]] = [
     (
         CommandVerification(command="ls ~"),
         ("ls ~",),
@@ -230,7 +229,7 @@ def test_run(
 
 
 test_run_with_env_params: list[
-    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any], dict[str, str]]
+    tuple[Verification, tuple[str | list[str]], dict[str, Any], dict[str, str]]
 ] = [
     (
         CommandVerification(
@@ -415,7 +414,7 @@ def test_run_problem_command(
 
 
 test_run_compile_params: list[
-    tuple[Verification, Optional[Union[str, list[str]]], Optional[dict[str, Any]]]
+    tuple[Verification, str | list[str] | None, dict[str, Any] | None]
 ] = [
     (
         CommandVerification(command="ls ~"),
@@ -525,8 +524,8 @@ test_run_compile_params: list[
 )
 def test_run_compile(
     obj: Verification,
-    args: Optional[Sequence[Any]],
-    kwargs: Optional[dict[str, Any]],
+    args: Sequence[Any] | None,
+    kwargs: dict[str, Any] | None,
     mock_exec_command: MockType,
 ):
     obj.run_compile_command(
@@ -542,7 +541,7 @@ def test_run_compile(
         mock_exec_command.assert_called_once_with(args, **kwargs)
 
 
-test_params_run_params: list[tuple[Verification, Optional[str]]] = [
+test_params_run_params: list[tuple[Verification, str | None]] = [
     (ConstVerification(status=ResultStatus.SUCCESS), None),
     (CommandVerification(command="true"), None),
     (
@@ -559,7 +558,7 @@ test_params_run_params: list[tuple[Verification, Optional[str]]] = [
 )
 def test_params_run(
     obj: Verification,
-    error_message: Optional[str],
+    error_message: str | None,
     mock_exec_command: MockType,
 ):
     if error_message:

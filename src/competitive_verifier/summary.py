@@ -5,7 +5,7 @@ import os
 import pathlib
 from collections import Counter
 from itertools import chain
-from typing import Optional, TextIO
+from typing import TextIO
 
 from competitive_verifier.models import (
     FileResult,
@@ -202,7 +202,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
 
 class DisplayTestcaseResult(TestcaseResult):
-    environment: Optional[str]
+    environment: str | None
 
     @property
     def elapsed_str(self):

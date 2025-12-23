@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
@@ -17,5 +15,5 @@ class OjVerifyGoConfig(OjVerifyUserDefinedConfig):
 
 
 class GoLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: Optional[OjVerifyGoConfig]):
+    def __init__(self, *, config: OjVerifyGoConfig | None):
         super().__init__(extension="go", config=config or OjVerifyGoConfig())

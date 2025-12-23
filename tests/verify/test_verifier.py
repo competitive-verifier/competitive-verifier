@@ -1,7 +1,8 @@
 # pyright: reportPrivateUsage=none
 import datetime
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import pytest
 
@@ -25,10 +26,10 @@ class MockInputContainer(InputContainer):
         self,
         obj: Any = None,
         *,
-        prev_result: Optional[VerifyCommandResult] = None,
-        verification_time: Optional[datetime.datetime] = None,
-        file_timestamps: Optional[dict[Optional[Path], datetime.datetime]] = None,
-        split_state: Optional[SplitState] = None,
+        prev_result: VerifyCommandResult | None = None,
+        verification_time: datetime.datetime | None = None,
+        file_timestamps: dict[Path | None, datetime.datetime] | None = None,
+        split_state: SplitState | None = None,
     ) -> None:
         super().__init__(
             input=VerificationInput.model_validate(obj) if obj else VerificationInput(),

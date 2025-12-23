@@ -1,6 +1,7 @@
 import datetime
 import pathlib
-from typing import TYPE_CHECKING, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from .exec import exec_command
 

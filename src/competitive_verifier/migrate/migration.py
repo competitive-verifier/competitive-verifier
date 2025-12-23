@@ -3,11 +3,10 @@ import re
 import shutil
 import urllib.parse
 from logging import getLogger
-from typing import Optional
 
 import yaml
 
-import competitive_verifier.git as git
+from competitive_verifier import git
 from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
@@ -78,7 +77,7 @@ def migrate_conf_dir(*, dry_run: bool):
     shutil.rmtree(old_docs_dir)
 
 
-def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path]:
+def _get_docs_path(content: str, *, path: pathlib.Path) -> pathlib.Path | None:
     docs_match = _docs_pattern.search(content)
     if docs_match:
         doc_path = docs_match.group(1)
@@ -158,7 +157,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         logger.debug("Not updated: %s", path.as_posix())
 
 
-def _lang_type_to_str(lang: Optional[Language]) -> Optional[str]:
+def _lang_type_to_str(lang: Language | None) -> str | None:
     if isinstance(lang, CPlusPlusLanguage):
         return "cpp"
     if isinstance(lang, GoLanguage):
