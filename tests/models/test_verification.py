@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import pytest
-from pydantic import RootModel
+from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
@@ -102,12 +102,10 @@ def test_command_union_json(
     raw_json: str,
     output_json: str,
 ):
-    VerificationUnion = RootModel[Verification]
-
     assert obj == type(obj).model_validate_json(raw_json)
     assert obj.model_dump_json(exclude_none=True) == output_json
 
-    assert obj == VerificationUnion.model_validate_json(raw_json).root
+    assert obj == TypeAdapter(Verification).validate_json(raw_json)
 
 
 def test_const_verification(mock_exec_command: MockType):
@@ -562,7 +560,7 @@ def test_params_run(
     mock_exec_command: MockType,
 ):
     if error_message:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=error_message) as e:
             obj.run()
         assert e.value.args == (error_message,)
     else:

@@ -215,6 +215,10 @@ convention = "google"
     "ARG",
     "DTZ",
     "S101",
+    "S311",
+    "S324",
+    "N802",
+    "N806",
     "N816",
     "TID252",
     "FBT001",
@@ -223,6 +227,7 @@ convention = "google"
     "ANN401",
     "PLR0911",
     "PLR2004",
+    "PLR0913",
 ]
 "src/competitive_verifier/oj/tools/**" = ["G003"]
 "src/competitive_verifier/*/main.py" = ["BLE001"]

@@ -153,7 +153,9 @@ def run(
                 )
                 logger.info(
                     utils.HINT
-                    + "We recommend adding your own test cases to test/ directory, and using one directory per one problem. Please see also https://github.com/online-judge-tools/oj/blob/master/docs/getting-started.md#random-testing. If you wanted to keep using one directory per one contest, you can run like `$ rm -rf test/ && oj d https://...`."
+                    + "We recommend adding your own test cases to test/ directory, and using one directory per one problem."
+                    " Please see also https://github.com/online-judge-tools/oj/blob/master/docs/getting-started.md#random-testing."
+                    " If you wanted to keep using one directory per one contest, you can run like `$ rm -rf test/ && oj d https://...`."
                 )
                 return False
 

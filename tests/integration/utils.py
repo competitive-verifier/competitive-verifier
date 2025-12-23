@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from hashlib import md5
 
 
-def md5_number(seed: bytes):
+def md5_number(seed: bytes) -> int:
     return int(md5(seed).hexdigest(), 16)
 
 

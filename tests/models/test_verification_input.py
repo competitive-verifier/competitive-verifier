@@ -111,7 +111,6 @@ def test_repr():
             },
         }
     )
-    print(repr(obj))
     assert repr(obj) == (
         "VerificationInput("
         f"files={{{Path('foo/bar.py')!r}: "

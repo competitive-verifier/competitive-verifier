@@ -21,7 +21,6 @@ from onlinejudge import utils
 logger = getLogger(__name__)
 
 # These strings can control logging output.
-NO_HEADER = "NO_HEADER: "
 HINT = "HINT: "
 SUCCESS = "SUCCESS: "
 FAILURE = "FAILURE: "
