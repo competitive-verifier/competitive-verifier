@@ -155,14 +155,11 @@ def update_cloned_repository() -> None:
 
 
 def _match_aplusb(t: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    if t.path.startswith("library-checker-problems/sample/aplusb"):
+        return t
     if t.isdir():
         if "library-checker-problems/sample/aplusb".startswith(t.path):
             return t
-        elif t.path.startswith("library-checker-problems/sample/aplusb"):
-            return t
-    elif t.isfile():
-        if t.path.startswith("library-checker-problems/sample/aplusb"):
-            return t
-        elif t.path.endswith(".py"):
-            return t
+    elif t.isfile() and t.path.endswith(".py"):
+        return t
     return None

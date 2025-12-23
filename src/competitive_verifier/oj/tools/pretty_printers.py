@@ -188,25 +188,27 @@ def _render_tokens(*, tokens: list[_PrettyToken]) -> str:
 
     result: list[str] = []
     for key, value in tokens:
-        if key == _PrettyTokenType.BODY:
-            value = font_bold(value)
-        elif key == _PrettyTokenType.BODY_HIGHLIGHT_LEFT:
-            value = font_red(value)
-        elif key == _PrettyTokenType.BODY_HIGHLIGHT_RIGHT:
-            value = font_red(value)
-        elif key == _PrettyTokenType.WHITESPACE:
-            value = font_dim(_replace_whitespace(value))
-        elif key == _PrettyTokenType.NEWLINE:
-            value = font_dim(_replace_whitespace(value))
-        elif key == _PrettyTokenType.HINT:
-            value = font_dim(value)
-        elif key == _PrettyTokenType.LINENO:
-            value = font_blue(value)
-        elif key == _PrettyTokenType.OTHERS:
-            value = font_normal(value)
-        else:
-            assert False
-        result.append(value)
+        match key:
+            case _PrettyTokenType.BODY:
+                v = font_bold(value)
+            case _PrettyTokenType.BODY_HIGHLIGHT_LEFT:
+                v = font_red(value)
+            case _PrettyTokenType.BODY_HIGHLIGHT_RIGHT:
+                v = font_red(value)
+            case _PrettyTokenType.WHITESPACE:
+                v = font_dim(_replace_whitespace(value))
+            case _PrettyTokenType.NEWLINE:
+                v = font_dim(_replace_whitespace(value))
+            case _PrettyTokenType.HINT:
+                v = font_dim(value)
+            case _PrettyTokenType.LINENO:
+                v = font_blue(value)
+            case _PrettyTokenType.OTHERS:
+                v = font_normal(value)
+            case _:
+                msg = f"Invalid token type: {key!r}"
+                raise ValueError(msg)
+        result.append(v)
     return "".join(result)
 
 
