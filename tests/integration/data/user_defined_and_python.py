@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 import pytest
 
-from competitive_verifier.oj.tools.test_command import check_gnu_time
+from competitive_verifier.oj.tools.oj_test import check_gnu_time
 
 from ..types import ConfigDirSetter, FilePaths
 from .integration_data import IntegrationData
@@ -45,7 +45,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "awk/aplusb.awk": {
                         "additonal_sources": [],
                         "dependencies": ["awk/aplusb.awk"],
-                        "document_attributes": {"TITLE": 'Calculate "A + ' 'B"'},
+                        "document_attributes": {"TITLE": 'Calculate "A + B"'},
                         "verification": [],
                     },
                     "awk/aplusb.test.awk": {

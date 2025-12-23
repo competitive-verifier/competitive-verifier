@@ -9,7 +9,7 @@ from pydantic import RootModel
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
-import competitive_verifier.oj.tools.test_command
+import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
@@ -18,7 +18,7 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
-from competitive_verifier.oj.tools.test_command import OjTestArguments
+from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 
 @dataclass
@@ -396,14 +396,14 @@ def test_run_problem_command(
     args: OjTestArguments,
     mocker: MockerFixture,
 ):
-    patch = mocker.patch.object(competitive_verifier.oj.tools.test_command, "run")
+    patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "run")
 
     mocker.patch(
-        "competitive_verifier.oj.tools.test_command.get_cache_directory",
+        "competitive_verifier.oj.tools.oj_test.get_cache_directory",
         return_value=pathlib.Path("/any/cache"),
     )
     mocker.patch(
-        "competitive_verifier.oj.tools.test_command.get_directory",
+        "competitive_verifier.oj.tools.oj_test.get_directory",
         return_value=pathlib.Path("/any/"),
     )
 

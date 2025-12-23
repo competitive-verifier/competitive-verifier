@@ -5,7 +5,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 import competitive_verifier.oj as oj
-from competitive_verifier.oj.tools.test_command import OjTestArguments
+from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
     "default": (
@@ -67,10 +67,10 @@ def test_oj_test(
     expected: OjTestArguments,
 ):
     mocker.patch(
-        "competitive_verifier.oj.tools.test_command.get_cache_directory",
+        "competitive_verifier.oj.tools.oj_test.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
     )
-    run = mocker.patch("competitive_verifier.oj.tools.test_command.run")
+    run = mocker.patch("competitive_verifier.oj.tools.oj_test.run")
 
     oj.test(**input)
 
