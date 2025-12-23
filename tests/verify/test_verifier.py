@@ -27,7 +27,7 @@ class MockInputContainer(InputContainer):
         *,
         prev_result: Optional[VerifyCommandResult] = None,
         verification_time: Optional[datetime.datetime] = None,
-        file_timestamps: dict[Optional[Path], datetime.datetime] = {},
+        file_timestamps: Optional[dict[Optional[Path], datetime.datetime]] = None,
         split_state: Optional[SplitState] = None,
     ) -> None:
         super().__init__(
@@ -37,7 +37,7 @@ class MockInputContainer(InputContainer):
             split_state=split_state,
         )
 
-        self.file_timestamps = file_timestamps
+        self.file_timestamps = file_timestamps or {}
 
     def get_file_timestamp(self, path: Path) -> datetime.datetime:
         assert self.file_timestamps is not None
