@@ -8,7 +8,6 @@ import signal
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 import traceback
 from logging import getLogger
@@ -145,7 +144,7 @@ def oj_exec_command(
 # flake8: noqa: C901
 def display_result(
     proc: Popen[bytes],
-    answer: str,
+    answer: bytes,
     memory: Optional[float],
     test_input_path: pathlib.Path,
     test_output_path: Optional[pathlib.Path],
@@ -211,7 +210,7 @@ def display_result(
             logger.info(
                 "output:\n%s",
                 pretty_printers.make_pretty_large_file_content(
-                    answer.encode(), limit=40, head=20, tail=10
+                    answer, limit=40, head=20, tail=10
                 ),
             )
             logger.info(
@@ -226,7 +225,7 @@ def display_result(
             logger.info(
                 "output:\n%s",
                 pretty_printers.make_pretty_large_file_content(
-                    answer.encode(), limit=40, head=20, tail=10
+                    answer, limit=40, head=20, tail=10
                 ),
             )
     if status == JudgeStatus.AC:
@@ -424,12 +423,9 @@ def test_single_case(
     test_input_path: pathlib.Path,
     test_output_path: Optional[pathlib.Path],
     *,
-    lock: Optional[threading.Lock] = None,
     args: OjTestArguments,
 ) -> dict[str, Any]:
-    # print the header earlier if not in parallel
-    if lock is None:
-        logger.info("%s", test_name)
+    logger.info("%s", test_name)
 
     # run the binary
     with test_input_path.open("rb") as inf:
@@ -440,44 +436,39 @@ def test_single_case(
             timeout=args.tle,
             gnu_time=args.gnu_time,
         )
-        # TODO: the `answer` should be bytes, not str
-        answer: str = (info.answer or b"").decode(errors="replace")
+        answer = info.answer or b""
         elapsed: float = info.elapsed
         memory: Optional[float] = info.memory
 
-    # lock is require to avoid mixing logs if in parallel
-    with lock or contextlib.nullcontext():
-        if lock is not None:
-            logger.info("%s", test_name)
-        if memory:
-            logger.info("time: %f sec, memory: %f MB", elapsed, memory)
-        else:
-            logger.info("time: %f sec", elapsed)
+    if memory:
+        logger.info("time: %f sec, memory: %f MB", elapsed, memory)
+    else:
+        logger.info("time: %f sec", elapsed)
 
-        match_function = build_match_function(
-            error=args.error,
-            judge_command=str(args.judge) if args.judge else None,
-            silent=args.silent,
-            test_input_path=test_input_path,
-            test_output_path=test_output_path,
-        )
-        match_result = run_checking_output(
-            answer=answer.encode(),
-            test_output_path=test_output_path,
-            is_special_judge=args.judge is not None,
-            match_function=match_function,
-        )
-        status = display_result(
-            proc,
-            answer,
-            memory,
-            test_input_path,
-            test_output_path,
-            mle=args.mle,
-            does_print_input=args.print_input,
-            silent=args.silent,
-            match_result=match_result,
-        )
+    match_function = build_match_function(
+        error=args.error,
+        judge_command=str(args.judge) if args.judge else None,
+        silent=args.silent,
+        test_input_path=test_input_path,
+        test_output_path=test_output_path,
+    )
+    match_result = run_checking_output(
+        answer=answer,
+        test_output_path=test_output_path,
+        is_special_judge=args.judge is not None,
+        match_function=match_function,
+    )
+    status = display_result(
+        proc,
+        answer,
+        memory,
+        test_input_path,
+        test_output_path,
+        mle=args.mle,
+        does_print_input=args.print_input,
+        silent=args.silent,
+        match_result=match_result,
+    )
 
     # return the result
     testcase = {
