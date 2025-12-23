@@ -26,12 +26,10 @@ test_parse_VerificationFile_params: list[
     ),
     (
         VerificationFile(
-            dependencies=set(
-                [
-                    pathlib.Path("bar1"),
-                    pathlib.Path("bar2"),
-                ]
-            ),
+            dependencies={
+                pathlib.Path("bar1"),
+                pathlib.Path("bar2"),
+            },
         ),
         {
             "dependencies": [
@@ -40,12 +38,10 @@ test_parse_VerificationFile_params: list[
             ],
         },
         {
-            "dependencies": set(
-                [
-                    pathlib.Path("bar1"),
-                    pathlib.Path("bar2"),
-                ]
-            ),
+            "dependencies": {
+                pathlib.Path("bar1"),
+                pathlib.Path("bar2"),
+            },
             "document_attributes": {},
             "verification": [],
             "additonal_sources": [],

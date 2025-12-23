@@ -94,11 +94,11 @@ class InputContainer(ABC):
         if self.prev_result is None:
             return verification_files
 
-        not_updated_files = set(
+        not_updated_files = {
             k
             for k, v in self.input.filterd_files(self.prev_result.files)
             if not self.file_need_verification(k, v)
-        )
+        }
         verification_files = {
             p: f for p, f in verification_files.items() if p not in not_updated_files
         }

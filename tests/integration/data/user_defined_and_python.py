@@ -39,264 +39,262 @@ class UserDefinedAndPythonData(IntegrationData):
         assert self.bundle_cp932_path.read_bytes().strip() == b"cp932"
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "awk/aplusb.awk": {
-                        "additonal_sources": [],
-                        "dependencies": ["awk/aplusb.awk"],
-                        "document_attributes": {"TITLE": 'Calculate "A + B"'},
-                        "verification": [],
+        return {
+            "files": {
+                "awk/aplusb.awk": {
+                    "additonal_sources": [],
+                    "dependencies": ["awk/aplusb.awk"],
+                    "document_attributes": {"TITLE": 'Calculate "A + B"'},
+                    "verification": [],
+                },
+                "awk/aplusb.test.awk": {
+                    "additonal_sources": [],
+                    "dependencies": ["awk/aplusb.awk", "awk/aplusb.test.awk"],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
                     },
-                    "awk/aplusb.test.awk": {
-                        "additonal_sources": [],
-                        "dependencies": ["awk/aplusb.awk", "awk/aplusb.test.awk"],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
-                        },
-                        "verification": [
-                            {
-                                "command": {
-                                    "command": f"awk -f {pathlib.Path('awk/aplusb.test.awk')}",
-                                    "env": {"AWKPATH": str(self.targets_path)},
-                                },
-                                "compile": f"ls {self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
-                                "name": "awk",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            }
+                    "verification": [
+                        {
+                            "command": {
+                                "command": f"awk -f {pathlib.Path('awk/aplusb.test.awk')}",
+                                "env": {"AWKPATH": str(self.targets_path)},
+                            },
+                            "compile": f"ls {self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                            "name": "awk",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        }
+                    ],
+                },
+                "awk/aplusb_direct.awk": {
+                    "additonal_sources": [],
+                    "dependencies": ["awk/aplusb_direct.awk"],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
+                    },
+                    "verification": [
+                        {
+                            "command": {
+                                "command": f"awk -f {pathlib.Path('awk/aplusb_direct.awk')}",
+                                "env": {"AWKPATH": str(self.targets_path)},
+                            },
+                            "compile": f"ls {self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
+                            "name": "awk",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        }
+                    ],
+                },
+                "encoding/EUC-KR.txt": {
+                    "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
+                    "verification": [],
+                    "document_attributes": {},
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": self.bundle_euc_ke_path.as_posix(),
+                        }
+                    ],
+                },
+                "encoding/cp932.txt": {
+                    "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
+                    "verification": [],
+                    "document_attributes": {},
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": self.bundle_cp932_path.as_posix(),
+                        }
+                    ],
+                },
+                "python/lib_all_failure.py": {
+                    "dependencies": ["python/lib_all_failure.py"],
+                    "verification": [],
+                    "document_attributes": {"links": []},
+                    "additonal_sources": [],
+                },
+                "python/lib_some_failure.py": {
+                    "dependencies": ["python/lib_some_failure.py"],
+                    "verification": [],
+                    "document_attributes": {"TITLE": "Units📏", "links": []},
+                    "additonal_sources": [],
+                },
+                "python/lib_hidden.py": {
+                    "additonal_sources": [],
+                    "dependencies": ["python/lib_hidden.py"],
+                    "document_attributes": {"DISPLAY": "hidden", "links": []},
+                    "verification": [],
+                },
+                "python/lib_skip.py": {
+                    "dependencies": ["python/lib_skip.py"],
+                    "verification": [],
+                    "document_attributes": {"links": []},
+                    "additonal_sources": [],
+                },
+                "python/lib_some_skip_some_wa.py": {
+                    "dependencies": ["python/lib_some_skip_some_wa.py"],
+                    "verification": [],
+                    "document_attributes": {"links": []},
+                    "additonal_sources": [],
+                },
+                "python/success1.py": {
+                    "dependencies": [
+                        "python/lib_some_failure.py",
+                        "python/lib_some_skip.py",
+                        "python/success1.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success1.py",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/failure.wa.py": {
+                    "dependencies": [
+                        "python/failure.wa.py",
+                        "python/lib_all_failure.py",
+                        "python/lib_some_skip_some_wa.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.wa.py",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/failure.mle.py": {
+                    "dependencies": [
+                        "python/failure.mle.py",
+                        "python/lib_all_failure.py",
+                        "python/lib_some_failure.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.mle.py",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "mle": 100.0,
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "MLE": "100",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/skip.py": {
+                    "dependencies": [
+                        "python/lib_skip.py",
+                        "python/lib_some_skip_some_wa.py",
+                        "python/skip.py",
+                    ],
+                    "verification": [{"type": "const", "status": "skipped"}],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "IGNORE": "",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/success2.py": {
+                    "dependencies": [
+                        "python/lib_all_success.py",
+                        "python/lib_some_skip_some_wa.py",
+                        "python/success2.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success2.py",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/lib_all_success.py": {
+                    "dependencies": ["python/lib_all_success.py"],
+                    "verification": [],
+                    "document_attributes": {"links": []},
+                    "additonal_sources": [],
+                },
+                "python/failure.re.py": {
+                    "dependencies": [
+                        "python/failure.re.py",
+                        "python/lib_all_failure.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.re.py",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "additonal_sources": [],
+                },
+                "python/lib_some_skip.py": {
+                    "dependencies": ["python/lib_some_skip.py"],
+                    "verification": [],
+                    "document_attributes": {"links": []},
+                    "additonal_sources": [],
+                },
+                "python/failure.tle.py": {
+                    "dependencies": [
+                        "python/failure.tle.py",
+                        "python/lib_all_failure.py",
+                    ],
+                    "verification": [
+                        {
+                            "name": "Python",
+                            "type": "problem",
+                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.tle.py",
+                            "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                            "tle": 0.1,
+                        }
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                        "TLE": "0.1",
+                        "links": [
+                            "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
                         ],
                     },
-                    "awk/aplusb_direct.awk": {
-                        "additonal_sources": [],
-                        "dependencies": ["awk/aplusb_direct.awk"],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
-                        },
-                        "verification": [
-                            {
-                                "command": {
-                                    "command": f"awk -f {pathlib.Path('awk/aplusb_direct.awk')}",
-                                    "env": {"AWKPATH": str(self.targets_path)},
-                                },
-                                "compile": f"ls {self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6'}",
-                                "name": "awk",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            }
-                        ],
-                    },
-                    "encoding/EUC-KR.txt": {
-                        "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
-                        "verification": [],
-                        "document_attributes": {},
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": self.bundle_euc_ke_path.as_posix(),
-                            }
-                        ],
-                    },
-                    "encoding/cp932.txt": {
-                        "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
-                        "verification": [],
-                        "document_attributes": {},
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": self.bundle_cp932_path.as_posix(),
-                            }
-                        ],
-                    },
-                    "python/lib_all_failure.py": {
-                        "dependencies": ["python/lib_all_failure.py"],
-                        "verification": [],
-                        "document_attributes": {"links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/lib_some_failure.py": {
-                        "dependencies": ["python/lib_some_failure.py"],
-                        "verification": [],
-                        "document_attributes": {"TITLE": "Units📏", "links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/lib_hidden.py": {
-                        "additonal_sources": [],
-                        "dependencies": ["python/lib_hidden.py"],
-                        "document_attributes": {"DISPLAY": "hidden", "links": []},
-                        "verification": [],
-                    },
-                    "python/lib_skip.py": {
-                        "dependencies": ["python/lib_skip.py"],
-                        "verification": [],
-                        "document_attributes": {"links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/lib_some_skip_some_wa.py": {
-                        "dependencies": ["python/lib_some_skip_some_wa.py"],
-                        "verification": [],
-                        "document_attributes": {"links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/success1.py": {
-                        "dependencies": [
-                            "python/lib_some_failure.py",
-                            "python/lib_some_skip.py",
-                            "python/success1.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success1.py",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/failure.wa.py": {
-                        "dependencies": [
-                            "python/failure.wa.py",
-                            "python/lib_all_failure.py",
-                            "python/lib_some_skip_some_wa.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.wa.py",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/failure.mle.py": {
-                        "dependencies": [
-                            "python/failure.mle.py",
-                            "python/lib_all_failure.py",
-                            "python/lib_some_failure.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.mle.py",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "mle": 100.0,
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "MLE": "100",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/skip.py": {
-                        "dependencies": [
-                            "python/lib_skip.py",
-                            "python/lib_some_skip_some_wa.py",
-                            "python/skip.py",
-                        ],
-                        "verification": [{"type": "const", "status": "skipped"}],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "IGNORE": "",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/success2.py": {
-                        "dependencies": [
-                            "python/lib_all_success.py",
-                            "python/lib_some_skip_some_wa.py",
-                            "python/success2.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success2.py",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/lib_all_success.py": {
-                        "dependencies": ["python/lib_all_success.py"],
-                        "verification": [],
-                        "document_attributes": {"links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/failure.re.py": {
-                        "dependencies": [
-                            "python/failure.re.py",
-                            "python/lib_all_failure.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.re.py",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/lib_some_skip.py": {
-                        "dependencies": ["python/lib_some_skip.py"],
-                        "verification": [],
-                        "document_attributes": {"links": []},
-                        "additonal_sources": [],
-                    },
-                    "python/failure.tle.py": {
-                        "dependencies": [
-                            "python/failure.tle.py",
-                            "python/lib_all_failure.py",
-                        ],
-                        "verification": [
-                            {
-                                "name": "Python",
-                                "type": "problem",
-                                "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.tle.py",
-                                "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                                "tle": 0.1,
-                            }
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                            "TLE": "0.1",
-                            "links": [
-                                "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
-                            ],
-                        },
-                        "additonal_sources": [],
-                    },
-                    "python/sub/no_dependants.py": {
-                        "additonal_sources": [],
-                        "dependencies": ["python/sub/no_dependants.py"],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                }
+                    "additonal_sources": [],
+                },
+                "python/sub/no_dependants.py": {
+                    "additonal_sources": [],
+                    "dependencies": ["python/sub/no_dependants.py"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
             }
-        )
+        }
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {

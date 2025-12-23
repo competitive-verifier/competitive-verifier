@@ -21,7 +21,7 @@ def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
 
 def ls_files(*args: "StrPath") -> set[pathlib.Path]:
     stdout = exec_command(
-        ["git", "ls-files", "-z"] + list(str(p) for p in (args or [])),
+        ["git", "ls-files", "-z", *[str(p) for p in (args or [])]],
         text=True,
         capture_output=True,
     ).stdout

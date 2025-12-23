@@ -24,117 +24,115 @@ class RustWithoutConfigData(IntegrationData):
         return "RustData"
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "crates/helloworld/hello/src/lib.rs": {
-                        "additonal_sources": [],
-                        "dependencies": ["crates/helloworld/hello/src/lib.rs"],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                    "crates/helloworld/world/src/lib.rs": {
-                        "additonal_sources": [],
-                        "dependencies": ["crates/helloworld/world/src/lib.rs"],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                    "crates/io/input/src/lib.rs": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "crates/io/input/src/lib.rs",
-                            "crates/io/scanner/src/lib.rs",
-                        ],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                    "crates/io/scanner/src/lib.rs": {
-                        "additonal_sources": [],
-                        "dependencies": ["crates/io/scanner/src/lib.rs"],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                    "src/lib.rs": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "crates/helloworld/hello/src/lib.rs",
-                            "crates/helloworld/world/src/lib.rs",
-                            "crates/io/input/src/lib.rs",
-                            "crates/io/scanner/src/lib.rs",
-                            "src/lib.rs",
-                        ],
-                        "document_attributes": {"links": []},
-                        "verification": [],
-                    },
-                    "verification/src/bin/aizu-online-judge-itp1-1-a.rs": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "crates/helloworld/hello/src/lib.rs",
-                            "crates/helloworld/world/src/lib.rs",
-                            "crates/io/input/src/lib.rs",
-                            "verification/src/bin/aizu-online-judge-itp1-1-a.rs",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
-                            "links": [
-                                "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A"
-                            ],
-                        },
-                        "verification": [
-                            {
-                                "command": str(
-                                    self.targets_path
-                                    / "target/release/aizu-online-judge-itp1-1-a"
-                                ),
-                                "compile": "cd "
-                                f"{self.targets_path / 'verification/src/bin'} "
-                                "&& "
-                                "cargo "
-                                "build "
-                                "--release "
-                                "--bin "
-                                "aizu-online-judge-itp1-1-a",
-                                "name": "Rust",
-                                "problem": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
-                                "type": "problem",
-                            }
-                        ],
-                    },
-                    "verification/src/bin/library-checker-aplusb.rs": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "crates/helloworld/hello/src/lib.rs",
-                            "crates/helloworld/world/src/lib.rs",
-                            "crates/io/input/src/lib.rs",
-                            "verification/src/bin/library-checker-aplusb.rs",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
-                        },
-                        "verification": [
-                            {
-                                "command": str(
-                                    self.targets_path
-                                    / "target/release/library-checker-aplusb"
-                                ),
-                                "compile": "cd "
-                                f"{self.targets_path / 'verification/src/bin'} "
-                                "&& "
-                                "cargo "
-                                "build "
-                                "--release "
-                                "--bin "
-                                "library-checker-aplusb",
-                                "name": "Rust",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            }
-                        ],
-                    },
+        return {
+            "files": {
+                "crates/helloworld/hello/src/lib.rs": {
+                    "additonal_sources": [],
+                    "dependencies": ["crates/helloworld/hello/src/lib.rs"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
                 },
-            }
-        )
+                "crates/helloworld/world/src/lib.rs": {
+                    "additonal_sources": [],
+                    "dependencies": ["crates/helloworld/world/src/lib.rs"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "crates/io/input/src/lib.rs": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "crates/io/input/src/lib.rs",
+                        "crates/io/scanner/src/lib.rs",
+                    ],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "crates/io/scanner/src/lib.rs": {
+                    "additonal_sources": [],
+                    "dependencies": ["crates/io/scanner/src/lib.rs"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "src/lib.rs": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "crates/helloworld/hello/src/lib.rs",
+                        "crates/helloworld/world/src/lib.rs",
+                        "crates/io/input/src/lib.rs",
+                        "crates/io/scanner/src/lib.rs",
+                        "src/lib.rs",
+                    ],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "verification/src/bin/aizu-online-judge-itp1-1-a.rs": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "crates/helloworld/hello/src/lib.rs",
+                        "crates/helloworld/world/src/lib.rs",
+                        "crates/io/input/src/lib.rs",
+                        "verification/src/bin/aizu-online-judge-itp1-1-a.rs",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
+                        "links": [
+                            "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A"
+                        ],
+                    },
+                    "verification": [
+                        {
+                            "command": str(
+                                self.targets_path
+                                / "target/release/aizu-online-judge-itp1-1-a"
+                            ),
+                            "compile": "cd "
+                            f"{self.targets_path / 'verification/src/bin'} "
+                            "&& "
+                            "cargo "
+                            "build "
+                            "--release "
+                            "--bin "
+                            "aizu-online-judge-itp1-1-a",
+                            "name": "Rust",
+                            "problem": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
+                            "type": "problem",
+                        }
+                    ],
+                },
+                "verification/src/bin/library-checker-aplusb.rs": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "crates/helloworld/hello/src/lib.rs",
+                        "crates/helloworld/world/src/lib.rs",
+                        "crates/io/input/src/lib.rs",
+                        "verification/src/bin/library-checker-aplusb.rs",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "verification": [
+                        {
+                            "command": str(
+                                self.targets_path
+                                / "target/release/library-checker-aplusb"
+                            ),
+                            "compile": "cd "
+                            f"{self.targets_path / 'verification/src/bin'} "
+                            "&& "
+                            "cargo "
+                            "build "
+                            "--release "
+                            "--bin "
+                            "library-checker-aplusb",
+                            "name": "Rust",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        }
+                    ],
+                },
+            },
+        }
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {

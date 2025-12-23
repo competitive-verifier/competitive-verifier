@@ -20,100 +20,98 @@ class JavaData(IntegrationData):
         return bool(shutil.which("javac"))
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "examples/Aplusb.java": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "examples/Aplusb.java",
-                            "examples/Aplusb_main.java",
-                            "examples/Aplusb_test.java",
-                            "examples/HelloWorld.java",
-                            "examples/HelloWorld_test.java",
-                        ],
-                        "document_attributes": {},
-                        "verification": [],
+        return {
+            "files": {
+                "examples/Aplusb.java": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "examples/Aplusb.java",
+                        "examples/Aplusb_main.java",
+                        "examples/Aplusb_test.java",
+                        "examples/HelloWorld.java",
+                        "examples/HelloWorld_test.java",
+                    ],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "examples/Aplusb_main.java": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "examples/Aplusb.java",
+                        "examples/Aplusb_main.java",
+                        "examples/Aplusb_test.java",
+                        "examples/HelloWorld.java",
+                        "examples/HelloWorld_test.java",
+                    ],
+                    "document_attributes": {"STANDALONE": ""},
+                    "verification": [
+                        {
+                            "command": "java examples.Aplusb_main",
+                            "compile": f"javac {self.targets_path / 'examples/Aplusb_main.java'}",
+                            "name": "Java",
+                            "tempdir": f"{self.config_dir_path / 'cache/standalone/382841ad26b555d39a8784691c59fce8'}",
+                            "type": "command",
+                        }
+                    ],
+                },
+                "examples/Aplusb_test.java": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "examples/Aplusb.java",
+                        "examples/Aplusb_main.java",
+                        "examples/Aplusb_test.java",
+                        "examples/HelloWorld.java",
+                        "examples/HelloWorld_test.java",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
                     },
-                    "examples/Aplusb_main.java": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "examples/Aplusb.java",
-                            "examples/Aplusb_main.java",
-                            "examples/Aplusb_test.java",
-                            "examples/HelloWorld.java",
-                            "examples/HelloWorld_test.java",
-                        ],
-                        "document_attributes": {"STANDALONE": ""},
-                        "verification": [
-                            {
-                                "command": "java examples.Aplusb_main",
-                                "compile": f"javac {self.targets_path / 'examples/Aplusb_main.java'}",
-                                "name": "Java",
-                                "tempdir": f"{self.config_dir_path / 'cache/standalone/382841ad26b555d39a8784691c59fce8'}",
-                                "type": "command",
-                            }
-                        ],
+                    "verification": [
+                        {
+                            "command": "java examples.Aplusb_test",
+                            "compile": f"javac {self.targets_path / 'examples/Aplusb_test.java'}",
+                            "name": "Java",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        }
+                    ],
+                },
+                "examples/HelloWorld.java": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "examples/Aplusb.java",
+                        "examples/Aplusb_main.java",
+                        "examples/Aplusb_test.java",
+                        "examples/HelloWorld.java",
+                        "examples/HelloWorld_test.java",
+                    ],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "examples/HelloWorld_test.java": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "examples/Aplusb.java",
+                        "examples/Aplusb_main.java",
+                        "examples/Aplusb_test.java",
+                        "examples/HelloWorld.java",
+                        "examples/HelloWorld_test.java",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
                     },
-                    "examples/Aplusb_test.java": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "examples/Aplusb.java",
-                            "examples/Aplusb_main.java",
-                            "examples/Aplusb_test.java",
-                            "examples/HelloWorld.java",
-                            "examples/HelloWorld_test.java",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb"
-                        },
-                        "verification": [
-                            {
-                                "command": "java examples.Aplusb_test",
-                                "compile": f"javac {self.targets_path / 'examples/Aplusb_test.java'}",
-                                "name": "Java",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            }
-                        ],
-                    },
-                    "examples/HelloWorld.java": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "examples/Aplusb.java",
-                            "examples/Aplusb_main.java",
-                            "examples/Aplusb_test.java",
-                            "examples/HelloWorld.java",
-                            "examples/HelloWorld_test.java",
-                        ],
-                        "document_attributes": {},
-                        "verification": [],
-                    },
-                    "examples/HelloWorld_test.java": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "examples/Aplusb.java",
-                            "examples/Aplusb_main.java",
-                            "examples/Aplusb_test.java",
-                            "examples/HelloWorld.java",
-                            "examples/HelloWorld_test.java",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
-                        },
-                        "verification": [
-                            {
-                                "command": "java examples.HelloWorld_test",
-                                "compile": f"javac {self.targets_path / 'examples/HelloWorld_test.java'}",
-                                "name": "Java",
-                                "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                                "type": "problem",
-                            }
-                        ],
-                    },
+                    "verification": [
+                        {
+                            "command": "java examples.HelloWorld_test",
+                            "compile": f"javac {self.targets_path / 'examples/HelloWorld_test.java'}",
+                            "name": "Java",
+                            "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                            "type": "problem",
+                        }
+                    ],
                 },
             },
-        )
+        }
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {

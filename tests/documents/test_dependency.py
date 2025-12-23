@@ -615,7 +615,7 @@ def test_resolve_dependency(
         resolved = SourceCodeStat.resolve_dependency(
             input=dep_input,
             result=dep_result,
-            included_files=set(Path(s) for s in included_files_str),
+            included_files={Path(s) for s in included_files_str},
         )
         expected = Parser.model_validate(expected_obj).root
         assert resolved == expected

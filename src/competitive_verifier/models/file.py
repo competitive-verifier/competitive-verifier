@@ -145,7 +145,7 @@ class VerificationInput(BaseModel):
             p = to_relative(p)
             if not p:
                 continue
-            f.dependencies = set(d for d in map(to_relative, f.dependencies) if d)
+            f.dependencies = {d for d in map(to_relative, f.dependencies) if d}
             new_files[p] = f
 
         impl.files = new_files
@@ -159,7 +159,7 @@ class VerificationInput(BaseModel):
         Returns:
             list[set[pathlib.Path]]: Strongly Connected Component result
         """
-        paths = list(p for p in self.files.keys())
+        paths = list(self.files.keys())
         vers_rev = {v: i for i, v in enumerate(paths)}
         g = SccGraph(len(paths))
         for p, file in self.files.items():
@@ -170,7 +170,7 @@ class VerificationInput(BaseModel):
                         g.add_edge(t, vers_rev[p])
                     else:
                         g.add_edge(vers_rev[p], t)
-        return [set(paths[ix] for ix in ls) for ls in g.scc()]
+        return [{paths[ix] for ix in ls} for ls in g.scc()]
 
     @cached_property
     def transitive_depends_on(self) -> _DependencyEdges:

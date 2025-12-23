@@ -148,7 +148,7 @@ def test_transitive_depends_on():
             "test/test.py",
         ],
     }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
+    expected = {Path(p): {Path(s) for s in d} for p, d in simple.items()}
 
     assert test_input.transitive_depends_on == expected
     assert test_input.transitive_depends_on is test_input.transitive_depends_on
@@ -168,7 +168,7 @@ def test_depends_on():
         "hoge/piyopiyo.py": ["hoge/piyo.py"],
         "test/test.py": ["hoge/piyopiyo.py"],
     }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
+    expected = {Path(p): {Path(s) for s in d} for p, d in simple.items()}
 
     assert test_input.depends_on == expected
     assert test_input.depends_on is test_input.depends_on
@@ -188,7 +188,7 @@ def test_required_by():
         "hoge/piyopiyo.py": [],
         "test/test.py": [],
     }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
+    expected = {Path(p): {Path(s) for s in d} for p, d in simple.items()}
 
     assert test_input.required_by == expected
     assert test_input.required_by is test_input.required_by
@@ -208,7 +208,7 @@ def test_verified_with():
         "hoge/piyopiyo.py": ["test/test.py"],
         "test/test.py": [],
     }
-    expected = {Path(p): set(Path(s) for s in d) for p, d in simple.items()}
+    expected = {Path(p): {Path(s) for s in d} for p, d in simple.items()}
     assert test_input.verified_with == expected
     assert test_input.verified_with is test_input.verified_with
     assert test_input.verified_with == expected
