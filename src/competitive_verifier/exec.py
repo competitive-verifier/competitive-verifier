@@ -26,8 +26,7 @@ def exec_command(
     env: Optional[dict[str, str]] = None,
     cwd: Optional["StrOrBytesPath"] = None,
     group_log: bool = False,
-) -> subprocess.CompletedProcess[bytes]:
-    ...
+) -> subprocess.CompletedProcess[bytes]: ...
 
 
 @overload
@@ -40,8 +39,7 @@ def exec_command(
     env: Optional[dict[str, str]] = None,
     cwd: Optional["StrOrBytesPath"] = None,
     group_log: bool = False,
-) -> subprocess.CompletedProcess[str]:
-    ...
+) -> subprocess.CompletedProcess[str]: ...
 
 
 @overload
@@ -54,8 +52,7 @@ def exec_command(
     env: Optional[dict[str, str]] = None,
     cwd: Optional["StrOrBytesPath"] = None,
     group_log: bool = False,
-) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]:
-    ...
+) -> Union[subprocess.CompletedProcess[str], subprocess.CompletedProcess[bytes]]: ...
 
 
 def exec_command(

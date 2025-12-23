@@ -71,7 +71,7 @@ class _CargoUdeps(_ListDependenciesBackend):
 
 
 @functools.lru_cache(maxsize=None)
-def _list_dependencies_by_crate(  # noqa: C901
+def _list_dependencies_by_crate(
     path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: Optional[str]
 ) -> list[pathlib.Path]:
     """The `list_dependencies` implementation for `_NoBackend` and `CargoUdeps`.
@@ -114,18 +114,18 @@ def _list_dependencies_by_crate(  # noqa: C901
             return cls.NORMAL_DEVELOPMENT
 
     # Collect the `(|dev-|build-)dependencies` into a <is a `build-dependency`> → (<"extern crate name"> → <package>) dictionary.
-    dependencies: defaultdict[
-        DependencyNamespace, dict[str, dict[str, Any]]
-    ] = defaultdict(dict)
+    dependencies: defaultdict[DependencyNamespace, dict[str, dict[str, Any]]] = (
+        defaultdict(dict)
+    )
     for dep in next(
         n["deps"] for n in metadata["resolve"]["nodes"] if n["id"] == main_package["id"]
     ):
         if _need_dev_deps(main_target) or any(
             k["kind"] is None for k in dep["dep_kinds"]
         ):
-            dependencies[DependencyNamespace.NORMAL_DEVELOPMENT][
-                dep["name"]
-            ] = packages_by_id[dep["pkg"]]
+            dependencies[DependencyNamespace.NORMAL_DEVELOPMENT][dep["name"]] = (
+                packages_by_id[dep["pkg"]]
+            )
         if any(k["kind"] == "build" for k in dep["dep_kinds"]):
             dependencies[DependencyNamespace.BUILD][dep["name"]] = packages_by_id[
                 dep["pkg"]

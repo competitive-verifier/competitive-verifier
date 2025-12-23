@@ -1,5 +1,4 @@
-"""This module collects helper classes to compare outputs for `test` subcommand.
-"""
+"""This module collects helper classes to compare outputs for `test` subcommand."""
 
 import abc
 import enum

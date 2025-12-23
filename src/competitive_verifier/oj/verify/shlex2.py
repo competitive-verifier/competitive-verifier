@@ -1,6 +1,4 @@
-"""https://github.com/smoofra/mslex/blob/master/mslex.py
-
-"""
+"""https://github.com/smoofra/mslex/blob/master/mslex.py"""
 
 import re
 import shlex

@@ -25,7 +25,7 @@ UrlOrVerificationFile = Union[str, VerificationFile]
 
 
 def parse_urls(
-    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]]
+    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]],
 ) -> set[str]:
     def parse_single(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
         if isinstance(url_or_file, str):

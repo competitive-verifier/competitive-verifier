@@ -1,4 +1,3 @@
-# flake8: noqa E501
 import pathlib
 import sys
 from dataclasses import dataclass

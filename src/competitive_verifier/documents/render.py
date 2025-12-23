@@ -339,12 +339,10 @@ class RenderJob(ABC):
 
     @property
     @abstractmethod
-    def destination_name(self) -> pathlib.Path:
-        ...
+    def destination_name(self) -> pathlib.Path: ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO):
-        ...
+    def write_to(self, fp: BinaryIO): ...
 
     @staticmethod
     def enumerate_jobs(
@@ -783,7 +781,7 @@ class IndexRenderJob(RenderJob):
                 categories[category].append(link)
 
         def _build_categories_list(
-            categories: dict[str, list[RenderLink]]
+            categories: dict[str, list[RenderLink]],
         ) -> list[CategorizedIndex]:
             return sorted(
                 (

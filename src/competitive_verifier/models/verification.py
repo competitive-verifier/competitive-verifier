@@ -27,15 +27,13 @@ class BaseVerification(BaseModel, ABC):
         params: Optional[VerificationParams] = None,
         *,
         deadline: float = float("inf"),
-    ) -> Union[ResultStatus, VerificationResult]:
-        ...
+    ) -> Union[ResultStatus, VerificationResult]: ...
 
     @abstractmethod
     def run_compile_command(
         self,
         params: Optional[VerificationParams] = None,
-    ) -> bool:
-        ...
+    ) -> bool: ...
 
     @property
     def is_skippable(self) -> bool:

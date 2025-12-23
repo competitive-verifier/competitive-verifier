@@ -46,8 +46,7 @@ class InputContainer(ABC):
         self.split_state = split_state
 
     @abstractmethod
-    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        ...
+    def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
 
     def file_need_verification(
         self,

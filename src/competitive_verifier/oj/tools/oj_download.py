@@ -56,7 +56,6 @@ def _run_library_checker(
     return True
 
 
-# flake8: noqa: C901
 def run(
     *,
     url: str,

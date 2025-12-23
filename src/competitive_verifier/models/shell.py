@@ -35,8 +35,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> CompletedProcess[bytes]:
-        ...
+    ) -> CompletedProcess[bytes]: ...
 
     @overload
     def exec_command(
@@ -45,8 +44,7 @@ class ShellCommand(BaseModel):
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> CompletedProcess[str]:
-        ...
+    ) -> CompletedProcess[str]: ...
 
     def exec_command(
         self,

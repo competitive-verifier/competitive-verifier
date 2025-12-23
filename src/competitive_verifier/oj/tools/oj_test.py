@@ -141,7 +141,6 @@ def oj_exec_command(
     )
 
 
-# flake8: noqa: C901
 def display_result(
     proc: Popen[bytes],
     answer: bytes,

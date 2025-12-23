@@ -47,7 +47,7 @@ class JavaData(IntegrationData):
                         "document_attributes": {"STANDALONE": ""},
                         "verification": [
                             {
-                                "command": "java " "examples.Aplusb_main",
+                                "command": "java examples.Aplusb_main",
                                 "compile": f"javac {self.targets_path / 'examples/Aplusb_main.java'}",
                                 "name": "Java",
                                 "tempdir": f"{self.config_dir_path / 'cache/standalone/382841ad26b555d39a8784691c59fce8'}",

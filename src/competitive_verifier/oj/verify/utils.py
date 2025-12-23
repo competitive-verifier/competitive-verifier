@@ -5,7 +5,7 @@ from subprocess import CompletedProcess
 from typing import TYPE_CHECKING, Callable, Iterator, Optional, Union
 
 from competitive_verifier.exec import exec_command as _exec_command
-from competitive_verifier.util import read_text_normalized  # noqa # pyright: ignore
+from competitive_verifier.util import read_text_normalized  # pyright: ignore[reportUnusedImport]  # noqa: F401
 
 if TYPE_CHECKING:
     from _typeshed import StrOrBytesPath

@@ -33,7 +33,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         "-n",
         dest="dry_run",
         action="store_true",
-        help="Run a trial migration with no changes. Just show logs only.",  # noqa: E501
+        help="Run a trial migration with no changes. Just show logs only.",
     )
     return parser
 

@@ -1,2 +1,1 @@
-"""Copy of oj-verify
-"""
+"""Copy of oj-verify"""
