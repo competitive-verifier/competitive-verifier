@@ -46,7 +46,7 @@ class OjTestArguments(BaseModel):
     error: Optional[float]
     print_input: bool = True
     format: str = "%s.%e"
-    test: list[pathlib.Path] = Field(default_factory=list)
+    test: list[pathlib.Path] = Field(default_factory=list[pathlib.Path])
     gnu_time: Optional[str] = None
     log_file: Optional[pathlib.Path] = None
     silent: bool = False

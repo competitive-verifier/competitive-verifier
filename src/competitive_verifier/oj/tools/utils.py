@@ -28,9 +28,9 @@ FAILURE = "FAILURE: "
 
 def get_user_agent() -> str:
     meta = importlib.metadata.metadata("competitive-verifier")
-    name = meta.get("Name")
-    version = meta.get("Version")
-    url = meta.get("Home-page")
+    name = meta["Name"]
+    version = meta["Version"]
+    url = meta["Home-page"]
     return f"{name}/{version} (+{url})"
 
 

@@ -48,11 +48,7 @@
           "type": "string"
         },
         "status": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/JudgeStatus"
-            }
-          ],
+          "$ref": "#/$defs/JudgeStatus",
           "description": "The result status of the test case."
         },
         "elapsed": {
@@ -98,11 +94,7 @@
           "title": "Verification Name"
         },
         "status": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/ResultStatus"
-            }
-          ],
+          "$ref": "#/$defs/ResultStatus",
           "description": "The result status of verification."
         },
         "elapsed": {
@@ -178,6 +170,9 @@
         "$ref": "#/$defs/FileResult"
       },
       "description": "The files to be verified.",
+      "propertyNames": {
+        "format": "path"
+      },
       "title": "Files",
       "type": "object"
     }

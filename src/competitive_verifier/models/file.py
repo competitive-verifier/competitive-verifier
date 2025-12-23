@@ -61,22 +61,22 @@ class AddtionalSource(BaseModel):
 
 class VerificationFile(BaseModel):
     dependencies: SortedPathSet = Field(
-        default_factory=set,
+        default_factory=set[ForcePosixPath],
         description="The list of dependent files as paths relative to root.",
     )
     """The list of dependent files as paths relative to root.
     """
     verification: Union[list[Verification], Verification, None] = Field(
-        default_factory=list
+        default_factory=list[Verification]
     )
     document_attributes: dict[str, Any] = Field(
-        default_factory=dict,
+        default_factory=dict[str, Any],
         description="The attributes for documentation.",
     )
     """The attributes for documentation.
     """
     additonal_sources: list[AddtionalSource] = Field(
-        default_factory=list,
+        default_factory=list[AddtionalSource],
         description="The addtional source paths.",
         examples=[
             [
@@ -130,7 +130,7 @@ class VerificationFile(BaseModel):
 
 class VerificationInput(BaseModel):
     files: dict[ForcePosixPath, VerificationFile] = Field(
-        default_factory=dict,
+        default_factory=dict[ForcePosixPath, VerificationFile],
         description="The key is relative path from the root.",
     )
 

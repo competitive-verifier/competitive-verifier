@@ -44,9 +44,6 @@
         "type": {
           "const": "command",
           "default": "command",
-          "enum": [
-            "command"
-          ],
           "title": "Type",
           "type": "string"
         },
@@ -184,18 +181,11 @@
         "type": {
           "const": "const",
           "default": "const",
-          "enum": [
-            "const"
-          ],
           "title": "Type",
           "type": "string"
         },
         "status": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/ResultStatus"
-            }
-          ],
+          "$ref": "#/$defs/ResultStatus",
           "description": "The pre-defined result."
         }
       },
@@ -222,9 +212,6 @@
         "type": {
           "const": "problem",
           "default": "problem",
-          "enum": [
-            "problem"
-          ],
           "title": "Type",
           "type": "string"
         },
@@ -514,6 +501,7 @@
           "title": "Verification"
         },
         "document_attributes": {
+          "additionalProperties": true,
           "description": "The attributes for documentation.",
           "title": "Document Attributes",
           "type": "object"
@@ -545,6 +533,9 @@
         "$ref": "#/$defs/VerificationFile"
       },
       "description": "The key is relative path from the root.",
+      "propertyNames": {
+        "format": "path"
+      },
       "title": "Files",
       "type": "object"
     }

@@ -2,7 +2,7 @@ import os
 import pathlib
 
 import onlinejudge._implementation.utils
-import onlinejudge.utils
+import onlinejudge.utils  # pyright: ignore[reportUnusedImport]
 
 COMPETITIVE_VERIFY_CONFIG_PATH = "COMPETITIVE_VERIFY_CONFIG_PATH"
 

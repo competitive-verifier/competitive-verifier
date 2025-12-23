@@ -40,7 +40,9 @@ logger = getLogger(__name__)
 
 class OjVerifyLanguageConfigDict(BaseModel):
     model_config = ConfigDict(extra="allow")
-    __pydantic_extra__: dict[str, OjVerifyUserDefinedConfig]  # pyright: ignore
+    __pydantic_extra__: dict[str, OjVerifyUserDefinedConfig] = Field(  # pyright: ignore
+        default_factory=dict[str, OjVerifyUserDefinedConfig]
+    )
 
     cpp: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
     go: OjVerifyGoConfig = Field(default_factory=OjVerifyGoConfig)
@@ -52,8 +54,8 @@ class OjVerifyLanguageConfigDict(BaseModel):
 
 
 class OjVerifyConfig(BaseModel):
-    languages: OjVerifyLanguageConfigDict = Field(
-        default_factory=OjVerifyLanguageConfigDict  # pyright: ignore
+    languages: OjVerifyLanguageConfigDict = Field(  # pyright: ignore
+        default_factory=lambda: OjVerifyLanguageConfigDict()  # pyright: ignore
     )
 
     @classmethod
