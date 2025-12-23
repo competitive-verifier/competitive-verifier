@@ -161,17 +161,22 @@ def _print_github(
     force: bool = False,
     stream: Optional[TextIO] = None,
 ) -> None:
-    """print Github Actions style message
+    """Print Github Actions style message.
 
     https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 
     Args:
+        command: Command name (e.g., "error", "warning", "debug")
+        message: Message body
+    Keyword Args:
         title: Custom title
         file: Filename
         col: Column number, starting at 1
         endColumn: End column number
         line: Line number, starting at 1
-        endLine: End line number
+        end_line: End line number
+        force: If True, print the message even outside GitHub Actions
+        stream: Output stream
     """
     annotation = ",".join(
         f"{tup[0]}={tup[1]}"

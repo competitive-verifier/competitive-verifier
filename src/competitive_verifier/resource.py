@@ -2,7 +2,7 @@ import sys
 
 
 def ulimit_stack() -> None:
-    """ulimit -s unlimited"""
+    """Run `ulimit -s unlimited`."""
     if sys.platform != "win32":
         import resource
 

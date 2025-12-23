@@ -76,10 +76,14 @@ def _list_dependencies_by_crate(
 ) -> list[pathlib.Path]:
     """The `list_dependencies` implementation for `_NoBackend` and `CargoUdeps`.
 
-    :param path: A parameter in `Language.list_dependencies`.
-    :param basedir: A parameter in `Language.list_dependencies`.
-    :param cargo_udeps_toolchain: A Rust toolchain name for cargo-udeps. If it is `None`, we don't run cargo-udeps.
-    :returns: Paths to the `.rs` files for `Language.list_dependencies`.
+    Args:
+        path (pathlib.Path): A main source file path of a target
+        basedir (pathlib.Path): A parameter from `Language.list_dependencies`
+        cargo_udeps_toolchain (str | None): If not `None`, use `cargo-udeps` with the specified toolchain to detect unused dependencies
+    Returns:
+        list[pathlib.Path]: A list of dependent `.rs` file paths
+    Raises:
+        RuntimeError: If any cargo command fails
     """
     path = basedir / path
 
@@ -237,9 +241,13 @@ def _related_source_files(
 ) -> dict[pathlib.Path, frozenset[pathlib.Path]]:
     """Collects all of the `.rs` files recognized by a workspace.
 
-    :param basedir: A parameter from `Language.list_dependencies`.
-    :param metadata: Output of `cargo metadata`
-    :returns: A (main source file) → (other related files) map
+    Args:
+        basedir (pathlib.Path): A parameter from `Language.list_dependencies`
+        metadata (dict[str, Any]): "metadata" for a Cargo.toml file in the workspace
+    Returns:
+        dict[pathlib.Path, frozenset[pathlib.Path]]: A (main source file) → (other related files) map
+    Raises:
+        RuntimeError: If any cargo command fails
     """
     if pathlib.Path(metadata["workspace_root"]) in _related_source_files_by_workspace:
         return _related_source_files_by_workspace[
@@ -338,9 +346,13 @@ def _source_files_in_same_targets(
 ) -> frozenset[pathlib.Path]:
     """Returns `.rs` file paths relating to `path`.
 
-    :param path: Path to a `.rs` file
-    :param related_source_files: Output of `_related_source_files`
-    :returns: Relating `.rs` file paths
+    Args:
+        path (pathlib.Path): A main source file path of a target
+        related_source_files (dict[pathlib.Path, frozenset[pathlib.Path]]): A (main source file) → (other related files) map
+    Returns:
+        frozenset[pathlib.Path]: A set of `.rs` file paths relating to `path`
+    Raises:
+        RuntimeError: If `path` is not found in `related_source_files` and is not related to any other files.
     """
     # If `p` is `src_path` of a target, it does not belong to any other target unless it's weirdly symlinked,
     if path in related_source_files:
@@ -419,8 +431,13 @@ class RustLanguage(Language):
 def _cargo_metadata(cwd: pathlib.Path) -> dict[str, Any]:
     """Returns "metadata" for a Cargo.toml file in `cwd` or its parent directories.
 
-    :raises ValueError: if `cwd` is not absolute or contains `..`
-    :returns: Output of `cargo metadata` command
+    Args:
+        cwd (pathlib.Path): The current working directory
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        ValueError: If `cwd` is not absolute or contains `..`
+        RuntimeError: If no `Cargo.toml` is found
     """
     if not cwd.is_absolute() or ".." in cwd.parts:
         raise ValueError(
@@ -440,7 +457,12 @@ def _cargo_metadata(cwd: pathlib.Path) -> dict[str, Any]:
 def _cargo_metadata_by_manifest_path(manifest_path: pathlib.Path) -> dict[str, Any]:
     """Returns "metadata" for a certain `Cargo.toml`.
 
-    :returns: Output of `cargo metadata` command
+    Args:
+        manifest_path (pathlib.Path): Path to a `Cargo.toml`
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        RuntimeError: If the `cargo metadata` command fails
     """
     if manifest_path in _metadata_by_manifest_path:
         return _metadata_by_manifest_path[manifest_path]
@@ -472,8 +494,12 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
     - <https://doc.rust-lang.org/cargo/commands/cargo-metadata.html#output-format>
     - <https://docs.rs/cargo_metadata>
 
-    :param manifest_path: Path to a `Cargo.toml`
-    :returns: Output of `cargo metadata` command
+    Args:
+        manifest_path (pathlib.Path): Path to a `Cargo.toml`
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        RuntimeError: If the `cargo metadata` command fails
     """
     return json.loads(
         exec_command(

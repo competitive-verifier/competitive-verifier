@@ -1,4 +1,4 @@
-"""https://github.com/smoofra/mslex/blob/master/mslex.py"""
+"""Port of "https://github.com/smoofra/mslex/blob/master/mslex.py"."""
 
 import re
 import shlex
@@ -11,8 +11,7 @@ cmd_meta_inside_quotes: str = r"([\"\%\!])"
 
 
 def _msquote(s: str, *, for_cmd: bool = True) -> str:
-    """
-    Quote a string for use as a command line argument in DOS or Windows.
+    """Quote a string for use as a command line argument in DOS or Windows.
 
     On windows, before a command line argument becomes a char* in a
     program's argv, it must be parsed by both cmd.exe, and by
@@ -70,7 +69,7 @@ split = shlex.split
 
 
 def join(args: list[str]) -> str:
-    """shlex or smoofra/mslex"""
+    """Run `shlex or smoofra/mslex`."""
     if sys.platform == "win32":
         return " ".join(_msquote(arg) for arg in args)
     return shlex.join(args)

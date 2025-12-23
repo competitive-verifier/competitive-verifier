@@ -22,7 +22,7 @@ FAILURE = ResultStatus.FAILURE
 
 class NotSkippableConstVerification(ConstVerification):
     @property
-    def is_skippable(self) -> bool:
+    def is_lightweight(self) -> bool:
         return False
 
 
@@ -650,7 +650,7 @@ def test_verify_timeout(
     perf_counter_sequence: list[float],
     expected: dict[str, Any],
 ):
-    """Test timeout exception scenarios in enumerate_verifications"""
+    """Test timeout exception scenarios in enumerate_verifications."""
     mock_exists(True)
     mocker.patch("time.perf_counter", side_effect=perf_counter_sequence)
     mocker.patch("competitive_verifier.verify.verifier.run_download", return_value=True)

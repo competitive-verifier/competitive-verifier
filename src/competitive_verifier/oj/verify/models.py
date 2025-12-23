@@ -18,9 +18,6 @@ class LanguageEnvironment(abc.ABC):
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> Optional[ShellCommandLike]:
-        """
-        :throws Exception:
-        """
         return None
 
     @abc.abstractmethod
@@ -34,10 +31,6 @@ class Language:
     def list_attributes(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, Any]:
-        """
-        :throws Exception:
-        """
-
         attributes: dict[str, Any] = dict(special_comments.list_special_comments(path))
         attributes.setdefault("links", [])
         attributes["links"].extend(special_comments.list_embedded_urls(path))
@@ -47,16 +40,9 @@ class Language:
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
-        """
-        :throws Exception:
-        """
-
         raise NotImplementedError
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> Optional[bytes]:
-        """
-        :throws Exception:
-        """
         return None
 
     @abc.abstractmethod

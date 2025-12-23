@@ -33,7 +33,10 @@ logger = getLogger(__name__)
 
 
 class OjTestArguments(BaseModel):
-    """onlinejudge_command.subcommand.test.add_subparser"""
+    """Parameters for oj-test command.
+
+    Port of onlinejudge_command.subcommand.test.add_subparser.
+    """
 
     command: Union[str, list[str]]
     cookie: pathlib.Path
@@ -157,7 +160,6 @@ def display_result(
 
     This function prints many logs and does some I/O.
     """
-
     # prepare the function to print the input
     is_input_printed = False
 
@@ -347,7 +349,6 @@ def build_match_function(
 
     This function doesn't any I/O.
     """
-
     if judge_command is not None:
         special_judge = SpecialJudge(judge_command=judge_command, is_silent=silent)
 
@@ -404,7 +405,6 @@ def run_checking_output(
 
     This function has file I/O including the execution of the judge command.
     """
-
     if test_output_path is None and not is_special_judge:
         return None
     if test_output_path is not None:

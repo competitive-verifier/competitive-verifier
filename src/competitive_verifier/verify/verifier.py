@@ -71,9 +71,7 @@ class InputContainer(ABC):
 
     @cached_property
     def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
-        """
-        List of verification files.
-        """
+        """List of verification files."""
         return {p: f for p, f in self.input.files.items() if f.is_verification()}
 
     @cached_property
@@ -81,14 +79,12 @@ class InputContainer(ABC):
         return {
             p: f
             for p, f in self.verification_files.items()
-            if f.is_skippable_verification()
+            if f.is_lightweight_verification()
         }
 
     @cached_property
     def remaining_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
-        """
-        List of verification files that have not yet been verified.
-        """
+        """List of verification files that have not yet been verified."""
         verification_files = {
             p: f
             for p, f in self.verification_files.items()
@@ -110,8 +106,7 @@ class InputContainer(ABC):
 
     @cached_property
     def current_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
-        """
-        List of verification files that self should verify.
+        """List of verification files that self should verify.
 
         if ``split_state`` is None the property is ``remaining_verification_files``;
 
@@ -283,7 +278,7 @@ class BaseVerifier(InputContainer):
         *,
         deadline: float = float("inf"),
     ) -> tuple[Union[ResultStatus, VerificationResult], Optional[str]]:
-        """Run verification
+        """Run verification.
 
         Returns:
             tuple[ResultStatus, Optional[str]]: (Result, error_message)
@@ -301,9 +296,7 @@ class BaseVerifier(InputContainer):
         return rs, None
 
     def skippable_results(self) -> dict[pathlib.Path, FileResult]:
-        """
-        Run skippable verification
-        """
+        """Run skippable verification."""
         results = dict[pathlib.Path, FileResult]()
         if self.is_first:
             for p, f in self.skippable_verification_files.items():

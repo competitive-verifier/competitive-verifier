@@ -12,8 +12,13 @@ logger = getLogger(__name__)
 class OutputComparator(abc.ABC):
     @abc.abstractmethod
     def __call__(self, actual: bytes, expected: bytes) -> bool:
-        """
-        :returns: True is the two are matched.
+        """Compare two byte strings.
+
+        Args:
+            actual (bytes): Actual output
+            expected (bytes): Expected output
+        Returns:
+            bool: True if they are considered equal
         """
         raise NotImplementedError
 
@@ -35,8 +40,10 @@ class FloatingPointNumberComparator(OutputComparator):
         self.abs_tol = abs_tol
 
     def __call__(self, actual: bytes, expected: bytes) -> bool:
-        """
-        :returns: True if the relative error or absolute error is smaller than the accepted error
+        """Assume that both actual and expected are floating point numbers.
+
+        Returns:
+        True if the relative error or absolute error is smaller than the accepted error
         """
         try:
             x: Optional[float] = float(actual)

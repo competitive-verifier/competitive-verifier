@@ -36,10 +36,8 @@ class BaseVerification(BaseModel, ABC):
     ) -> bool: ...
 
     @property
-    def is_skippable(self) -> bool:
-        """
-        If verification cost is small, it is skippable.
-        """
+    def is_lightweight(self) -> bool:
+        """The verification is lightweight."""
         return False
 
 
@@ -50,7 +48,7 @@ class ConstVerification(BaseVerification):
     """
 
     @property
-    def is_skippable(self) -> bool:
+    def is_lightweight(self) -> bool:
         return True
 
     def run(

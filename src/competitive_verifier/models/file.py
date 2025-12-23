@@ -92,7 +92,7 @@ class VerificationFile(BaseModel):
 
     @property
     def title(self) -> Optional[str]:
-        """The document title specified as a attributes"""
+        """The document title specified as a attributes."""
         title = self.document_attributes.get("TITLE")
         if not title:
             title = self.document_attributes.get("document_title")
@@ -100,8 +100,7 @@ class VerificationFile(BaseModel):
 
     @property
     def display(self) -> Optional[DocumentOutputMode]:
-        """The document output mode as a attributes"""
-
+        """The document output mode as a attributes."""
         d = self.document_attributes.get("DISPLAY")
         if not isinstance(d, str):
             return None
@@ -121,10 +120,10 @@ class VerificationFile(BaseModel):
     def is_verification(self) -> bool:
         return bool(self.verification)
 
-    def is_skippable_verification(self) -> bool:
+    def is_lightweight_verification(self) -> bool:
         """If the effort required for verification is small, treat it as skippable."""
         return self.is_verification() and all(
-            v.is_skippable for v in self.verification_list
+            v.is_lightweight for v in self.verification_list
         )
 
 
@@ -153,11 +152,10 @@ class VerificationInput(BaseModel):
         return impl
 
     def scc(self, *, reversed: bool = False) -> list[set[pathlib.Path]]:
-        """Strongly Connected Component
+        """Strongly Connected Component.
 
         Args:
-            reversed bool: if True, libraries are ahead. otherwise, tests are ahead.
-
+            reversed (bool): if True, libraries are ahead. otherwise, tests are ahead
         Returns:
             list[set[pathlib.Path]]: Strongly Connected Component result
         """
@@ -195,7 +193,8 @@ class VerificationInput(BaseModel):
     def _dependency_graph(
         self,
     ) -> _DependencyGraph:
-        """
+        """Resolve dependency graphs.
+
         Returns: Dependency graphs
         """
         depends_on: _DependencyEdges = {}

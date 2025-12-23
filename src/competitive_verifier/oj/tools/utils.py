@@ -123,20 +123,18 @@ def exec_command(
 
 
 def green(s: str) -> str:
-    """green(s) color s with green.
+    """Make `s` colored with green.
 
     This function exists to encapsulate the coloring methods only in utils.py.
     """
-
     return colorama.Fore.GREEN + s + colorama.Fore.RESET
 
 
 def red(s: str) -> str:
-    """red(s) color s with red.
+    """Make `s` colored with red.
 
     This function exists to encapsulate the coloring methods only in utils.py.
     """
-
     return colorama.Fore.RED + s + colorama.Fore.RESET
 
 
@@ -146,7 +144,7 @@ def remove_suffix(s: str, suffix: str) -> str:
 
 
 def get_default_command() -> str:
-    """get_default_command returns a command to execute the default output of g++ or clang++. The value is basically `./a.out`, but `.\a.exe` on Windows.
+    r"""get_default_command returns a command to execute the default output of g++ or clang++. The value is basically `./a.out`, but `.\a.exe` on Windows.
 
     The type of return values must be `str` and must not be `pathlib.Path`, because the strings `./a.out` and `a.out` are different as commands but same as a path.
     """

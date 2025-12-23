@@ -102,7 +102,6 @@ def _tokenize_large_file_content(
     *, content: bytes, limit: int, head: int, tail: int, char_in_line: int
 ) -> list[_PrettyToken]:
     """`_tokenize_large_file_content` constructs the intermediate representations. They have no color infomation."""
-
     assert head + tail < limit
 
     def candidate_do_nothing(text: str) -> list[_PrettyToken]:

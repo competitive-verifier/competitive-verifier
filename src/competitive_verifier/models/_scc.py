@@ -1,4 +1,5 @@
-"""
+"""Strongly Connected Component Graph.
+
 Copy from ac-library-python
 https://github.com/not522/ac-library-python/blob/58f324ec020d57191e7b9e4957b0c5feb5ed3aff/atcoder/_scc.py
 """
@@ -24,7 +25,8 @@ class CSR:
 
 
 class SccGraph:
-    """
+    """Strongly Connected Component Graph.
+
     Reference:
     R. Tarjan,
     Depth-First Search and Linear Graph Algorithms
