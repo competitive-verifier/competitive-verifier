@@ -35,8 +35,7 @@ def _msquote(s: str, *, for_cmd: bool = True) -> str:
             m = re.search(r"\\+$", s)
             if m:
                 return '"' + s + m.group() + '"'
-            else:
-                return '"' + s + '"'
+            return '"' + s + '"'
         if not re.search(r"[\s\"]", s):
             return re.sub(cmd_meta, r"^\1", s)
         return re.sub(cmd_meta, r"^\1", _msquote(s, for_cmd=False))

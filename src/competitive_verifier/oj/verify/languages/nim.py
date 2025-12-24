@@ -135,11 +135,10 @@ class NimLanguage(Language):
                     NIMFLAGS=default_NIMFLAGS,
                 )
             ]
-        else:
-            return [
-                NimLanguageEnvironment(
-                    compile_to=env.compile_to or default_compile_to,
-                    NIMFLAGS=env.NIMFLAGS or default_NIMFLAGS,
-                )
-                for env in self.config.environments
-            ]
+        return [
+            NimLanguageEnvironment(
+                compile_to=env.compile_to or default_compile_to,
+                NIMFLAGS=env.NIMFLAGS or default_NIMFLAGS,
+            )
+            for env in self.config.environments
+        ]

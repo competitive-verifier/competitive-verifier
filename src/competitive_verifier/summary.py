@@ -29,14 +29,13 @@ def to_human_str_seconds(total_seconds: float) -> str:
 
     if hours > 0:
         return f"{hours}h {minutes}m"
-    elif minutes > 0:
+    if minutes > 0:
         return f"{minutes}m {int(seconds)}s"
-    elif total_seconds >= 10:
+    if total_seconds >= 10:
         return f"{int(seconds)}s"
-    elif total_seconds > 1:
+    if total_seconds > 1:
         return f"{total_seconds:.1f}s"
-    else:
-        return f"{int(total_seconds * 1000)}ms"
+    return f"{int(total_seconds * 1000)}ms"
 
 
 def to_human_str_mega_bytes(total_mega_bytes: float) -> str:

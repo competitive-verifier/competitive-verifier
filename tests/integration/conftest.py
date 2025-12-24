@@ -19,8 +19,6 @@ from .mock import MockVerifyCommandResult, update_cloned_repository
 from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
 
-# ruff: noqa: ARG001
-
 
 @pytest.fixture(scope="session")
 def check_necessary_commands() -> str | None:

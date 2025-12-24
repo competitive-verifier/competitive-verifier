@@ -36,8 +36,7 @@ class SplitState(BaseModel):
         if len(lst) <= self.size:
             if len(lst) <= self.index:
                 return []
-            else:
-                return [lst[self.index]]
+            return [lst[self.index]]
 
         from_index = len(lst) * self.index // self.size
         to_index = len(lst) * (self.index + 1) // self.size

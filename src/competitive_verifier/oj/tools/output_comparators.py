@@ -54,8 +54,7 @@ class FloatingPointNumberComparator(OutputComparator):
             y = None
         if x is not None and y is not None:
             return math.isclose(x, y, rel_tol=self.rel_tol, abs_tol=self.abs_tol)
-        else:
-            return actual == expected
+        return actual == expected
 
 
 class SplitComparator(OutputComparator):

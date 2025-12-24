@@ -113,7 +113,7 @@ class VerificationFile(BaseModel):
     def verification_list(self) -> list[Verification]:
         if self.verification is None:
             return []
-        elif isinstance(self.verification, list):
+        if isinstance(self.verification, list):
             return self.verification
         return [self.verification]
 

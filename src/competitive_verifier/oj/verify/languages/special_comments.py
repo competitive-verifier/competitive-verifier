@@ -33,9 +33,8 @@ def _unquote(s: str) -> str:
             if end_quote_pos == 0:
                 # Remove opening quote from the URL like `"https://atcoder.jp/`
                 return s[1:]
-            else:
-                # Remove quotes and trailing superfluous chars around the URL
-                return s[1:end_quote_pos]
+            # Remove quotes and trailing superfluous chars around the URL
+            return s[1:end_quote_pos]
     return s
 
 

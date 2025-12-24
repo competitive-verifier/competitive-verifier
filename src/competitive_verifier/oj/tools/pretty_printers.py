@@ -366,8 +366,7 @@ def _make_diff_between_line_and_line(
 ) -> tuple[list[_PrettyToken], list[_PrettyToken]]:
     if len(a.strip().split()) == len(b.strip().split()):
         return _make_diff_between_line_and_line_by_comparing_word_by_word(a, b)
-    else:
-        return _make_diff_between_line_and_line_by_difflib(a, b)
+    return _make_diff_between_line_and_line_by_difflib(a, b)
 
 
 class _LineDiffOp(NamedTuple):
@@ -516,23 +515,22 @@ def _make_diff_between_file_and_file(
         return _make_diff_between_file_and_file_by_comparing_line_by_line(
             a, b, compare_mode=compare_mode
         )
-    else:
-        if compare_mode in (
-            CompareMode.IGNORE_SPACES,
-            CompareMode.IGNORE_SPACES_AND_NEWLINES,
-        ):
-            logger.warning(
-                "ignoring --compare-mode=%s and using --compare-mode=%s (default) instead for generating diff...",
-                str(compare_mode),
-                str(CompareMode.CRLF_INSENSITIVE_EXACT_MATCH),
-            )
-            compare_mode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
-        if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH:
-            if "\r" in a or "\r" in b:
-                logger.warning("carriage return '\\r' is removed from diff")
-                a = a.replace("\r\n", "\n")
-                b = b.replace("\r\n", "\n")
-        return _make_diff_between_file_and_file_by_difflib(a, b)
+    if compare_mode in (
+        CompareMode.IGNORE_SPACES,
+        CompareMode.IGNORE_SPACES_AND_NEWLINES,
+    ):
+        logger.warning(
+            "ignoring --compare-mode=%s and using --compare-mode=%s (default) instead for generating diff...",
+            str(compare_mode),
+            str(CompareMode.CRLF_INSENSITIVE_EXACT_MATCH),
+        )
+        compare_mode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
+    if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH:
+        if "\r" in a or "\r" in b:
+            logger.warning("carriage return '\\r' is removed from diff")
+            a = a.replace("\r\n", "\n")
+            b = b.replace("\r\n", "\n")
+    return _make_diff_between_file_and_file_by_difflib(a, b)
 
 
 class _MergedDiffOp(NamedTuple):
@@ -768,15 +766,14 @@ def _summary_token_of_diff_ops(ops: list[_MergedDiffOp]) -> list[_PrettyToken]:
                 added += 1
     if not removed and not added:
         return []
-    else:
-        return [
-            _PrettyToken(
-                _PrettyTokenType.HINT,
-                "(also {} lines are deleted and {} lines are added...)".format(
-                    removed, added
-                ),
-            )
-        ]
+    return [
+        _PrettyToken(
+            _PrettyTokenType.HINT,
+            "(also {} lines are deleted and {} lines are added...)".format(
+                removed, added
+            ),
+        )
+    ]
 
 
 def _tokenize_pretty_diff(

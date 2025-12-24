@@ -177,8 +177,7 @@ class OjTestResult(BaseModel):
 def get_gnu_time_command() -> str:
     if platform.system() == "Darwin":
         return "gtime"
-    else:
-        return "time"
+    return "time"
 
 
 def check_gnu_time(gnu_time: str | None = None) -> bool:

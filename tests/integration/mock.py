@@ -16,12 +16,12 @@ from tests.integration.utils import md5_number
 
 
 class MockVerifyCommandResult(verifier.VerifyCommandResult):
-    def model_dump_json(  # type: ignore[override]  # noqa: PLR0913
+    def model_dump_json(  # type: ignore[override]
         self,
         *,
-        indent: Any = None,  # noqa: ANN401
-        include: Any = None,  # noqa: ANN401
-        exclude: Any = None,  # noqa: ANN401
+        indent: Any = None,
+        include: Any = None,
+        exclude: Any = None,
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
@@ -41,12 +41,12 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
             warnings=warnings,
         )
 
-    def _dump_super(  # noqa: PLR0913
+    def _dump_super(
         self,
         *,
-        indent: Any = None,  # noqa: ANN401
-        include: Any = None,  # noqa: ANN401
-        exclude: Any = None,  # noqa: ANN401
+        indent: Any = None,
+        include: Any = None,
+        exclude: Any = None,
         by_alias: bool = False,
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
@@ -54,19 +54,19 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         round_trip: bool = False,
         warnings: bool | Literal["none", "warn", "error"] = True,
     ) -> str:
-        def rewriteVerifyCommandResult(result: verifier.VerifyCommandResult):  # noqa: N802
+        def rewriteVerifyCommandResult(result: verifier.VerifyCommandResult):
             result.total_seconds = len(result.files) * 1234.56 + 78
             result.files = {k: rewriteFileResult(k, v) for k, v in result.files.items()}
             return result
 
-        def rewriteFileResult(path: pathlib.Path, file_result: FileResult):  # noqa: N802
+        def rewriteFileResult(path: pathlib.Path, file_result: FileResult):
             seed = path.as_posix().encode()
             file_result.verifications = [
                 rewriteVerificationResult(seed, v) for v in file_result.verifications
             ]
             return file_result
 
-        def rewriteVerificationResult(seed: bytes, verification: VerificationResult):  # noqa: N802
+        def rewriteVerificationResult(seed: bytes, verification: VerificationResult):
             seed += (verification.verification_name or "").encode()
             seed += verification.status.name.encode()
 
@@ -90,7 +90,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
 
             return verification
 
-        def rewriteTestcaseResult(seed: bytes, case: _TestcaseResult):  # noqa: N802
+        def rewriteTestcaseResult(seed: bytes, case: _TestcaseResult):
             seed += (case.name or "").encode()
             seed += case.status.name.encode()
 

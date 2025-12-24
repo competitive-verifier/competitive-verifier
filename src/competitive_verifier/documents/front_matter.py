@@ -97,8 +97,7 @@ def split_front_matter(content: bytes) -> tuple[FrontMatter | None, bytes]:
     fy = yaml.safe_load(fm_bytes)
     if fy:
         return FrontMatter.model_validate(fy), content
-    else:
-        return FrontMatter(), content
+    return FrontMatter(), content
 
 
 def merge_front_matter(

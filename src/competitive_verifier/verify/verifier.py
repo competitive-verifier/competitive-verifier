@@ -372,13 +372,12 @@ class Verifier(BaseVerifier):
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         if self.use_git_timestamp:
             return git.get_commit_time(self.verifications.transitive_depends_on[path])
-        else:
-            dependicies = self.verifications.transitive_depends_on[path]
+        dependicies = self.verifications.transitive_depends_on[path]
 
-            timestamp = max(x.stat().st_mtime for x in dependicies)
-            system_local_timezone = self.now().astimezone().tzinfo
-            return datetime.datetime.fromtimestamp(
-                timestamp, tz=system_local_timezone
-            ).replace(
-                microsecond=0
-            )  # microsecond=0 is required because it's erased in git commit
+        timestamp = max(x.stat().st_mtime for x in dependicies)
+        system_local_timezone = self.now().astimezone().tzinfo
+        return datetime.datetime.fromtimestamp(
+            timestamp, tz=system_local_timezone
+        ).replace(
+            microsecond=0
+        )  # microsecond=0 is required because it's erased in git commit
