@@ -81,19 +81,13 @@ def oj_exec_command(
         context = contextlib.nullcontext()
     with context as fh:
         if isinstance(command, str):
-            command_str = command
             command = shlex.split(command)
             if gnu_time is not None:
                 command = [gnu_time, "-f", "%M", "-o", fh.name, "--", *command]
-            if sys.platform == "win32":
-                # HACK: without this encoding and decoding, something randomly fails with multithreading; see https://github.com/kmyk/online-judge-tools/issues/468
-                command = command_str.encode().decode()  # type: ignore
         begin = time.perf_counter()
 
         # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
-        preexec_fn = None
-        if gnu_time is not None and os.name == "posix":
-            preexec_fn = os.setsid
+        start_new_session = gnu_time is not None and os.name == "posix"
 
         try:
             if env:
@@ -104,8 +98,8 @@ def oj_exec_command(
                 stdin=stdin,
                 stdout=PIPE,
                 stderr=sys.stderr,
-                preexec_fn=preexec_fn,
-            )  # pylint: disable=subprocess-popen-preexec-fn
+                start_new_session=gnu_time is not None and os.name == "posix",
+            )
         except FileNotFoundError:
             logger.error("No such file or directory: %s", command)
             sys.exit(1)
@@ -118,12 +112,9 @@ def oj_exec_command(
         except TimeoutExpired:
             pass
         finally:
-            if preexec_fn is not None:
-                try:
-                    if sys.platform != "win32":
-                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
+            if start_new_session:
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             else:
                 proc.terminate()
 
@@ -328,7 +319,7 @@ class SpecialJudge:
             )
 
             logger.debug("$ %s", command)
-            info, proc = utils.exec_command(command)
+            info, proc = utils.measure_command(command)
         logger.debug(
             "judge's output:\n%s",
             pretty_printers.make_pretty_large_file_content(

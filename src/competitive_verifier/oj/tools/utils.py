@@ -12,14 +12,15 @@ import tempfile
 import time
 from collections.abc import Iterator
 from logging import getLogger
-from typing import Any, BinaryIO
-
+from typing import Any, BinaryIO, IO, overload
 import colorama
 import requests
 from onlinejudge import utils
 
+
 logger = getLogger(__name__)
 
+# ruff: noqa: G003
 # These strings can control logging output.
 HINT = "HINT: "
 SUCCESS = "SUCCESS: "
@@ -49,31 +50,35 @@ def new_session_with_our_user_agent(
         raise
 
 
-def exec_command(
+def measure_command(
     command_str: str,
     *,
-    stdin: BinaryIO | None = None,
+    stdin: BinaryIO | int | None = None,
     input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: str | None = None,
 ) -> tuple[dict[str, Any], subprocess.Popen[bytes]]:
     if input is not None:
-        assert stdin is None
-        stdin = subprocess.PIPE  # type: ignore
-    if gnu_time is not None:
-        context: Any = tempfile.NamedTemporaryFile(delete=True)
-    else:
-        context = contextlib.nullcontext()
-    with context as fh:
-        command = shlex.split(command_str)
-        if gnu_time is not None:
+        if stdin is not None:
+            raise ValueError(
+                stdin, "stdin and input cannot be specified at the same time"
+            )
+        stdin = subprocess.PIPE
+
+    command = shlex.split(command_str)
+    with (
+        contextlib.nullcontext()
+        if gnu_time is None
+        else tempfile.NamedTemporaryFile(delete=True)
+    ) as fh:
+        if fh is not None:
+            if gnu_time is None:
+                raise ValueError("invalid state: gnu_time is None")
             command = [gnu_time, "-f", "%M", "-o", fh.name, "--", *command]
         begin = time.perf_counter()
 
         # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
-        preexec_fn = None
-        if gnu_time is not None and os.name == "posix":
-            preexec_fn = os.setsid
+        start_new_session = gnu_time is not None and os.name == "posix"
 
         try:
             proc = subprocess.Popen(
@@ -81,13 +86,13 @@ def exec_command(
                 stdin=stdin,
                 stdout=subprocess.PIPE,
                 stderr=sys.stderr,
-                preexec_fn=preexec_fn,
-            )  # pylint: disable=subprocess-popen-preexec-fn
+                start_new_session=start_new_session,
+            )
         except FileNotFoundError:
-            logger.error("No such file or directory: %s", command)
+            logger.exception("No such file or directory: %s", command)
             sys.exit(1)
         except PermissionError:
-            logger.error("Permission denied: %s", command)
+            logger.exception("Permission denied: %s", command)
             sys.exit(1)
         answer: bytes | None = None
         try:
@@ -95,28 +100,25 @@ def exec_command(
         except subprocess.TimeoutExpired:
             pass
         finally:
-            if preexec_fn is not None:
-                try:
+            if start_new_session:
+                with contextlib.suppress(ProcessLookupError):
                     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
             else:
                 proc.terminate()
 
         end = time.perf_counter()
         memory: float | None = None
-        if gnu_time is not None:
-            with open(fh.name) as fh1:
-                reported = fh1.read()
+        if fh is not None:
+            reported = fh.read().strip()
             logger.debug("GNU time says:\n%s", reported)
             if reported.strip() and reported.splitlines()[-1].isdigit():
                 memory = int(reported.splitlines()[-1]) / 1000
-    info = {
-        "answer": answer,  # Optional[byte]
-        "elapsed": end - begin,  # float, in second
-        "memory": memory,  # Optional[float], in megabyte
-    }
-    return info, proc
+        info = {
+            "answer": answer,
+            "elapsed": end - begin,  #  in second
+            "memory": memory,  # in megabyte
+        }
+        return info, proc
 
 
 def green(s: str) -> str:

@@ -38,7 +38,8 @@ class TestCommandDownload:
                         in_path.as_posix(),
                         out_path.as_posix(),
                         out_path.as_posix(),
-                    ]
+                    ],
+                    check=False,
                 ).returncode
                 == 0
             )
