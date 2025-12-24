@@ -116,16 +116,16 @@ def run(
                 samples = problem.download_system_cases(session=sess)
             else:
                 samples = problem.download_sample_cases(session=sess)
-        except requests.exceptions.RequestException as e:
-            logger.error("%s", e)
-            logger.error(
-                utils.HINT
+        except requests.exceptions.RequestException:
+            logger.exception(
+                "Failed to download samples from the server\n"
+                + utils.HINT
                 + "You may need to login to use `$ oj download ...` during contest. Please run: $ oj login %s",
                 problem.get_service().get_url(),
             )
             return False
-        except SampleParseError as e:
-            logger.error("%s", e)
+        except SampleParseError:
+            logger.exception("Failed to parse samples from the server")
             return False
 
     if not samples:
@@ -194,9 +194,9 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
                 )
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
-                    logger.error("Required: $YUKICODER_TOKEN environment variable")
+                    logger.exception("Required: $YUKICODER_TOKEN environment variable")
                 elif isinstance(e, NotLoggedInError) and is_atcoder(url):
-                    logger.error("Required: $DROPBOX_TOKEN environment variable")
+                    logger.exception("Required: $DROPBOX_TOKEN environment variable")
                 else:
                     logger.exception("Failed to download: %s", e)
                 return False

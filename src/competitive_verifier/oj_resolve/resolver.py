@@ -188,7 +188,7 @@ class OjResolver:
                         additonal_sources.append(
                             AddtionalSource(name="bundled", path=dest_path)
                         )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     bundled_code = traceback.format_exc()
                     dest_dir = get_bundled_dir()
                     dest_path = dest_dir / path

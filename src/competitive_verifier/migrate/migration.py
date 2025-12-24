@@ -1,3 +1,4 @@
+import contextlib
 import pathlib
 import re
 import shutil
@@ -202,7 +203,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
     if jekyll_config_path.exists():
         with jekyll_config_path.open("r") as fp:
             jekyll_config = yaml.safe_load(fp)
-        try:
+        with contextlib.suppress(Exception):
             exclude = jekyll_config.get("exclude")
             if isinstance(exclude, list):
                 exclude = "\n".join(
@@ -210,8 +211,6 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
                 )
             if exclude:
                 d["exclude"] = exclude
-        except Exception:
-            pass
     return d
 
 

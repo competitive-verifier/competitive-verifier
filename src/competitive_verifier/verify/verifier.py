@@ -71,7 +71,9 @@ class InputContainer(ABC):
     @cached_property
     def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
         """List of verification files."""
-        return {p: f for p, f in self.verifications.files.items() if f.is_verification()}
+        return {
+            p: f for p, f in self.verifications.files.items() if f.is_verification()
+        }
 
     @cached_property
     def skippable_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
@@ -166,6 +168,76 @@ class BaseVerifier(InputContainer):
     def now(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.timezone.utc)
 
+    def _enumerate_verifications(
+        self,
+        p: pathlib.Path,
+        f: VerificationFile,
+        *,
+        download: bool,
+        deadline: float,
+    ) -> list[VerificationResult]:
+        logger.debug(repr(f))
+        verifications = list[VerificationResult]()
+        try:
+            if time.perf_counter() > deadline:
+                raise VerifcationTimeoutException  # noqa: TRY301
+            if download and not run_download(f, check=True, group_log=False):
+                raise ValueError("Failed to download")  # noqa: TRY301
+        except VerifcationTimeoutException:
+            verifications.append(
+                self.create_command_result(ResultStatus.SKIPPED, time.perf_counter())
+            )
+            logger.warning("Skip[Timeout]: %s", p)
+            return verifications
+        except BaseException:
+            verifications.append(
+                self.create_command_result(ResultStatus.FAILURE, time.perf_counter())
+            )
+            logger.exception("Failed to download")
+            return verifications
+
+        for ve in f.verification_list:
+            logger.debug("command=%s", repr(ve))
+            prev_time = time.perf_counter()
+            try:
+                if prev_time > deadline:
+                    raise VerifcationTimeoutException  # noqa: TRY301
+
+                rs, error_message = self.run_verification(ve, deadline=deadline)
+                if error_message:
+                    logger.error("%s: %s, %s", error_message, p, repr(ve))
+                    if github.env.is_in_github_actions():
+                        github.print_error(
+                            message=f"{error_message} {p.as_posix()}",
+                            file=str(p.resolve()),
+                        )
+                verifications.append(
+                    self.create_command_result(rs, prev_time, name=ve.name)
+                )
+            except VerifcationTimeoutException:
+                logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
+                verifications.append(
+                    self.create_command_result(
+                        ResultStatus.SKIPPED,
+                        prev_time,
+                        name=ve.name,
+                    )
+                )
+            except BaseException as e:
+                message = (
+                    e.message if isinstance(e, VerifierError) else "Failed to verify"
+                )
+                logger.exception("%s: %s, %s", message, p, repr(ve))
+                traceback.print_exc()
+                verifications.append(
+                    self.create_command_result(
+                        ResultStatus.FAILURE,
+                        prev_time,
+                        name=ve.name,
+                    )
+                )
+        return verifications
+
     def verify(self, *, download: bool = True) -> VerifyCommandResult:
         start_time = time.perf_counter()
         deadline = start_time + self.timeout
@@ -174,95 +246,33 @@ class BaseVerifier(InputContainer):
             current_verification_files = self.current_verification_files
         logger.info(
             "current_verification_files: %s",
-            " ".join(p.as_posix() for p in current_verification_files.keys()),
+            " ".join(p.as_posix() for p in current_verification_files),
         )
         try:
             ulimit_stack()
-        except BaseException:
+        except BaseException:  # noqa: BLE001
             logger.warning("failed to increase the stack size[ulimit]")
 
-        if self.prev_result:
-            file_results = {
+        file_results = (
+            {
                 k: v.model_copy(update={"newest": False})
                 for k, v in self.verifications.filterd_files(self.prev_result.files)
                 if k.exists()
             }
-        else:
-            file_results = dict[pathlib.Path, FileResult]()
+            if self.prev_result
+            else dict[pathlib.Path, FileResult]()
+        )
 
         for p, f in current_verification_files.items():
-
-            def enumerate_verifications() -> list[VerificationResult]:
-                logger.debug(repr(f))
-                verifications = list[VerificationResult]()
-                try:
-                    if time.perf_counter() > deadline:
-                        raise VerifcationTimeoutException()
-                    if download and not run_download(f, check=True, group_log=False):
-                        raise Exception()
-                except VerifcationTimeoutException:
-                    verifications.append(
-                        self.create_command_result(
-                            ResultStatus.SKIPPED, time.perf_counter()
-                        )
-                    )
-                    logger.warning("Skip[Timeout]: %s", p)
-                    return verifications
-                except BaseException as e:
-                    verifications.append(
-                        self.create_command_result(
-                            ResultStatus.FAILURE, time.perf_counter()
-                        )
-                    )
-                    logger.exception("Failed to download", e)
-                    return verifications
-
-                for ve in f.verification_list:
-                    logger.debug("command=%s", repr(ve))
-                    prev_time = time.perf_counter()
-                    try:
-                        if prev_time > deadline:
-                            raise VerifcationTimeoutException()
-
-                        rs, error_message = self.run_verification(ve, deadline=deadline)
-                        if error_message:
-                            logger.error("%s: %s, %s", error_message, p, repr(ve))
-                            if github.env.is_in_github_actions():
-                                github.print_error(
-                                    message=f"{error_message} {p.as_posix()}",
-                                    file=str(p.resolve()),
-                                )
-                        verifications.append(
-                            self.create_command_result(rs, prev_time, name=ve.name)
-                        )
-                    except VerifcationTimeoutException:
-                        logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
-                        verifications.append(
-                            self.create_command_result(
-                                ResultStatus.SKIPPED,
-                                prev_time,
-                                name=ve.name,
-                            )
-                        )
-                    except BaseException as e:
-                        message = (
-                            e.message
-                            if isinstance(e, VerifierError)
-                            else "Failed to verify"
-                        )
-                        logger.error("%s: %s, %s", message, p, repr(ve))
-                        traceback.print_exc()
-                        verifications.append(
-                            self.create_command_result(
-                                ResultStatus.FAILURE,
-                                prev_time,
-                                name=ve.name,
-                            )
-                        )
-                return verifications
-
             with log.group(f"Verify: {p.as_posix()}"):
-                file_results[p] = FileResult(verifications=enumerate_verifications())
+                file_results[p] = FileResult(
+                    verifications=self._enumerate_verifications(
+                        p,
+                        f,
+                        download=download,
+                        deadline=deadline,
+                    )
+                )
 
         sippable_file_results = self.skippable_results()
         self._result = VerifyCommandResult(
@@ -286,7 +296,7 @@ class BaseVerifier(InputContainer):
             return ResultStatus.FAILURE, "Failed to compile"
 
         if time.perf_counter() > deadline:
-            raise VerifcationTimeoutException()
+            raise VerifcationTimeoutException
 
         rs = verification.run(self, deadline=deadline)
 

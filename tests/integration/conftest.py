@@ -26,17 +26,17 @@ from .utils import dummy_commit_time
 def check_necessary_commands() -> str | None:
     git_path = shutil.which("git")
     if not git_path:
-        raise Exception("The integration test needs command")
+        raise AssertionError("The integration test needs command")
     if shutil.which("env"):
         return None
     if os.name != "nt":
-        raise Exception("The integration test needs env command")
+        raise AssertionError("The integration test needs env command")
 
     for git_dir in pathlib.Path(git_path).parents:
         search = git_dir / "usr/bin"
         if search.is_dir():
             return str(search)
-    raise Exception("The integration test needs env command")
+    raise AssertionError("The integration test needs env command")
 
 
 @pytest.fixture

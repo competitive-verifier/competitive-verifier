@@ -83,7 +83,7 @@ def run(args: argparse.Namespace) -> bool:
 
     logger.debug("arguments=%s", vars(args))
     logger.info("verify_files_json=%s", str(args.verify_files_json))
-    input = VerificationInput.parse_file_relative(args.verify_files_json)
+    parsed_args = VerificationInput.parse_file_relative(args.verify_files_json)
     prev_result = None
     if args.prev_result:
         try:
@@ -92,7 +92,7 @@ def run(args: argparse.Namespace) -> bool:
             logger.warning("Failed to parse prev_result: %s", args.prev_result)
 
     return run_impl(
-        input,
+        parsed_args,
         timeout=args.timeout,
         default_tle=args.default_tle,
         default_mle=args.default_mle,

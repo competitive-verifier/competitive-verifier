@@ -101,10 +101,10 @@ def oj_exec_command(
                 start_new_session=gnu_time is not None and os.name == "posix",
             )
         except FileNotFoundError:
-            logger.error("No such file or directory: %s", command)
+            logger.exception("No such file or directory: %s", command)
             sys.exit(1)
         except PermissionError:
-            logger.error("Permission denied: %s", command)
+            logger.exception("Permission denied: %s", command)
             sys.exit(1)
         answer: bytes | None = None
         try:
@@ -282,8 +282,8 @@ def check_gnu_time(gnu_time: str | None = None) -> bool:
         raise  # NameError is not a runtime error caused by the environment, but a coding mistake
     except AttributeError:
         raise  # AttributeError is also a mistake
-    except Exception:
-        logger.debug(traceback.format_exc())
+    except Exception:  # noqa: BLE001
+        logger.debug("Failed to check gnu_time", exc_info=True)
     return False
 
 
@@ -508,7 +508,7 @@ def run(args: OjTestArguments) -> OjTestResult:
     history: list[OjTestcaseResult] = []
     for name, paths in sorted(tests.items()):
         if time.perf_counter() > args.deadline:
-            raise VerifcationTimeoutException()
+            raise VerifcationTimeoutException
 
         history.append(
             OjTestcaseResult.model_validate(

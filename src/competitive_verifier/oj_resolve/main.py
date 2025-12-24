@@ -30,8 +30,8 @@ def run_impl(
             with pathlib.Path(config_path).open("rb") as fp:
                 config = OjVerifyConfig.load(fp)
                 logger.info("config file loaded: %s: %s", str(config_path), config)
-        except ValidationError as e:
-            logger.error("config file validation error: %s", e)
+        except ValidationError:
+            logger.exception("config file validation error")
             config = OjVerifyConfig()
 
     resolver = OjResolver(

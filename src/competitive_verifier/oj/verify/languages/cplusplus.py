@@ -79,8 +79,9 @@ def _cplusplus_list_depending_files(
     try:
         data = exec_command(command).stdout
     except Exception:
-        logger.error(
-            "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies. The paths must exist, must not contain '\\', and must be case-sensitive.)",
+        logger.error(  # noqa: TRY400
+            "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
+            " The paths must exist, must not contain '\\', and must be case-sensitive.)",
             CXX,
             str(path),
         )
