@@ -344,7 +344,7 @@ def build_match_function(
     if judge_command is not None:
         special_judge = SpecialJudge(judge_command=judge_command, is_silent=silent)
 
-        def run_judge_command(actual: bytes, expected: bytes) -> bool:
+        def run_judge_command(actual: bytes, _: bytes) -> bool:
             # the second argument is ignored
             return special_judge.run(
                 actual_output=actual,

@@ -19,6 +19,8 @@ from .mock import MockVerifyCommandResult, update_cloned_repository
 from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
 
+# ruff: noqa: ARG001
+
 
 @pytest.fixture(scope="session")
 def check_necessary_commands() -> str | None:
@@ -37,7 +39,7 @@ def check_necessary_commands() -> str | None:
     raise Exception("The integration test needs env command")
 
 
-@pytest.fixture()
+@pytest.fixture
 def additional_path(
     monkeypatch: pytest.MonkeyPatch,
     check_necessary_commands: str | None,

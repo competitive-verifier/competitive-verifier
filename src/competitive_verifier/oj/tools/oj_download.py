@@ -134,7 +134,7 @@ def run(
 
     # prepare files to write
     def iterate_files_to_write(
-        sample: TestCase, *, i: int
+        sample: TestCase,
     ) -> Iterator[tuple[str, pathlib.Path, bytes]]:
         for ext in ["in", "out"]:
             data = getattr(sample, ext + "put_data")
@@ -146,7 +146,7 @@ def run(
             yield ext, path, data
 
     for i, sample in enumerate(samples):
-        for _, path, _ in iterate_files_to_write(sample, i=i):
+        for _, path, _ in iterate_files_to_write(sample):
             if path.exists():
                 logger.error(
                     "Failed to download since file already exists: %s", str(path)
@@ -161,7 +161,7 @@ def run(
 
     # write samples to files
     for i, sample in enumerate(samples):
-        for _, path, data in iterate_files_to_write(sample, i=i):
+        for _, path, data in iterate_files_to_write(sample):
             if not dry_run:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("wb") as fh:

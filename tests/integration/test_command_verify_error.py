@@ -123,6 +123,9 @@ class CompileFailureData(IntegrationData):
             },
         }
 
+    def expected_verify_json(self) -> dict[str, Any]:
+        raise NotImplementedError
+
 
 @pytest.fixture
 def compile_failure_integration_data(
