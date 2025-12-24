@@ -16,6 +16,7 @@ logger = getLogger(__name__)
 
 
 def run_impl(
+    *,
     include: list[str],
     exclude: list[str],
     config: pathlib.Path | OjVerifyConfig | None,

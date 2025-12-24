@@ -214,7 +214,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
     return d
 
 
-def main(dry_run: bool) -> bool:
+def main(*, dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
 
     languages = set[str]()

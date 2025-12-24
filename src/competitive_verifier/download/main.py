@@ -46,6 +46,7 @@ def enumerate_urls(file: VerificationFile) -> Iterable[str]:
 
 def run_impl(
     url_or_file: UrlOrVerificationFile | Iterable[UrlOrVerificationFile],
+    *,
     check: bool = False,
     group_log: bool = False,
 ) -> bool:

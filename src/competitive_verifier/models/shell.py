@@ -31,6 +31,7 @@ class ShellCommand(BaseModel):
     @overload
     def exec_command(
         self,
+        *,
         text: Literal[False] = False,
         check: bool = False,
         capture_output: bool = False,
@@ -40,6 +41,7 @@ class ShellCommand(BaseModel):
     @overload
     def exec_command(
         self,
+        *,
         text: Literal[True],
         check: bool = False,
         capture_output: bool = False,
@@ -48,6 +50,7 @@ class ShellCommand(BaseModel):
 
     def exec_command(
         self,
+        *,
         text: bool = False,
         check: bool = False,
         capture_output: bool = False,

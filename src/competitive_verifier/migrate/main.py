@@ -11,8 +11,8 @@ from . import migration
 logger = getLogger(__name__)
 
 
-def run_impl(dry_run: bool) -> bool:
-    return migration.main(dry_run)
+def run_impl(*, dry_run: bool) -> bool:
+    return migration.main(dry_run=dry_run)
 
 
 def run(args: argparse.Namespace) -> bool:
@@ -22,7 +22,7 @@ def run(args: argparse.Namespace) -> bool:
     configure_stderr_logging(default_level)
 
     logger.debug("arguments=%s", vars(args))
-    return run_impl(args.dry_run)
+    return run_impl(dry_run=args.dry_run)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

@@ -15,6 +15,7 @@ def add_verbose_argument(
 
 def add_verify_files_json_argument(
     parser: argparse.ArgumentParser,
+    *,
     required: bool = True,
 ) -> argparse.Action:
     default = os.getenv(COMPETITIVE_VERIFY_FILES_PATH)
