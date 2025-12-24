@@ -150,7 +150,8 @@ def test_markdown(
     if actual_front_matter:
         assert yaml.safe_load(actual_front_matter.model_dump_yml()) == front_matter
     else:
-        assert actual_front_matter is None and front_matter is None
+        assert actual_front_matter is None
+        assert front_matter is None
 
     with BytesIO() as fp:
         merge_front_matter(fp, front_matter=actual_front_matter, content=actual_content)

@@ -9,6 +9,8 @@ import colorama
 
 from .output_comparators import CompareMode, check_lines_match
 
+# ruff: noqa: S101
+
 logger = getLogger(__name__)
 
 
@@ -300,9 +302,9 @@ def _make_diff_between_line_and_line_by_comparing_word_by_word(
         l_b = r_b
         skip_whitespaces()
 
-    assert l_a == len(a) and l_b == len(
-        b
-    )  # The two strings have the same number of words, so this must be true.
+    if l_a != len(a) or l_b != len(b):
+        # The two strings have the same number of words, so this must be true.
+        raise ValueError("string length mismatch during comparing word by word")
     return tokens_a, tokens_b
 
 
@@ -581,8 +583,9 @@ def _reconstruct_entire_diff(
             stk.pop()
             i_b += 1
         else:
-            assert False
-    assert i_a == len(lines_a) and i_b == len(lines_b)
+            raise AssertionError
+    if i_a != len(lines_a) or i_b != len(lines_b):
+        raise ValueError("line count mismatch during reconstructing entire diff")
 
     return result
 

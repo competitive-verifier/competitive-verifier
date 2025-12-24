@@ -124,7 +124,8 @@ def test_oj_download(
     mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
     mock_library_checker.download_sample_cases.assert_not_called()
     mock_library_checker.download_system_cases.assert_not_called()
-    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()  # type: ignore
+    assert mock_library_checker.generate_test_cases_in_cloned_repository
+    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
 
     mock_yuki_coder = mock_problem[yukicoder.YukicoderProblem]
     mock_yuki_coder.download_sample_cases.assert_not_called()
