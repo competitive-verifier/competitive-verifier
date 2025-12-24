@@ -1,19 +1,13 @@
-import contextlib
 import json
-import os
 import pathlib
 import platform
-import shlex
-import signal
 import subprocess
-import sys
 import tempfile
 import time
-import traceback
 from collections.abc import Callable
 from logging import getLogger
-from subprocess import PIPE, Popen, TimeoutExpired
-from typing import Annotated, Any, BinaryIO
+from subprocess import Popen
+from typing import Annotated, Any
 
 import onlinejudge._implementation.format_utils as fmtutils
 from pydantic import BaseModel, Field
@@ -55,85 +49,6 @@ class OjTestArguments(BaseModel):
     silent: bool = False
     ignore_backup: bool = True
     deadline: float = float("inf")
-
-
-class OjExecInfo(BaseModel):
-    answer: bytes | None
-    elapsed: float
-    memory: float | None
-
-
-def oj_exec_command(
-    command: str | list[str],
-    *,
-    env: dict[str, str] | None,
-    stdin: BinaryIO | None = None,
-    input: bytes | None = None,  # noqa: A002
-    timeout: float | None = None,
-    gnu_time: str | None = None,
-) -> tuple[OjExecInfo, Popen[bytes]]:
-    if input is not None:
-        assert stdin is None
-        stdin = PIPE  # type: ignore
-    if gnu_time is not None:
-        context: Any = tempfile.NamedTemporaryFile(delete=True)
-    else:
-        context = contextlib.nullcontext()
-    with context as fh:
-        if isinstance(command, str):
-            command = shlex.split(command)
-            if gnu_time is not None:
-                command = [gnu_time, "-f", "%M", "-o", fh.name, "--", *command]
-        begin = time.perf_counter()
-
-        # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
-        start_new_session = gnu_time is not None and os.name == "posix"
-
-        try:
-            if env:
-                env = os.environ | env
-            proc = Popen(
-                command,
-                env=env,
-                stdin=stdin,
-                stdout=PIPE,
-                stderr=sys.stderr,
-                start_new_session=gnu_time is not None and os.name == "posix",
-            )
-        except FileNotFoundError:
-            logger.exception("No such file or directory: %s", command)
-            sys.exit(1)
-        except PermissionError:
-            logger.exception("Permission denied: %s", command)
-            sys.exit(1)
-        answer: bytes | None = None
-        try:
-            answer, _ = proc.communicate(input=input, timeout=timeout)
-        except TimeoutExpired:
-            pass
-        finally:
-            if start_new_session:
-                with contextlib.suppress(ProcessLookupError):
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-            else:
-                proc.terminate()
-
-        end = time.perf_counter()
-        memory: float | None = None
-        if gnu_time is not None:
-            with open(fh.name) as fh1:
-                reported = fh1.read()
-            logger.debug("GNU time says:\n%s", reported)
-            if reported.strip() and reported.splitlines()[-1].isdigit():
-                memory = int(reported.splitlines()[-1]) / 1000
-    return (
-        OjExecInfo(
-            answer=answer,
-            memory=memory,
-            elapsed=end - begin,
-        ),
-        proc,
-    )
 
 
 def display_result(
@@ -323,7 +238,7 @@ class SpecialJudge:
         logger.debug(
             "judge's output:\n%s",
             pretty_printers.make_pretty_large_file_content(
-                info["answer"] or b"", limit=40, head=20, tail=10
+                info.answer or b"", limit=40, head=20, tail=10
             ),
         )
         return proc.returncode == 0
@@ -420,7 +335,7 @@ def test_single_case(
 
     # run the binary
     with test_input_path.open("rb") as inf:
-        info, proc = oj_exec_command(
+        info, proc = utils.measure_command(
             args.command,
             env=args.env,
             stdin=inf,

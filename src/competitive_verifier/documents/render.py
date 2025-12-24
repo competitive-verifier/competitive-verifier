@@ -97,8 +97,8 @@ def _paths_to_render_links(
 
 
 class MultiTargetMarkdown(Markdown):
-    path: ForcePosixPath  # pyright: ignore
-    front_matter: FrontMatter  # pyright: ignore
+    path: ForcePosixPath  # pyright: ignore[reportGeneralTypeIssues]
+    front_matter: FrontMatter
     multi_documentation_of: list[pathlib.Path]
 
 

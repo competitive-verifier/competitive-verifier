@@ -16,9 +16,10 @@ class FrontMatter(BaseModel):
 
     display: DocumentOutputMode | None = None
     title: str | None = None
-    layout: (
-        Literal["toppage"] | Literal["document"] | Literal["multidoc"] | str | None
-    ) = None
+    layout: str | None = Field(
+        default=None,
+        examples=["toppage", "document", "multidoc"],
+    )
     documentation_of: str | Annotated[list[str], Field(min_length=1)] | None = None
     keep_single: bool | None = None
     data: PageRenderData | MultiCodePageData | IndexRenderData | None = None

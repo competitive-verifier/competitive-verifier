@@ -14,6 +14,7 @@ from collections.abc import Iterator
 from logging import getLogger
 from typing import Any, BinaryIO, IO, overload
 import colorama
+from pydantic import BaseModel, Field
 import requests
 from onlinejudge import utils
 
@@ -25,6 +26,18 @@ logger = getLogger(__name__)
 HINT = "HINT: "
 SUCCESS = "SUCCESS: "
 FAILURE = "FAILURE: "
+
+
+class OjExecInfo(BaseModel):
+    answer: bytes | None = Field(
+        description="The standard output of the executed command"
+    )
+    elapsed: float = Field(
+        description="The elapsed time of the executed command in seconds"
+    )
+    memory: float | None = Field(
+        description="The maximum memory usage of the executed command in megabytes"
+    )
 
 
 def get_user_agent() -> str:
@@ -51,13 +64,14 @@ def new_session_with_our_user_agent(
 
 
 def measure_command(
-    command_str: str,
+    command: list[str] | str,
     *,
+    env: dict[str, str] | None = None,
     stdin: BinaryIO | int | None = None,
     input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: str | None = None,
-) -> tuple[dict[str, Any], subprocess.Popen[bytes]]:
+) -> tuple[OjExecInfo, subprocess.Popen[bytes]]:
     if input is not None:
         if stdin is not None:
             raise ValueError(
@@ -65,7 +79,8 @@ def measure_command(
             )
         stdin = subprocess.PIPE
 
-    command = shlex.split(command_str)
+    if isinstance(command, str):
+        command = shlex.split(command)
     with (
         contextlib.nullcontext()
         if gnu_time is None
@@ -81,10 +96,13 @@ def measure_command(
         start_new_session = gnu_time is not None and os.name == "posix"
 
         try:
+            if env:
+                env = os.environ | env
             proc = subprocess.Popen(
                 command,
                 stdin=stdin,
                 stdout=subprocess.PIPE,
+                env=env,
                 stderr=sys.stderr,
                 start_new_session=start_new_session,
             )
@@ -113,12 +131,11 @@ def measure_command(
             logger.debug("GNU time says:\n%s", reported)
             if reported.strip() and reported.splitlines()[-1].isdigit():
                 memory = int(reported.splitlines()[-1]) / 1000
-        info = {
-            "answer": answer,
-            "elapsed": end - begin,  #  in second
-            "memory": memory,  # in megabyte
-        }
-        return info, proc
+        return OjExecInfo(
+            answer=answer,
+            elapsed=end - begin,
+            memory=memory,
+        ), proc
 
 
 def green(s: str) -> str:

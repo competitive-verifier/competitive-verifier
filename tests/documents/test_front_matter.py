@@ -139,7 +139,7 @@ def test_markdown(
     with BytesIO(content) as fp:
         md = Markdown.load(fp)
     expected = Markdown(
-        front_matter=front_matter,  # pyright:ignore
+        front_matter=front_matter,  # pyright: ignore[reportArgumentType]
         content=markdown_content,
     )
     assert md == expected
