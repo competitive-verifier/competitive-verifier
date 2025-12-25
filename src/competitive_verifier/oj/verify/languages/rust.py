@@ -22,6 +22,8 @@ from competitive_verifier.oj.verify.models import (
 from competitive_verifier.oj.verify.utils import exec_command
 from competitive_verifier.util import read_text_normalized
 
+# ruff: noqa: PLR2004
+
 logger = getLogger(__name__)
 
 _metadata_by_manifest_path: dict[pathlib.Path, dict[str, Any]] = {}

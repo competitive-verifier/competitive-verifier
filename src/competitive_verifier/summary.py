@@ -1,6 +1,8 @@
 # The file is inspired by Tyrrrz/GitHubActionsTestLogger
 # https://github.com/Tyrrrz/GitHubActionsTestLogger/blob/04fe7796a047dbd0e3cd6a46339b2a50f5125317/GitHubActionsTestLogger/TestSummary.cs
 
+# ruff: noqa: PLR2004
+
 import os
 import pathlib
 from collections import Counter

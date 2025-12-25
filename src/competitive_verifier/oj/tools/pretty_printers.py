@@ -621,13 +621,15 @@ def _add_lines_around_diff_lines(
             unused = []
             result.append(op)
             use = size
+        elif use:
+            result.append(op)
+            use -= 1
         else:
-            if use:
-                result.append(op)
-                use -= 1
-            else:
-                unused.append(op)
+            unused.append(op)
     return result
+
+
+DOT_GAP_SIZE = 2
 
 
 def _add_dots_between_gaps(
@@ -638,16 +640,19 @@ def _add_dots_between_gaps(
     # body
     for op in ops:
         if (
-            result
-            and result[-1].left_lineno is not None
-            and result[-1].right_lineno is not None
+            (
+                result
+                and result[-1].left_lineno is not None
+                and result[-1].right_lineno is not None
+            )
+            and op.left_lineno is not None
+            and op.right_lineno is not None
+            and (
+                op.left_lineno - result[-1].left_lineno >= DOT_GAP_SIZE
+                and op.right_lineno - result[-1].right_lineno >= DOT_GAP_SIZE
+            )
         ):
-            if op.left_lineno is not None and op.right_lineno is not None:
-                if (
-                    op.left_lineno - result[-1].left_lineno >= 2
-                    and op.right_lineno - result[-1].right_lineno >= 2
-                ):
-                    result.append(_MergedDiffOpDots)
+            result.append(_MergedDiffOpDots)
         result.append(op)
 
     # header and footer
