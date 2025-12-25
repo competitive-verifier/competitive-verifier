@@ -35,7 +35,7 @@ def _run_library_checker(
     dry_run: bool = False,
 ) -> bool:
     problem._generate_test_cases_in_cloned_repository()  # pyright: ignore[reportPrivateUsage]
-    path = problem._get_problem_directory_path()  # pyright: ignore[reportPrivateUsage]
+    path = problem.get_problem_directory_path()
     for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
         dst = directory / "test" / file.name
         if dst.exists():

@@ -76,7 +76,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
 
     def download_sample_cases(self, *, session: Optional[requests.Session] = None) -> List[TestCase]:
         self._generate_test_cases_in_cloned_repository()
-        path = self._get_problem_directory_path()
+        path = self.get_problem_directory_path()
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in') if file.name.startswith('example_')]
         files += [(file.name, file.read_bytes()) for file in path.glob('out/*.out') if file.name.startswith('example_')]
@@ -84,7 +84,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
 
     def download_system_cases(self, *, session: Optional[requests.Session] = None) -> List[TestCase]:
         self._generate_test_cases_in_cloned_repository()
-        path = self._get_problem_directory_path()
+        path = self.get_problem_directory_path()
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in')]
         files += [(file.name, file.read_bytes()) for file in path.glob('out/*.out')]
@@ -99,7 +99,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         if os.name == 'nt':
             logger.warning("generate.py may not work on Windows")
 
-        problem_spec = str(self._get_problem_directory_path() / 'info.toml')
+        problem_spec = str(self.get_problem_directory_path() / 'info.toml')
         command = [sys.executable, str(path / 'generate.py'), problem_spec]
         if compile_checker:
             command.append('--compile-checker')
@@ -110,7 +110,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
             logger.error("the generate.py failed: check https://github.com/yosupo06/library-checker-problems/issues")
             raise
 
-    def _get_problem_directory_path(self) -> pathlib.Path:
+    def get_problem_directory_path(self) -> pathlib.Path:
         path = LibraryCheckerService._get_cloned_repository_path()
         info_tomls = list(path.glob('**/{}/info.toml'.format(glob.escape(self.problem_id))))
         if len(info_tomls) != 1:
@@ -137,7 +137,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
 
     def download_checker_binary(self) -> pathlib.Path:
         self._generate_test_cases_in_cloned_repository(compile_checker=True)
-        return self._get_problem_directory_path() / "checker"
+        return self.get_problem_directory_path() / "checker"
 
 
 onlinejudge.dispatch.services += [LibraryCheckerService]
