@@ -124,10 +124,6 @@ _ERROR = "ERROR"
 _STANDALONE = "STANDALONE"
 
 
-# config.toml example:
-#     [[languages.cpp.environments]]
-#     CXX = "g++"
-#     CXXFALGS = ["-std=c++17", "-Wall"]
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig
 

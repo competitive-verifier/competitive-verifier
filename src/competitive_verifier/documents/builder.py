@@ -113,7 +113,6 @@ class DocumentBuilder(BaseModel):
         if exclude:
             sources -= git.ls_files(*exclude)
 
-        # yield source.with_suffix(source.suffix + ".md"), source.read_bytes()
         for job in RenderJob.enumerate_jobs(
             sources=sources,
             verifications=self.verifications,

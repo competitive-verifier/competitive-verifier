@@ -448,12 +448,6 @@ class RenderJob(ABC):
                 continue
             multis.append(job)
 
-            # if not md.front_matter.keep_single:
-            #     for of in md.multi_documentation_of:
-            #         pj = page_jobs.get(of)
-            #         if pj:
-            #             pj.render_link = job.to_render_link()
-
         jobs.extend(multis)
         jobs.append(
             IndexRenderJob(

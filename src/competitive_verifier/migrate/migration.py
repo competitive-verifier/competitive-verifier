@@ -232,7 +232,6 @@ def main(*, dry_run: bool) -> bool:
 
     logger.info("Complete migrations")
     print("Next steps")
-    # page = "http://localhost:4000"
     page = "https://competitive-verifier.github.io/competitive-verifier"
     print(f"  1. Open {page}/installer.html?{urllib.parse.urlencode(d)}")
     print("  2. Update your GitHub Actions.")
