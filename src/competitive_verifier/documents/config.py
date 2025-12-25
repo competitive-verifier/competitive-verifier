@@ -87,11 +87,8 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> ConfigYaml | None:
         try:
             user_config_yml = yaml.safe_load(env_config_yml)
             return ConfigYaml.model_validate(user_config_yml)
-        except Exception as e:
-            logger.exception(
-                "Failed to parse $COMPETITIVE_VERIFY_DOCS_CONFIG_YML: %s",
-                e,
-            )
+        except Exception:
+            logger.exception("Failed to parse $COMPETITIVE_VERIFY_DOCS_CONFIG_YML")
 
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
@@ -99,10 +96,8 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> ConfigYaml | None:
         try:
             user_config_yml = yaml.safe_load(user_config_yml_path.read_bytes())
             return ConfigYaml.model_validate(user_config_yml)
-        except Exception as e:
-            logger.exception(
-                "Failed to parse %s: %s", user_config_yml_path.as_posix(), e
-            )
+        except Exception:
+            logger.exception("Failed to parse %s", user_config_yml_path.as_posix())
     return None
 
 

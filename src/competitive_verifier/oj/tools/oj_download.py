@@ -49,8 +49,8 @@ def _run_library_checker(
     if checker_path and checker_path.exists() and not dry_run:
         try:
             shutil.move(checker_path, directory)
-        except Exception as e:
-            logger.exception("Failed to copy checker %s", e)
+        except Exception:
+            logger.exception("Failed to copy checker")
             shutil.rmtree(directory)
             return False
     return True
@@ -141,8 +141,7 @@ def run(
             data = getattr(sample, ext + "put_data")
             if data is None:
                 continue
-            basename = os.path.basename(sample.name)
-            filename = f"{basename}.{ext}"
+            filename = pathlib.Path(sample.name).with_suffix(f".{ext}").name
             path: pathlib.Path = directory / "test" / filename
             yield ext, path, data
 
@@ -195,7 +194,7 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
                 elif isinstance(e, NotLoggedInError) and is_atcoder(url):
                     logger.exception("Required: $DROPBOX_TOKEN environment variable")
                 else:
-                    logger.exception("Failed to download: %s", e)
+                    logger.exception("Failed to download")
                 return False
     else:
         logger.info("download:already exists: %s", url)

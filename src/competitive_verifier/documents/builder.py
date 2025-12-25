@@ -93,8 +93,8 @@ class DocumentBuilder(BaseModel):
                     self.destination_dir,
                     dirs_exist_ok=True,
                 )
-        except Exception as e:
-            logger.exception("Failed to copy user static files.", e)
+        except Exception:
+            logger.exception("Failed to copy user static files.")
 
     def write_code_docs(
         self,
