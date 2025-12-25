@@ -512,13 +512,17 @@ class PageRenderJob(RenderJob):
 
     def validate_front_matter(self):
         front_matter = self.markdown.front_matter
-        if front_matter and front_matter.documentation_of:
-            if not isinstance(
-                front_matter.documentation_of, str
-            ) or self.source_path != pathlib.Path(front_matter.documentation_of):
-                raise ValueError(
-                    "PageRenderJob.path must equal front_matter.documentation_of."
-                )
+        if (
+            front_matter
+            and front_matter.documentation_of
+            and (
+                not isinstance(front_matter.documentation_of, str)
+                or self.source_path != pathlib.Path(front_matter.documentation_of)
+            )
+        ):
+            raise ValueError(
+                "PageRenderJob.path must equal front_matter.documentation_of."
+            )
 
     def to_render_link(self, *, index: bool = False) -> RenderLink | None:
         if (

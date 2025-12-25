@@ -127,15 +127,14 @@ def display_result(
                     expected.encode(), limit=40, head=20, tail=10
                 ),
             )
-    if match_result is None:
-        if not silent:
-            print_input()
-            logger.info(
-                "output:\n%s",
-                pretty_printers.make_pretty_large_file_content(
-                    answer, limit=40, head=20, tail=10
-                ),
-            )
+    if match_result is None and not silent:
+        print_input()
+        logger.info(
+            "output:\n%s",
+            pretty_printers.make_pretty_large_file_content(
+                answer, limit=40, head=20, tail=10
+            ),
+        )
     if status == JudgeStatus.AC:
         logger.info(utils.SUCCESS + "" + utils.green("AC"))
 

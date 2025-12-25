@@ -517,11 +517,12 @@ def _make_diff_between_file_and_file(
             str(CompareMode.CRLF_INSENSITIVE_EXACT_MATCH),
         )
         compare_mode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
-    if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH:
-        if "\r" in a or "\r" in b:
-            logger.warning("carriage return '\\r' is removed from diff")
-            a = a.replace("\r\n", "\n")
-            b = b.replace("\r\n", "\n")
+    if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH and (
+        "\r" in a or "\r" in b
+    ):
+        logger.warning("carriage return '\\r' is removed from diff")
+        a = a.replace("\r\n", "\n")
+        b = b.replace("\r\n", "\n")
     return _make_diff_between_file_and_file_by_difflib(a, b)
 
 

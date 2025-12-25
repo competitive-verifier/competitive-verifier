@@ -327,9 +327,11 @@ class Bundler:
                 # nest の処理
                 if re.match(rb"\s*#\s*(if|ifdef|ifndef)\s.*", uncommented_line):
                     preprocess_if_nest += 1
-                if re.match(rb"\s*#\s*(else\s*|elif\s.*)", uncommented_line):
-                    if preprocess_if_nest == 0:
-                        raise BundleErrorAt(path, i + 1, "unmatched #else / #elif")
+                if (
+                    re.match(rb"\s*#\s*(else\s*|elif\s.*)", uncommented_line)
+                    and preprocess_if_nest == 0
+                ):
+                    raise BundleErrorAt(path, i + 1, "unmatched #else / #elif")
                 if re.match(rb"\s*#\s*endif\s*", uncommented_line):
                     preprocess_if_nest -= 1
                     if preprocess_if_nest < 0:
@@ -400,11 +402,10 @@ class Bundler:
                     include_guard_define_found
                     and preprocess_if_nest == 0
                     and not include_guard_endif_found
-                ):
-                    if re.match(rb"\s*#\s*endif\s*", uncommented_line):
-                        include_guard_endif_found = True
-                        self.result_lines.append(b"\n")
-                        continue
+                ) and re.match(rb"\s*#\s*endif\s*", uncommented_line):
+                    include_guard_endif_found = True
+                    self.result_lines.append(b"\n")
+                    continue
 
                 if uncommented_line and not re.match(rb"^\s*$", uncommented_line):
                     non_guard_line_found = True
