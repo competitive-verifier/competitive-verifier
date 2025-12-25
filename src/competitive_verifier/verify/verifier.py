@@ -100,10 +100,9 @@ class InputContainer(ABC):
             for k, v in self.verifications.filterd_files(self.prev_result.files)
             if not self.file_need_verification(k, v)
         }
-        verification_files = {
+        return {
             p: f for p, f in verification_files.items() if p not in not_updated_files
         }
-        return verification_files
 
     @cached_property
     def current_verification_files(self) -> dict[pathlib.Path, VerificationFile]:
@@ -119,7 +118,7 @@ class InputContainer(ABC):
         lst = [(p, f) for p, f in self.remaining_verification_files.items()]
         lst.sort(key=lambda tup: tup[0])
 
-        return {p: f for p, f in self.split_state.split(lst)}
+        return dict(self.split_state.split(lst))
 
 
 class BaseVerifier(InputContainer):

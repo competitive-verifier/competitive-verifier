@@ -21,8 +21,7 @@ def run_impl(
     *verify_files_json: pathlib.Path,
 ) -> VerificationInput:
     configure_stderr_logging()
-    result = merge(map(VerificationInput.parse_file_relative, verify_files_json))
-    return result
+    return merge(map(VerificationInput.parse_file_relative, verify_files_json))
 
 
 def run(args: argparse.Namespace) -> bool:

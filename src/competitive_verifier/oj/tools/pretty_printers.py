@@ -162,8 +162,7 @@ def _tokenize_large_file_content(
             candidate_char_based(text),
         ]
         tokens.extend(min(candidates, key=count_size))
-    tokens = _warn_if_empty(tokens)
-    return tokens
+    return _warn_if_empty(tokens)
 
 
 def _replace_whitespace(s: str) -> str:
@@ -235,8 +234,7 @@ def _tokenize_file_content_without_snipping(content: bytes) -> list[_PrettyToken
     tokens, text = _decode_with_recovery(content)
     for line in text.splitlines(keepends=True):
         tokens += _tokenize_line(line)
-    tokens = _warn_if_empty(tokens)
-    return tokens
+    return _warn_if_empty(tokens)
 
 
 def make_pretty_all(content: bytes) -> str:
