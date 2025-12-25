@@ -536,10 +536,11 @@ class PageRenderJob(RenderJob):
 
     @cached_property
     def front_matter(self) -> FrontMatter:
-        if self.markdown.front_matter:
-            front_matter = self.markdown.front_matter.model_copy()
-        else:
-            front_matter = FrontMatter()
+        front_matter = (
+            self.markdown.front_matter.model_copy()
+            if self.markdown.front_matter
+            else FrontMatter()
+        )
         front_matter.documentation_of = self.source_path.as_posix()
         if not front_matter.layout:
             front_matter.layout = "document"
@@ -764,10 +765,9 @@ class IndexRenderJob(RenderJob):
         for job in chain.from_iterable([self.page_jobs.values(), self.multicode_docs]):
             if job.display != DocumentOutputMode.visible:
                 continue
-            if job.is_verification:
-                categories = verification_categories
-            else:
-                categories = library_categories
+            categories = (
+                verification_categories if job.is_verification else library_categories
+            )
 
             directory = job.group_dir
             category = directory.as_posix()

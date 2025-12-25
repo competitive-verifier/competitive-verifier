@@ -60,10 +60,7 @@ class DocumentBuilder(BaseModel):
         logger.info("_config.yml: %s", config_yml)
 
         index_md_path = self.docs_dir / "index.md"
-        if index_md_path.exists():
-            index_md = Markdown.load_file(index_md_path)
-        else:
-            index_md = None
+        index_md = Markdown.load_file(index_md_path) if index_md_path.exists() else None
 
         # Write code documents.
         self.write_code_docs(

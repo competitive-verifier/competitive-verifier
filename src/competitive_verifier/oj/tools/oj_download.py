@@ -112,10 +112,11 @@ def run(
             if YUKICODER_TOKEN:
                 sess.headers["Authorization"] = "Bearer {}".format(YUKICODER_TOKEN)
         try:
-            if system:
-                samples = problem.download_system_cases(session=sess)
-            else:
-                samples = problem.download_sample_cases(session=sess)
+            samples = (
+                problem.download_system_cases(session=sess)
+                if system
+                else problem.download_sample_cases(session=sess)
+            )
         except requests.exceptions.RequestException:
             logger.exception(
                 "Failed to download samples from the server\n"
@@ -179,11 +180,7 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
     if not (test_directory).exists() or list((test_directory).iterdir()) == []:
         logger.info("download[Run]: %s", url)
 
-        if group_log:
-            cm = log.group(f"download[Run]: {url}")
-        else:
-            cm = nullcontext()
-        with cm:
+        with log.group(f"download[Run]: {url}") if group_log else nullcontext():
             directory.mkdir(parents=True, exist_ok=True)
 
             try:

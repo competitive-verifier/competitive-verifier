@@ -41,10 +41,12 @@ def get_checker_problem(url: str) -> LibraryCheckerProblem | None:
 def get_checker_path(
     url_or_problem: str | LibraryCheckerProblem | None,
 ) -> pathlib.Path | None:
-    if isinstance(url_or_problem, str):
-        checker_problem = get_checker_problem(url_or_problem)
-    else:
-        checker_problem = url_or_problem
+    checker_problem = (
+        get_checker_problem(url_or_problem)
+        if isinstance(url_or_problem, str)
+        else url_or_problem
+    )
     if checker_problem:
         problem_dir = checker_problem.get_problem_directory_path()
         return problem_dir / checker_exe_name
+    return None

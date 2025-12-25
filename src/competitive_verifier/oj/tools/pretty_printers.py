@@ -47,10 +47,7 @@ def _tokenize_str(s: str) -> list[_PrettyToken]:
         r = l + 1
         while r < len(s) and (s[l] in " \t") == (s[r] in " \t"):
             r += 1
-        if s[l] in " \t":
-            typ = _PrettyTokenType.WHITESPACE
-        else:
-            typ = _PrettyTokenType.BODY
+        typ = _PrettyTokenType.WHITESPACE if s[l] in " \t" else _PrettyTokenType.BODY
         tokens.append(_PrettyToken(typ, s[l:r]))
         l = r
     return tokens
@@ -245,10 +242,7 @@ def make_pretty_all(content: bytes) -> str:
 def _skip_whitespaces(i: int, s: str) -> tuple[int, list[_PrettyToken]]:
     tokens: list[_PrettyToken] = []
     while i < len(s) and s[i] in " \t\r\n":
-        if s[i] in " \t":
-            typ = _PrettyTokenType.WHITESPACE
-        else:
-            typ = _PrettyTokenType.NEWLINE
+        typ = _PrettyTokenType.WHITESPACE if s[i] in " \t" else _PrettyTokenType.NEWLINE
         tokens.append(_PrettyToken(typ, s[i]))
         i += 1
     return i, _optimize_tokens(tokens)

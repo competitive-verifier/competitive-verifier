@@ -27,10 +27,11 @@ class PythonLanguageEnvironment(LanguageEnvironment):
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
         python_path = os.getenv("PYTHONPATH")
-        if python_path:
-            python_path = basedir.resolve().as_posix() + os.pathsep + python_path
-        else:
-            python_path = basedir.resolve().as_posix()
+        python_path = (
+            basedir.resolve().as_posix() + os.pathsep + python_path
+            if python_path
+            else basedir.resolve().as_posix()
+        )
         return f"env PYTHONPATH={python_path} python {path}"
 
 
@@ -51,10 +52,10 @@ def _python_list_depending_files(
             [str(path)],
             True,
         )
-        if platform.uname().system == "Windows":
-            timeout = 5.0  # 1.0 sec causes timeout on CI using Windows
-        else:
-            timeout = 1.0
+
+        timeout = 5.0 if platform.uname().system == "Windows" else 1.0
+        # 1.0 sec causes timeout on CI using Windows
+
         res_graph = future.result(timeout=timeout)
     except concurrent.futures.TimeoutError as e:
         raise RuntimeError(
