@@ -1,73 +1,8 @@
-import os
-import pathlib
-import re
 import uuid
 from contextlib import contextmanager
 from typing import TextIO
 
-
-def _optional_path(strpath: str | None) -> pathlib.Path | None:
-    return pathlib.Path(strpath) if strpath else None
-
-
-class env:
-    @classmethod
-    def is_in_github_actions(cls) -> bool:
-        return os.getenv("GITHUB_ACTIONS") == "true"
-
-    @classmethod
-    def is_enable_debug(cls) -> bool:
-        return os.getenv("GITHUB_ACTIONS") == "1"
-
-    @classmethod
-    def get_ref_name(cls) -> str | None:
-        return os.getenv("GITHUB_REF_NAME")
-
-    @classmethod
-    def get_api_token(cls) -> str | None:
-        return os.getenv("GITHUB_TOKEN")
-
-    @classmethod
-    def get_event_name(cls) -> str | None:
-        return os.getenv("GITHUB_EVENT_NAME")
-
-    @classmethod
-    def get_api_url(cls) -> str | None:
-        return os.getenv("GITHUB_API_URL")
-
-    @classmethod
-    def get_repository(cls) -> str | None:
-        return os.getenv("GITHUB_REPOSITORY")
-
-    @classmethod
-    def get_workflow_name(cls) -> str | None:
-        return os.getenv("GITHUB_WORKFLOW")
-
-    @classmethod
-    def get_workflow_ref(cls) -> str | None:
-        return os.getenv("GITHUB_WORKFLOW_REF")
-
-    @classmethod
-    def get_workflow_filename(cls) -> str | None:
-        ref = cls.get_workflow_ref()
-        if not ref:
-            return None
-        return re.sub(r".*/([^/]+\.yml)@.*$", r"\1", ref)
-
-    @classmethod
-    def get_output_path(cls) -> pathlib.Path | None:
-        strpath = os.getenv("GITHUB_OUTPUT")
-        return _optional_path(strpath)
-
-    @classmethod
-    def get_workspace_path(cls) -> pathlib.Path | None:
-        strpath = os.getenv("GITHUB_WORKSPACE")
-        return _optional_path(strpath)
-
-    @classmethod
-    def get_step_summary_path(cls) -> pathlib.Path | None:
-        strpath = os.getenv("GITHUB_STEP_SUMMARY")
-        return _optional_path(strpath)
+from . import env
 
 
 def print_debug(

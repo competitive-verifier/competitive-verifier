@@ -98,8 +98,8 @@ def _paths_to_render_links(
 
 
 class MultiTargetMarkdown(Markdown):
-    path: ForcePosixPath  # pyright: ignore[reportGeneralTypeIssues]
-    front_matter: FrontMatter
+    path: ForcePosixPath  # pyright: ignore[reportIncompatibleVariableOverride, reportGeneralTypeIssues]
+    front_matter: FrontMatter  # pyright: ignore[reportIncompatibleVariableOverride]
     multi_documentation_of: list[pathlib.Path]
 
 

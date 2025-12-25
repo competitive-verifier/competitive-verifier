@@ -77,7 +77,7 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
             ),
             generate_test_cases_in_cloned_repository=mocker.patch.object(
                 library_checker.LibraryCheckerProblem,
-                "_generate_test_cases_in_cloned_repository",
+                "generate_test_cases_in_cloned_repository",
                 return_value=None,
             ),
         )

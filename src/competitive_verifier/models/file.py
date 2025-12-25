@@ -156,7 +156,7 @@ class VerificationInput(BaseModel):
         """Strongly Connected Component.
 
         Args:
-            reversed (bool): if True, libraries are ahead. otherwise, tests are ahead
+            reverse (bool): if True, libraries are ahead. otherwise, tests are ahead
         Returns:
             list[set[pathlib.Path]]: Strongly Connected Component result
         """

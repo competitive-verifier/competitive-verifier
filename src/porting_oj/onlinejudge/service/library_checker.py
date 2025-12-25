@@ -75,7 +75,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         self.problem_id = problem_id
 
     def download_sample_cases(self, *, session: Optional[requests.Session] = None) -> List[TestCase]:
-        self._generate_test_cases_in_cloned_repository()
+        self.generate_test_cases_in_cloned_repository()
         path = self.get_problem_directory_path()
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in') if file.name.startswith('example_')]
@@ -83,14 +83,14 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         return onlinejudge._implementation.testcase_zipper.extract_from_files(iter(files))
 
     def download_system_cases(self, *, session: Optional[requests.Session] = None) -> List[TestCase]:
-        self._generate_test_cases_in_cloned_repository()
+        self.generate_test_cases_in_cloned_repository()
         path = self.get_problem_directory_path()
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in')]
         files += [(file.name, file.read_bytes()) for file in path.glob('out/*.out')]
         return onlinejudge._implementation.testcase_zipper.extract_from_files(iter(files))
 
-    def _generate_test_cases_in_cloned_repository(self, compile_checker: bool = False) -> None:
+    def generate_test_cases_in_cloned_repository(self, compile_checker: bool = False) -> None:
         LibraryCheckerService._update_cloned_repository()
         path = LibraryCheckerService._get_cloned_repository_path()
 
@@ -136,7 +136,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         return None
 
     def download_checker_binary(self) -> pathlib.Path:
-        self._generate_test_cases_in_cloned_repository(compile_checker=True)
+        self.generate_test_cases_in_cloned_repository(compile_checker=True)
         return self.get_problem_directory_path() / "checker"
 
 
