@@ -4,6 +4,8 @@ import sys
 from collections.abc import Callable
 from logging import getLogger
 
+# ruff: noqa: PLC0415
+
 logger = getLogger(__name__)
 
 

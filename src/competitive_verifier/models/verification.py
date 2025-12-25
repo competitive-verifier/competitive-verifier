@@ -159,7 +159,7 @@ class ProblemVerification(BaseVerification):
         *,
         deadline: float = float("inf"),
     ) -> VerificationResult:
-        from competitive_verifier import oj
+        from competitive_verifier import oj  # noqa: PLC0415
 
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
