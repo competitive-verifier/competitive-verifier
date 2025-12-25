@@ -72,7 +72,10 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
 
 @functools.cache
 def _cplusplus_list_depending_files(
-    path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
+    path: pathlib.Path,
+    *,
+    CXX: pathlib.Path,  # noqa: N803
+    joined_CXXFLAGS: str,  # noqa: N803
 ) -> list[pathlib.Path]:
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
@@ -132,7 +135,7 @@ class CPlusPlusLanguage(Language):
         self.config = config or OjVerifyCPlusPlusConfig()
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
-        default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]
+        default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806
         if platform.system() == "Windows" or "CYGWIN" in platform.system():
             default_CXXFLAGS.append("-Wl,-stack,0x10000000")
         if platform.system() == "Darwin":
@@ -147,19 +150,18 @@ class CPlusPlusLanguage(Language):
             logger.warning(
                 "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
             )
-            default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])
+            default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])  # noqa: N806
 
         envs: list[CPlusPlusLanguageEnvironment] = []
         if self.config.environments:
             # configured: use specified CXX & CXXFLAGS
-            for env in self.config.environments:
-                CXX = env.CXX
-                envs.append(
-                    CPlusPlusLanguageEnvironment(
-                        CXX=pathlib.Path(CXX),
-                        CXXFLAGS=env.CXXFLAGS or default_CXXFLAGS,
-                    )
+            envs.extend(
+                CPlusPlusLanguageEnvironment(
+                    CXX=pathlib.Path(env.CXX),
+                    CXXFLAGS=env.CXXFLAGS or default_CXXFLAGS,
                 )
+                for env in self.config.environments
+            )
 
         elif "CXX" in os.environ:
             # old-style: 以前は $CXX を使ってたけど設定ファイルに移行したい
@@ -201,7 +203,7 @@ class CPlusPlusLanguage(Language):
             attributes[_NOT_SPECIAL_COMMENTS] = ""
             all_ignored = True
             for env in self._list_environments():
-                joined_CXXFLAGS = " ".join(
+                joined_CXXFLAGS = " ".join(  # noqa: N806
                     map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
                 )
                 macros = _cplusplus_list_defined_macros(
@@ -239,7 +241,7 @@ class CPlusPlusLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
         env = self._list_environments()[0]
-        joined_CXXFLAGS = " ".join(
+        joined_CXXFLAGS = " ".join(  # noqa: N806
             map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
         )
         return _cplusplus_list_depending_files(

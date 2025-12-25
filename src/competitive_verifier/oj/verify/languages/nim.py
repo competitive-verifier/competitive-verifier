@@ -16,6 +16,9 @@ from competitive_verifier.util import read_text_normalized
 
 logger = getLogger(__name__)
 
+DEFAULT_COMPILE_TO = "cpp"
+DEFAULT_NIM_FLAGS = ["-d:release", "--opt:speed"]
+
 
 class OjVerifyNimConfigEnv(BaseModel):
     compile_to: str | None
@@ -32,9 +35,9 @@ class NimLanguageEnvironment(LanguageEnvironment):
     compile_to: str
     nim_flags: list[str]
 
-    def __init__(self, *, compile_to: str, NIMFLAGS: list[str]):
+    def __init__(self, *, compile_to: str, nim_flags: list[str]):
         self.compile_to = compile_to
-        self.nim_flags = NIMFLAGS
+        self.nim_flags = nim_flags
 
     @property
     def name(self) -> str:
@@ -126,19 +129,17 @@ class NimLanguage(Language):
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[NimLanguageEnvironment]:
-        default_compile_to = "cpp"
-        default_NIMFLAGS = ["-d:release", "--opt:speed"]
         if self.config.environments:
             return [
                 NimLanguageEnvironment(
-                    compile_to=default_compile_to,
-                    NIMFLAGS=default_NIMFLAGS,
+                    compile_to=DEFAULT_COMPILE_TO,
+                    nim_flags=DEFAULT_NIM_FLAGS,
                 )
             ]
         return [
             NimLanguageEnvironment(
-                compile_to=env.compile_to or default_compile_to,
-                NIMFLAGS=env.NIMFLAGS or default_NIMFLAGS,
+                compile_to=env.compile_to or DEFAULT_COMPILE_TO,
+                nim_flags=env.NIMFLAGS or DEFAULT_NIM_FLAGS,
             )
             for env in self.config.environments
         ]

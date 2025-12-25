@@ -83,8 +83,8 @@ def run(
     # get samples from the server
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
         if isinstance(problem, AtCoderProblem) and system:
-            DROPBOX_TOKEN = os.environ.get("DROPBOX_TOKEN")
-            if not DROPBOX_TOKEN:
+            dropbox_token = os.environ.get("DROPBOX_TOKEN")
+            if not dropbox_token:
                 logger.info(
                     utils.HINT
                     + "You need to give the access token. Please do the following:\n%s",
@@ -106,11 +106,11 @@ def run(
                     ),
                 )
                 raise SampleParseError("--dropbox-token is not given")
-            sess.headers["Authorization"] = "Bearer {}".format(DROPBOX_TOKEN)
+            sess.headers["Authorization"] = f"Bearer {dropbox_token}"
         if isinstance(problem, YukicoderProblem):
-            YUKICODER_TOKEN = os.environ.get("YUKICODER_TOKEN")
-            if YUKICODER_TOKEN:
-                sess.headers["Authorization"] = "Bearer {}".format(YUKICODER_TOKEN)
+            yukicoder_token = os.environ.get("YUKICODER_TOKEN")
+            if yukicoder_token:
+                sess.headers["Authorization"] = f"Bearer {yukicoder_token}"
         try:
             samples = (
                 problem.download_system_cases(session=sess)
