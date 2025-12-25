@@ -17,7 +17,7 @@ from competitive_verifier.models import (
     JudgeStatus,
     ResultStatus,
     TestcaseResult,
-    VerifcationTimeoutException,
+    VerifcationTimeoutError,
     VerificationResult,
 )
 
@@ -421,7 +421,7 @@ def run(args: OjTestArguments) -> OjTestResult:
     history: list[OjTestcaseResult] = []
     for name, paths in sorted(tests.items()):
         if time.perf_counter() > args.deadline:
-            raise VerifcationTimeoutException
+            raise VerifcationTimeoutError
 
         history.append(
             OjTestcaseResult.model_validate(

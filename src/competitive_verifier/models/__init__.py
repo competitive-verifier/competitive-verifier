@@ -13,7 +13,7 @@ from .verification import (
     CommandVerification,
     ConstVerification,
     ProblemVerification,
-    VerifcationTimeoutException,
+    VerifcationTimeoutError,
     Verification,
     VerificationParams,
 )
@@ -35,7 +35,7 @@ __all__ = [
     "SortedPathList",
     "SortedPathSet",
     "TestcaseResult",
-    "VerifcationTimeoutException",
+    "VerifcationTimeoutError",
     "Verification",
     "VerificationFile",
     "VerificationInput",

@@ -12,7 +12,7 @@ from competitive_verifier.error import VerifierError
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
-    VerifcationTimeoutException,
+    VerifcationTimeoutError,
     Verification,
     VerificationFile,
     VerificationInput,
@@ -179,10 +179,10 @@ class BaseVerifier(InputContainer):
         verifications = list[VerificationResult]()
         try:
             if time.perf_counter() > deadline:
-                raise VerifcationTimeoutException  # noqa: TRY301
+                raise VerifcationTimeoutError  # noqa: TRY301
             if download and not run_download(f, check=True, group_log=False):
                 raise ValueError("Failed to download")  # noqa: TRY301
-        except VerifcationTimeoutException:
+        except VerifcationTimeoutError:
             verifications.append(
                 self.create_command_result(ResultStatus.SKIPPED, time.perf_counter())
             )
@@ -200,7 +200,7 @@ class BaseVerifier(InputContainer):
             prev_time = time.perf_counter()
             try:
                 if prev_time > deadline:
-                    raise VerifcationTimeoutException  # noqa: TRY301
+                    raise VerifcationTimeoutError  # noqa: TRY301
 
                 rs, error_message = self.run_verification(ve, deadline=deadline)
                 if error_message:
@@ -213,7 +213,7 @@ class BaseVerifier(InputContainer):
                 verifications.append(
                     self.create_command_result(rs, prev_time, name=ve.name)
                 )
-            except VerifcationTimeoutException:
+            except VerifcationTimeoutError:
                 logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
                 verifications.append(
                     self.create_command_result(
@@ -295,7 +295,7 @@ class BaseVerifier(InputContainer):
             return ResultStatus.FAILURE, "Failed to compile"
 
         if time.perf_counter() > deadline:
-            raise VerifcationTimeoutException
+            raise VerifcationTimeoutError
 
         rs = verification.run(self, deadline=deadline)
 

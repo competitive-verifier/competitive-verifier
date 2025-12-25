@@ -9,7 +9,7 @@ from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
 
 
-class VerifcationTimeoutException(Exception):
+class VerifcationTimeoutError(Exception):
     pass
 
 
