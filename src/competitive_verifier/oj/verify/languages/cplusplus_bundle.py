@@ -1,4 +1,5 @@
 # Python Version: 3.x
+import contextlib
 import functools
 import json
 import os
@@ -9,7 +10,6 @@ from logging import getLogger
 from typing import Any
 
 from competitive_verifier.oj.verify.utils import exec_command
-import contextlib
 
 logger = getLogger(__name__)
 

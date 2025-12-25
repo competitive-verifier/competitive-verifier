@@ -9,8 +9,6 @@ import colorama
 
 from .output_comparators import CompareMode, check_lines_match
 
-# ruff: noqa: S101
-
 logger = getLogger(__name__)
 
 
@@ -745,9 +743,8 @@ def _tokens_from_line_diff_ops(
             )
             tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "| "))
             tokens.extend(op.right)
-        else:
-            if left_exists:
-                tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "\n"))
+        elif left_exists:
+            tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "\n"))
     return tokens
 
 

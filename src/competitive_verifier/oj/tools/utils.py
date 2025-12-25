@@ -12,16 +12,15 @@ import tempfile
 import time
 from collections.abc import Iterator
 from logging import getLogger
-from typing import Any, BinaryIO, IO, overload
+from typing import BinaryIO
+
 import colorama
-from pydantic import BaseModel, Field
 import requests
 from onlinejudge import utils
-
+from pydantic import BaseModel, Field
 
 logger = getLogger(__name__)
 
-# ruff: noqa: G003
 # These strings can control logging output.
 HINT = "HINT: "
 SUCCESS = "SUCCESS: "

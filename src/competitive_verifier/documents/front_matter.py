@@ -1,5 +1,5 @@
 import pathlib
-from typing import Annotated, BinaryIO, Literal
+from typing import Annotated, BinaryIO
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field

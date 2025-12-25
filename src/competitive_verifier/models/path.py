@@ -28,7 +28,7 @@ SortedPathList = Annotated[
 RelativeDirectoryPath = Annotated[
     pathlib.Path,
     PlainSerializer(
-        lambda x: f"{x.as_posix()}/" if x != pathlib.Path(".") else "",
+        lambda x: f"{x.as_posix()}/" if x != pathlib.Path() else "",
         return_type=str,
         when_used="json",
     ),

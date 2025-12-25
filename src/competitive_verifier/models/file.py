@@ -165,7 +165,7 @@ class VerificationInput(BaseModel):
         for p, file in self.files.items():
             for e in file.dependencies:
                 t = vers_rev.get(e, -1)
-                if 0 <= t:
+                if t >= 0:
                     if reverse:
                         g.add_edge(t, vers_rev[p])
                     else:

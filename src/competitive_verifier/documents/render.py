@@ -265,9 +265,9 @@ class SourceCodeStat(BaseModel):
         included_files: AbstractSet[pathlib.Path],
     ) -> dict[pathlib.Path, "SourceCodeStat"]:
         d: dict[pathlib.Path, SourceCodeStat] = {}
-        statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
-            p: _VerificationStatusFlag.NOTHING for p in verifications.files.keys()
-        }
+        statuses: dict[pathlib.Path, _VerificationStatusFlag] = dict.fromkeys(
+            verifications.files.keys(), _VerificationStatusFlag.NOTHING
+        )
         verification_results_dict: dict[pathlib.Path, list[VerificationResult]] = {}
 
         for p, r in result.files.items():

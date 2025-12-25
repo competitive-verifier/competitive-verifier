@@ -223,13 +223,12 @@ class CPlusPlusLanguage(Language):
                         else:
                             assert attributes.get(key) == macros.get(key)
                     all_ignored = False
+                elif env.is_gcc():
+                    attributes[_IGNORE_IF_GCC] = ""
+                elif env.is_clang():
+                    attributes[_IGNORE_IF_CLANG] = ""
                 else:
-                    if env.is_gcc():
-                        attributes[_IGNORE_IF_GCC] = ""
-                    elif env.is_clang():
-                        attributes[_IGNORE_IF_CLANG] = ""
-                    else:
-                        attributes[_IGNORE] = ""
+                    attributes[_IGNORE] = ""
             if all_ignored:
                 attributes[_IGNORE] = ""
 
