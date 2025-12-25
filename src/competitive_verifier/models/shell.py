@@ -68,7 +68,7 @@ class ShellCommand(BaseModel):
 
     @classmethod
     def parse_command_like(cls, cmd: "ShellCommandLike") -> "ShellCommand":
-        if isinstance(cmd, str) or isinstance(cmd, list):
+        if isinstance(cmd, (str, list)):
             return ShellCommand(command=cmd)
         return cmd
 

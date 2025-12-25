@@ -146,7 +146,7 @@ def run(
             path: pathlib.Path = directory / "test" / filename
             yield ext, path, data
 
-    for i, sample in enumerate(samples):
+    for _i, sample in enumerate(samples):
         for _, path, _ in iterate_files_to_write(sample):
             if path.exists():
                 logger.error(
@@ -161,7 +161,7 @@ def run(
                 return False
 
     # write samples to files
-    for i, sample in enumerate(samples):
+    for _i, sample in enumerate(samples):
         for _, path, data in iterate_files_to_write(sample):
             if not dry_run:
                 path.parent.mkdir(parents=True, exist_ok=True)

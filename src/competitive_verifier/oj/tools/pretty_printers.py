@@ -334,7 +334,7 @@ def _make_diff_between_line_and_line_by_difflib(
             tokens_a.extend(_tokenize_str(a[l_a:r_a]))
             tokens_b.extend(_tokenize_str(b[l_b:r_b]))
         else:
-            assert False
+            raise AssertionError
 
     if len(a.rstrip("\n")) < len(a):
         tokens_a.append(

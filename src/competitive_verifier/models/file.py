@@ -10,11 +10,12 @@ from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
 from .path import ForcePosixPath, SortedPathSet
-from .result import FileResult
 from .verification import Verification
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
+
+    from .result import FileResult
 logger = getLogger(__name__)
 
 _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
@@ -202,7 +203,7 @@ class VerificationInput(BaseModel):
         verified_with: _DependencyEdges = {}
 
         # initialize
-        for path in self.files.keys():
+        for path in self.files:
             depends_on[path] = set()
             required_by[path] = set()
             verified_with[path] = set()

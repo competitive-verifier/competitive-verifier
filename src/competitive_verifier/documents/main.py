@@ -17,14 +17,13 @@ from competitive_verifier.arg import (
 from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
-from .. import config as conf
 from .builder import DocumentBuilder
 
 logger = getLogger(__name__)
 
 
 def get_default_docs_dir() -> pathlib.Path:
-    default_docs_dir = conf.get_config_dir() / "docs"
+    default_docs_dir = config.get_config_dir() / "docs"
     oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
     if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
         return oj_verify_docs_dir

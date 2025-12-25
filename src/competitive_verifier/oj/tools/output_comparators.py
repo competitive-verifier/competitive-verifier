@@ -67,10 +67,10 @@ class SplitComparator(OutputComparator):
         expected_words = expected.split()
         if len(actual_words) != len(expected_words):
             return False
-        for x, y in zip(actual_words, expected_words):
-            if not self.word_comparator(x, y):
-                return False
-        return True
+        return all(
+            self.word_comparator(x, y)
+            for x, y in zip(actual_words, expected_words, strict=False)
+        )
 
 
 class SplitLinesComparator(OutputComparator):
@@ -82,10 +82,10 @@ class SplitLinesComparator(OutputComparator):
         expected_lines = expected.rstrip(b"\n").split(b"\n")
         if len(actual_lines) != len(expected_lines):
             return False
-        for x, y in zip(actual_lines, expected_lines):
-            if not self.line_comparator(x, y):
-                return False
-        return True
+        return all(
+            self.line_comparator(x, y)
+            for x, y in zip(actual_lines, expected_lines, strict=False)
+        )
 
 
 class CRLFInsensitiveComparator(OutputComparator):
@@ -118,5 +118,5 @@ def check_lines_match(a: str, b: str, *, compare_mode: CompareMode) -> bool:
             "CompareMode.IGNORE_SPACES_AND_NEWLINES is not allowed for this function"
         )
     else:
-        assert False
+        raise AssertionError
     return comparator(a.encode(), b.encode())

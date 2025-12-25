@@ -16,12 +16,12 @@ class StatusIcon(str, enum.Enum):
 
     @property
     def is_success(self) -> bool:
-        return (
-            self == self.LIBRARY_ALL_AC
-            or self == self.LIBRARY_PARTIAL_AC
-            or self == self.LIBRARY_NO_TESTS
-            or self == self.TEST_ACCEPTED
-            or self == self.TEST_WAITING_JUDGE
+        return self in (
+            self.LIBRARY_ALL_AC,
+            self.LIBRARY_PARTIAL_AC,
+            self.LIBRARY_NO_TESTS,
+            self.TEST_ACCEPTED,
+            self.TEST_WAITING_JUDGE,
         )
 
     @property
@@ -30,12 +30,12 @@ class StatusIcon(str, enum.Enum):
 
     @property
     def is_library(self) -> bool:
-        return (
-            self == self.LIBRARY_ALL_AC
-            or self == self.LIBRARY_PARTIAL_AC
-            or self == self.LIBRARY_SOME_WA
-            or self == self.LIBRARY_ALL_WA
-            or self == self.LIBRARY_NO_TESTS
+        return self in (
+            self.LIBRARY_ALL_AC,
+            self.LIBRARY_PARTIAL_AC,
+            self.LIBRARY_SOME_WA,
+            self.LIBRARY_ALL_WA,
+            self.LIBRARY_NO_TESTS,
         )
 
     LIBRARY_ALL_AC = "LIBRARY_ALL_AC"

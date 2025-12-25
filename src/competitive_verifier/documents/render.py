@@ -69,6 +69,7 @@ def resolve_documentation_of(
         path = basedir / pathlib.Path(documentation_of)
         if path.exists():
             return path
+        return None
 
     path = inner()
     if path:
@@ -525,10 +526,8 @@ class PageRenderJob(RenderJob):
             )
 
     def to_render_link(self, *, index: bool = False) -> RenderLink | None:
-        if (
-            self.display == DocumentOutputMode.hidden
-            or self.display == DocumentOutputMode.never
-            or (index and self.display == DocumentOutputMode.no_index)
+        if self.display in (DocumentOutputMode.hidden, DocumentOutputMode.never) or (
+            index and self.display == DocumentOutputMode.no_index
         ):
             return None
         return RenderLink(

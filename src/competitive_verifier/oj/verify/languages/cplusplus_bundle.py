@@ -321,7 +321,9 @@ class Bundler:
             )  # trailing comment lines are removed
             assert len(lines) == len(uncommented_lines)
             self._line(1, path)
-            for i, (line, uncommented_line) in enumerate(zip(lines, uncommented_lines)):
+            for i, (line, uncommented_line) in enumerate(
+                zip(lines, uncommented_lines, strict=False)
+            ):
                 # nest の処理
                 if re.match(rb"\s*#\s*(if|ifdef|ifndef)\s.*", uncommented_line):
                     preprocess_if_nest += 1

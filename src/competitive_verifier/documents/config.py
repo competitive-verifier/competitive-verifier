@@ -103,6 +103,7 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> ConfigYaml | None:
             logger.exception(
                 "Failed to parse %s: %s", user_config_yml_path.as_posix(), e
             )
+    return None
 
 
 def load_config_yml(docs_dir: pathlib.Path) -> ConfigYaml:
