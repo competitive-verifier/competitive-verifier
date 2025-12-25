@@ -186,6 +186,7 @@ ignore = [
     "EM102",
     "PTH207",
     "TRY003",
+    "FBT003",
 
     # Remove on Python 3.12
     "ARG002",
