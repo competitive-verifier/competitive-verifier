@@ -75,9 +75,11 @@ def _python_list_depending_files(
         node = pathlib.Path(node_)
         deps = list(map(pathlib.Path, deps_))
         if node.resolve() == path.resolve():
-            for dep in deps:
-                if basedir.resolve() in dep.resolve().parents:
-                    res_deps.append(dep.resolve())
+            res_deps.extend(
+                dep.resolve()
+                for dep in deps
+                if basedir.resolve() in dep.resolve().parents
+            )
             break
     return list(set(res_deps))
 

@@ -586,10 +586,10 @@ class PageRenderJob(RenderJob):
         code = read_text_normalized(self.source_path)
 
         embedded = [EmbeddedCode(name="default", code=code)]
-        for s in self.stat.file_input.additonal_sources:
-            embedded.append(
-                EmbeddedCode(name=s.name, code=read_text_normalized(s.path))
-            )
+        embedded.extend(
+            EmbeddedCode(name=s.name, code=read_text_normalized(s.path))
+            for s in self.stat.file_input.additonal_sources
+        )
 
         return PageRenderData(
             path=self.source_path,

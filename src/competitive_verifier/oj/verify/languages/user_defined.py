@@ -142,8 +142,7 @@ class UserDefinedLanguage(Language):
                 .stdout
             )
         dependencies = [path]
-        for line in text.splitlines():
-            dependencies.append(pathlib.Path(line.decode()))
+        dependencies.extend(pathlib.Path(line.decode()) for line in text.splitlines())
         return dependencies
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:

@@ -210,12 +210,14 @@ def _list_dependencies_by_crate(
     # https://github.com/est31/cargo-udeps/pull/35
     depended_packages = [main_package]
     for dependency_namespace, values in dependencies.items():
-        for depended_package in values.values():
+        depended_packages.extend(
+            depended_package
+            for depended_package in values.values()
             if (
                 depended_package["id"] not in unused_packages[dependency_namespace]
                 and not depended_package["source"]
-            ):
-                depended_packages.append(depended_package)
+            )
+        )
 
     ret = common_result
 
