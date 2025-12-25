@@ -82,12 +82,12 @@ ShellCommandLike = Annotated[
             ShellCommand(
                 command=["command", "arg1", "arg2"],
                 env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/tmp"),
+                cwd=pathlib.Path("/work"),
             ),
             ShellCommand(
                 command="command",
                 env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/tmp"),
+                cwd=pathlib.Path("/work"),
             ),
         ]
     ),
