@@ -70,7 +70,7 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
         return not self.is_clang() and "g++" in self.cxx.name
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _cplusplus_list_depending_files(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> list[pathlib.Path]:
@@ -94,7 +94,7 @@ def _cplusplus_list_depending_files(
     return [pathlib.Path(path).resolve() for path in makefile_rule[1:]]
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _cplusplus_list_defined_macros(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> dict[str, str]:

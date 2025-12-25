@@ -164,7 +164,7 @@ TR1_LIBS = {
 }
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _check_compiler(compiler: str) -> str:
     # Executables named "g++" are not always g++, due to the fake g++ of macOS
     version = exec_command([compiler, "--version"]).stdout.decode()
@@ -175,7 +175,7 @@ def _check_compiler(compiler: str) -> str:
     return "unknown"  # default
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _get_uncommented_code(
     path: pathlib.Path, *, iquotes_options: tuple[str, ...], compiler: str
 ) -> bytes:

@@ -74,7 +74,7 @@ class _CargoUdeps(_ListDependenciesBackend):
         )
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _list_dependencies_by_crate(
     path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: str | None
 ) -> list[pathlib.Path]:

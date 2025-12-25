@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 
 
 # special comments like Vim and Python: see https://www.python.org/dev/peps/pep-0263/
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def list_special_comments(path: pathlib.Path) -> Mapping[str, str]:
     pattern = re.compile(
         r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"

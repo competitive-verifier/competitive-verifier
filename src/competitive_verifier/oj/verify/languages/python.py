@@ -34,7 +34,7 @@ class PythonLanguageEnvironment(LanguageEnvironment):
         return f"env PYTHONPATH={python_path} python {path}"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _python_list_depending_files(
     path: pathlib.Path, basedir: pathlib.Path
 ) -> list[pathlib.Path]:
