@@ -9,6 +9,7 @@ from logging import getLogger
 from typing import Any
 
 from competitive_verifier.oj.verify.utils import exec_command
+import contextlib
 
 logger = getLogger(__name__)
 
@@ -229,15 +230,13 @@ class BundleError(Exception):
     pass
 
 
-class BundleErrorAt(BundleError):
+class BundleErrorAt(BundleError):  # noqa: N818
     def __init__(
         self, path: pathlib.Path, line: int, message: str, *args: Any, **kwargs: Any
     ):
-        try:
+        with contextlib.suppress(ValueError):
             path = path.resolve().relative_to(pathlib.Path.cwd())
-        except ValueError:
-            pass
-        message = "{}: line {}: {}".format(str(path), line, message)
+        message = f"{path!s}: line {line}: {message}"
         super().__init__(message, *args, **kwargs)
 
 
@@ -268,10 +267,8 @@ class Bundler:
     def _line(self, line: int, path: pathlib.Path) -> None:
         while self.result_lines and self.result_lines[-1].startswith(b"#line "):
             self.result_lines.pop()
-        try:
+        with contextlib.suppress(ValueError):
             path = path.relative_to(pathlib.Path.cwd())
-        except ValueError:
-            pass
         # パス中の特殊文字を JSON style にエスケープしてから生成コードに記述
         # quick solution to this: https://github.com/online-judge-tools/verification-helper/issues/280
         self.result_lines.append(
