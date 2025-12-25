@@ -20,7 +20,7 @@ class OjVerifyJavaConfig(OjVerifyUserDefinedConfig):
 
     @field_validator("execute", "compile", mode="before")
     @classmethod
-    def name_must_contain_space(cls, v: Any, info: ValidationInfo) -> None:
+    def name_must_contain_space(cls, v: Any, info: ValidationInfo) -> None:  # noqa: ANN401
         if v is None:
             return
         raise ValueError(f'You cannot overwrite "{info.field_name}" for Java language')

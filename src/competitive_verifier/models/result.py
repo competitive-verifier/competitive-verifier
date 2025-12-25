@@ -92,7 +92,7 @@ class VerificationResult(BaseModel):
 
     @field_validator("status", mode="before")
     @classmethod
-    def verification_list(cls, v: Any) -> Any:
+    def verification_list(cls, v: Any) -> Any:  # noqa: ANN401
         if isinstance(v, str):
             return v.lower()
         return v
