@@ -207,12 +207,15 @@ def set_output(name: str, value: str) -> bool:
     path = env.get_output_path()
     if path and path.exists():
         delimiter = "outputdelimiter_" + str(uuid.uuid4())
-        with open(path, mode="a", encoding="utf-8") as fp:
+        with path.open(mode="a", encoding="utf-8") as fp:
             fp.write(name)
             fp.write("<<")
-            fp.write(delimiter + "\n")
-            fp.write(value + "\n")
-            fp.write(delimiter + "\n")
+            fp.write(delimiter)
+            fp.write("\n")
+            fp.write(value)
+            fp.write("\n")
+            fp.write(delimiter)
+            fp.write("\n")
         return True
     return False
 

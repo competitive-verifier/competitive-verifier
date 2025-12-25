@@ -54,7 +54,7 @@ def run_impl(
     if write_summary:
         gh_summary_path = github.env.get_step_summary_path()
         if gh_summary_path and gh_summary_path.parent.exists():
-            with open(gh_summary_path, "w", encoding="utf-8") as fp:
+            with gh_summary_path.open("w", encoding="utf-8") as fp:
                 summary.write_summary(fp, result)
         else:
             logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")

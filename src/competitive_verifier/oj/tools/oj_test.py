@@ -188,7 +188,7 @@ def check_gnu_time(gnu_time: str | None = None) -> bool:
             subprocess.check_call(
                 [gnu_time, "-f", "%M KB", "-o", fh.name, "--", "true"]
             )
-            with open(fh.name) as fh1:
+            with pathlib.Path(fh.name).open() as fh1:
                 data = fh1.read()
             int(utils.remove_suffix(data.rstrip().splitlines()[-1], " KB"))
             return True
@@ -215,7 +215,7 @@ class SpecialJudge:
     ) -> bool:
         with tempfile.TemporaryDirectory() as tempdir:
             actual_output_path = pathlib.Path(tempdir) / "actual.out"
-            with open(actual_output_path, "wb") as fh:
+            with actual_output_path.open("wb") as fh:
                 fh.write(actual_output)
 
             # if you use shlex.quote, it fails on Windows. why?
