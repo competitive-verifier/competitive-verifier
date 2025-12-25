@@ -121,7 +121,7 @@ def _tokenize_large_file_content(
         tokens.append(
             _PrettyToken(
                 _PrettyTokenType.HINT,
-                "... ({} lines) ...\n".format(len(lines[head:-tail])),
+                f"... ({len(lines[head:-tail])} lines) ...\n",
             )
         )
         for line in lines[-tail:]:
@@ -137,9 +137,7 @@ def _tokenize_large_file_content(
         tokens: list[_PrettyToken] = []
         for line in text[:l].splitlines(keepends=True):
             tokens += _tokenize_line(line)
-        tokens.append(
-            _PrettyToken(_PrettyTokenType.HINT, "... ({} chars) ...".format(r - l))
-        )
+        tokens.append(_PrettyToken(_PrettyTokenType.HINT, f"... ({r - l} chars) ..."))
         for line in text[r:].splitlines(keepends=True):
             tokens += _tokenize_line(line)
         return tokens
@@ -767,9 +765,7 @@ def _summary_token_of_diff_ops(ops: list[_MergedDiffOp]) -> list[_PrettyToken]:
     return [
         _PrettyToken(
             _PrettyTokenType.HINT,
-            "(also {} lines are deleted and {} lines are added...)".format(
-                removed, added
-            ),
+            f"(also {removed} lines are deleted and {added} lines are added...)",
         )
     ]
 

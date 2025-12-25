@@ -271,9 +271,7 @@ class Bundler:
             path = path.relative_to(pathlib.Path.cwd())
         # パス中の特殊文字を JSON style にエスケープしてから生成コードに記述
         # quick solution to this: https://github.com/online-judge-tools/verification-helper/issues/280
-        self.result_lines.append(
-            "#line {} {}\n".format(line, json.dumps(str(path))).encode()
-        )
+        self.result_lines.append(f"#line {line} {json.dumps(str(path))}\n".encode())
 
     # path を解決する
     # see: https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
