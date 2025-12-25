@@ -1,6 +1,7 @@
 # Python Version: 3.x
 import functools
 import pathlib
+from collections.abc import Generator
 from logging import getLogger
 
 from pydantic import BaseModel, Field
@@ -60,33 +61,41 @@ class NimLanguageEnvironment(LanguageEnvironment):
         return str(tempdir / "a.out")
 
 
-@functools.lru_cache(maxsize=None)
+def _parse_path(lines: list[str]) -> Generator[str, None, None]:
+    for line in lines:
+        l = line.strip()
+        if l.startswith("include"):
+            yield from l[7:].strip().split(",")
+        elif l.startswith("import"):
+            l = l[6:]
+            i = l.find(" except ")
+            if i >= 0:
+                l = l[:i]
+            yield from l.split(",")
+        elif l.startswith("from"):
+            i = l.find(" import ")
+            if i >= 0:
+                yield l[4 : i - 1]
+
+
+def _unquote_path(p: str) -> pathlib.Path:
+    p = p.strip()
+    if p.startswith('"'):
+        p = p[1 : len(p) - 1]
+    else:
+        p += ".nim"
+    return pathlib.Path(p)
+
+
+@functools.cache
 def _list_direct_dependencies(
-    path: pathlib.Path, *, basedir: pathlib.Path
+    path: pathlib.Path,
+    *,
+    basedir: pathlib.Path,
 ) -> list[pathlib.Path]:
-    items: list[str] = []
-    for line in read_text_normalized(basedir / path).splitlines():
-        line = line.strip()
-        if line.startswith("include"):
-            items += line[7:].strip().split(",")
-        elif line.startswith("import"):
-            line = line[6:]
-            i = line.find(" except ")
-            if i >= 0:
-                line = line[:i]
-            items += line.split(",")
-        elif line.startswith("from"):
-            i = line.find(" import ")
-            if i >= 0:
-                items += line[4 : i - 1]
     dependencies = [path.resolve()]
-    for item in items:
-        item = item.strip()
-        if item.startswith('"'):
-            item = item[1 : len(item) - 1]
-        else:
-            item += ".nim"
-        item_ = pathlib.Path(item)
+    for item in _parse_path(read_text_normalized(basedir / path).splitlines()):
+        item_ = _unquote_path(item)
         if item_.exists():
             dependencies.append(item_)
     return list(set(dependencies))

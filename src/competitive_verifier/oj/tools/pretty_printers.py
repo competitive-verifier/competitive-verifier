@@ -1,9 +1,9 @@
 import difflib
 import enum
 import shutil
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from logging import getLogger
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 
 import colorama
 
@@ -429,6 +429,60 @@ def _tokenize_line_with_highlight(line: str, *, is_right: bool) -> list[_PrettyT
     return tokens
 
 
+def _enumerate_ops(
+    tag: Literal["replace", "delete", "insert", "equal"],
+    l_a: int,
+    r_a: int,
+    l_b: int,
+    r_b: int,
+    *,
+    lines_a: list[str],
+    lines_b: list[str],
+) -> Generator[_LineDiffOp, None, None]:
+    if tag == "replace":
+        while l_a < r_a and l_a < l_b:
+            tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            yield _LineDiffOp(l_a, tokens, None)
+            l_a += 1
+        while l_b < r_b and l_b < l_a:
+            tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_b, None, tokens)
+            l_b += 1
+        while l_a < r_a and l_b < r_b:
+            assert l_a == l_b
+            tokens_a = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            tokens_b = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_a, tokens_a, tokens_b)
+            l_a += 1
+            l_b += 1
+        while l_a < r_a:
+            tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            yield _LineDiffOp(l_a, tokens, None)
+            l_a += 1
+        while l_b < r_b:
+            tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_b, None, tokens)
+            l_b += 1
+
+    elif tag == "delete":
+        assert l_b == r_b
+        for i in range(l_a, r_a):
+            tokens = _tokenize_line_with_highlight(lines_a[i], is_right=False)
+            yield _LineDiffOp(i, tokens, None)
+
+    elif tag == "insert":
+        assert l_a == r_a
+        for i in range(l_b, r_b):
+            tokens = _tokenize_line_with_highlight(lines_b[i], is_right=True)
+            yield _LineDiffOp(i, None, tokens)
+
+    elif tag == "equal":
+        pass
+
+    else:
+        raise AssertionError(f"Unknown tag: {tag}")
+
+
 # This function works as --compare-mode=exact-match.
 def _make_diff_between_file_and_file_by_difflib(a: str, b: str) -> list[_LineDiffOp]:
     lines_a = a.splitlines(keepends=True)
@@ -439,48 +493,17 @@ def _make_diff_between_file_and_file_by_difflib(a: str, b: str) -> list[_LineDif
     matcher = difflib.SequenceMatcher()
     matcher.set_seqs(lines_a, lines_b)
     for tag, l_a, r_a, l_b, r_b in matcher.get_opcodes():
-        if tag == "replace":
-            while l_a < r_a and l_a < l_b:
-                tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                ops.append(_LineDiffOp(l_a, tokens, None))
-                l_a += 1
-            while l_b < r_b and l_b < l_a:
-                tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_b, None, tokens))
-                l_b += 1
-            while l_a < r_a and l_b < r_b:
-                assert l_a == l_b
-                tokens_a = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                tokens_b = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_a, tokens_a, tokens_b))
-                l_a += 1
-                l_b += 1
-            while l_a < r_a:
-                tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                ops.append(_LineDiffOp(l_a, tokens, None))
-                l_a += 1
-            while l_b < r_b:
-                tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_b, None, tokens))
-                l_b += 1
-
-        elif tag == "delete":
-            assert l_b == r_b
-            for i in range(l_a, r_a):
-                tokens = _tokenize_line_with_highlight(lines_a[i], is_right=False)
-                ops.append(_LineDiffOp(i, tokens, None))
-
-        elif tag == "insert":
-            assert l_a == r_a
-            for i in range(l_b, r_b):
-                tokens = _tokenize_line_with_highlight(lines_b[i], is_right=True)
-                ops.append(_LineDiffOp(i, None, tokens))
-
-        elif tag == "equal":
-            pass
-
-        else:
-            assert False
+        ops.extend(
+            _enumerate_ops(
+                tag,
+                l_a,
+                r_a,
+                l_b,
+                r_b,
+                lines_a=lines_a,
+                lines_b=lines_b,
+            )
+        )
 
     return ops
 

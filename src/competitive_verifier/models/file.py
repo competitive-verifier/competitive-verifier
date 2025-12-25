@@ -138,15 +138,15 @@ class VerificationInput(BaseModel):
 
     @staticmethod
     def parse_file_relative(path: "StrPath", **kwargs: Any) -> "VerificationInput":
-        with pathlib.Path(path).open("rb") as p:
-            impl = VerificationInput.model_validate_json(p.read(), **kwargs)
+        with pathlib.Path(path).open("rb") as rp:
+            impl = VerificationInput.model_validate_json(rp.read(), **kwargs)
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
-            p = to_relative(p)
-            if not p:
+            rp = to_relative(p)
+            if not rp:
                 continue
             f.dependencies = {d for d in map(to_relative, f.dependencies) if d}
-            new_files[p] = f
+            new_files[rp] = f
 
         impl.files = new_files
         return impl

@@ -5,8 +5,10 @@ import os
 import pathlib
 import re
 import sys
+from collections.abc import Generator
 from logging import getLogger
-from typing import Dict, Generator, List, Match, Optional, Set
+from typing import Dict,  List, Match, Optional, Set
+
 
 logger = getLogger(__name__)
 

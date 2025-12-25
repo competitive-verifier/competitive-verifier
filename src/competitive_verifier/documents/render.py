@@ -284,8 +284,8 @@ class SourceCodeStat(BaseModel):
             statuses[p] = st
             verification_results_dict[p] = r.verifications
 
-        for group in verifications.scc():
-            group &= included_files
+        for group0 in verifications.scc():
+            group = group0 & included_files
             if not group:
                 continue
 
