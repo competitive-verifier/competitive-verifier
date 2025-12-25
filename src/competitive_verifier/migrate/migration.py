@@ -159,23 +159,17 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
 
 
 def _lang_type_to_str(lang: Language | None) -> str | None:
-    if isinstance(lang, CPlusPlusLanguage):
-        return "cpp"
-    if isinstance(lang, GoLanguage):
-        return "go"
-    if isinstance(lang, HaskellLanguage):
-        return "haskel"
-    if isinstance(lang, JavaLanguage):
-        return "java"
-    if isinstance(lang, NimLanguage):
-        return "nim"
-    if isinstance(lang, PythonLanguage):
-        return "python"
-    if isinstance(lang, RubyLanguage):
-        return "ruby"
-    if isinstance(lang, RustLanguage):
-        return "rust"
-    return None
+    d: dict[type, str] = {
+        CPlusPlusLanguage: "cpp",
+        GoLanguage: "go",
+        HaskellLanguage: "haskel",
+        JavaLanguage: "java",
+        NimLanguage: "nim",
+        PythonLanguage: "python",
+        RubyLanguage: "ruby",
+        RustLanguage: "rust",
+    }
+    return d.get(type(lang))
 
 
 def _get_action_query(languages: set[str]) -> dict[str, str]:

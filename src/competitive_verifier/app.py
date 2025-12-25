@@ -91,26 +91,20 @@ def select_runner(
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
 
-    # Use sys.stdout for result
-    if subcommand == "merge-result":
-        return merge_result.run
-    if subcommand == "merge-input":
-        return merge_input.run
-    if subcommand == "oj-resolve":
-        return oj_resolve.run
-    if subcommand == "check":
-        return check.run
-    if subcommand == "migrate":
-        return migrate.run
+    d = {
+        # Use sys.stdout for result
+        "merge-result": merge_result.run,
+        "merge-input": merge_input.run,
+        "oj-resolve": oj_resolve.run,
+        "check": check.run,
+        "migrate": migrate.run,
+        # Use sys.stdout for logging
+        "download": download.run,
+        "verify": verify.run,
+        "docs": docs.run,
+    }
 
-    # Use sys.stdout for logging
-    if subcommand == "download":
-        return download.run
-    if subcommand == "verify":
-        return verify.run
-    if subcommand == "docs":
-        return docs.run
-    return None
+    return d.get(subcommand)
 
 
 def main(args: list[str] | None = None):

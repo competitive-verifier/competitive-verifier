@@ -12,7 +12,7 @@ from onlinejudge import dispatch
 from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
-from onlinejudge.type import NotLoggedInError, SampleParseError, TestCase
+from onlinejudge.type import NotLoggedInError, Problem, SampleParseError, TestCase
 
 from competitive_verifier import log
 
@@ -56,31 +56,7 @@ def _run_library_checker(
     return True
 
 
-def run(
-    *,
-    url: str,
-    directory: pathlib.Path,
-    cookie: pathlib.Path,
-    system: bool = True,
-    dry_run: bool = False,
-) -> bool:
-    # prepare values
-    problem = dispatch.problem_from_url(url)
-    if problem is None:
-        if dispatch.contest_from_url(url) is not None:
-            logger.warning(
-                "You specified a URL for a contest instead of a problem. If you want to download for all problems of a contest at once, please try to use `oj-prepare` command of https://github.com/online-judge-tools/template-generator"
-            )
-        logger.error('The URL "%s" is not supported', url)
-        return False
-
-    if isinstance(problem, LibraryCheckerProblem):
-        return _run_library_checker(
-            problem=problem,
-            directory=directory,
-        )
-
-    # get samples from the server
+def _run_services(problem: Problem, *, system: bool, cookie: pathlib.Path):
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
         if isinstance(problem, AtCoderProblem) and system:
             dropbox_token = os.environ.get("DROPBOX_TOKEN")
@@ -112,7 +88,7 @@ def run(
             if yukicoder_token:
                 sess.headers["Authorization"] = f"Bearer {yukicoder_token}"
         try:
-            samples = (
+            return (
                 problem.download_system_cases(session=sess)
                 if system
                 else problem.download_sample_cases(session=sess)
@@ -124,29 +100,67 @@ def run(
                 + "You may need to login to use `$ oj download ...` during contest. Please run: $ oj login %s",
                 problem.get_service().get_url(),
             )
-            return False
+            return None
         except SampleParseError:
             logger.exception("Failed to parse samples from the server")
-            return False
+            return None
 
-    if not samples:
-        logger.error("Sample not found")
+
+# prepare files to write
+def _iterate_files_to_write(
+    sample: TestCase,
+    *,
+    directory: pathlib.Path,
+) -> Iterator[tuple[str, pathlib.Path, bytes]]:
+    for ext in ["in", "out"]:
+        data = getattr(sample, ext + "put_data")
+        if data is None:
+            continue
+        filename = pathlib.Path(sample.name).with_suffix(f".{ext}").name
+        path: pathlib.Path = directory / "test" / filename
+        yield ext, path, data
+
+
+def run(
+    *,
+    url: str,
+    directory: pathlib.Path,
+    cookie: pathlib.Path,
+    system: bool = True,
+    dry_run: bool = False,
+) -> bool:
+    # prepare values
+    problem = dispatch.problem_from_url(url)
+    if problem is None:
+        if dispatch.contest_from_url(url) is not None:
+            logger.warning(
+                "You specified a URL for a contest instead of a problem."
+                " If you want to download for all problems of a contest at once,"
+                " please try to use `oj-prepare` command of https://github.com/online-judge-tools/template-generator"
+            )
+        logger.error('The URL "%s" is not supported', url)
         return False
 
-    # prepare files to write
-    def iterate_files_to_write(
-        sample: TestCase,
-    ) -> Iterator[tuple[str, pathlib.Path, bytes]]:
-        for ext in ["in", "out"]:
-            data = getattr(sample, ext + "put_data")
-            if data is None:
-                continue
-            filename = pathlib.Path(sample.name).with_suffix(f".{ext}").name
-            path: pathlib.Path = directory / "test" / filename
-            yield ext, path, data
+    if isinstance(problem, LibraryCheckerProblem):
+        return _run_library_checker(
+            problem=problem,
+            directory=directory,
+        )
+
+    # get samples from the server
+    samples = _run_services(
+        problem,
+        system=system,
+        cookie=cookie,
+    )
+
+    if not samples:
+        if samples is not None:
+            logger.error("Sample not found")
+        return False
 
     for _i, sample in enumerate(samples):
-        for _, path, _ in iterate_files_to_write(sample):
+        for _, path, _ in _iterate_files_to_write(sample, directory=directory):
             if path.exists():
                 logger.error(
                     "Failed to download since file already exists: %s", str(path)
@@ -161,7 +175,7 @@ def run(
 
     # write samples to files
     for _i, sample in enumerate(samples):
-        for _, path, data in iterate_files_to_write(sample):
+        for _, path, data in _iterate_files_to_write(sample, directory=directory):
             if not dry_run:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("wb") as fh:

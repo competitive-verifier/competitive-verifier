@@ -3,11 +3,43 @@
 import re
 import shlex
 import sys
+from collections.abc import Generator, Iterator
 
 cmd_meta: str = r"([\"\^\&\|\<\>\(\)\%\!])"
 cmd_meta_or_space: str = r"[\s\"\^\&\|\<\>\(\)\%\!]"
 
 cmd_meta_inside_quotes: str = r"([\"\%\!])"
+
+
+def _parts(s: str, itr: Iterator[re.Match[str]]) -> Generator[str, None, None]:
+    yield '"'
+    for m in itr:
+        _, end = m.span()
+        slashes, quotes, onlyslashes, text = m.groups()
+        if quotes:
+            yield slashes
+            yield slashes
+            yield r"\"" * len(quotes)
+        elif onlyslashes:
+            if end == len(s):
+                yield onlyslashes
+                yield onlyslashes
+            else:
+                yield onlyslashes
+        else:
+            yield text
+    yield '"'
+
+
+def _quote_with_meta(s: str) -> str:
+    if not re.search(cmd_meta_inside_quotes, s):
+        m = re.search(r"\\+$", s)
+        if m:
+            return '"' + s + m.group() + '"'
+        return f'"{s}"'
+    if not re.search(r"[\s\"]", s):
+        return re.sub(cmd_meta, r"^\1", s)
+    return re.sub(cmd_meta, r"^\1", _msquote(s, for_cmd=False))
 
 
 def _msquote(s: str, *, for_cmd: bool = True) -> str:
@@ -31,36 +63,10 @@ def _msquote(s: str, *, for_cmd: bool = True) -> str:
     if not re.search(cmd_meta_or_space, s):
         return s
     if for_cmd and re.search(cmd_meta, s):
-        if not re.search(cmd_meta_inside_quotes, s):
-            m = re.search(r"\\+$", s)
-            if m:
-                return '"' + s + m.group() + '"'
-            return '"' + s + '"'
-        if not re.search(r"[\s\"]", s):
-            return re.sub(cmd_meta, r"^\1", s)
-        return re.sub(cmd_meta, r"^\1", _msquote(s, for_cmd=False))
+        _quote_with_meta(s)
     i = re.finditer(r"(\\*)(\"+)|(\\+)|([^\\\"]+)", s)
 
-    def parts():
-        yield '"'
-        for m in i:
-            _, end = m.span()
-            slashes, quotes, onlyslashes, text = m.groups()
-            if quotes:
-                yield slashes
-                yield slashes
-                yield r"\"" * len(quotes)
-            elif onlyslashes:
-                if end == len(s):
-                    yield onlyslashes
-                    yield onlyslashes
-                else:
-                    yield onlyslashes
-            else:
-                yield text
-        yield '"'
-
-    return "".join(parts())
+    return "".join(_parts(s, i))
 
 
 quote = _msquote if sys.platform == "win32" else shlex.quote
