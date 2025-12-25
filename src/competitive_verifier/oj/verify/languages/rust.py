@@ -276,7 +276,7 @@ def _related_source_files(
         )
         _cargo_checked_workspaces.add(pathlib.Path(metadata["workspace_root"]))
 
-    ret: dict[pathlib.Path, frozenset[pathlib.Path]] = dict()
+    ret: dict[pathlib.Path, frozenset[pathlib.Path]] = {}
 
     targets_in_workspace = itertools.chain.from_iterable(
         p["targets"]
