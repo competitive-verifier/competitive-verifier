@@ -19,6 +19,8 @@ from competitive_verifier.oj.verify.models import (
 )
 from competitive_verifier.oj.verify.utils import exec_command
 
+# ruff: noqa: N803
+
 logger = getLogger(__name__)
 
 
@@ -74,8 +76,8 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
 def _cplusplus_list_depending_files(
     path: pathlib.Path,
     *,
-    CXX: pathlib.Path,  # noqa: N803
-    joined_CXXFLAGS: str,  # noqa: N803
+    CXX: pathlib.Path,
+    joined_CXXFLAGS: str,
 ) -> list[pathlib.Path]:
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
