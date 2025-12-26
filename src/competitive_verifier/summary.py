@@ -171,7 +171,9 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         write_table_file_result(past_results)
 
     if counter.get(FAILURE):
-        assert file_results
+        if not file_results:
+            raise ValueError("file_results is empty but there are failures")
+
         first_failure = True
         for p, fr in file_results:
             cases = [
