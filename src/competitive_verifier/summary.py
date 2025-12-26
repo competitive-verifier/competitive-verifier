@@ -55,7 +55,6 @@ class TableWriter:
         self.write_table_line(*header)
 
     def write_table_line(self, *cells: str) -> None:
-        assert len(cells) == self.size
         fp = self.fp
         for c in cells:
             fp.write("|")

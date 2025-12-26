@@ -293,7 +293,6 @@ class SourceCodeStat(BaseModel):
             group_status = _VerificationStatusFlag.NOTHING
 
             for path in group:
-                assert path in statuses
                 group_status |= statuses[path]
 
             for path in group:
@@ -312,7 +311,8 @@ class SourceCodeStat(BaseModel):
 
                 verification_results = verification_results_dict.get(path)
 
-                assert not is_verification or verification_results is not None
+                if is_verification and verification_results is None:
+                    raise ValueError("needs verification_results")
 
                 flag_status = group_status | (
                     _VerificationStatusFlag.IS_TEST

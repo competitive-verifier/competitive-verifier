@@ -9,6 +9,8 @@ import colorama
 
 from .output_comparators import CompareMode, check_lines_match
 
+# ruff: noqa: S101
+
 logger = getLogger(__name__)
 
 
