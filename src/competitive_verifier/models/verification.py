@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Annotated, Literal, Optional, Protocol, Union
+from typing import Annotated, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -9,39 +9,35 @@ from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
 
 
-class VerifcationTimeoutException(Exception):
+class VerifcationTimeoutError(Exception):
     pass
 
 
 class VerificationParams(Protocol):
-    default_tle: Optional[float]
-    default_mle: Optional[float]
+    default_tle: float | None
+    default_mle: float | None
 
 
 class BaseVerification(BaseModel, ABC):
-    name: Optional[str] = None
+    name: str | None = None
 
     @abstractmethod
     def run(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
-    ) -> Union[ResultStatus, VerificationResult]:
-        ...
+    ) -> ResultStatus | VerificationResult: ...
 
     @abstractmethod
     def run_compile_command(
         self,
-        params: Optional[VerificationParams] = None,
-    ) -> bool:
-        ...
+        params: VerificationParams | None = None,
+    ) -> bool: ...
 
     @property
-    def is_skippable(self) -> bool:
-        """
-        If verification cost is small, it is skippable.
-        """
+    def is_lightweight(self) -> bool:
+        """The verification is lightweight."""
         return False
 
 
@@ -52,12 +48,12 @@ class ConstVerification(BaseVerification):
     """
 
     @property
-    def is_skippable(self) -> bool:
+    def is_lightweight(self) -> bool:
         return True
 
     def run(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
     ) -> ResultStatus:
@@ -65,7 +61,7 @@ class ConstVerification(BaseVerification):
 
     def run_compile_command(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
     ) -> bool:
         return True
 
@@ -76,14 +72,14 @@ class CommandVerification(BaseVerification):
     command: ShellCommandLike = Field(description="The shell command for verification.")
     """The shell command for verification.
     """
-    compile: Optional[ShellCommandLike] = Field(
+    compile: ShellCommandLike | None = Field(
         default=None,
         description="The shell command for compile.",
     )
     """The shell command for compile.
     """
 
-    tempdir: Optional[ForcePosixPath] = Field(
+    tempdir: ForcePosixPath | None = Field(
         default=None,
         description="The temporary directory for running verification.",
     )
@@ -92,7 +88,7 @@ class CommandVerification(BaseVerification):
 
     def run(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
     ) -> ResultStatus:
@@ -105,7 +101,7 @@ class CommandVerification(BaseVerification):
 
     def run_compile_command(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
     ) -> bool:
         if self.compile:
             if self.tempdir:
@@ -121,7 +117,7 @@ class ProblemVerification(BaseVerification):
     command: ShellCommandLike = Field(description="The shell command for verification.")
     """The shell command for verification.
     """
-    compile: Optional[ShellCommandLike] = Field(
+    compile: ShellCommandLike | None = Field(
         default=None,
         description="The shell command for compile.",
     )
@@ -135,21 +131,21 @@ class ProblemVerification(BaseVerification):
     problem: URL of problem
     """
 
-    error: Optional[float] = Field(
+    error: float | None = Field(
         default=None,
         examples=[1e-9],
         description="The absolute or relative error to be considered as correct.",
     )
     """The absolute or relative error to be considered as correct.
     """
-    tle: Optional[float] = Field(
+    tle: float | None = Field(
         default=None,
         examples=[10],
         description="The TLE time in seconds.",
     )
     """The TLE time in seconds.
     """
-    mle: Optional[float] = Field(
+    mle: float | None = Field(
         default=None,
         examples=[64],
         description="The MLE memory size in megabytes.",
@@ -159,11 +155,11 @@ class ProblemVerification(BaseVerification):
 
     def run(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
     ) -> VerificationResult:
-        import competitive_verifier.oj as oj
+        from competitive_verifier import oj  # noqa: PLC0415
 
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
@@ -183,7 +179,7 @@ class ProblemVerification(BaseVerification):
 
     def run_compile_command(
         self,
-        params: Optional[VerificationParams] = None,
+        params: VerificationParams | None = None,
     ) -> bool:
         if self.compile:
             c = ShellCommand.parse_command_like(self.compile)
@@ -192,10 +188,6 @@ class ProblemVerification(BaseVerification):
 
 
 Verification = Annotated[
-    Union[
-        ConstVerification,
-        CommandVerification,
-        ProblemVerification,
-    ],
+    ConstVerification | CommandVerification | ProblemVerification,
     Field(discriminator="type"),
 ]

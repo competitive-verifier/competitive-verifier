@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -35,7 +35,7 @@ class TestcaseResult(BaseModel):
     """Number of seconds elapsed for the test case.
     """
 
-    memory: Optional[float] = Field(
+    memory: float | None = Field(
         default=None,
         description="The size of memory used in megabytes.",
     )
@@ -44,7 +44,7 @@ class TestcaseResult(BaseModel):
 
 
 class VerificationResult(BaseModel):
-    verification_name: Optional[str] = Field(
+    verification_name: str | None = Field(
         default=None,
         description="The name of verification.",
     )
@@ -62,21 +62,21 @@ class VerificationResult(BaseModel):
     """Total number of seconds elapsed for all test cases.
     """
 
-    slowest: Optional[float] = Field(
+    slowest: float | None = Field(
         default=None,
         description="Maximum number of seconds elapsed for each test cases.",
     )
     """Maximum number of seconds elapsed for each test cases.
     """
 
-    heaviest: Optional[float] = Field(
+    heaviest: float | None = Field(
         default=None,
         description="Maximum size of memory used in megabytes.",
     )
     """Maximum size of memory used in megabytes.
     """
 
-    testcases: Optional[list[TestcaseResult]] = Field(
+    testcases: list[TestcaseResult] | None = Field(
         default=None,
         description="The results of each test case.",
     )
@@ -92,7 +92,7 @@ class VerificationResult(BaseModel):
 
     @field_validator("status", mode="before")
     @classmethod
-    def verification_list(cls, v: Any) -> Any:
+    def verification_list(cls, v: Any) -> Any:  # noqa: ANN401
         if isinstance(v, str):
             return v.lower()
         return v
@@ -124,11 +124,10 @@ class FileResult(BaseModel):
             return True
         return any(r.need_reverifying(base_time) for r in self.verifications)
 
-    def is_success(self, allow_skip: bool) -> bool:
+    def is_success(self, *, allow_skip: bool) -> bool:
         if allow_skip:
             return all(r.status != ResultStatus.FAILURE for r in self.verifications)
-        else:
-            return all(r.status == ResultStatus.SUCCESS for r in self.verifications)
+        return all(r.status == ResultStatus.SUCCESS for r in self.verifications)
 
 
 class VerifyCommandResult(BaseModel):
@@ -153,10 +152,10 @@ class VerifyCommandResult(BaseModel):
             impl = cls.model_validate_json(p.read(), **kwargs)
         new_files: dict[pathlib.Path, FileResult] = {}
         for p, f in impl.files.items():
-            p = to_relative(p)
-            if not p:
+            rp = to_relative(p)
+            if not rp:
                 continue
-            new_files[p] = f
+            new_files[rp] = f
 
         impl.files = new_files
         return impl
@@ -172,5 +171,5 @@ class VerifyCommandResult(BaseModel):
             files=d,
         )
 
-    def is_success(self, allow_skip: bool = True) -> bool:
-        return all(f.is_success(allow_skip) for f in self.files.values())
+    def is_success(self, *, allow_skip: bool = True) -> bool:
+        return all(f.is_success(allow_skip=allow_skip) for f in self.files.values())

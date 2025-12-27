@@ -2,7 +2,7 @@ import enum
 import pathlib
 from functools import cached_property
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from pydantic import BaseModel, Field
 
@@ -10,11 +10,12 @@ from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
 from .path import ForcePosixPath, SortedPathSet
-from .result import FileResult
 from .verification import Verification
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
+
+    from .result import FileResult
 logger = getLogger(__name__)
 
 _DependencyEdges = dict[pathlib.Path, set[pathlib.Path]]
@@ -66,7 +67,7 @@ class VerificationFile(BaseModel):
     )
     """The list of dependent files as paths relative to root.
     """
-    verification: Union[list[Verification], Verification, None] = Field(
+    verification: list[Verification] | Verification | None = Field(
         default_factory=list[Verification]
     )
     document_attributes: dict[str, Any] = Field(
@@ -91,17 +92,16 @@ class VerificationFile(BaseModel):
     """
 
     @property
-    def title(self) -> Optional[str]:
-        """The document title specified as a attributes"""
+    def title(self) -> str | None:
+        """The document title specified as a attributes."""
         title = self.document_attributes.get("TITLE")
         if not title:
             title = self.document_attributes.get("document_title")
         return title
 
     @property
-    def display(self) -> Optional[DocumentOutputMode]:
-        """The document output mode as a attributes"""
-
+    def display(self) -> DocumentOutputMode | None:
+        """The document output mode as a attributes."""
         d = self.document_attributes.get("DISPLAY")
         if not isinstance(d, str):
             return None
@@ -114,17 +114,17 @@ class VerificationFile(BaseModel):
     def verification_list(self) -> list[Verification]:
         if self.verification is None:
             return []
-        elif isinstance(self.verification, list):
+        if isinstance(self.verification, list):
             return self.verification
         return [self.verification]
 
     def is_verification(self) -> bool:
         return bool(self.verification)
 
-    def is_skippable_verification(self) -> bool:
+    def is_lightweight_verification(self) -> bool:
         """If the effort required for verification is small, treat it as skippable."""
         return self.is_verification() and all(
-            v.is_skippable for v in self.verification_list
+            v.is_lightweight for v in self.verification_list
         )
 
 
@@ -139,45 +139,44 @@ class VerificationInput(BaseModel):
 
     @staticmethod
     def parse_file_relative(path: "StrPath", **kwargs: Any) -> "VerificationInput":
-        with pathlib.Path(path).open("rb") as p:
-            impl = VerificationInput.model_validate_json(p.read(), **kwargs)
+        with pathlib.Path(path).open("rb") as rp:
+            impl = VerificationInput.model_validate_json(rp.read(), **kwargs)
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
-            p = to_relative(p)
-            if not p:
+            rp = to_relative(p)
+            if not rp:
                 continue
-            f.dependencies = set(d for d in map(to_relative, f.dependencies) if d)
-            new_files[p] = f
+            f.dependencies = {d for d in map(to_relative, f.dependencies) if d}
+            new_files[rp] = f
 
         impl.files = new_files
         return impl
 
-    def scc(self, *, reversed: bool = False) -> list[set[pathlib.Path]]:
-        """Strongly Connected Component
+    def scc(self, *, reverse: bool = False) -> list[set[pathlib.Path]]:
+        """Strongly Connected Component.
 
         Args:
-            reversed bool: if True, libraries are ahead. otherwise, tests are ahead.
-
+            reverse (bool): if True, libraries are ahead. otherwise, tests are ahead
         Returns:
             list[set[pathlib.Path]]: Strongly Connected Component result
         """
-        paths = list(p for p in self.files.keys())
+        paths = list(self.files.keys())
         vers_rev = {v: i for i, v in enumerate(paths)}
         g = SccGraph(len(paths))
         for p, file in self.files.items():
             for e in file.dependencies:
                 t = vers_rev.get(e, -1)
-                if 0 <= t:
-                    if reversed:
+                if t >= 0:
+                    if reverse:
                         g.add_edge(t, vers_rev[p])
                     else:
                         g.add_edge(vers_rev[p], t)
-        return [set(paths[ix] for ix in ls) for ls in g.scc()]
+        return [{paths[ix] for ix in ls} for ls in g.scc()]
 
     @cached_property
     def transitive_depends_on(self) -> _DependencyEdges:
         d: _DependencyEdges = {}
-        g = self.scc(reversed=True)
+        g = self.scc(reverse=True)
         for group in g:
             result = group.copy()
             for p in group:
@@ -195,7 +194,8 @@ class VerificationInput(BaseModel):
     def _dependency_graph(
         self,
     ) -> _DependencyGraph:
-        """
+        """Resolve dependency graphs.
+
         Returns: Dependency graphs
         """
         depends_on: _DependencyEdges = {}
@@ -203,7 +203,7 @@ class VerificationInput(BaseModel):
         verified_with: _DependencyEdges = {}
 
         # initialize
-        for path in self.files.keys():
+        for path in self.files:
             depends_on[path] = set()
             required_by[path] = set()
             verified_with[path] = set()

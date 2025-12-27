@@ -40,7 +40,7 @@ logger = getLogger(__name__)
 
 class OjVerifyLanguageConfigDict(BaseModel):
     model_config = ConfigDict(extra="allow")
-    __pydantic_extra__: dict[str, OjVerifyUserDefinedConfig] = Field(  # pyright: ignore
+    __pydantic_extra__: dict[str, OjVerifyUserDefinedConfig] = Field(  # pyright: ignore[reportIncompatibleVariableOverride]
         default_factory=dict[str, OjVerifyUserDefinedConfig]
     )
 
@@ -54,8 +54,8 @@ class OjVerifyLanguageConfigDict(BaseModel):
 
 
 class OjVerifyConfig(BaseModel):
-    languages: OjVerifyLanguageConfigDict = Field(  # pyright: ignore
-        default_factory=lambda: OjVerifyLanguageConfigDict()  # pyright: ignore
+    languages: OjVerifyLanguageConfigDict = Field(
+        default_factory=OjVerifyLanguageConfigDict,
     )
 
     @classmethod

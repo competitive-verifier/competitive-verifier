@@ -10,88 +10,36 @@ from logging import (
     LogRecord,
     basicConfig,
 )
-from typing import Optional, TextIO
+from typing import TextIO
 
 import colorlog
 from colorama import Fore, Style
 
-import competitive_verifier.github as github
-
-# _orig_stderr = sys.stderr
-
-
-# def override_stderr() -> None:
-#     sys.stderr = sys.stdout
-
-
-# def restore_stderr() -> None:
-#     sys.stderr = _orig_stderr
+from competitive_verifier import github
 
 
 class GitHubActionsHandler(Handler):
-    def __init__(self, *, stream: Optional[TextIO] = None) -> None:
+    def __init__(self, *, stream: TextIO | None = None) -> None:
         super().__init__(DEBUG)
         self.stream = stream
 
     def emit(self, record: LogRecord) -> None:
         message = record.getMessage()
-        # file = record.pathname
-        # line = record.levelno
 
         if record.levelno == DEBUG:
             github.print_debug(message, stream=self.stream)
         elif record.levelno == WARNING:
             github.print_warning(message, stream=self.stream)
-        elif record.levelno == ERROR or record.levelno == CRITICAL:
+        elif record.levelno in (ERROR, CRITICAL):
             github.print_error(message, stream=self.stream)
 
 
-# class ExceptGitHubActionsFilter(Filter):
-#     def __init__(self) -> None:
-#         super().__init__()
-
-#     def filter(self, record: LogRecord) -> bool:
-#         return (
-#             record.levelno != WARNING
-#             and record.levelno != ERROR
-#             and record.levelno != CRITICAL
-#         )
-
-
-def configure_logging(
-    default_level: Optional[int] = None,
-    in_github_actions: Optional[bool] = None,
-) -> None:
-    if in_github_actions is None:
-        in_github_actions = github.env.is_in_github_actions()
-
-    # override_stderr()
-
-    colorlog_handler = colorlog.StreamHandler()
-    colorlog_handler.setLevel(default_level or WARNING)
-    colorlog_handler.setFormatter(
-        colorlog.ColoredFormatter(
-            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(message)s"
-        )
-    )
-    handlers: list[Handler] = [colorlog_handler]
-
-    if in_github_actions:
-        handlers.append(GitHubActionsHandler())
-        # colorlog_handler.addFilter(ExceptGitHubActionsFilter())
-
-    basicConfig(
-        level=NOTSET,
-        handlers=handlers,
-    )
-
-
-def configure_stderr_logging(default_level: Optional[int] = None) -> None:
+def configure_stderr_logging(default_level: int | None = None) -> None:
     colorlog_handler = colorlog.StreamHandler(sys.stderr)
     colorlog_handler.setLevel(default_level or WARNING)
     colorlog_handler.setFormatter(
         colorlog.ColoredFormatter(
-            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(lineno)d: %(message)s"
+            "%(log_color)s%(levelname)s%(reset)s:%(name)s:%(lineno)d:%(message)s"
         )
     )
     handlers: list[Handler] = [colorlog_handler]
@@ -102,7 +50,7 @@ def configure_stderr_logging(default_level: Optional[int] = None) -> None:
     )
 
 
-def _console_group(category: str, *, title: str, file: Optional[TextIO]):
+def _console_group(category: str, *, title: str, file: TextIO | None):
     print(
         (
             f"<------------- {Fore.CYAN}{category}:"
@@ -114,7 +62,7 @@ def _console_group(category: str, *, title: str, file: Optional[TextIO]):
 
 
 @contextmanager
-def group(title: str, *, stream: Optional[TextIO] = None):
+def group(title: str, *, stream: TextIO | None = None):
     if stream is None:
         stream = sys.stderr
     if github.env.is_in_github_actions():

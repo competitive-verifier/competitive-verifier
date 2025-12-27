@@ -4,14 +4,13 @@ import shutil
 import subprocess
 import sys
 import tarfile
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 import requests
 
-import competitive_verifier.config as config
-from competitive_verifier.models import FileResult
+from competitive_verifier import config
+from competitive_verifier.models import FileResult, VerificationResult
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
-from competitive_verifier.models import VerificationResult
 from competitive_verifier.verify import verifier
 from tests.integration.utils import md5_number
 
@@ -28,9 +27,9 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: Union[bool, Literal["none", "warn", "error"]] = True,
+        warnings: bool | Literal["none", "warn", "error"] = True,
     ) -> str:
-        return self.model_copy()._dump_super(
+        return self.model_copy()._dump_super(  # noqa: SLF001
             indent=indent,
             include=include,
             exclude=exclude,
@@ -53,7 +52,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_defaults: bool = False,
         exclude_none: bool = False,
         round_trip: bool = False,
-        warnings: Union[bool, Literal["none", "warn", "error"]] = True,
+        warnings: bool | Literal["none", "warn", "error"] = True,
     ) -> str:
         def rewriteVerifyCommandResult(result: verifier.VerifyCommandResult):
             result.total_seconds = len(result.files) * 1234.56 + 78
@@ -113,11 +112,11 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         )
 
 
-_library_checker_problems_tar_gz: Optional[bytes] = None
+_library_checker_problems_tar_gz: bytes | None = None
 
 
 def update_cloned_repository() -> None:
-    global _library_checker_problems_tar_gz
+    global _library_checker_problems_tar_gz  # noqa: PLW0603
 
     gz_path = config.get_cache_dir() / "library-checker-problems.tar.gz"
     gz_path = gz_path.resolve()
@@ -129,7 +128,8 @@ def update_cloned_repository() -> None:
             shutil.unpack_archive(gz_path, config.get_cache_dir())
         else:
             res = requests.get(
-                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.tar.gz"
+                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.tar.gz",
+                timeout=180,  # 3 minutes
             )
             content = res.content
 
@@ -155,15 +155,12 @@ def update_cloned_repository() -> None:
             )
 
 
-def _match_aplusb(t: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
+def _match_aplusb(t: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    if t.path.startswith("library-checker-problems/sample/aplusb"):
+        return t
     if t.isdir():
         if "library-checker-problems/sample/aplusb".startswith(t.path):
             return t
-        elif t.path.startswith("library-checker-problems/sample/aplusb"):
-            return t
-    elif t.isfile():
-        if t.path.startswith("library-checker-problems/sample/aplusb"):
-            return t
-        elif t.path.endswith(".py"):
-            return t
+    elif t.isfile() and t.path.endswith(".py"):
+        return t
     return None

@@ -145,7 +145,7 @@ test_oj_resolve_config_load_params: dict[str, tuple[str, dict[str, Any]]] = {
 
 
 @pytest.mark.parametrize(
-    "toml, expected",
+    ("toml", "expected"),
     test_oj_resolve_config_load_params.values(),
     ids=test_oj_resolve_config_load_params.keys(),
 )
@@ -274,7 +274,7 @@ test_oj_resolve_config_load_error_params: dict[
 
 
 @pytest.mark.parametrize(
-    "toml, expected_error",
+    ("toml", "expected_error"),
     test_oj_resolve_config_load_error_params.values(),
     ids=test_oj_resolve_config_load_error_params.keys(),
 )

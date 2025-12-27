@@ -1,8 +1,8 @@
 # Python Version: 3.x
 import functools
 import pathlib
+from collections.abc import Generator
 from logging import getLogger
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -12,14 +12,17 @@ from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import read_text_normalized
+from competitive_verifier.util import read_text_normalized
 
 logger = getLogger(__name__)
 
+DEFAULT_COMPILE_TO = "cpp"
+DEFAULT_NIM_FLAGS = ["-d:release", "--opt:speed"]
+
 
 class OjVerifyNimConfigEnv(BaseModel):
-    compile_to: Optional[str]
-    NIMFLAGS: Optional[list[str]]
+    compile_to: str | None
+    NIMFLAGS: list[str] | None
 
 
 class OjVerifyNimConfig(OjVerifyLanguageConfig):
@@ -32,9 +35,9 @@ class NimLanguageEnvironment(LanguageEnvironment):
     compile_to: str
     nim_flags: list[str]
 
-    def __init__(self, *, compile_to: str, NIMFLAGS: list[str]):
+    def __init__(self, *, compile_to: str, nim_flags: list[str]):
         self.compile_to = compile_to
-        self.nim_flags = NIMFLAGS
+        self.nim_flags = nim_flags
 
     @property
     def name(self) -> str:
@@ -48,11 +51,11 @@ class NimLanguageEnvironment(LanguageEnvironment):
                 "nim",
                 self.compile_to,
                 "-p:.",
-                f"-o:{str(tempdir / 'a.out')}",
-                f"--nimcache:{str(tempdir)}",
+                f"-o:{tempdir / 'a.out'!s}",
+                f"--nimcache:{tempdir!s}",
+                *self.nim_flags,
+                str(path),
             ]
-            + self.nim_flags
-            + [str(path)]
         )
 
     def get_execute_command(
@@ -61,33 +64,41 @@ class NimLanguageEnvironment(LanguageEnvironment):
         return str(tempdir / "a.out")
 
 
-@functools.lru_cache(maxsize=None)
+def _parse_path(lines: list[str]) -> Generator[str, None, None]:
+    for line in lines:
+        l = line.strip()
+        if l.startswith("include"):
+            yield from l[7:].strip().split(",")
+        elif l.startswith("import"):
+            l = l[6:]
+            i = l.find(" except ")
+            if i >= 0:
+                l = l[:i]
+            yield from l.split(",")
+        elif l.startswith("from"):
+            i = l.find(" import ")
+            if i >= 0:
+                yield l[4 : i - 1]
+
+
+def _unquote_path(p: str) -> pathlib.Path:
+    p = p.strip()
+    if p.startswith('"'):
+        p = p[1 : len(p) - 1]
+    else:
+        p += ".nim"
+    return pathlib.Path(p)
+
+
+@functools.cache
 def _list_direct_dependencies(
-    path: pathlib.Path, *, basedir: pathlib.Path
+    path: pathlib.Path,
+    *,
+    basedir: pathlib.Path,
 ) -> list[pathlib.Path]:
-    items: list[str] = []
-    for line in read_text_normalized(basedir / path).splitlines():
-        line = line.strip()
-        if line.startswith("include"):
-            items += line[7:].strip().split(",")
-        elif line.startswith("import"):
-            line = line[6:]
-            i = line.find(" except ")
-            if i >= 0:
-                line = line[:i]
-            items += line.split(",")
-        elif line.startswith("from"):
-            i = line.find(" import ")
-            if i >= 0:
-                items += line[4 : i - 1]
     dependencies = [path.resolve()]
-    for item in items:
-        item = item.strip()
-        if item.startswith('"'):
-            item = item[1 : len(item) - 1]
-        else:
-            item += ".nim"
-        item_ = pathlib.Path(item)
+    for item in _parse_path(read_text_normalized(basedir / path).splitlines()):
+        item_ = _unquote_path(item)
         if item_.exists():
             dependencies.append(item_)
     return list(set(dependencies))
@@ -96,7 +107,7 @@ def _list_direct_dependencies(
 class NimLanguage(Language):
     config: OjVerifyNimConfig
 
-    def __init__(self, *, config: Optional[OjVerifyNimConfig]):
+    def __init__(self, *, config: OjVerifyNimConfig | None):
         self.config = config or OjVerifyNimConfig()
 
     def list_dependencies(
@@ -118,20 +129,17 @@ class NimLanguage(Language):
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[NimLanguageEnvironment]:
-        default_compile_to = "cpp"
-        default_NIMFLAGS = ["-d:release", "--opt:speed"]
         if self.config.environments:
             return [
                 NimLanguageEnvironment(
-                    compile_to=default_compile_to,
-                    NIMFLAGS=default_NIMFLAGS,
+                    compile_to=DEFAULT_COMPILE_TO,
+                    nim_flags=DEFAULT_NIM_FLAGS,
                 )
             ]
-        else:
-            return [
-                NimLanguageEnvironment(
-                    compile_to=env.compile_to or default_compile_to,
-                    NIMFLAGS=env.NIMFLAGS or default_NIMFLAGS,
-                )
-                for env in self.config.environments
-            ]
+        return [
+            NimLanguageEnvironment(
+                compile_to=env.compile_to or DEFAULT_COMPILE_TO,
+                nim_flags=env.NIMFLAGS or DEFAULT_NIM_FLAGS,
+            )
+            for env in self.config.environments
+        ]

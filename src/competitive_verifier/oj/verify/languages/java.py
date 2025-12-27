@@ -1,6 +1,7 @@
 import pathlib
+from collections.abc import Sequence
 from logging import getLogger
-from typing import Any, Optional, Sequence
+from typing import Any
 
 from pydantic import ValidationInfo, field_validator
 
@@ -19,9 +20,9 @@ class OjVerifyJavaConfig(OjVerifyUserDefinedConfig):
 
     @field_validator("execute", "compile", mode="before")
     @classmethod
-    def name_must_contain_space(cls, v: Any, info: ValidationInfo) -> None:
+    def name_must_contain_space(cls, v: Any, info: ValidationInfo) -> None:  # noqa: ANN401
         if v is None:
-            return None
+            return
         raise ValueError(f'You cannot overwrite "{info.field_name}" for Java language')
 
 
@@ -44,7 +45,7 @@ class JavaLanguageEnvironment(LanguageEnvironment):
 
 
 class JavaLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: Optional[OjVerifyJavaConfig]):
+    def __init__(self, *, config: OjVerifyJavaConfig | None):
         super().__init__(extension="java", config=config or OjVerifyJavaConfig())
 
     def list_environments(

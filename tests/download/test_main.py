@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from collections.abc import Iterable
 
 import pytest
 
@@ -10,9 +10,7 @@ def get_problem_command(url: str) -> ProblemVerification:
     return ProblemVerification(command="true", problem=url)
 
 
-_SomeUrlOrVerificationFile = Union[
-    UrlOrVerificationFile, Iterable[UrlOrVerificationFile]
-]
+_SomeUrlOrVerificationFile = UrlOrVerificationFile | Iterable[UrlOrVerificationFile]
 test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
     (
         "http://example.com",
@@ -98,12 +96,12 @@ test_parse_urls_params: list[tuple[_SomeUrlOrVerificationFile, set[str]]] = [
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("url_or_file", "expected"),
     test_parse_urls_params,
     ids=range(len(test_parse_urls_params)),
 )
 def test_parse_urls(
-    input: _SomeUrlOrVerificationFile,
+    url_or_file: _SomeUrlOrVerificationFile,
     expected: set[str],
 ):
-    assert set(parse_urls(input)) == expected
+    assert set(parse_urls(url_or_file)) == expected

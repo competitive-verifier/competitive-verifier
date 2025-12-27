@@ -1,11 +1,13 @@
 # The file is inspired by Tyrrrz/GitHubActionsTestLogger
 # https://github.com/Tyrrrz/GitHubActionsTestLogger/blob/04fe7796a047dbd0e3cd6a46339b2a50f5125317/GitHubActionsTestLogger/TestSummary.cs
 
+# ruff: noqa: PLR2004
+
 import os
 import pathlib
 from collections import Counter
 from itertools import chain
-from typing import Optional, TextIO
+from typing import TextIO
 
 from competitive_verifier.models import (
     FileResult,
@@ -29,14 +31,13 @@ def to_human_str_seconds(total_seconds: float) -> str:
 
     if hours > 0:
         return f"{hours}h {minutes}m"
-    elif minutes > 0:
+    if minutes > 0:
         return f"{minutes}m {int(seconds)}s"
-    elif total_seconds >= 10:
+    if total_seconds >= 10:
         return f"{int(seconds)}s"
-    elif total_seconds > 1:
+    if total_seconds > 1:
         return f"{total_seconds:.1f}s"
-    else:
-        return f"{int(total_seconds * 1000)}ms"
+    return f"{int(total_seconds * 1000)}ms"
 
 
 def to_human_str_mega_bytes(total_mega_bytes: float) -> str:
@@ -54,7 +55,6 @@ class TableWriter:
         self.write_table_line(*header)
 
     def write_table_line(self, *cells: str) -> None:
-        assert len(cells) == self.size
         fp = self.fp
         for c in cells:
             fp.write("|")
@@ -170,7 +170,9 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         write_table_file_result(past_results)
 
     if counter.get(FAILURE):
-        assert file_results
+        if not file_results:
+            raise ValueError("file_results is empty but there are failures")
+
         first_failure = True
         for p, fr in file_results:
             cases = [
@@ -202,7 +204,7 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
 
 
 class DisplayTestcaseResult(TestcaseResult):
-    environment: Optional[str]
+    environment: str | None
 
     @property
     def elapsed_str(self):

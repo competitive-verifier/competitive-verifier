@@ -1,6 +1,6 @@
 import json
 import pathlib
-from typing import Optional, Protocol
+from typing import Protocol
 
 import pytest
 from pytest_mock import MockerFixture
@@ -33,11 +33,10 @@ class _ArgsFunc(Protocol):
         self,
         *,
         bundle: bool = True,
-        include: Optional[list[str]] = None,
-        exclude: Optional[list[str]] = None,
-        config: Optional[str] = None,
-    ) -> list[str]:
-        ...
+        include: list[str] | None = None,
+        exclude: list[str] | None = None,
+        config: str | None = None,
+    ) -> list[str]: ...
 
 
 @pytest.fixture
@@ -45,9 +44,9 @@ def make_args() -> _ArgsFunc:
     def _make_args(
         *,
         bundle: bool = False,
-        include: Optional[list[str]] = None,
-        exclude: Optional[list[str]] = None,
-        config: Optional[str] = None,
+        include: list[str] | None = None,
+        exclude: list[str] | None = None,
+        config: str | None = None,
     ) -> list[str]:
         args: list[str] = []
         if not bundle:

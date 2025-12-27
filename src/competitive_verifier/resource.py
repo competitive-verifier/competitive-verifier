@@ -2,9 +2,9 @@ import sys
 
 
 def ulimit_stack() -> None:
-    """ulimit -s unlimited"""
+    """Run `ulimit -s unlimited`."""
     if sys.platform != "win32":
-        import resource
+        import resource  # noqa: PLC0415
 
         _, hard = resource.getrlimit(resource.RLIMIT_STACK)
         resource.setrlimit(resource.RLIMIT_STACK, (hard, hard))

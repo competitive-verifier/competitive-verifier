@@ -2,12 +2,10 @@ import importlib.resources
 import pathlib
 import shutil
 from logging import getLogger
-from typing import Optional
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.github as github
+from competitive_verifier import git, github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .config import ConfigYaml, load_config_yml
@@ -23,12 +21,12 @@ _DOC_USAGE_PATH = "doc_usage.txt"
 
 
 class DocumentBuilder(BaseModel):
-    input: VerificationInput
+    verifications: VerificationInput
     result: VerifyCommandResult
     docs_dir: pathlib.Path
     destination_dir: pathlib.Path
-    include: Optional[list[str]]
-    exclude: Optional[list[str]]
+    include: list[str] | None
+    exclude: list[str] | None
 
     def build(self) -> bool:
         logger.info(
@@ -62,10 +60,7 @@ class DocumentBuilder(BaseModel):
         logger.info("_config.yml: %s", config_yml)
 
         index_md_path = self.docs_dir / "index.md"
-        if index_md_path.exists():
-            index_md = Markdown.load_file(index_md_path)
-        else:
-            index_md = None
+        index_md = Markdown.load_file(index_md_path) if index_md_path.exists() else None
 
         # Write code documents.
         self.write_code_docs(
@@ -98,15 +93,15 @@ class DocumentBuilder(BaseModel):
                     self.destination_dir,
                     dirs_exist_ok=True,
                 )
-        except Exception as e:
-            logger.exception("Failed to copy user static files.", e)
+        except Exception:
+            logger.exception("Failed to copy user static files.")
 
     def write_code_docs(
         self,
         *,
         config_yml: ConfigYaml,
-        index_md: Optional[Markdown],
-        static_dir: Optional[pathlib.Path],
+        index_md: Markdown | None,
+        static_dir: pathlib.Path | None,
     ):
         logger.info("Write document files...")
 
@@ -118,10 +113,9 @@ class DocumentBuilder(BaseModel):
         if exclude:
             sources -= git.ls_files(*exclude)
 
-        # yield source.with_suffix(source.suffix + ".md"), source.read_bytes()
         for job in RenderJob.enumerate_jobs(
             sources=sources,
-            input=self.input,
+            verifications=self.verifications,
             result=self.result,
             config=config_yml,
             index_md=index_md,

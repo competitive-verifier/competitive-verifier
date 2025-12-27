@@ -45,22 +45,18 @@ pytest-order = "^1.3.0"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.38.0"
-black = { version = "^23.7.0", extras = ["lint"] }
-isort = { version = "^5.10.1", extras = ["lint"] }
-pyright = { version = "^1.1.277", extras = ["lint"] }
-
-flake8 = { version = "^7.0.0", extras = ["lint"] }
-pyproject-flake8 = { version = "^7.0.0", extras = ["lint"] }
+ruff = "^0.14.10"
+pyright = "^1.1.407"
 
 [tool.poe.tasks]
 flake8 = "pflake8 src/competitive_verifier tests"
-isort = "isort src/competitive_verifier tests"
-black = "black src/competitive_verifier tests"
+ruff-check = "ruff check --fix"
+ruff-format = "ruff format"
 pyright = "pyright src/competitive_verifier tests"
-format = ["isort", "black", "pyright", "flake8"]
-"lint:isort" = "isort --check-only --diff src/competitive_verifier tests"
-"lint:black" = "black --diff --check src/competitive_verifier tests"
-lint = ["lint:isort", "lint:black", "pyright", "flake8"]
+format = ["ruff-format", "ruff-check", "pyright"]
+"lint:check" = "ruff check"
+"lint:format" = "ruff format --check"
+lint = ["lint:check", "lint:format", "pyright"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
@@ -69,6 +65,11 @@ test-use-prev-dest = "poe test --use-prev-dest"
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
+
+
+"schema-verify_files" = { script = "competitive_verifier.script_tools.schema:show_verify_json_schema" }
+"schema-verify_result" = { script = "competitive_verifier.script_tools.schema:show_result_json_schema" }
+"schema-config_yml" = { script = "competitive_verifier.script_tools.docs:show_default_config_yml" }
 
 [tool.poe.tasks."port-oj"]
 shell = """
@@ -85,13 +86,6 @@ mv downloads/api-client-master/onlinejudge src/porting_oj
 
 echo '\\e[33mThis task should be deleted when https://github.com/online-judge-tools/oj/issues/929 is completed.\\e[m'
 """
-
-[tool.poe.tasks."schema-verify_files"]
-script = "competitive_verifier.script_tools.schema:show_verify_json_schema"
-[tool.poe.tasks."schema-verify_result"]
-script = "competitive_verifier.script_tools.schema:show_result_json_schema"
-[tool.poe.tasks."schema-config_yml"]
-script = "competitive_verifier.script_tools.docs:show_default_config_yml"
 
 [tool.poe.tasks."dev-oj-resolve"]
 shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml > .competitive-verifier/tmp/all-verify_files.json"
@@ -155,38 +149,92 @@ cwd = "${_COMPETITIVE_SERVE_DIR}"
 ref = "jekyll:serve"
 cwd = "${_COMPETITIVE_SERVE_DIR}"
 
-
-[tool.pylint.'MESSAGES CONTROL']
-max-line-length = 120
-disable = """
-    missing-module-docstring,
-    missing-function-docstring,
-    consider-using-f-string
-"""
-
-[tool.black]
-target-version = ['py310']
+[tool.ruff]
+target-version = "py310"
 line-length = 88
-force-exclude = "src/porting_oj"
 
-[tool.isort]
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-
-[tool.flake8]
-max-line-length = 500
-max-complexity = 18
 exclude = [
     "examples",
     "src/competitive_verifier_resources/jekyll",
-    "tests/integration/testdata",
+    "integration_test_data",
     "src/porting_oj",
 ]
-ignore = ["E203", "E266", "E501", "E701", "E704", "W503", "B905", "B907"]
-per-file-ignores = [
-    "tests/integration/test_command_docs.py: E501",
-    "src/competitive_verifier/oj/tools/pretty_printers.py: E741",
+
+[tool.ruff.lint]
+typing-extensions = false
+
+select = ["ALL"]
+ignore = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D105",
+    "D107",
+    "D200",
+    "E741",
+    "S603",
+    "COM812",
+    "PLR0913",
+    "ANN201",
+    "ANN202",
+    "ANN204",
+    "ANN206",
+    "EM101",
+    "EM102",
+    "PTH207",
+    "TRY003",
+    "FBT003",
+
+    # Remove on Python 3.12
+    "ARG002",
+
+]
+
+# TODO: Make these settings stricter later
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.pylint]
+max-branches = 18
+max-statements = 75
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 320
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["D104", "F401"]
+"tests/**" = [
+    "ARG",
+    "DTZ",
+    "S101",
+    "S311",
+    "N802",
+    "N806",
+    "N816",
+    "TID252",
+    "FBT001",
+    "FBT001",
+    "FBT003",
+    "ANN401",
+    "PLR0911",
+    "PLR2004",
+    "PLR0913",
+]
+"src/competitive_verifier/oj/tools/**" = ["G003"]
+"src/competitive_verifier/*/main.py" = ["BLE001"]
+"src/competitive_verifier/**" = ["T201"]
+"src/competitive_verifier/oj/verify/languages/**" = [
+    "S101",
+    "C901",
+    "PLR0912",
+    "PLR0915",
 ]
 
 [tool.pyright]

@@ -1,5 +1,5 @@
 import pathlib
-from typing import Annotated, BinaryIO, Literal, Optional, Union
+from typing import Annotated, BinaryIO
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -14,22 +14,19 @@ _separator: bytes = b"---"
 class FrontMatter(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    display: Optional[DocumentOutputMode] = None
-    title: Optional[str] = None
-    layout: Union[
-        Literal["toppage"],
-        Literal["document"],
-        Literal["multidoc"],
-        str,
-        None,
-    ] = None
-    documentation_of: Union[str, Annotated[list[str], Field(min_length=1)], None] = None
-    keep_single: Optional[bool] = None
-    data: Union[PageRenderData, MultiCodePageData, IndexRenderData, None] = None
-    redirect_from: Optional[list[str]] = None
+    display: DocumentOutputMode | None = None
+    title: str | None = None
+    layout: str | None = Field(
+        default=None,
+        examples=["toppage", "document", "multidoc"],
+    )
+    documentation_of: str | Annotated[list[str], Field(min_length=1)] | None = None
+    keep_single: bool | None = None
+    data: PageRenderData | MultiCodePageData | IndexRenderData | None = None
+    redirect_from: list[str] | None = None
     """For jekyll-redirect-from plugin
     """
-    redirect_to: Optional[str] = None
+    redirect_to: str | None = None
     """For jekyll-redirect-from plugin
     """
 
@@ -43,8 +40,8 @@ class FrontMatter(BaseModel):
 
 
 class Markdown(BaseModel):
-    path: Optional[ForcePosixPath] = None
-    front_matter: Optional[FrontMatter]
+    path: ForcePosixPath | None = None
+    front_matter: FrontMatter | None
     content: bytes
 
     @classmethod
@@ -60,7 +57,7 @@ class Markdown(BaseModel):
             return cls.load(fp, path)
 
     @classmethod
-    def load(cls, fp: BinaryIO, path: Optional[pathlib.Path] = None):
+    def load(cls, fp: BinaryIO, path: pathlib.Path | None = None):
         front_matter, content = split_front_matter(fp.read())
         return Markdown(
             path=path,
@@ -76,7 +73,7 @@ class Markdown(BaseModel):
         )
 
 
-def split_front_matter_raw(content: bytes) -> tuple[Optional[bytes], bytes]:
+def split_front_matter_raw(content: bytes) -> tuple[bytes | None, bytes]:
     lines = content.splitlines()
     if len(lines) == 0 or lines[0].rstrip() != _separator:
         return (None, content)
@@ -93,21 +90,20 @@ def split_front_matter_raw(content: bytes) -> tuple[Optional[bytes], bytes]:
     return front_matter, content
 
 
-def split_front_matter(content: bytes) -> tuple[Optional[FrontMatter], bytes]:
+def split_front_matter(content: bytes) -> tuple[FrontMatter | None, bytes]:
     fm_bytes, content = split_front_matter_raw(content)
     if fm_bytes is None:
         return None, content
     fy = yaml.safe_load(fm_bytes)
     if fy:
         return FrontMatter.model_validate(fy), content
-    else:
-        return FrontMatter(), content
+    return FrontMatter(), content
 
 
 def merge_front_matter(
     fp: BinaryIO,
     *,
-    front_matter: Optional[FrontMatter],
+    front_matter: FrontMatter | None,
     content: bytes,
 ):
     if front_matter:

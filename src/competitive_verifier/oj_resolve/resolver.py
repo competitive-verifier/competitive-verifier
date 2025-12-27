@@ -3,14 +3,13 @@ import hashlib
 import os
 import pathlib
 import traceback
+from collections.abc import Generator
 from functools import cached_property
 from itertools import chain
 from logging import getLogger
-from typing import Generator
+from typing import Any
 
-import competitive_verifier.config as config
-import competitive_verifier.git as git
-import competitive_verifier.oj as oj
+from competitive_verifier import config, git, oj
 from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
@@ -81,6 +80,83 @@ class OjResolver:
     def _lang_dict(self):
         return self.config.get_dict()
 
+    @staticmethod
+    def env_to_verifications(
+        env: LanguageEnvironment,
+        *,
+        attr: dict[str, Any],
+        path: pathlib.Path,
+        basedir: pathlib.Path,
+    ) -> Generator[Verification, None, None]:
+        if "IGNORE" in attr:
+            yield ConstVerification(status=ResultStatus.SKIPPED)
+            return
+
+        error_str = attr.get("ERROR")
+        try:
+            error = float(error_str) if error_str else None
+        except ValueError:
+            error = None
+
+        tle_str = attr.get("TLE")
+        tle = float(tle_str) if tle_str else None
+
+        mle_str = attr.get("MLE")
+        mle = float(mle_str) if mle_str else None
+
+        url = attr.get("PROBLEM")
+
+        if url:
+            tempdir = oj.get_directory(url)
+            yield ProblemVerification(
+                name=env.name,
+                command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
+                compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
+                problem=url,
+                error=error,
+                tle=tle,
+                mle=mle,
+            )
+
+        if attr.get("STANDALONE") is not None:
+            tempdir = (
+                config.get_cache_dir()
+                / "standalone"
+                / hashlib.md5(
+                    path.as_posix().encode("utf-8"), usedforsecurity=False
+                ).hexdigest()
+            )
+            yield CommandVerification(
+                name=env.name,
+                command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
+                compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
+                tempdir=tempdir,
+            )
+
+        unit_test_envvar = attr.get("UNITTEST")
+        if unit_test_envvar:
+            var = os.getenv(unit_test_envvar)
+            if var is None:
+                logger.warning(
+                    "UNITTEST envvar %s is not defined.",
+                    unit_test_envvar,
+                )
+                yield ConstVerification(status=ResultStatus.FAILURE)
+            elif var.lower() == "false" or var == "0":
+                logger.info(
+                    "UNITTEST envvar %s=%s is falsy.",
+                    unit_test_envvar,
+                    var,
+                )
+                yield ConstVerification(status=ResultStatus.FAILURE)
+            else:
+                logger.info(
+                    "UNITTEST envvar %s=%s is truthy.",
+                    unit_test_envvar,
+                    var,
+                )
+                yield ConstVerification(status=ResultStatus.SUCCESS)
+
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
         basedir = pathlib.Path.cwd()
@@ -97,84 +173,6 @@ class OjResolver:
             deps = set(git.ls_files(*language.list_dependencies(path, basedir=basedir)))
             attr = language.list_attributes(path, basedir=basedir)
 
-            def env_to_verifications(
-                env: LanguageEnvironment,
-            ) -> Generator[Verification, None, None]:
-                if "IGNORE" in attr:
-                    yield ConstVerification(status=ResultStatus.SKIPPED)
-                    return
-
-                error_str = attr.get("ERROR")
-                try:
-                    error = float(error_str) if error_str else None
-                except ValueError:
-                    error = None
-
-                tle_str = attr.get("TLE")
-                tle = float(tle_str) if tle_str else None
-
-                mle_str = attr.get("MLE")
-                mle = float(mle_str) if mle_str else None
-
-                url = attr.get("PROBLEM")
-
-                if url:
-                    tempdir = oj.get_directory(url)
-                    yield ProblemVerification(
-                        name=env.name,
-                        command=env.get_execute_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                        compile=env.get_compile_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                        problem=url,
-                        error=error,
-                        tle=tle,
-                        mle=mle,
-                    )
-
-                if attr.get("STANDALONE") is not None:
-                    tempdir = (
-                        config.get_cache_dir()
-                        / "standalone"
-                        / hashlib.md5(path.as_posix().encode("utf-8")).hexdigest()
-                    )
-                    yield CommandVerification(
-                        name=env.name,
-                        command=env.get_execute_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                        compile=env.get_compile_command(
-                            path, basedir=basedir, tempdir=tempdir
-                        ),
-                        tempdir=tempdir,
-                    )
-
-                unit_test_envvar = attr.get("UNITTEST")
-                if unit_test_envvar:
-                    var = os.getenv(unit_test_envvar)
-                    if var is None:
-                        logger.warning(
-                            "UNITTEST envvar %s is not defined.",
-                            unit_test_envvar,
-                        )
-                        yield ConstVerification(status=ResultStatus.FAILURE)
-                    elif var.lower() == "false" or var == "0":
-                        logger.info(
-                            "UNITTEST envvar %s=%s is falsy.",
-                            unit_test_envvar,
-                            var,
-                        )
-                        yield ConstVerification(status=ResultStatus.FAILURE)
-                    else:
-                        logger.info(
-                            "UNITTEST envvar %s=%s is truthy.",
-                            unit_test_envvar,
-                            var,
-                        )
-                        yield ConstVerification(status=ResultStatus.SUCCESS)
-
             additonal_sources: list[AddtionalSource] = []
             if bundle:
                 try:
@@ -188,7 +186,7 @@ class OjResolver:
                         additonal_sources.append(
                             AddtionalSource(name="bundled", path=dest_path)
                         )
-                except Exception:
+                except Exception:  # noqa: BLE001
                     bundled_code = traceback.format_exc()
                     dest_dir = get_bundled_dir()
                     dest_path = dest_dir / path
@@ -201,7 +199,7 @@ class OjResolver:
 
             verifications = list(
                 chain.from_iterable(
-                    env_to_verifications(vs)
+                    self.env_to_verifications(vs, attr=attr, path=path, basedir=basedir)
                     for vs in language.list_environments(path, basedir=basedir)
                 )
             )

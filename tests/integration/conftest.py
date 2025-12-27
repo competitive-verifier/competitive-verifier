@@ -3,11 +3,10 @@ import inspect
 import os
 import pathlib
 import shutil
-from typing import Optional
 
-import onlinejudge.service.library_checker as library_checker
 import pytest
 import requests
+from onlinejudge.service import library_checker
 from pytest_mock import MockerFixture
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
@@ -22,26 +21,26 @@ from .utils import dummy_commit_time
 
 
 @pytest.fixture(scope="session")
-def check_necessary_commands() -> Optional[str]:
+def check_necessary_commands() -> str | None:
     git_path = shutil.which("git")
     if not git_path:
-        raise Exception("The integration test needs command")
+        raise AssertionError("The integration test needs command")
     if shutil.which("env"):
         return None
     if os.name != "nt":
-        raise Exception("The integration test needs env command")
+        raise AssertionError("The integration test needs env command")
 
     for git_dir in pathlib.Path(git_path).parents:
         search = git_dir / "usr/bin"
         if search.is_dir():
             return str(search)
-    raise Exception("The integration test needs env command")
+    raise AssertionError("The integration test needs env command")
 
 
-@pytest.fixture()
+@pytest.fixture
 def additional_path(
     monkeypatch: pytest.MonkeyPatch,
-    check_necessary_commands: Optional[str],
+    check_necessary_commands: str | None,
 ):
     if check_necessary_commands:
         monkeypatch.setenv("PATH", check_necessary_commands, prepend=os.pathsep)

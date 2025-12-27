@@ -1,7 +1,8 @@
 # pyright: reportPrivateUsage=none
 import datetime
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import pytest
 
@@ -25,19 +26,21 @@ class MockInputContainer(InputContainer):
         self,
         obj: Any = None,
         *,
-        prev_result: Optional[VerifyCommandResult] = None,
-        verification_time: Optional[datetime.datetime] = None,
-        file_timestamps: dict[Optional[Path], datetime.datetime] = {},
-        split_state: Optional[SplitState] = None,
+        prev_result: VerifyCommandResult | None = None,
+        verification_time: datetime.datetime | None = None,
+        file_timestamps: dict[Path | None, datetime.datetime] | None = None,
+        split_state: SplitState | None = None,
     ) -> None:
         super().__init__(
-            input=VerificationInput.model_validate(obj) if obj else VerificationInput(),
+            verifications=VerificationInput.model_validate(obj)
+            if obj
+            else VerificationInput(),
             verification_time=verification_time or datetime.datetime.now(),
             prev_result=prev_result,
             split_state=split_state,
         )
 
-        self.file_timestamps = file_timestamps
+        self.file_timestamps = file_timestamps or {}
 
     def get_file_timestamp(self, path: Path) -> datetime.datetime:
         assert self.file_timestamps is not None
@@ -132,7 +135,7 @@ test_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, expected",
+    ("resolver", "expected"),
     test_verification_files_params,
     ids=range(len(test_verification_files_params)),
 )
@@ -264,7 +267,7 @@ test_file_need_verification_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, path, file_result, expected",
+    ("resolver", "path", "file_result", "expected"),
     test_file_need_verification_params,
     ids=range(len(test_file_need_verification_params)),
 )
@@ -280,7 +283,7 @@ def test_file_need_verification(
 
 
 @pytest.mark.parametrize(
-    "resolver, path, file_result, _",
+    ("resolver", "path", "file_result", "_"),
     test_file_need_verification_params,
     ids=range(len(test_file_need_verification_params)),
 )
@@ -392,7 +395,7 @@ test_remaining_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "resolver, expected",
+    ("resolver", "expected"),
     test_remaining_verification_files_params,
     ids=range(len(test_remaining_verification_files_params)),
 )
@@ -470,7 +473,7 @@ test_current_verification_files_params: list[
 
 
 @pytest.mark.parametrize(
-    "index, expected",
+    ("index", "expected"),
     test_current_verification_files_params,
     ids=range(len(test_current_verification_files_params)),
 )

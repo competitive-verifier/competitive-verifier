@@ -1,5 +1,6 @@
 import pathlib
-from typing import Annotated, Iterable
+from collections.abc import Iterable
+from typing import Annotated
 
 from pydantic.functional_serializers import PlainSerializer
 
@@ -27,7 +28,7 @@ SortedPathList = Annotated[
 RelativeDirectoryPath = Annotated[
     pathlib.Path,
     PlainSerializer(
-        lambda x: f"{x.as_posix()}/" if x != pathlib.Path(".") else "",
+        lambda x: f"{x.as_posix()}/" if x != pathlib.Path() else "",
         return_type=str,
         when_used="json",
     ),

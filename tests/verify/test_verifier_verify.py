@@ -1,7 +1,8 @@
 # pyright: reportPrivateUsage=none
 import datetime
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
@@ -22,7 +23,7 @@ FAILURE = ResultStatus.FAILURE
 
 class NotSkippableConstVerification(ConstVerification):
     @property
-    def is_skippable(self) -> bool:
+    def is_lightweight(self) -> bool:
         return False
 
 
@@ -31,12 +32,12 @@ class MockVerifier(BaseVerifier):
         self,
         obj: Any = None,
         *,
-        prev_result: Optional[VerifyCommandResult],
+        prev_result: VerifyCommandResult | None,
         verification_time: datetime.datetime,
-        split_state: Optional[SplitState],
+        split_state: SplitState | None,
     ) -> None:
         super().__init__(
-            input=VerificationInput.model_validate(obj),
+            verifications=VerificationInput.model_validate(obj),
             verification_time=verification_time,
             prev_result=prev_result,
             split_state=split_state,
@@ -423,7 +424,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 
 @pytest.mark.usefixtures("mock_perf_counter")
 @pytest.mark.parametrize(
-    "verifier, expected",
+    ("verifier", "expected"),
     test_verify_params,
     ids=range(len(test_verify_params)),
 )
@@ -639,7 +640,7 @@ test_verify_timeout_params: list[
 
 
 @pytest.mark.parametrize(
-    "verifier, perf_counter_sequence, expected",
+    ("verifier", "perf_counter_sequence", "expected"),
     test_verify_timeout_params,
     ids=range(len(test_verify_timeout_params)),
 )
@@ -650,7 +651,7 @@ def test_verify_timeout(
     perf_counter_sequence: list[float],
     expected: dict[str, Any],
 ):
-    """Test timeout exception scenarios in enumerate_verifications"""
+    """Test timeout exception scenarios in enumerate_verifications."""
     mock_exists(True)
     mocker.patch("time.perf_counter", side_effect=perf_counter_sequence)
     mocker.patch("competitive_verifier.verify.verifier.run_download", return_value=True)

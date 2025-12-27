@@ -1,11 +1,11 @@
-# flake8: noqa E501
 import pathlib
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional, Sequence, Union
+from typing import Any
 
 import pytest
-from pydantic import RootModel
+from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
@@ -23,8 +23,8 @@ from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 @dataclass
 class DataVerificationParams:
-    default_tle: Optional[float]
-    default_mle: Optional[float]
+    default_tle: float | None
+    default_mle: float | None
 
 
 test_command_union_json_params: list[tuple[Verification, str, str]] = [
@@ -94,18 +94,18 @@ test_command_union_json_params: list[tuple[Verification, str, str]] = [
 ]
 
 
-@pytest.mark.parametrize("obj, raw_json, output_json", test_command_union_json_params)
+@pytest.mark.parametrize(
+    ("obj", "raw_json", "output_json"), test_command_union_json_params
+)
 def test_command_union_json(
     obj: Verification,
     raw_json: str,
     output_json: str,
 ):
-    VerificationUnion = RootModel[Verification]
-
     assert obj == type(obj).model_validate_json(raw_json)
     assert obj.model_dump_json(exclude_none=True) == output_json
 
-    assert obj == VerificationUnion.model_validate_json(raw_json).root
+    assert obj == TypeAdapter(Verification).validate_json(raw_json)
 
 
 def test_const_verification(mock_exec_command: MockType):
@@ -116,9 +116,7 @@ def test_const_verification(mock_exec_command: MockType):
     mock_exec_command.assert_not_called()
 
 
-test_run_params: list[
-    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any]]
-] = [
+test_run_params: list[tuple[Verification, tuple[str | list[str]], dict[str, Any]]] = [
     (
         CommandVerification(command="ls ~"),
         ("ls ~",),
@@ -205,7 +203,7 @@ test_run_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, args, kwargs",
+    ("obj", "args", "kwargs"),
     test_run_params,
     ids=range(len(test_run_params)),
 )
@@ -229,7 +227,7 @@ def test_run(
 
 
 test_run_with_env_params: list[
-    tuple[Verification, tuple[Union[str, list[str]]], dict[str, Any], dict[str, str]]
+    tuple[Verification, tuple[str | list[str]], dict[str, Any], dict[str, str]]
 ] = [
     (
         CommandVerification(
@@ -265,7 +263,7 @@ test_run_with_env_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, args, kwargs, env",
+    ("obj", "args", "kwargs", "env"),
     test_run_with_env_params,
     ids=range(len(test_run_with_env_params)),
 )
@@ -387,7 +385,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
 
 
 @pytest.mark.parametrize(
-    "obj, args",
+    ("obj", "args"),
     test_run_problem_command_params,
     ids=range(len(test_run_problem_command_params)),
 )
@@ -414,7 +412,7 @@ def test_run_problem_command(
 
 
 test_run_compile_params: list[
-    tuple[Verification, Optional[Union[str, list[str]]], Optional[dict[str, Any]]]
+    tuple[Verification, str | list[str] | None, dict[str, Any] | None]
 ] = [
     (
         CommandVerification(command="ls ~"),
@@ -518,14 +516,14 @@ test_run_compile_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, args, kwargs",
+    ("obj", "args", "kwargs"),
     test_run_compile_params,
     ids=range(len(test_run_compile_params)),
 )
 def test_run_compile(
     obj: Verification,
-    args: Optional[Sequence[Any]],
-    kwargs: Optional[dict[str, Any]],
+    args: Sequence[Any] | None,
+    kwargs: dict[str, Any] | None,
     mock_exec_command: MockType,
 ):
     obj.run_compile_command(
@@ -541,7 +539,7 @@ def test_run_compile(
         mock_exec_command.assert_called_once_with(args, **kwargs)
 
 
-test_params_run_params: list[tuple[Verification, Optional[str]]] = [
+test_params_run_params: list[tuple[Verification, str | None]] = [
     (ConstVerification(status=ResultStatus.SUCCESS), None),
     (CommandVerification(command="true"), None),
     (
@@ -552,17 +550,17 @@ test_params_run_params: list[tuple[Verification, Optional[str]]] = [
 
 
 @pytest.mark.parametrize(
-    "obj, error_message",
+    ("obj", "error_message"),
     test_params_run_params,
     ids=range(len(test_params_run_params)),
 )
 def test_params_run(
     obj: Verification,
-    error_message: Optional[str],
+    error_message: str | None,
     mock_exec_command: MockType,
 ):
     if error_message:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=error_message) as e:
             obj.run()
         assert e.value.args == (error_message,)
     else:

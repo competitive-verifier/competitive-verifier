@@ -15,6 +15,7 @@ def add_verbose_argument(
 
 def add_verify_files_json_argument(
     parser: argparse.ArgumentParser,
+    *,
     required: bool = True,
 ) -> argparse.Action:
     default = os.getenv(COMPETITIVE_VERIFY_FILES_PATH)
@@ -23,7 +24,7 @@ def add_verify_files_json_argument(
         dest="verify_files_json",
         default=default,
         required=required and not bool(default),
-        help="File path of verify_files.json. default: environ variable $COMPETITIVE_VERIFY_FILES_PATH",  # noqa: E501
+        help="File path of verify_files.json. default: environ variable $COMPETITIVE_VERIFY_FILES_PATH",
         type=pathlib.Path,
     )
 

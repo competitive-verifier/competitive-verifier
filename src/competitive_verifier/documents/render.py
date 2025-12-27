@@ -2,16 +2,17 @@ import datetime
 import enum
 import pathlib
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from logging import getLogger
-from typing import AbstractSet, BinaryIO, Iterable, Optional
+from typing import BinaryIO
 
 from pydantic import BaseModel
 
-import competitive_verifier.git as git
-import competitive_verifier.log as log
+from competitive_verifier import git, log
 from competitive_verifier.models import (
     DocumentOutputMode,
     ForcePosixPath,
@@ -48,7 +49,7 @@ def resolve_documentation_of(
     documentation_of: str,
     *,
     basedir: pathlib.Path,
-) -> Optional[pathlib.Path]:
+) -> pathlib.Path | None:
     def inner():
         if documentation_of.startswith("."):
             # a relative path
@@ -68,6 +69,7 @@ def resolve_documentation_of(
         path = basedir / pathlib.Path(documentation_of)
         if path.exists():
             return path
+        return None
 
     path = inner()
     if path:
@@ -80,7 +82,7 @@ def resolve_documentation_of(
 def _paths_to_render_links(
     paths: SortedPathSet, page_jobs: dict[pathlib.Path, "PageRenderJob"]
 ) -> list[RenderLink]:
-    def get_link(path: pathlib.Path) -> Optional[RenderLink]:
+    def get_link(path: pathlib.Path) -> RenderLink | None:
         job = page_jobs.get(path)
         if not job:
             return None
@@ -96,8 +98,8 @@ def _paths_to_render_links(
 
 
 class MultiTargetMarkdown(Markdown):
-    path: ForcePosixPath  # pyright: ignore
-    front_matter: FrontMatter  # pyright: ignore
+    path: ForcePosixPath  # pyright: ignore[reportIncompatibleVariableOverride, reportGeneralTypeIssues]
+    front_matter: FrontMatter  # pyright: ignore[reportIncompatibleVariableOverride]
     multi_documentation_of: list[pathlib.Path]
 
 
@@ -254,19 +256,19 @@ class SourceCodeStat(BaseModel):
     depends_on: SortedPathSet
     required_by: SortedPathSet
     verified_with: SortedPathSet
-    verification_results: Optional[list[VerificationResult]] = None
+    verification_results: list[VerificationResult] | None = None
 
     @staticmethod
     def resolve_dependency(
         *,
-        input: VerificationInput,
+        verifications: VerificationInput,
         result: VerifyCommandResult,
         included_files: AbstractSet[pathlib.Path],
     ) -> dict[pathlib.Path, "SourceCodeStat"]:
         d: dict[pathlib.Path, SourceCodeStat] = {}
-        statuses: dict[pathlib.Path, _VerificationStatusFlag] = {
-            p: _VerificationStatusFlag.NOTHING for p in input.files.keys()
-        }
+        statuses: dict[pathlib.Path, _VerificationStatusFlag] = dict.fromkeys(
+            verifications.files.keys(), _VerificationStatusFlag.NOTHING
+        )
         verification_results_dict: dict[pathlib.Path, list[VerificationResult]] = {}
 
         for p, r in result.files.items():
@@ -283,32 +285,34 @@ class SourceCodeStat(BaseModel):
             statuses[p] = st
             verification_results_dict[p] = r.verifications
 
-        for group in input.scc():
-            group &= included_files
+        for group0 in verifications.scc():
+            group = group0 & included_files
             if not group:
                 continue
 
             group_status = _VerificationStatusFlag.NOTHING
 
             for path in group:
-                assert path in statuses
                 group_status |= statuses[path]
 
             for path in group:
-                depends_on = input.depends_on[path] & included_files
-                required_by = input.required_by[path] & included_files
-                verified_with = input.verified_with[path] & included_files
+                depends_on = verifications.depends_on[path] & included_files
+                required_by = verifications.required_by[path] & included_files
+                verified_with = verifications.verified_with[path] & included_files
 
                 for dep in depends_on:
                     statuses[dep] |= group_status
 
-                timestamp = git.get_commit_time(input.transitive_depends_on[path])
-                file_input = input.files[path]
+                timestamp = git.get_commit_time(
+                    verifications.transitive_depends_on[path]
+                )
+                file_input = verifications.files[path]
                 is_verification = file_input.is_verification()
 
                 verification_results = verification_results_dict.get(path)
 
-                assert not is_verification or verification_results is not None
+                if is_verification and verification_results is None:
+                    raise ValueError("needs verification_results")
 
                 flag_status = group_status | (
                     _VerificationStatusFlag.IS_TEST
@@ -339,23 +343,21 @@ class RenderJob(ABC):
 
     @property
     @abstractmethod
-    def destination_name(self) -> pathlib.Path:
-        ...
+    def destination_name(self) -> pathlib.Path: ...
 
     @abstractmethod
-    def write_to(self, fp: BinaryIO):
-        ...
+    def write_to(self, fp: BinaryIO): ...
 
     @staticmethod
     def enumerate_jobs(
         *,
         sources: set[pathlib.Path],
-        input: VerificationInput,
+        verifications: VerificationInput,
         result: VerifyCommandResult,
         config: ConfigYaml,
-        index_md: Optional[Markdown] = None,
+        index_md: Markdown | None = None,
     ) -> list["RenderJob"]:
-        def plain_content(source: pathlib.Path) -> Optional[RenderJob]:
+        def plain_content(source: pathlib.Path) -> RenderJob | None:
             if source.suffix == ".md":
                 md = Markdown.load_file(source)
                 if md.front_matter and md.front_matter.documentation_of:
@@ -386,7 +388,7 @@ class RenderJob(ABC):
         )
         with log.group("Resolve dependency"):
             stats_dict = SourceCodeStat.resolve_dependency(
-                input=input,
+                verifications=verifications,
                 result=result,
                 included_files=sources,
             )
@@ -417,7 +419,7 @@ class RenderJob(ABC):
                 group_dir=group_dir or source.parent,
                 markdown=markdown,
                 stat=stat,
-                input=input,
+                verifications=verifications,
                 result=result,
                 page_jobs=page_jobs,
             )
@@ -445,12 +447,6 @@ class RenderJob(ABC):
             if md.front_matter.display == DocumentOutputMode.never:
                 continue
             multis.append(job)
-
-            # if not md.front_matter.keep_single:
-            #     for of in md.multi_documentation_of:
-            #         pj = page_jobs.get(of)
-            #         if pj:
-            #             pj.render_link = job.to_render_link()
 
         jobs.extend(multis)
         jobs.append(
@@ -494,7 +490,7 @@ class PageRenderJob(RenderJob):
     group_dir: pathlib.Path
     markdown: Markdown
     stat: SourceCodeStat
-    input: VerificationInput
+    verifications: VerificationInput
     result: VerifyCommandResult
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
 
@@ -507,23 +503,25 @@ class PageRenderJob(RenderJob):
         return self.front_matter.display or DocumentOutputMode.visible
 
     def __str__(self) -> str:
-        return f"PageRenderJob(source_path={repr(self.source_path)},markdown={repr(self.markdown)},stat={repr(self.stat)})"
+        return f"PageRenderJob(source_path={self.source_path!r},markdown={self.markdown!r},stat={self.stat!r})"
 
     def validate_front_matter(self):
         front_matter = self.markdown.front_matter
-        if front_matter and front_matter.documentation_of:
-            if not isinstance(
-                front_matter.documentation_of, str
-            ) or self.source_path != pathlib.Path(front_matter.documentation_of):
-                raise ValueError(
-                    "PageRenderJob.path must equal front_matter.documentation_of."
-                )
-
-    def to_render_link(self, *, index: bool = False) -> Optional[RenderLink]:
         if (
-            self.display == DocumentOutputMode.hidden
-            or self.display == DocumentOutputMode.never
-            or (index and self.display == DocumentOutputMode.no_index)
+            front_matter
+            and front_matter.documentation_of
+            and (
+                not isinstance(front_matter.documentation_of, str)
+                or self.source_path != pathlib.Path(front_matter.documentation_of)
+            )
+        ):
+            raise ValueError(
+                "PageRenderJob.path must equal front_matter.documentation_of."
+            )
+
+    def to_render_link(self, *, index: bool = False) -> RenderLink | None:
+        if self.display in (DocumentOutputMode.hidden, DocumentOutputMode.never) or (
+            index and self.display == DocumentOutputMode.no_index
         ):
             return None
         return RenderLink(
@@ -535,15 +533,16 @@ class PageRenderJob(RenderJob):
 
     @cached_property
     def front_matter(self) -> FrontMatter:
-        if self.markdown.front_matter:
-            front_matter = self.markdown.front_matter.model_copy()
-        else:
-            front_matter = FrontMatter()
+        front_matter = (
+            self.markdown.front_matter.model_copy()
+            if self.markdown.front_matter
+            else FrontMatter()
+        )
         front_matter.documentation_of = self.source_path.as_posix()
         if not front_matter.layout:
             front_matter.layout = "document"
 
-        input_file = self.input.files.get(self.source_path)
+        input_file = self.verifications.files.get(self.source_path)
         if not front_matter.title and (input_file and input_file.title):
             front_matter.title = input_file.title
         if not front_matter.display and (input_file and input_file.display):
@@ -585,10 +584,10 @@ class PageRenderJob(RenderJob):
         code = read_text_normalized(self.source_path)
 
         embedded = [EmbeddedCode(name="default", code=code)]
-        for s in self.stat.file_input.additonal_sources:
-            embedded.append(
-                EmbeddedCode(name=s.name, code=read_text_normalized(s.path))
-            )
+        embedded.extend(
+            EmbeddedCode(name=s.name, code=read_text_normalized(s.path))
+            for s in self.stat.file_input.additonal_sources
+        )
 
         return PageRenderData(
             path=self.source_path,
@@ -634,7 +633,7 @@ class MultiCodePageRenderJob(RenderJob):
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
 
     def __str__(self) -> str:
-        return f"MultiCodePageRenderJob(multi_documentation_of={repr(self.markdown.multi_documentation_of)})"
+        return f"MultiCodePageRenderJob(multi_documentation_of={self.markdown.multi_documentation_of!r})"
 
     @cached_property
     def jobs(self) -> list[PageRenderJob]:
@@ -728,7 +727,7 @@ class MultiCodePageRenderJob(RenderJob):
 class IndexRenderJob(RenderJob):
     page_jobs: dict[pathlib.Path, "PageRenderJob"]
     multicode_docs: list[MultiCodePageRenderJob]
-    index_md: Optional[Markdown] = None
+    index_md: Markdown | None = None
 
     def __str__(self) -> str:
         @dataclass
@@ -763,10 +762,9 @@ class IndexRenderJob(RenderJob):
         for job in chain.from_iterable([self.page_jobs.values(), self.multicode_docs]):
             if job.display != DocumentOutputMode.visible:
                 continue
-            if job.is_verification:
-                categories = verification_categories
-            else:
-                categories = library_categories
+            categories = (
+                verification_categories if job.is_verification else library_categories
+            )
 
             directory = job.group_dir
             category = directory.as_posix()
@@ -783,7 +781,7 @@ class IndexRenderJob(RenderJob):
                 categories[category].append(link)
 
         def _build_categories_list(
-            categories: dict[str, list[RenderLink]]
+            categories: dict[str, list[RenderLink]],
         ) -> list[CategorizedIndex]:
             return sorted(
                 (

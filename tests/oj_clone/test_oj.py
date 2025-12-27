@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-import competitive_verifier.oj as oj
+from competitive_verifier import oj
 from competitive_verifier.oj.tools.oj_test import OjTestArguments
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
@@ -57,13 +57,13 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("args", "expected"),
     test_oj_test_params.values(),
     ids=test_oj_test_params.keys(),
 )
 def test_oj_test(
     mocker: MockerFixture,
-    input: dict[str, Any],
+    args: dict[str, Any],
     expected: OjTestArguments,
 ):
     mocker.patch(
@@ -72,6 +72,6 @@ def test_oj_test(
     )
     run = mocker.patch("competitive_verifier.oj.tools.oj_test.run")
 
-    oj.test(**input)
+    oj.test(**args)
 
     run.assert_called_once_with(expected)

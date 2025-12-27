@@ -2,14 +2,11 @@ import contextlib
 import os
 import pathlib
 from dataclasses import dataclass
-from typing import Optional
 
-import onlinejudge.service.atcoder as atcoder
-import onlinejudge.service.library_checker as library_checker
-import onlinejudge.service.yukicoder as yukicoder
 import onlinejudge.type
 import pytest
 import requests
+from onlinejudge.service import atcoder, library_checker, yukicoder
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
@@ -20,7 +17,7 @@ from competitive_verifier.download.main import run_impl as download
 class MockProblem:
     download_system_cases: MockType
     download_sample_cases: MockType
-    generate_test_cases_in_cloned_repository: Optional[MockType] = None
+    generate_test_cases_in_cloned_repository: MockType | None = None
 
 
 @pytest.fixture
@@ -80,7 +77,7 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
             ),
             generate_test_cases_in_cloned_repository=mocker.patch.object(
                 library_checker.LibraryCheckerProblem,
-                "_generate_test_cases_in_cloned_repository",
+                "generate_test_cases_in_cloned_repository",
                 return_value=None,
             ),
         )
@@ -97,7 +94,7 @@ def test_oj_download(
     mock_problem: dict[type[onlinejudge.type.Problem], MockProblem],
 ):
     download(
-        input=[
+        url_or_file=[
             "https://judge.yosupo.jp/problem/aplusb",
             "https://judge.yosupo.jp/problem/aplusb",
             "https://yukicoder.me/problems/no/1088",
@@ -124,11 +121,11 @@ def test_oj_download(
         atcoder.AtCoderProblem,
     }
 
-    #
     mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
     mock_library_checker.download_sample_cases.assert_not_called()
     mock_library_checker.download_system_cases.assert_not_called()
-    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()  # type: ignore
+    assert mock_library_checker.generate_test_cases_in_cloned_repository
+    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
 
     mock_yuki_coder = mock_problem[yukicoder.YukicoderProblem]
     mock_yuki_coder.download_sample_cases.assert_not_called()

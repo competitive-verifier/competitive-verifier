@@ -4,10 +4,15 @@ from io import StringIO
 
 import pytest
 
-import competitive_verifier.summary as summary
-from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
+from competitive_verifier import summary
+from competitive_verifier.models import (
+    FileResult,
+    JudgeStatus,
+    ResultStatus,
+    VerificationResult,
+    VerifyCommandResult,
+)
 from competitive_verifier.models import TestcaseResult as CaseResult
-from competitive_verifier.models import VerificationResult, VerifyCommandResult
 
 test_to_human_str_seconds_params: list[tuple[timedelta, str]] = [
     (timedelta(hours=2, minutes=8, seconds=6, milliseconds=13), "2h 8m"),
@@ -23,7 +28,7 @@ test_to_human_str_seconds_params: list[tuple[timedelta, str]] = [
 
 
 @pytest.mark.parametrize(
-    "td, expected",
+    ("td", "expected"),
     test_to_human_str_seconds_params,
     ids=str,
 )
@@ -45,7 +50,7 @@ test_to_human_str_mega_bytes_params: list[tuple[float, str]] = [
 
 
 @pytest.mark.parametrize(
-    "megabytes, expected",
+    ("megabytes", "expected"),
     test_to_human_str_mega_bytes_params,
 )
 def test_to_human_str_mega_bytes(megabytes: float, expected: str):

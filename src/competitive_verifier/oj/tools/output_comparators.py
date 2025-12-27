@@ -1,11 +1,9 @@
-"""This module collects helper classes to compare outputs for `test` subcommand.
-"""
+"""This module collects helper classes to compare outputs for `test` subcommand."""
 
 import abc
 import enum
 import math
 from logging import getLogger
-from typing import Optional
 
 logger = getLogger(__name__)
 
@@ -13,8 +11,13 @@ logger = getLogger(__name__)
 class OutputComparator(abc.ABC):
     @abc.abstractmethod
     def __call__(self, actual: bytes, expected: bytes) -> bool:
-        """
-        :returns: True is the two are matched.
+        """Compare two byte strings.
+
+        Args:
+            actual (bytes): Actual output
+            expected (bytes): Expected output
+        Returns:
+            bool: True if they are considered equal
         """
         raise NotImplementedError
 
@@ -36,21 +39,22 @@ class FloatingPointNumberComparator(OutputComparator):
         self.abs_tol = abs_tol
 
     def __call__(self, actual: bytes, expected: bytes) -> bool:
-        """
-        :returns: True if the relative error or absolute error is smaller than the accepted error
+        """Assume that both actual and expected are floating point numbers.
+
+        Returns:
+        True if the relative error or absolute error is smaller than the accepted error
         """
         try:
-            x: Optional[float] = float(actual)
+            x: float | None = float(actual)
         except ValueError:
             x = None
         try:
-            y: Optional[float] = float(expected)
+            y: float | None = float(expected)
         except ValueError:
             y = None
         if x is not None and y is not None:
             return math.isclose(x, y, rel_tol=self.rel_tol, abs_tol=self.abs_tol)
-        else:
-            return actual == expected
+        return actual == expected
 
 
 class SplitComparator(OutputComparator):
@@ -63,10 +67,10 @@ class SplitComparator(OutputComparator):
         expected_words = expected.split()
         if len(actual_words) != len(expected_words):
             return False
-        for x, y in zip(actual_words, expected_words):
-            if not self.word_comparator(x, y):
-                return False
-        return True
+        return all(
+            self.word_comparator(x, y)
+            for x, y in zip(actual_words, expected_words, strict=False)
+        )
 
 
 class SplitLinesComparator(OutputComparator):
@@ -78,10 +82,10 @@ class SplitLinesComparator(OutputComparator):
         expected_lines = expected.rstrip(b"\n").split(b"\n")
         if len(actual_lines) != len(expected_lines):
             return False
-        for x, y in zip(actual_lines, expected_lines):
-            if not self.line_comparator(x, y):
-                return False
-        return True
+        return all(
+            self.line_comparator(x, y)
+            for x, y in zip(actual_lines, expected_lines, strict=False)
+        )
 
 
 class CRLFInsensitiveComparator(OutputComparator):
@@ -114,5 +118,5 @@ def check_lines_match(a: str, b: str, *, compare_mode: CompareMode) -> bool:
             "CompareMode.IGNORE_SPACES_AND_NEWLINES is not allowed for this function"
         )
     else:
-        assert False
+        raise AssertionError
     return comparator(a.encode(), b.encode())

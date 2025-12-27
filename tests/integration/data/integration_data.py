@@ -1,6 +1,6 @@
 import pathlib
-from abc import ABC
-from typing import Any, Optional
+from abc import ABC, abstractmethod
+from typing import Any
 
 import pytest
 
@@ -32,25 +32,25 @@ class IntegrationData(ABC):
         return cls.__name__
 
     @property
-    def config_path(self) -> Optional[str]:
-        ...
+    def config_path(self) -> str | None:
+        return None
 
     @property
-    def include_path(self) -> Optional[list[str]]:
-        ...
+    def include_path(self) -> list[str] | None:
+        return None
 
     @property
-    def exclude_path(self) -> Optional[list[str]]:
-        ...
+    def exclude_path(self) -> list[str] | None:
+        return None
 
     def assert_extra(self):
-        pass
+        return
 
     def check_envinronment(self) -> bool:
         return True
 
-    def expected_verify_json(self) -> dict[str, Any]:
-        ...
+    @abstractmethod
+    def expected_verify_json(self) -> dict[str, Any]: ...
 
-    def expected_verify_result(self) -> dict[str, Any]:
-        ...
+    @abstractmethod
+    def expected_verify_result(self) -> dict[str, Any]: ...

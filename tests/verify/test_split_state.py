@@ -15,7 +15,7 @@ test_split_by_split_state_params: list[tuple[SplitState, list[Any], list[Any]]] 
 
 
 @pytest.mark.parametrize(
-    "state, lst, expected",
+    ("state", "lst", "expected"),
     test_split_by_split_state_params,
     ids=range(len(test_split_by_split_state_params)),
 )

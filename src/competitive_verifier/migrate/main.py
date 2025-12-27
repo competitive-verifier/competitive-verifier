@@ -2,7 +2,6 @@ import argparse
 import logging
 import sys
 from logging import getLogger
-from typing import Optional
 
 from competitive_verifier.arg import add_verbose_argument
 from competitive_verifier.log import configure_stderr_logging
@@ -12,8 +11,8 @@ from . import migration
 logger = getLogger(__name__)
 
 
-def run_impl(dry_run: bool) -> bool:
-    return migration.main(dry_run)
+def run_impl(*, dry_run: bool) -> bool:
+    return migration.main(dry_run=dry_run)
 
 
 def run(args: argparse.Namespace) -> bool:
@@ -23,7 +22,7 @@ def run(args: argparse.Namespace) -> bool:
     configure_stderr_logging(default_level)
 
     logger.debug("arguments=%s", vars(args))
-    return run_impl(args.dry_run)
+    return run_impl(dry_run=args.dry_run)
 
 
 def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -33,12 +32,12 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         "-n",
         dest="dry_run",
         action="store_true",
-        help="Run a trial migration with no changes. Just show logs only.",  # noqa: E501
+        help="Run a trial migration with no changes. Just show logs only.",
     )
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

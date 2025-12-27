@@ -3,10 +3,9 @@ import logging
 import pathlib
 import sys
 from logging import getLogger
-from typing import Optional
 
-import competitive_verifier.config as config
 import competitive_verifier.merge_result.main as merge_result
+from competitive_verifier import config
 from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_include_exclude_argument,
@@ -18,14 +17,13 @@ from competitive_verifier.arg import (
 from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
-from .. import config as conf
 from .builder import DocumentBuilder
 
 logger = getLogger(__name__)
 
 
 def get_default_docs_dir() -> pathlib.Path:
-    default_docs_dir = conf.get_config_dir() / "docs"
+    default_docs_dir = config.get_config_dir() / "docs"
     oj_verify_docs_dir = pathlib.Path(".verify-helper/docs")
     if not default_docs_dir.exists() and oj_verify_docs_dir.exists():
         return oj_verify_docs_dir
@@ -33,18 +31,18 @@ def get_default_docs_dir() -> pathlib.Path:
 
 
 def run_impl(
-    input: VerificationInput,
+    verifications: VerificationInput,
     result: VerifyCommandResult,
     *,
     destination_dir: pathlib.Path,
-    docs_dir: Optional[pathlib.Path],
-    include: Optional[list[str]],
-    exclude: Optional[list[str]],
+    docs_dir: pathlib.Path | None,
+    include: list[str] | None,
+    exclude: list[str] | None,
 ) -> bool:
-    logger.debug("input=%s", input.model_dump_json(exclude_none=True))
+    logger.debug("verifications=%s", verifications.model_dump_json(exclude_none=True))
     logger.debug("result=%s", result.model_dump_json(exclude_none=True))
     builder = DocumentBuilder(
-        input=input,
+        verifications=verifications,
         result=result,
         docs_dir=docs_dir or get_default_docs_dir(),
         destination_dir=destination_dir,
@@ -64,14 +62,14 @@ def run(args: argparse.Namespace) -> bool:
     logger.info("verify_files_json=%s", str(args.verify_files_json))
     logger.info("result_json=%s", [str(p) for p in args.result_json])
 
-    input = VerificationInput.parse_file_relative(args.verify_files_json)
+    verifications = VerificationInput.parse_file_relative(args.verify_files_json)
     result = merge_result.run_impl(
         *args.result_json,
         write_summary=args.write_summary,
     )
     return (
         run_impl(
-            input,
+            verifications,
             result,
             docs_dir=args.docs,
             destination_dir=args.destination,
@@ -105,7 +103,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

@@ -2,7 +2,7 @@ import datetime
 import pathlib
 import textwrap
 from io import BytesIO
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 import yaml
@@ -27,7 +27,7 @@ from competitive_verifier.documents.render_data import (
 )
 from competitive_verifier.models import JudgeStatus
 
-test_markdown_params: list[tuple[bytes, Optional[dict[str, Any]], bytes]] = [
+test_markdown_params: list[tuple[bytes, dict[str, Any] | None, bytes]] = [
     (
         b"""---
 ---""",
@@ -127,19 +127,19 @@ additional-extra-property: "CDE"
 
 
 @pytest.mark.parametrize(
-    "content, front_matter, markdown_content",
+    ("content", "front_matter", "markdown_content"),
     test_markdown_params,
     ids=range(len(test_markdown_params)),
 )
 def test_markdown(
     content: bytes,
-    front_matter: Optional[dict[str, Any]],
+    front_matter: dict[str, Any] | None,
     markdown_content: bytes,
 ):
     with BytesIO(content) as fp:
         md = Markdown.load(fp)
     expected = Markdown(
-        front_matter=front_matter,  # pyright:ignore
+        front_matter=front_matter,  # pyright: ignore[reportArgumentType]
         content=markdown_content,
     )
     assert md == expected
@@ -150,7 +150,8 @@ def test_markdown(
     if actual_front_matter:
         assert yaml.safe_load(actual_front_matter.model_dump_yml()) == front_matter
     else:
-        assert actual_front_matter is None and front_matter is None
+        assert actual_front_matter is None
+        assert front_matter is None
 
     with BytesIO() as fp:
         merge_front_matter(fp, front_matter=actual_front_matter, content=actual_content)
@@ -549,7 +550,7 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
 
 
 @pytest.mark.parametrize(
-    "front_matter, expected",
+    ("front_matter", "expected"),
     test_front_matter_dump_yml_params,
     ids=range(len(test_front_matter_dump_yml_params)),
 )

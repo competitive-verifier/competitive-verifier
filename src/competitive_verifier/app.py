@@ -1,8 +1,10 @@
 import argparse
 import importlib.metadata
 import sys
+from collections.abc import Callable
 from logging import getLogger
-from typing import Callable, Optional
+
+# ruff: noqa: PLC0415
 
 logger = getLogger(__name__)
 
@@ -79,7 +81,7 @@ def get_parser() -> argparse.ArgumentParser:
 
 def select_runner(
     subcommand: str,
-) -> Optional[Callable[[argparse.Namespace], bool]]:
+) -> Callable[[argparse.Namespace], bool] | None:
     import competitive_verifier.check.main as check
     import competitive_verifier.documents.main as docs
     import competitive_verifier.download.main as download
@@ -89,29 +91,23 @@ def select_runner(
     import competitive_verifier.oj_resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
 
-    # Use sys.stdout for result
-    if subcommand == "merge-result":
-        return merge_result.run
-    if subcommand == "merge-input":
-        return merge_input.run
-    if subcommand == "oj-resolve":
-        return oj_resolve.run
-    if subcommand == "check":
-        return check.run
-    if subcommand == "migrate":
-        return migrate.run
+    d = {
+        # Use sys.stdout for result
+        "merge-result": merge_result.run,
+        "merge-input": merge_input.run,
+        "oj-resolve": oj_resolve.run,
+        "check": check.run,
+        "migrate": migrate.run,
+        # Use sys.stdout for logging
+        "download": download.run,
+        "verify": verify.run,
+        "docs": docs.run,
+    }
 
-    # Use sys.stdout for logging
-    if subcommand == "download":
-        return download.run
-    if subcommand == "verify":
-        return verify.run
-    if subcommand == "docs":
-        return docs.run
-    return None
+    return d.get(subcommand)
 
 
-def main(args: Optional[list[str]] = None):
+def main(args: list[str] | None = None):
     parser = get_parser()
     parsed = parser.parse_args(args)
 

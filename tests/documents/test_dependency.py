@@ -594,7 +594,7 @@ test_resolve_dependency_params: list[tuple[str, Any, Any, Any, Any]] = [
 
 
 @pytest.mark.parametrize(
-    "name, dep_input_obj, dep_result_obj, included_files_str, expected_obj",
+    ("name", "dep_input_obj", "dep_result_obj", "included_files_str", "expected_obj"),
     test_resolve_dependency_params,
     ids=[tup[0] for tup in test_resolve_dependency_params],
 )
@@ -613,9 +613,9 @@ def test_resolve_dependency(
         dep_result = VerifyCommandResult.model_validate(dep_result_obj)
 
         resolved = SourceCodeStat.resolve_dependency(
-            input=dep_input,
+            verifications=dep_input,
             result=dep_result,
-            included_files=set(Path(s) for s in included_files_str),
+            included_files={Path(s) for s in included_files_str},
         )
         expected = Parser.model_validate(expected_obj).root
         assert resolved == expected
@@ -634,7 +634,7 @@ test_StatusIcon_is_success_params: list[tuple[StatusIcon, bool]] = [
 
 
 @pytest.mark.parametrize(
-    "status, is_success",
+    ("status", "is_success"),
     test_StatusIcon_is_success_params,
 )
 def test_StatusIcon_is_success(

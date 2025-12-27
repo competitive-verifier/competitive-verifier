@@ -6,9 +6,13 @@ import shutil
 
 import pytest
 
-from competitive_verifier.models import FileResult, JudgeStatus, ResultStatus
+from competitive_verifier.models import (
+    FileResult,
+    JudgeStatus,
+    ResultStatus,
+    VerificationResult,
+)
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
-from competitive_verifier.models import VerificationResult
 from competitive_verifier.verify import main, verifier
 
 from .data.integration_data import IntegrationData

@@ -13,8 +13,7 @@ class SplitState(BaseModel):
         return f"{self.index}/{self.size}"
 
     def split(self, lst: list[T]) -> list[T]:
-        """Split list
-
+        """Split list.
 
         Args:
             lst (list[T]): Target list
@@ -34,12 +33,10 @@ class SplitState(BaseModel):
             state = SplitState(size=6, index=5)
             assert state.split([0, 1, 2, 3, 4]) == []
         """
-
         if len(lst) <= self.size:
             if len(lst) <= self.index:
                 return []
-            else:
-                return [lst[self.index]]
+            return [lst[self.index]]
 
         from_index = len(lst) * self.index // self.size
         to_index = len(lst) * (self.index + 1) // self.size

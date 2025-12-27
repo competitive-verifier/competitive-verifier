@@ -1,2 +1,1 @@
-"""Copy of oj-verify
-"""
+"""Port of oj-verify."""

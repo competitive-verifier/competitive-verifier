@@ -1,11 +1,11 @@
 import datetime
 import pathlib
+from collections.abc import Iterable
 from hashlib import md5
-from typing import Iterable
 
 
-def md5_number(seed: bytes):
-    return int(md5(seed).hexdigest(), 16)
+def md5_number(seed: bytes) -> int:
+    return int(md5(seed, usedforsecurity=False).hexdigest(), 16)
 
 
 def dummy_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:

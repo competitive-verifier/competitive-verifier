@@ -1,5 +1,5 @@
 import shutil
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -24,58 +24,56 @@ class GoWithoutConfigData(IntegrationData):
         return "GoData"
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "helloworld.aoj.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
-                        },
-                        "verification": [
-                            {
-                                "command": {
-                                    "command": [
-                                        "go",
-                                        "run",
-                                        f"{self.targets_path}/helloworld.aoj.go",
-                                    ],
-                                    "env": {"GO111MODULE": "off"},
-                                },
-                                "name": "go",
-                                "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                                "type": "problem",
-                            }
-                        ],
+        return {
+            "files": {
+                "helloworld.aoj.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
                     },
-                    "helloworld/helloworld.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {},
-                        "verification": [],
-                    },
-                    "helloworld_test.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {"UNITTEST": "GOTESTRESULT"},
-                        "verification": [{"status": "failure", "type": "const"}],
-                    },
+                    "verification": [
+                        {
+                            "command": {
+                                "command": [
+                                    "go",
+                                    "run",
+                                    f"{self.targets_path}/helloworld.aoj.go",
+                                ],
+                                "env": {"GO111MODULE": "off"},
+                            },
+                            "name": "go",
+                            "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                            "type": "problem",
+                        }
+                    ],
                 },
-            }
-        )
+                "helloworld/helloworld.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "helloworld_test.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {"UNITTEST": "GOTESTRESULT"},
+                    "verification": [{"status": "failure", "type": "const"}],
+                },
+            },
+        }
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {
@@ -130,53 +128,51 @@ class GoWithConfigData(GoWithoutConfigData):
         return "GoData"
 
     @property
-    def config_path(self) -> Optional[str]:
+    def config_path(self) -> str | None:
         return (self.targets_path / "config.toml").as_posix()
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "helloworld.aoj.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {
-                            "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
-                        },
-                        "verification": [
-                            {
-                                "command": f"{self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go",
-                                "compile": f"env GO111MODULE=off go build -o {self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
-                                "name": "go",
-                                "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
-                                "type": "problem",
-                            }
-                        ],
+        return {
+            "files": {
+                "helloworld.aoj.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {
+                        "PROBLEM": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A"
                     },
-                    "helloworld/helloworld.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {},
-                        "verification": [],
-                    },
-                    "helloworld_test.go": {
-                        "additonal_sources": [],
-                        "dependencies": [
-                            "helloworld.aoj.go",
-                            "helloworld/helloworld.go",
-                            "helloworld_test.go",
-                        ],
-                        "document_attributes": {"UNITTEST": "GOTESTRESULT"},
-                        "verification": [{"status": "failure", "type": "const"}],
-                    },
+                    "verification": [
+                        {
+                            "command": f"{self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go",
+                            "compile": f"env GO111MODULE=off go build -o {self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
+                            "name": "go",
+                            "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
+                            "type": "problem",
+                        }
+                    ],
                 },
-            }
-        )
+                "helloworld/helloworld.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {},
+                    "verification": [],
+                },
+                "helloworld_test.go": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "helloworld.aoj.go",
+                        "helloworld/helloworld.go",
+                        "helloworld_test.go",
+                    ],
+                    "document_attributes": {"UNITTEST": "GOTESTRESULT"},
+                    "verification": [{"status": "failure", "type": "const"}],
+                },
+            },
+        }

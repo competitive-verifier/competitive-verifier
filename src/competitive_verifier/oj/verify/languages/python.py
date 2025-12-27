@@ -6,8 +6,8 @@ import os
 import pathlib
 import platform
 import sys
+from collections.abc import Sequence
 from logging import getLogger
-from typing import Sequence
 
 import importlab.environment
 import importlab.fs
@@ -27,14 +27,15 @@ class PythonLanguageEnvironment(LanguageEnvironment):
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
     ) -> str:
         python_path = os.getenv("PYTHONPATH")
-        if python_path:
-            python_path = basedir.resolve().as_posix() + os.pathsep + python_path
-        else:
-            python_path = basedir.resolve().as_posix()
+        python_path = (
+            basedir.resolve().as_posix() + os.pathsep + python_path
+            if python_path
+            else basedir.resolve().as_posix()
+        )
         return f"env PYTHONPATH={python_path} python {path}"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _python_list_depending_files(
     path: pathlib.Path, basedir: pathlib.Path
 ) -> list[pathlib.Path]:
@@ -51,10 +52,10 @@ def _python_list_depending_files(
             [str(path)],
             True,
         )
-        if platform.uname().system == "Windows":
-            timeout = 5.0  # 1.0 sec causes timeout on CI using Windows
-        else:
-            timeout = 1.0
+
+        timeout = 5.0 if platform.uname().system == "Windows" else 1.0
+        # 1.0 sec causes timeout on CI using Windows
+
         res_graph = future.result(timeout=timeout)
     except concurrent.futures.TimeoutError as e:
         raise RuntimeError(
@@ -75,9 +76,11 @@ def _python_list_depending_files(
         node = pathlib.Path(node_)
         deps = list(map(pathlib.Path, deps_))
         if node.resolve() == path.resolve():
-            for dep in deps:
-                if basedir.resolve() in dep.resolve().parents:
-                    res_deps.append(dep.resolve())
+            res_deps.extend(
+                dep.resolve()
+                for dep in deps
+                if basedir.resolve() in dep.resolve().parents
+            )
             break
     return list(set(res_deps))
 

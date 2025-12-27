@@ -1,9 +1,9 @@
 import argparse
 import logging
 import sys
+from collections.abc import Iterable
 from itertools import chain
 from logging import getLogger
-from typing import Iterable, Optional, Union
 
 from competitive_verifier import oj
 from competitive_verifier.arg import (
@@ -21,22 +21,21 @@ from competitive_verifier.resource import ulimit_stack
 
 logger = getLogger(__name__)
 
-UrlOrVerificationFile = Union[str, VerificationFile]
+UrlOrVerificationFile = str | VerificationFile
 
 
 def parse_urls(
-    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]]
+    url_or_file: UrlOrVerificationFile | Iterable[UrlOrVerificationFile],
 ) -> set[str]:
     def parse_single(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
         if isinstance(url_or_file, str):
             return (url_or_file,)
-        else:
-            return enumerate_urls(url_or_file)
+        return enumerate_urls(url_or_file)
 
-    if isinstance(input, (str, VerificationFile)):
-        return set(parse_single(input))
+    if isinstance(url_or_file, (str, VerificationFile)):
+        return set(parse_single(url_or_file))
 
-    return set(chain.from_iterable(map(parse_single, input)))
+    return set(chain.from_iterable(map(parse_single, url_or_file)))
 
 
 def enumerate_urls(file: VerificationFile) -> Iterable[str]:
@@ -46,7 +45,8 @@ def enumerate_urls(file: VerificationFile) -> Iterable[str]:
 
 
 def run_impl(
-    input: Union[UrlOrVerificationFile, Iterable[UrlOrVerificationFile]],
+    url_or_file: UrlOrVerificationFile | Iterable[UrlOrVerificationFile],
+    *,
     check: bool = False,
     group_log: bool = False,
 ) -> bool:
@@ -55,7 +55,7 @@ def run_impl(
         ulimit_stack()
     except Exception:
         logger.warning("failed to increase the stack size[ulimit]")
-    for url in parse_urls(input):
+    for url in parse_urls(url_or_file):
         if not oj.download(url, group_log=group_log):
             result = False
 
@@ -92,7 +92,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

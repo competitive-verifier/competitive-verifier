@@ -3,7 +3,6 @@ import logging
 import pathlib
 import sys
 from logging import getLogger
-from typing import Optional, Union
 
 from pydantic import ValidationError
 
@@ -17,9 +16,10 @@ logger = getLogger(__name__)
 
 
 def run_impl(
+    *,
     include: list[str],
     exclude: list[str],
-    config: Union[pathlib.Path, OjVerifyConfig, None],
+    config: pathlib.Path | OjVerifyConfig | None,
     enable_bundle: bool,
 ) -> bool:
     if config is None:
@@ -31,8 +31,8 @@ def run_impl(
             with pathlib.Path(config_path).open("rb") as fp:
                 config = OjVerifyConfig.load(fp)
                 logger.info("config file loaded: %s: %s", str(config_path), config)
-        except ValidationError as e:
-            logger.error("config file validation error: %s", e)
+        except ValidationError:
+            logger.exception("config file validation error")
             config = OjVerifyConfig()
 
     resolver = OjResolver(
@@ -77,7 +77,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

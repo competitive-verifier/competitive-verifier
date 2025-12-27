@@ -1,13 +1,13 @@
+import contextlib
 import pathlib
 import re
 import shutil
 import urllib.parse
 from logging import getLogger
-from typing import Optional
 
 import yaml
 
-import competitive_verifier.git as git
+from competitive_verifier import git
 from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
@@ -78,7 +78,7 @@ def migrate_conf_dir(*, dry_run: bool):
     shutil.rmtree(old_docs_dir)
 
 
-def _get_docs_path(content: str, *, path: pathlib.Path) -> Optional[pathlib.Path]:
+def _get_docs_path(content: str, *, path: pathlib.Path) -> pathlib.Path | None:
     docs_match = _docs_pattern.search(content)
     if docs_match:
         doc_path = docs_match.group(1)
@@ -158,24 +158,18 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         logger.debug("Not updated: %s", path.as_posix())
 
 
-def _lang_type_to_str(lang: Optional[Language]) -> Optional[str]:
-    if isinstance(lang, CPlusPlusLanguage):
-        return "cpp"
-    if isinstance(lang, GoLanguage):
-        return "go"
-    if isinstance(lang, HaskellLanguage):
-        return "haskel"
-    if isinstance(lang, JavaLanguage):
-        return "java"
-    if isinstance(lang, NimLanguage):
-        return "nim"
-    if isinstance(lang, PythonLanguage):
-        return "python"
-    if isinstance(lang, RubyLanguage):
-        return "ruby"
-    if isinstance(lang, RustLanguage):
-        return "rust"
-    return None
+def _lang_type_to_str(lang: Language | None) -> str | None:
+    d: dict[type, str] = {
+        CPlusPlusLanguage: "cpp",
+        GoLanguage: "go",
+        HaskellLanguage: "haskel",
+        JavaLanguage: "java",
+        NimLanguage: "nim",
+        PythonLanguage: "python",
+        RubyLanguage: "ruby",
+        RustLanguage: "rust",
+    }
+    return d.get(type(lang))
 
 
 def _get_action_query(languages: set[str]) -> dict[str, str]:
@@ -203,7 +197,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
     if jekyll_config_path.exists():
         with jekyll_config_path.open("r") as fp:
             jekyll_config = yaml.safe_load(fp)
-        try:
+        with contextlib.suppress(Exception):
             exclude = jekyll_config.get("exclude")
             if isinstance(exclude, list):
                 exclude = "\n".join(
@@ -211,12 +205,10 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
                 )
             if exclude:
                 d["exclude"] = exclude
-        except Exception:
-            pass
     return d
 
 
-def main(dry_run: bool) -> bool:
+def main(*, dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
 
     languages = set[str]()
@@ -234,7 +226,6 @@ def main(dry_run: bool) -> bool:
 
     logger.info("Complete migrations")
     print("Next steps")
-    # page = "http://localhost:4000"
     page = "https://competitive-verifier.github.io/competitive-verifier"
     print(f"  1. Open {page}/installer.html?{urllib.parse.urlencode(d)}")
     print("  2. Update your GitHub Actions.")

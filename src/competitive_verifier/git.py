@@ -1,6 +1,7 @@
 import datetime
 import pathlib
-from typing import TYPE_CHECKING, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from .exec import exec_command
 
@@ -9,9 +10,7 @@ if TYPE_CHECKING:
 
 
 def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
-    code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--"] + list(
-        map(str, files)
-    )
+    code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--", *map(str, files)]
     stdout = exec_command(code, text=True, capture_output=True).stdout
     timestamp = stdout.strip()
     if not timestamp:
@@ -21,7 +20,7 @@ def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
 
 def ls_files(*args: "StrPath") -> set[pathlib.Path]:
     stdout = exec_command(
-        ["git", "ls-files", "-z"] + list(str(p) for p in (args or [])),
+        ["git", "ls-files", "-z", *[str(p) for p in (args or [])]],
         text=True,
         capture_output=True,
     ).stdout

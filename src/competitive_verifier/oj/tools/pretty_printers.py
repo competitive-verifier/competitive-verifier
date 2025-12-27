@@ -1,12 +1,15 @@
 import difflib
 import enum
 import shutil
+from collections.abc import Generator, Iterable
 from logging import getLogger
-from typing import Iterable, NamedTuple, Optional
+from typing import Literal, NamedTuple
 
 import colorama
 
 from .output_comparators import CompareMode, check_lines_match
+
+# ruff: noqa: S101
 
 logger = getLogger(__name__)
 
@@ -44,10 +47,7 @@ def _tokenize_str(s: str) -> list[_PrettyToken]:
         r = l + 1
         while r < len(s) and (s[l] in " \t") == (s[r] in " \t"):
             r += 1
-        if s[l] in " \t":
-            typ = _PrettyTokenType.WHITESPACE
-        else:
-            typ = _PrettyTokenType.BODY
+        typ = _PrettyTokenType.WHITESPACE if s[l] in " \t" else _PrettyTokenType.BODY
         tokens.append(_PrettyToken(typ, s[l:r]))
         l = r
     return tokens
@@ -102,7 +102,6 @@ def _tokenize_large_file_content(
     *, content: bytes, limit: int, head: int, tail: int, char_in_line: int
 ) -> list[_PrettyToken]:
     """`_tokenize_large_file_content` constructs the intermediate representations. They have no color infomation."""
-
     assert head + tail < limit
 
     def candidate_do_nothing(text: str) -> list[_PrettyToken]:
@@ -122,7 +121,7 @@ def _tokenize_large_file_content(
         tokens.append(
             _PrettyToken(
                 _PrettyTokenType.HINT,
-                "... ({} lines) ...\n".format(len(lines[head:-tail])),
+                f"... ({len(lines[head:-tail])} lines) ...\n",
             )
         )
         for line in lines[-tail:]:
@@ -138,9 +137,7 @@ def _tokenize_large_file_content(
         tokens: list[_PrettyToken] = []
         for line in text[:l].splitlines(keepends=True):
             tokens += _tokenize_line(line)
-        tokens.append(
-            _PrettyToken(_PrettyTokenType.HINT, "... ({} chars) ...".format(r - l))
-        )
+        tokens.append(_PrettyToken(_PrettyTokenType.HINT, f"... ({r - l} chars) ..."))
         for line in text[r:].splitlines(keepends=True):
             tokens += _tokenize_line(line)
         return tokens
@@ -160,8 +157,7 @@ def _tokenize_large_file_content(
             candidate_char_based(text),
         ]
         tokens.extend(min(candidates, key=count_size))
-    tokens = _warn_if_empty(tokens)
-    return tokens
+    return _warn_if_empty(tokens)
 
 
 def _replace_whitespace(s: str) -> str:
@@ -188,25 +184,27 @@ def _render_tokens(*, tokens: list[_PrettyToken]) -> str:
 
     result: list[str] = []
     for key, value in tokens:
-        if key == _PrettyTokenType.BODY:
-            value = font_bold(value)
-        elif key == _PrettyTokenType.BODY_HIGHLIGHT_LEFT:
-            value = font_red(value)
-        elif key == _PrettyTokenType.BODY_HIGHLIGHT_RIGHT:
-            value = font_red(value)
-        elif key == _PrettyTokenType.WHITESPACE:
-            value = font_dim(_replace_whitespace(value))
-        elif key == _PrettyTokenType.NEWLINE:
-            value = font_dim(_replace_whitespace(value))
-        elif key == _PrettyTokenType.HINT:
-            value = font_dim(value)
-        elif key == _PrettyTokenType.LINENO:
-            value = font_blue(value)
-        elif key == _PrettyTokenType.OTHERS:
-            value = font_normal(value)
-        else:
-            assert False
-        result.append(value)
+        match key:
+            case _PrettyTokenType.BODY:
+                v = font_bold(value)
+            case _PrettyTokenType.BODY_HIGHLIGHT_LEFT:
+                v = font_red(value)
+            case _PrettyTokenType.BODY_HIGHLIGHT_RIGHT:
+                v = font_red(value)
+            case _PrettyTokenType.WHITESPACE:
+                v = font_dim(_replace_whitespace(value))
+            case _PrettyTokenType.NEWLINE:
+                v = font_dim(_replace_whitespace(value))
+            case _PrettyTokenType.HINT:
+                v = font_dim(value)
+            case _PrettyTokenType.LINENO:
+                v = font_blue(value)
+            case _PrettyTokenType.OTHERS:
+                v = font_normal(value)
+            case _:
+                msg = f"Invalid token type: {key!r}"
+                raise ValueError(msg)
+        result.append(v)
     return "".join(result)
 
 
@@ -231,8 +229,7 @@ def _tokenize_file_content_without_snipping(content: bytes) -> list[_PrettyToken
     tokens, text = _decode_with_recovery(content)
     for line in text.splitlines(keepends=True):
         tokens += _tokenize_line(line)
-    tokens = _warn_if_empty(tokens)
-    return tokens
+    return _warn_if_empty(tokens)
 
 
 def make_pretty_all(content: bytes) -> str:
@@ -243,10 +240,7 @@ def make_pretty_all(content: bytes) -> str:
 def _skip_whitespaces(i: int, s: str) -> tuple[int, list[_PrettyToken]]:
     tokens: list[_PrettyToken] = []
     while i < len(s) and s[i] in " \t\r\n":
-        if s[i] in " \t":
-            typ = _PrettyTokenType.WHITESPACE
-        else:
-            typ = _PrettyTokenType.NEWLINE
+        typ = _PrettyTokenType.WHITESPACE if s[i] in " \t" else _PrettyTokenType.NEWLINE
         tokens.append(_PrettyToken(typ, s[i]))
         i += 1
     return i, _optimize_tokens(tokens)
@@ -298,9 +292,9 @@ def _make_diff_between_line_and_line_by_comparing_word_by_word(
         l_b = r_b
         skip_whitespaces()
 
-    assert l_a == len(a) and l_b == len(
-        b
-    )  # The two strings have the same number of words, so this must be true.
+    if l_a != len(a) or l_b != len(b):
+        # The two strings have the same number of words, so this must be true.
+        raise ValueError("string length mismatch during comparing word by word")
     return tokens_a, tokens_b
 
 
@@ -342,7 +336,7 @@ def _make_diff_between_line_and_line_by_difflib(
             tokens_a.extend(_tokenize_str(a[l_a:r_a]))
             tokens_b.extend(_tokenize_str(b[l_b:r_b]))
         else:
-            assert False
+            raise AssertionError
 
     if len(a.rstrip("\n")) < len(a):
         tokens_a.append(
@@ -362,14 +356,13 @@ def _make_diff_between_line_and_line(
 ) -> tuple[list[_PrettyToken], list[_PrettyToken]]:
     if len(a.strip().split()) == len(b.strip().split()):
         return _make_diff_between_line_and_line_by_comparing_word_by_word(a, b)
-    else:
-        return _make_diff_between_line_and_line_by_difflib(a, b)
+    return _make_diff_between_line_and_line_by_difflib(a, b)
 
 
 class _LineDiffOp(NamedTuple):
     lineno: int  # 0-based. This may be an index of the left side, the right side or the both sides.
-    left: Optional[list[_PrettyToken]]
-    right: Optional[list[_PrettyToken]]
+    left: list[_PrettyToken] | None
+    right: list[_PrettyToken] | None
 
 
 # This function assumes that the two strings have the same number of lines.
@@ -425,6 +418,60 @@ def _tokenize_line_with_highlight(line: str, *, is_right: bool) -> list[_PrettyT
     return tokens
 
 
+def _enumerate_ops(
+    tag: Literal["replace", "delete", "insert", "equal"],
+    l_a: int,
+    r_a: int,
+    l_b: int,
+    r_b: int,
+    *,
+    lines_a: list[str],
+    lines_b: list[str],
+) -> Generator[_LineDiffOp, None, None]:
+    if tag == "replace":
+        while l_a < r_a and l_a < l_b:
+            tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            yield _LineDiffOp(l_a, tokens, None)
+            l_a += 1
+        while l_b < r_b and l_b < l_a:
+            tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_b, None, tokens)
+            l_b += 1
+        while l_a < r_a and l_b < r_b:
+            assert l_a == l_b
+            tokens_a = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            tokens_b = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_a, tokens_a, tokens_b)
+            l_a += 1
+            l_b += 1
+        while l_a < r_a:
+            tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
+            yield _LineDiffOp(l_a, tokens, None)
+            l_a += 1
+        while l_b < r_b:
+            tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
+            yield _LineDiffOp(l_b, None, tokens)
+            l_b += 1
+
+    elif tag == "delete":
+        assert l_b == r_b
+        for i in range(l_a, r_a):
+            tokens = _tokenize_line_with_highlight(lines_a[i], is_right=False)
+            yield _LineDiffOp(i, tokens, None)
+
+    elif tag == "insert":
+        assert l_a == r_a
+        for i in range(l_b, r_b):
+            tokens = _tokenize_line_with_highlight(lines_b[i], is_right=True)
+            yield _LineDiffOp(i, None, tokens)
+
+    elif tag == "equal":
+        pass
+
+    else:
+        raise AssertionError(f"Unknown tag: {tag}")
+
+
 # This function works as --compare-mode=exact-match.
 def _make_diff_between_file_and_file_by_difflib(a: str, b: str) -> list[_LineDiffOp]:
     lines_a = a.splitlines(keepends=True)
@@ -435,48 +482,17 @@ def _make_diff_between_file_and_file_by_difflib(a: str, b: str) -> list[_LineDif
     matcher = difflib.SequenceMatcher()
     matcher.set_seqs(lines_a, lines_b)
     for tag, l_a, r_a, l_b, r_b in matcher.get_opcodes():
-        if tag == "replace":
-            while l_a < r_a and l_a < l_b:
-                tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                ops.append(_LineDiffOp(l_a, tokens, None))
-                l_a += 1
-            while l_b < r_b and l_b < l_a:
-                tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_b, None, tokens))
-                l_b += 1
-            while l_a < r_a and l_b < r_b:
-                assert l_a == l_b
-                tokens_a = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                tokens_b = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_a, tokens_a, tokens_b))
-                l_a += 1
-                l_b += 1
-            while l_a < r_a:
-                tokens = _tokenize_line_with_highlight(lines_a[l_a], is_right=False)
-                ops.append(_LineDiffOp(l_a, tokens, None))
-                l_a += 1
-            while l_b < r_b:
-                tokens = _tokenize_line_with_highlight(lines_b[l_b], is_right=True)
-                ops.append(_LineDiffOp(l_b, None, tokens))
-                l_b += 1
-
-        elif tag == "delete":
-            assert l_b == r_b
-            for i in range(l_a, r_a):
-                tokens = _tokenize_line_with_highlight(lines_a[i], is_right=False)
-                ops.append(_LineDiffOp(i, tokens, None))
-
-        elif tag == "insert":
-            assert l_a == r_a
-            for i in range(l_b, r_b):
-                tokens = _tokenize_line_with_highlight(lines_b[i], is_right=True)
-                ops.append(_LineDiffOp(i, None, tokens))
-
-        elif tag == "equal":
-            pass
-
-        else:
-            assert False
+        ops.extend(
+            _enumerate_ops(
+                tag,
+                l_a,
+                r_a,
+                l_b,
+                r_b,
+                lines_a=lines_a,
+                lines_b=lines_b,
+            )
+        )
 
     return ops
 
@@ -489,29 +505,29 @@ def _make_diff_between_file_and_file(
         return _make_diff_between_file_and_file_by_comparing_line_by_line(
             a, b, compare_mode=compare_mode
         )
-    else:
-        if compare_mode in (
-            CompareMode.IGNORE_SPACES,
-            CompareMode.IGNORE_SPACES_AND_NEWLINES,
-        ):
-            logger.warning(
-                "ignoring --compare-mode=%s and using --compare-mode=%s (default) instead for generating diff...",
-                str(compare_mode),
-                str(CompareMode.CRLF_INSENSITIVE_EXACT_MATCH),
-            )
-            compare_mode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
-        if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH:
-            if "\r" in a or "\r" in b:
-                logger.warning("carriage return '\\r' is removed from diff")
-                a = a.replace("\r\n", "\n")
-                b = b.replace("\r\n", "\n")
-        return _make_diff_between_file_and_file_by_difflib(a, b)
+    if compare_mode in (
+        CompareMode.IGNORE_SPACES,
+        CompareMode.IGNORE_SPACES_AND_NEWLINES,
+    ):
+        logger.warning(
+            "ignoring --compare-mode=%s and using --compare-mode=%s (default) instead for generating diff...",
+            str(compare_mode),
+            str(CompareMode.CRLF_INSENSITIVE_EXACT_MATCH),
+        )
+        compare_mode = CompareMode.CRLF_INSENSITIVE_EXACT_MATCH
+    if compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH and (
+        "\r" in a or "\r" in b
+    ):
+        logger.warning("carriage return '\\r' is removed from diff")
+        a = a.replace("\r\n", "\n")
+        b = b.replace("\r\n", "\n")
+    return _make_diff_between_file_and_file_by_difflib(a, b)
 
 
 class _MergedDiffOp(NamedTuple):
-    left_lineno: Optional[int]  # 0-based
+    left_lineno: int | None  # 0-based
     left: list[_PrettyToken]
-    right_lineno: Optional[int]  # 0-based
+    right_lineno: int | None  # 0-based
     right: list[_PrettyToken]
     has_diff: bool
 
@@ -579,8 +595,9 @@ def _reconstruct_entire_diff(
             stk.pop()
             i_b += 1
         else:
-            assert False
-    assert i_a == len(lines_a) and i_b == len(lines_b)
+            raise AssertionError
+    if i_a != len(lines_a) or i_b != len(lines_b):
+        raise ValueError("line count mismatch during reconstructing entire diff")
 
     return result
 
@@ -597,13 +614,15 @@ def _add_lines_around_diff_lines(
             unused = []
             result.append(op)
             use = size
+        elif use:
+            result.append(op)
+            use -= 1
         else:
-            if use:
-                result.append(op)
-                use -= 1
-            else:
-                unused.append(op)
+            unused.append(op)
     return result
+
+
+DOT_GAP_SIZE = 2
 
 
 def _add_dots_between_gaps(
@@ -614,16 +633,19 @@ def _add_dots_between_gaps(
     # body
     for op in ops:
         if (
-            result
-            and result[-1].left_lineno is not None
-            and result[-1].right_lineno is not None
+            (
+                result
+                and result[-1].left_lineno is not None
+                and result[-1].right_lineno is not None
+            )
+            and op.left_lineno is not None
+            and op.right_lineno is not None
+            and (
+                op.left_lineno - result[-1].left_lineno >= DOT_GAP_SIZE
+                and op.right_lineno - result[-1].right_lineno >= DOT_GAP_SIZE
+            )
         ):
-            if op.left_lineno is not None and op.right_lineno is not None:
-                if (
-                    op.left_lineno - result[-1].left_lineno >= 2
-                    and op.right_lineno - result[-1].right_lineno >= 2
-                ):
-                    result.append(_MergedDiffOpDots)
+            result.append(_MergedDiffOpDots)
         result.append(op)
 
     # header and footer
@@ -641,7 +663,7 @@ def _add_dots_between_gaps(
             min_right_lineno = min(min_right_lineno, op.right_lineno)
             max_right_lineno = op.right_lineno
     if min_left_lineno != 0 or min_right_lineno != 0:
-        result = [_MergedDiffOpDots] + result
+        result = [_MergedDiffOpDots, *result]
     if max_left_lineno != len(lines_a) - 1 or max_right_lineno != len(lines_b) - 1:
         result += [_MergedDiffOpDots]
 
@@ -723,9 +745,8 @@ def _tokens_from_line_diff_ops(
             )
             tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "| "))
             tokens.extend(op.right)
-        else:
-            if left_exists:
-                tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "\n"))
+        elif left_exists:
+            tokens.append(_PrettyToken(_PrettyTokenType.OTHERS, "\n"))
     return tokens
 
 
@@ -740,15 +761,12 @@ def _summary_token_of_diff_ops(ops: list[_MergedDiffOp]) -> list[_PrettyToken]:
                 added += 1
     if not removed and not added:
         return []
-    else:
-        return [
-            _PrettyToken(
-                _PrettyTokenType.HINT,
-                "(also {} lines are deleted and {} lines are added...)".format(
-                    removed, added
-                ),
-            )
-        ]
+    return [
+        _PrettyToken(
+            _PrettyTokenType.HINT,
+            f"(also {removed} lines are deleted and {added} lines are added...)",
+        )
+    ]
 
 
 def _tokenize_pretty_diff(

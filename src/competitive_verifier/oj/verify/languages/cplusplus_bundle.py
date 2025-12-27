@@ -1,4 +1,5 @@
 # Python Version: 3.x
+import contextlib
 import functools
 import json
 import os
@@ -6,7 +7,7 @@ import pathlib
 import re
 import shutil
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 
 from competitive_verifier.oj.verify.utils import exec_command
 
@@ -164,7 +165,7 @@ TR1_LIBS = {
 }
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _check_compiler(compiler: str) -> str:
     # Executables named "g++" are not always g++, due to the fake g++ of macOS
     version = exec_command([compiler, "--version"]).stdout.decode()
@@ -175,7 +176,7 @@ def _check_compiler(compiler: str) -> str:
     return "unknown"  # default
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _get_uncommented_code(
     path: pathlib.Path, *, iquotes_options: tuple[str, ...], compiler: str
 ) -> bytes:
@@ -229,15 +230,13 @@ class BundleError(Exception):
     pass
 
 
-class BundleErrorAt(BundleError):
+class BundleErrorAt(BundleError):  # noqa: N818
     def __init__(
         self, path: pathlib.Path, line: int, message: str, *args: Any, **kwargs: Any
     ):
-        try:
+        with contextlib.suppress(ValueError):
             path = path.resolve().relative_to(pathlib.Path.cwd())
-        except ValueError:
-            pass
-        message = "{}: line {}: {}".format(str(path), line, message)
+        message = f"{path!s}: line {line}: {message}"
         super().__init__(message, *args, **kwargs)
 
 
@@ -252,7 +251,7 @@ class Bundler:
     def __init__(
         self,
         *,
-        iquotes: Optional[list[pathlib.Path]] = None,
+        iquotes: list[pathlib.Path] | None = None,
         compiler: str = os.environ.get("CXX", "g++"),
     ) -> None:
         if iquotes is None:
@@ -268,15 +267,11 @@ class Bundler:
     def _line(self, line: int, path: pathlib.Path) -> None:
         while self.result_lines and self.result_lines[-1].startswith(b"#line "):
             self.result_lines.pop()
-        try:
+        with contextlib.suppress(ValueError):
             path = path.relative_to(pathlib.Path.cwd())
-        except ValueError:
-            pass
         # パス中の特殊文字を JSON style にエスケープしてから生成コードに記述
         # quick solution to this: https://github.com/online-judge-tools/verification-helper/issues/280
-        self.result_lines.append(
-            "#line {} {}\n".format(line, json.dumps(str(path))).encode()
-        )
+        self.result_lines.append(f"#line {line} {json.dumps(str(path))}\n".encode())
 
     # path を解決する
     # see: https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
@@ -290,7 +285,7 @@ class Bundler:
                 return (dir_ / path).resolve()
         raise BundleErrorAt(path, -1, "no such header")
 
-    def update(self, path: pathlib.Path) -> None:  # noqa: C901
+    def update(self, path: pathlib.Path) -> None:
         if path.resolve() in self.pragma_once:
             logger.debug(
                 "%s: skipped since this file is included once with include guard",
@@ -326,13 +321,17 @@ class Bundler:
             )  # trailing comment lines are removed
             assert len(lines) == len(uncommented_lines)
             self._line(1, path)
-            for i, (line, uncommented_line) in enumerate(zip(lines, uncommented_lines)):
+            for i, (line, uncommented_line) in enumerate(
+                zip(lines, uncommented_lines, strict=False)
+            ):
                 # nest の処理
                 if re.match(rb"\s*#\s*(if|ifdef|ifndef)\s.*", uncommented_line):
                     preprocess_if_nest += 1
-                if re.match(rb"\s*#\s*(else\s*|elif\s.*)", uncommented_line):
-                    if preprocess_if_nest == 0:
-                        raise BundleErrorAt(path, i + 1, "unmatched #else / #elif")
+                if (
+                    re.match(rb"\s*#\s*(else\s*|elif\s.*)", uncommented_line)
+                    and preprocess_if_nest == 0
+                ):
+                    raise BundleErrorAt(path, i + 1, "unmatched #else / #elif")
                 if re.match(rb"\s*#\s*endif\s*", uncommented_line):
                     preprocess_if_nest -= 1
                     if preprocess_if_nest < 0:
@@ -364,7 +363,7 @@ class Bundler:
                     self._line(i + 2, path)
                     continue
 
-                matched: Optional[re.Match[bytes]]
+                matched: re.Match[bytes] | None
                 # #ifndef HOGE_H as guard
                 if (
                     not pragma_once_found
@@ -403,11 +402,10 @@ class Bundler:
                     include_guard_define_found
                     and preprocess_if_nest == 0
                     and not include_guard_endif_found
-                ):
-                    if re.match(rb"\s*#\s*endif\s*", uncommented_line):
-                        include_guard_endif_found = True
-                        self.result_lines.append(b"\n")
-                        continue
+                ) and re.match(rb"\s*#\s*endif\s*", uncommented_line):
+                    include_guard_endif_found = True
+                    self.result_lines.append(b"\n")
+                    continue
 
                 if uncommented_line and not re.match(rb"^\s*$", uncommented_line):
                     non_guard_line_found = True

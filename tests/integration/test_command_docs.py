@@ -1,3 +1,4 @@
+# ruff: noqa: RUF001
 import filecmp
 import inspect
 import logging
@@ -5,10 +6,11 @@ import os
 import pathlib
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, NamedTuple
+from typing import Any
 
 import pytest
 import yaml
+from pydantic import BaseModel, Field
 from pytest_mock import MockerFixture
 from pytest_subtests import SubTests
 
@@ -380,7 +382,15 @@ def data(
                         "dependsOn": ["encoding/cp932.txt"],
                         "embedded": [
                             {
-                                "code": "컴퓨터 프로그램(영국 영어: computer programme, 미국 영어: computer program)은 컴퓨터에서 실행될 때 특정 작업(specific task)을 수행하는 일련의 명령어들의 모음(집합)이다.[1][2] 특정 문제를 해결하기 위해 처리 방법과 순서를 기술하여 컴퓨터에 입력되는 일련의 명령문 집합체이며 대부분의 프로그램은 실행 중(즉, 명령어를 '불러들일' 때)에 사용자의 입력에 반응하도록 구현된 일련의 명령어들로 구성되어 있다. 대부분의 프로그램들은 하드디스크 등의 매체에 바이너리 형식의 파일로 저장되어 있다가 사용자가 실행시키면 메모리로 적재되어 실행된다. 컴퓨터 소프트웨어와 비슷한 뜻을 가지고 있다. \"컴퓨터프로그램저작물\"은 저작권법상 저작물로서 보호된다. 동법에서 컴퓨터프로그램저작물이라 함은 특정한 결과를 얻기 위하여 컴퓨터 등 정보처리능력을 가진 장치 내에서 직접 또는 간접으로 사용되는 일련의 지시?· 명령으로 표현된 창작물을 말한다. (대한민국 저작권법 제2조 16호 및 제4조 제1항 9호)",
+                                "code": "컴퓨터 프로그램(영국 영어: computer programme, 미국 영어: computer program)은"
+                                " 컴퓨터에서 실행될 때 특정 작업(specific task)을 수행하는 일련의 명령어들의 모음(집합)이다.[1][2]"
+                                " 특정 문제를 해결하기 위해 처리 방법과 순서를 기술하여 컴퓨터에 입력되는 일련의 명령문 집합체이며"
+                                " 대부분의 프로그램은 실행 중(즉, 명령어를 '불러들일' 때)에 사용자의 입력에 반응하도록 구현된 일련의"
+                                " 명령어들로 구성되어 있다. 대부분의 프로그램들은 하드디스크 등의 매체에 바이너리 형식의 파일로 저장되어"
+                                " 있다가 사용자가 실행시키면 메모리로 적재되어 실행된다. 컴퓨터 소프트웨어와 비슷한 뜻을 가지고 있다."
+                                ' "컴퓨터프로그램저작물"은 저작권법상 저작물로서 보호된다. 동법에서 컴퓨터프로그램저작물이라 함은 특정한'
+                                " 결과를 얻기 위하여 컴퓨터 등 정보처리능력을 가진 장치 내에서 직접 또는 간접으로 사용되는 일련의 지시?·"
+                                " 명령으로 표현된 창작물을 말한다. (대한민국 저작권법 제2조 16호 및 제4조 제1항 9호)",
                                 "name": "default",
                             },
                             {"code": f"cp949{os.linesep}", "name": "bundled"},
@@ -429,7 +439,10 @@ def data(
                         "dependsOn": ["encoding/EUC-KR.txt"],
                         "embedded": [
                             {
-                                "code": "雨ニモマケズ\n風ニモマケズ\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ\n慾ハナク\n決シテ瞋ラズ\nイツモシヅカニワラッテヰル\n一日ニ玄米四合ト\n味噌ト少シノ野菜ヲタベ\nアラユルコトヲ\nジブンヲカンジョウニ入レズニ\nヨクミキキシワカリ\nソシテワスレズ\n野原ﾉ松ﾉ林ﾉ陰ﾉ\n小ｻﾅ萱ﾌﾞｷﾉ小屋ﾆヰﾃ\n東ﾆ病気ﾉｺﾄﾞﾓｱﾚﾊﾞ\n行ｯﾃ看病ｼﾃﾔﾘ\n西ﾆﾂｶﾚﾀ母ｱﾚﾊﾞ\n行ｯﾃｿﾉ稲ﾉ束ｦ負ﾋ\n南ﾆ死ﾆｻｳﾅ人ｱﾚﾊﾞ\n行ｯﾃｺﾊｶﾞﾗﾅｸﾃﾓｲヽﾄｲﾋ\n北ﾆｹﾝｸヮﾔｿｼｮｳｶﾞｱﾚﾊﾞ\nﾂﾏﾗﾅｲｶﾗﾔﾒﾛﾄｲﾋ\nﾋﾃﾞﾘﾉﾄｷﾊﾅﾐﾀﾞｦﾅｶﾞｼ\nｻﾑｻﾉﾅﾂﾊｵﾛｵﾛｱﾙｷ\nﾐﾝﾅﾆﾃﾞｸﾉﾎﾞーﾄﾖﾊﾞﾚ\nﾎﾒﾗﾚﾓｾｽﾞ\nｸﾆﾓｻﾚｽﾞ\nｻｳｲﾌﾓﾉﾆ\nﾜﾀｼﾊﾅﾘﾀｲ",
+                                "code": "雨ニモマケズ\n風ニモマケズ\n雪ニモ夏ノ暑サニモマケヌ\n丈夫ナカラダヲモチ\n慾ハナク\n決シテ瞋ラズ\nイツモシヅカニワラッテヰル\n"
+                                "一日ニ玄米四合ト\n味噌ト少シノ野菜ヲタベ\nアラユルコトヲ\nジブンヲカンジョウニ入レズニ\nヨクミキキシワカリ\nソシテワスレズ\n野原ﾉ松ﾉ林ﾉ陰ﾉ\n"
+                                "小ｻﾅ萱ﾌﾞｷﾉ小屋ﾆヰﾃ\n東ﾆ病気ﾉｺﾄﾞﾓｱﾚﾊﾞ\n行ｯﾃ看病ｼﾃﾔﾘ\n西ﾆﾂｶﾚﾀ母ｱﾚﾊﾞ\n行ｯﾃｿﾉ稲ﾉ束ｦ負ﾋ\n南ﾆ死ﾆｻｳﾅ人ｱﾚﾊﾞ\n行ｯﾃｺﾊｶﾞﾗﾅｸﾃﾓｲヽﾄｲﾋ\n"
+                                "北ﾆｹﾝｸヮﾔｿｼｮｳｶﾞｱﾚﾊﾞ\nﾂﾏﾗﾅｲｶﾗﾔﾒﾛﾄｲﾋ\nﾋﾃﾞﾘﾉﾄｷﾊﾅﾐﾀﾞｦﾅｶﾞｼ\nｻﾑｻﾉﾅﾂﾊｵﾛｵﾛｱﾙｷ\nﾐﾝﾅﾆﾃﾞｸﾉﾎﾞーﾄﾖﾊﾞﾚ\nﾎﾒﾗﾚﾓｾｽﾞ\nｸﾆﾓｻﾚｽﾞ\nｻｳｲﾌﾓﾉﾆ\nﾜﾀｼﾊﾅﾘﾀｲ",
                                 "name": "default",
                             },
                             {"code": f"cp932{os.linesep}", "name": "bundled"},
@@ -1725,8 +1738,8 @@ class TestCommandDocuments:
                 docs_settings_dir.as_posix(),
                 "--destination",
                 destination.as_posix(),
+                *data.default_args,
             ]
-            + data.default_args
         )
 
         check_common(destination, data=data, subtests=subtests)
@@ -1780,13 +1793,7 @@ class TestCommandDocuments:
     ):
         destination = package_dst / inspect.stack()[0].function
 
-        main(
-            [
-                "--destination",
-                destination.as_posix(),
-            ]
-            + data.default_args
-        )
+        main(["--destination", destination.as_posix(), *data.default_args])
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1838,13 +1845,7 @@ class TestCommandDocuments:
         caplog.set_level(logging.WARNING)
         destination = package_dst / inspect.stack()[0].function
 
-        main(
-            [
-                "--destination",
-                destination.as_posix(),
-            ]
-            + data.default_args
-        )
+        main(["--destination", destination.as_posix(), *data.default_args])
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1870,8 +1871,8 @@ class TestCommandDocuments:
                 "failure.*.md",
                 "--destination",
                 destination.as_posix(),
+                *data.default_args,
             ]
-            + data.default_args
         )
 
         check_common(destination, data=data, subtests=subtests)
@@ -1903,8 +1904,8 @@ class TestCommandDocuments:
                 *exclude,
                 "--destination",
                 destination.as_posix(),
+                *data.default_args,
             ]
-            + data.default_args
         )
 
         check_common(destination, data=data, subtests=subtests)
@@ -1928,8 +1929,8 @@ class TestCommandDocuments:
                 "dummy/dummy.py",
                 "--destination",
                 destination.as_posix(),
+                *data.default_args,
             ]
-            + data.default_args
         )
 
         check_common(destination, data=data, subtests=subtests)
@@ -2033,28 +2034,28 @@ def test_hand_docs(
     assert pathlib.Path(destination / "foo/bar.js").exists()
     assert not pathlib.Path(destination / "docs").exists()
 
-    class TextFileData(NamedTuple):
+    class TextFileData(BaseModel):
         path: str
-        update_data: dict[str, Any] = {}
-        update_root: dict[str, Any] = {}
+        data: dict[str, Any] = Field(default_factory=dict[str, Any])
+        root: dict[str, Any] = Field(default_factory=dict[str, Any])
         content: bytes = b""
 
     text_files: list[TextFileData] = [
-        TextFileData("a/b/c.txt"),
-        TextFileData("root.txt"),
-        TextFileData("consolidate/a/b/1.txt"),
-        TextFileData("consolidate/a/b/2.txt"),
-        TextFileData("consolidate/a/1.txt"),
-        TextFileData("consolidate/a/2.txt"),
-        TextFileData("consolidate/z/b/1.txt"),
-        TextFileData("consolidate/z/b/2.txt"),
-        TextFileData("consolidate/z/1.txt"),
-        TextFileData("consolidate/z/2.txt"),
-        TextFileData("consolidate/1.txt"),
-        TextFileData("consolidate/2.txt"),
+        TextFileData(path="a/b/c.txt"),
+        TextFileData(path="root.txt"),
+        TextFileData(path="consolidate/a/b/1.txt"),
+        TextFileData(path="consolidate/a/b/2.txt"),
+        TextFileData(path="consolidate/a/1.txt"),
+        TextFileData(path="consolidate/a/2.txt"),
+        TextFileData(path="consolidate/z/b/1.txt"),
+        TextFileData(path="consolidate/z/b/2.txt"),
+        TextFileData(path="consolidate/z/1.txt"),
+        TextFileData(path="consolidate/z/2.txt"),
+        TextFileData(path="consolidate/1.txt"),
+        TextFileData(path="consolidate/2.txt"),
         TextFileData(
-            "display/multi-no-keep.txt",
-            {
+            path="display/multi-no-keep.txt",
+            data={
                 "attributes": {"TITLE": "Multi no keep $1$"},
                 "dependencies": [
                     {
@@ -2102,15 +2103,15 @@ def test_hand_docs(
                 "timestamp": "2017-12-03 09:56:02.050000-07:00",
                 "title": "Multi no keep $1$",
             },
-            {
+            root={
                 "display": "no-index",
                 "redirect_to": "/display/multi-no-keep",
                 "title": "Multi no keep $1$",
             },
         ),
         TextFileData(
-            "display/multi-no-keep2.txt",
-            {
+            path="display/multi-no-keep2.txt",
+            data={
                 "dependencies": [
                     {
                         "files": [
@@ -2142,16 +2143,16 @@ def test_hand_docs(
                 "timestamp": "2017-12-03 09:56:02.050000-07:00",
                 "title": "Multi no keep $2$",
             },
-            {
+            root={
                 "display": "no-index",
                 "redirect_to": "/display/multi-no-keep",
                 "title": "Multi no keep $2$",
             },
-            b"\nKeep $2^x$",
+            content=b"\nKeep $2^x$",
         ),
         TextFileData(
-            "display/hidden.txt",
-            {
+            path="display/hidden.txt",
+            data={
                 "documentPath": "display/hidden.md",
                 "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "dependsOn": [
@@ -2205,14 +2206,14 @@ def test_hand_docs(
                 ],
                 "title": "display=hidden",
             },
-            {
+            root={
                 "display": "hidden",
                 "title": "display=hidden",
             },
         ),
         TextFileData(
-            "display/no-index.txt",
-            {
+            path="display/no-index.txt",
+            data={
                 "documentPath": "display/no-index.md",
                 "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "dependsOn": ["display/multi-no-keep.txt", "display/visible.txt"],
@@ -2250,14 +2251,14 @@ def test_hand_docs(
                 ],
                 "title": "display=no-index",
             },
-            {
+            root={
                 "display": "no-index",
                 "title": "display=no-index",
             },
         ),
         TextFileData(
-            "display/visible.txt",
-            {
+            path="display/visible.txt",
+            data={
                 "timestamp": "2052-02-21 19:31:36.300000-07:00",
                 "documentPath": "display/visible.md",
                 "dependsOn": [
@@ -2298,26 +2299,26 @@ def test_hand_docs(
                 ],
                 "title": "display=visible",
             },
-            {
+            root={
                 "display": "visible",
                 "title": "display=visible",
             },
-            b"# Visible",
+            content=b"# Visible",
         ),
         TextFileData(
-            "display/no-index2.txt",
-            {"attributes": {"DISPLAY": "no-index"}},
-            {"display": "no-index"},
+            path="display/no-index2.txt",
+            data={"attributes": {"DISPLAY": "no-index"}},
+            root={"display": "no-index"},
         ),
         TextFileData(
-            "display/no-index3.txt",
-            {"attributes": {"DISPLAY": "no_index"}},
-            {"display": "no-index"},
+            path="display/no-index3.txt",
+            data={"attributes": {"DISPLAY": "no_index"}},
+            root={"display": "no-index"},
         ),
-        TextFileData("txts/utf-8👍.txt"),
+        TextFileData(path="txts/utf-8👍.txt"),
         TextFileData(
-            "txts/utf-16BE.txt",
-            {
+            path="txts/utf-16BE.txt",
+            data={
                 "attributes": {"document_title": "UTF-16BE"},
                 "timestamp": "1974-07-18 21:35:09.220000+10:00",
                 "embedded": [
@@ -2355,13 +2356,13 @@ def test_hand_docs(
                 "requiredBy": ["txts/utf-16LE.txt"],
                 "title": "UTF-16BE",
             },
-            {
+            root={
                 "title": "UTF-16BE",
             },
         ),
         TextFileData(
-            "txts/utf-16LE.txt",
-            {
+            path="txts/utf-16LE.txt",
+            data={
                 "attributes": {"TITLE": "UTF-16LE"},
                 "timestamp": "1974-07-18 21:35:09.220000+10:00",
                 "embedded": [
@@ -2399,7 +2400,7 @@ def test_hand_docs(
                 "requiredBy": ["txts/utf-16BE.txt"],
                 "title": "UTF-16LE",
             },
-            {
+            root={
                 "title": "UTF-16LE",
             },
         ),
@@ -2436,21 +2437,21 @@ def test_hand_docs(
             "verifiedWith": [],
         }
 
-    markdawns = [
+    markdowns = [
         MarkdownData(
-            path=path,
+            path=t.path,
             front_matter={
-                "documentation_of": path,
+                "documentation_of": t.path,
                 "layout": "document",
-                "data": front_matter_data(path) | data,
+                "data": front_matter_data(t.path) | t.data,
             }
-            | root,
-            content=content,
+            | t.root,
+            content=t.content,
         )
-        for path, data, root, content in text_files
+        for t in text_files
     ]
 
-    for t in markdawns:
+    for t in markdowns:
         with subtests.test(msg=t.path):  # pyright: ignore[reportUnknownMemberType]
             front_matter, content = split_front_matter_raw(
                 (destination / f"{t.path}.md").read_bytes()

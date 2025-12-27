@@ -1,5 +1,5 @@
 import importlib.resources
-from typing import Iterable
+from collections.abc import Iterable
 
 _RESOURCE_PACKAGE = "competitive_verifier_resources"
 _RESOURCE_STATIC_FILE_PATHS: list[str] = [
@@ -33,6 +33,9 @@ _RESOURCE_STATIC_FILE_PATHS: list[str] = [
 
 def default_resource_files() -> Iterable[tuple[str, bytes]]:
     for path in _RESOURCE_STATIC_FILE_PATHS:
-        yield path, (
-            importlib.resources.files(_RESOURCE_PACKAGE) / "jekyll" / path
-        ).read_bytes()
+        yield (
+            path,
+            (
+                importlib.resources.files(_RESOURCE_PACKAGE) / "jekyll" / path
+            ).read_bytes(),
+        )

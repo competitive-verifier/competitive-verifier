@@ -1,27 +1,28 @@
 import pathlib
 from subprocess import CompletedProcess
-from typing import Annotated, Literal, Optional, Union, overload
+from typing import Annotated, Literal, overload
 
 from pydantic import BaseModel, Field
+from typing_extensions import TypeAliasType
 
 from competitive_verifier.exec import exec_command
 
 
 class ShellCommand(BaseModel):
-    command: Union[list[str], str] = Field(
+    command: list[str] | str = Field(
         description="Shell command",
     )
     """Shell command
     """
 
-    env: Optional[dict[str, str]] = Field(
+    env: dict[str, str] | None = Field(
         default=None,
         description="Envitonment variables for command",
     )
     """Envitonment variables for command
     """
 
-    cwd: Optional[pathlib.Path] = Field(
+    cwd: pathlib.Path | None = Field(
         default=None,
         description="The working directory of child process.",
     )
@@ -31,30 +32,31 @@ class ShellCommand(BaseModel):
     @overload
     def exec_command(
         self,
+        *,
         text: Literal[False] = False,
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> CompletedProcess[bytes]:
-        ...
+    ) -> CompletedProcess[bytes]: ...
 
     @overload
     def exec_command(
         self,
+        *,
         text: Literal[True],
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> CompletedProcess[str]:
-        ...
+    ) -> CompletedProcess[str]: ...
 
     def exec_command(
         self,
+        *,
         text: bool = False,
         check: bool = False,
         capture_output: bool = False,
         group_log: bool = False,
-    ) -> Union[CompletedProcess[str], CompletedProcess[bytes]]:
+    ) -> CompletedProcess[str] | CompletedProcess[bytes]:
         return exec_command(
             command=self.command,
             env=self.env,
@@ -67,27 +69,30 @@ class ShellCommand(BaseModel):
 
     @classmethod
     def parse_command_like(cls, cmd: "ShellCommandLike") -> "ShellCommand":
-        if isinstance(cmd, str) or isinstance(cmd, list):
+        if isinstance(cmd, (str, list)):
             return ShellCommand(command=cmd)
         return cmd
 
 
-ShellCommandLike = Annotated[
-    Union[ShellCommand, Union[list[str], str]],
-    Field(
-        examples=[
-            "command",
-            ["command", "arg1", "arg2"],
-            ShellCommand(
-                command=["command", "arg1", "arg2"],
-                env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/tmp"),
-            ),
-            ShellCommand(
-                command="command",
-                env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/tmp"),
-            ),
-        ]
-    ),
-]
+ShellCommandLike = TypeAliasType(
+    "ShellCommandLike",
+    Annotated[
+        ShellCommand | list[str] | str,
+        Field(
+            examples=[
+                "command",
+                ["command", "arg1", "arg2"],
+                ShellCommand(
+                    command=["command", "arg1", "arg2"],
+                    env={"ENVVAR": "DUMMY"},
+                    cwd=pathlib.Path("/work"),
+                ),
+                ShellCommand(
+                    command="command",
+                    env={"ENVVAR": "DUMMY"},
+                    cwd=pathlib.Path("/work"),
+                ),
+            ]
+        ),
+    ],
+)

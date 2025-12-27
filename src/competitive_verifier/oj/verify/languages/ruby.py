@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
@@ -14,5 +12,5 @@ class OjVerifyRubyConfig(OjVerifyUserDefinedConfig):
 
 
 class RubyLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: Optional[OjVerifyRubyConfig]):
+    def __init__(self, *, config: OjVerifyRubyConfig | None):
         super().__init__(extension="rb", config=config or OjVerifyRubyConfig())

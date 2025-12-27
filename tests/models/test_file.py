@@ -26,12 +26,10 @@ test_parse_VerificationFile_params: list[
     ),
     (
         VerificationFile(
-            dependencies=set(
-                [
-                    pathlib.Path("bar1"),
-                    pathlib.Path("bar2"),
-                ]
-            ),
+            dependencies={
+                pathlib.Path("bar1"),
+                pathlib.Path("bar2"),
+            },
         ),
         {
             "dependencies": [
@@ -40,12 +38,10 @@ test_parse_VerificationFile_params: list[
             ],
         },
         {
-            "dependencies": set(
-                [
-                    pathlib.Path("bar1"),
-                    pathlib.Path("bar2"),
-                ]
-            ),
+            "dependencies": {
+                pathlib.Path("bar1"),
+                pathlib.Path("bar2"),
+            },
             "document_attributes": {},
             "verification": [],
             "additonal_sources": [],
@@ -141,7 +137,7 @@ test_parse_VerificationFile_params: list[
 
 
 @pytest.mark.parametrize(
-    "obj, raw_dict, output_dict",
+    ("obj", "raw_dict", "output_dict"),
     test_parse_VerificationFile_params,
     ids=range(len(test_parse_VerificationFile_params)),
 )
@@ -200,14 +196,14 @@ test_is_verification_params = [
 
 
 @pytest.mark.parametrize(
-    "obj, is_verification, is_skippable_verification",
+    ("obj", "is_verification", "is_lightweight_verification"),
     test_is_verification_params,
     ids=range(len(test_is_verification_params)),
 )
 def test_is_verification(
     obj: VerificationFile,
     is_verification: bool,
-    is_skippable_verification: bool,
+    is_lightweight_verification: bool,
 ):
     assert obj.is_verification() == is_verification
-    assert obj.is_skippable_verification() == is_skippable_verification
+    assert obj.is_lightweight_verification() == is_lightweight_verification

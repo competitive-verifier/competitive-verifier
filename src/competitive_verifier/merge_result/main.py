@@ -2,9 +2,9 @@ import argparse
 import logging
 import pathlib
 import sys
+from collections.abc import Iterable
 from functools import reduce
 from logging import getLogger
-from typing import Iterable, Optional
 
 from competitive_verifier import github, summary
 from competitive_verifier.arg import (
@@ -31,7 +31,7 @@ def run_impl(
     if write_summary:
         gh_summary_path = github.env.get_step_summary_path()
         if gh_summary_path and gh_summary_path.parent.exists():
-            with open(gh_summary_path, "w", encoding="utf-8") as fp:
+            with gh_summary_path.open("w", encoding="utf-8") as fp:
                 summary.write_summary(fp, result)
         else:
             logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
@@ -56,7 +56,7 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[list[str]] = None) -> None:
+def main(args: list[str] | None = None) -> None:
     try:
         parsed = argument(argparse.ArgumentParser()).parse_args(args)
         if not run(parsed):

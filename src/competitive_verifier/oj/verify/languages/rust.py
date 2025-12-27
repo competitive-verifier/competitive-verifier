@@ -6,9 +6,10 @@ import json
 import pathlib
 import shutil
 from collections import defaultdict
+from collections.abc import Sequence
 from enum import Enum
 from logging import getLogger
-from typing import Any, Literal, Optional, Sequence
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -18,7 +19,10 @@ from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import exec_command, read_text_normalized
+from competitive_verifier.oj.verify.utils import exec_command
+from competitive_verifier.util import read_text_normalized
+
+# ruff: noqa: PLR2004
 
 logger = getLogger(__name__)
 
@@ -31,11 +35,11 @@ _related_source_files_by_workspace: dict[
 
 class OjVerifyRustListDependenciesBackend(BaseModel):
     kind: Literal["none", "cargo-udeps"]
-    toolchain: Optional[str] = None
+    toolchain: str | None = None
 
 
 class OjVerifyRustConfig(OjVerifyLanguageConfig):
-    list_dependencies_backend: Optional[OjVerifyRustListDependenciesBackend] = None
+    list_dependencies_backend: OjVerifyRustListDependenciesBackend | None = None
 
 
 class _ListDependenciesBackend:
@@ -58,7 +62,7 @@ class _NoBackend(_ListDependenciesBackend):
 class _CargoUdeps(_ListDependenciesBackend):
     toolchain: str = "nightly"
 
-    def __init__(self, *, toolchain: Optional[str]):
+    def __init__(self, *, toolchain: str | None):
         if toolchain is not None:
             self.toolchain = toolchain
 
@@ -70,16 +74,20 @@ class _CargoUdeps(_ListDependenciesBackend):
         )
 
 
-@functools.lru_cache(maxsize=None)
-def _list_dependencies_by_crate(  # noqa: C901
-    path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: Optional[str]
+@functools.cache
+def _list_dependencies_by_crate(
+    path: pathlib.Path, *, basedir: pathlib.Path, cargo_udeps_toolchain: str | None
 ) -> list[pathlib.Path]:
     """The `list_dependencies` implementation for `_NoBackend` and `CargoUdeps`.
 
-    :param path: A parameter in `Language.list_dependencies`.
-    :param basedir: A parameter in `Language.list_dependencies`.
-    :param cargo_udeps_toolchain: A Rust toolchain name for cargo-udeps. If it is `None`, we don't run cargo-udeps.
-    :returns: Paths to the `.rs` files for `Language.list_dependencies`.
+    Args:
+        path (pathlib.Path): A main source file path of a target
+        basedir (pathlib.Path): A parameter from `Language.list_dependencies`
+        cargo_udeps_toolchain (str | None): If not `None`, use `cargo-udeps` with the specified toolchain to detect unused dependencies
+    Returns:
+        list[pathlib.Path]: A list of dependent `.rs` file paths
+    Raises:
+        RuntimeError: If any cargo command fails
     """
     path = basedir / path
 
@@ -114,18 +122,18 @@ def _list_dependencies_by_crate(  # noqa: C901
             return cls.NORMAL_DEVELOPMENT
 
     # Collect the `(|dev-|build-)dependencies` into a <is a `build-dependency`> → (<"extern crate name"> → <package>) dictionary.
-    dependencies: defaultdict[
-        DependencyNamespace, dict[str, dict[str, Any]]
-    ] = defaultdict(dict)
+    dependencies: defaultdict[DependencyNamespace, dict[str, dict[str, Any]]] = (
+        defaultdict(dict)
+    )
     for dep in next(
         n["deps"] for n in metadata["resolve"]["nodes"] if n["id"] == main_package["id"]
     ):
         if _need_dev_deps(main_target) or any(
             k["kind"] is None for k in dep["dep_kinds"]
         ):
-            dependencies[DependencyNamespace.NORMAL_DEVELOPMENT][
-                dep["name"]
-            ] = packages_by_id[dep["pkg"]]
+            dependencies[DependencyNamespace.NORMAL_DEVELOPMENT][dep["name"]] = (
+                packages_by_id[dep["pkg"]]
+            )
         if any(k["kind"] == "build" for k in dep["dep_kinds"]):
             dependencies[DependencyNamespace.BUILD][dep["name"]] = packages_by_id[
                 dep["pkg"]
@@ -202,12 +210,14 @@ def _list_dependencies_by_crate(  # noqa: C901
     # https://github.com/est31/cargo-udeps/pull/35
     depended_packages = [main_package]
     for dependency_namespace, values in dependencies.items():
-        for depended_package in values.values():
+        depended_packages.extend(
+            depended_package
+            for depended_package in values.values()
             if (
                 depended_package["id"] not in unused_packages[dependency_namespace]
                 and not depended_package["source"]
-            ):
-                depended_packages.append(depended_package)
+            )
+        )
 
     ret = common_result
 
@@ -237,9 +247,13 @@ def _related_source_files(
 ) -> dict[pathlib.Path, frozenset[pathlib.Path]]:
     """Collects all of the `.rs` files recognized by a workspace.
 
-    :param basedir: A parameter from `Language.list_dependencies`.
-    :param metadata: Output of `cargo metadata`
-    :returns: A (main source file) → (other related files) map
+    Args:
+        basedir (pathlib.Path): A parameter from `Language.list_dependencies`
+        metadata (dict[str, Any]): "metadata" for a Cargo.toml file in the workspace
+    Returns:
+        dict[pathlib.Path, frozenset[pathlib.Path]]: A (main source file) → (other related files) map
+    Raises:
+        RuntimeError: If any cargo command fails
     """
     if pathlib.Path(metadata["workspace_root"]) in _related_source_files_by_workspace:
         return _related_source_files_by_workspace[
@@ -262,7 +276,7 @@ def _related_source_files(
         )
         _cargo_checked_workspaces.add(pathlib.Path(metadata["workspace_root"]))
 
-    ret: dict[pathlib.Path, frozenset[pathlib.Path]] = dict()
+    ret: dict[pathlib.Path, frozenset[pathlib.Path]] = {}
 
     targets_in_workspace = itertools.chain.from_iterable(
         p["targets"]
@@ -303,20 +317,15 @@ def _related_source_files(
                     paths: list[pathlib.Path] = []
                     it = iter(ss[1].split())
                     for s in it:
-                        while s.endswith("\\"):
-                            s = s.rstrip("\\")
-                            s += " "
-                            s += next(it)
+                        ss = s
+                        while ss.endswith("\\"):
+                            ss = ss.rstrip("\\") + " " + next(it)
                         path = pathlib.Path(metadata["workspace_root"], s).resolve(
                             strict=True
                         )
                         # Ignores paths that don't start with the `basedir`. (e.g. `/dev/null`, `/usr/local/share/foo/bar`)
-                        try:
-                            # `PurePath.is_relative_to` is since Python 3.9.
-                            _ = path.relative_to(basedir)
+                        if path.is_relative_to(basedir):
                             paths.append(path)
-                        except ValueError:
-                            pass
                     if paths[:1] == [
                         pathlib.Path(target["src_path"]).resolve(strict=True)
                     ]:
@@ -338,9 +347,13 @@ def _source_files_in_same_targets(
 ) -> frozenset[pathlib.Path]:
     """Returns `.rs` file paths relating to `path`.
 
-    :param path: Path to a `.rs` file
-    :param related_source_files: Output of `_related_source_files`
-    :returns: Relating `.rs` file paths
+    Args:
+        path (pathlib.Path): A main source file path of a target
+        related_source_files (dict[pathlib.Path, frozenset[pathlib.Path]]): A (main source file) → (other related files) map
+    Returns:
+        frozenset[pathlib.Path]: A set of `.rs` file paths relating to `path`
+    Raises:
+        RuntimeError: If `path` is not found in `related_source_files` and is not related to any other files.
     """
     # If `p` is `src_path` of a target, it does not belong to any other target unless it's weirdly symlinked,
     if path in related_source_files:
@@ -361,11 +374,11 @@ class RustLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> Optional[str]:
+    ) -> str | None:
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)
-        return f"cd {str(path.parent.resolve())} && " + shlex.join(
+        return f"cd {path.parent.resolve()!s} && " + shlex.join(
             ["cargo", "build", "--release", *_target_option(target)]
         )
 
@@ -388,7 +401,7 @@ class RustLanguageEnvironment(LanguageEnvironment):
 class RustLanguage(Language):
     _list_dependencies_backend: _ListDependenciesBackend
 
-    def __init__(self, *, config: Optional[OjVerifyRustConfig]):
+    def __init__(self, *, config: OjVerifyRustConfig | None):
         if config and config.list_dependencies_backend:
             list_dependencies_backend = config.list_dependencies_backend
 
@@ -419,8 +432,13 @@ class RustLanguage(Language):
 def _cargo_metadata(cwd: pathlib.Path) -> dict[str, Any]:
     """Returns "metadata" for a Cargo.toml file in `cwd` or its parent directories.
 
-    :raises ValueError: if `cwd` is not absolute or contains `..`
-    :returns: Output of `cargo metadata` command
+    Args:
+        cwd (pathlib.Path): The current working directory
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        ValueError: If `cwd` is not absolute or contains `..`
+        RuntimeError: If no `Cargo.toml` is found
     """
     if not cwd.is_absolute() or ".." in cwd.parts:
         raise ValueError(
@@ -440,7 +458,12 @@ def _cargo_metadata(cwd: pathlib.Path) -> dict[str, Any]:
 def _cargo_metadata_by_manifest_path(manifest_path: pathlib.Path) -> dict[str, Any]:
     """Returns "metadata" for a certain `Cargo.toml`.
 
-    :returns: Output of `cargo metadata` command
+    Args:
+        manifest_path (pathlib.Path): Path to a `Cargo.toml`
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        RuntimeError: If the `cargo metadata` command fails
     """
     if manifest_path in _metadata_by_manifest_path:
         return _metadata_by_manifest_path[manifest_path]
@@ -472,8 +495,12 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
     - <https://doc.rust-lang.org/cargo/commands/cargo-metadata.html#output-format>
     - <https://docs.rs/cargo_metadata>
 
-    :param manifest_path: Path to a `Cargo.toml`
-    :returns: Output of `cargo metadata` command
+    Args:
+        manifest_path (pathlib.Path): Path to a `Cargo.toml`
+    Returns:
+        dict[str, Any]: Output of `cargo metadata` command
+    Raises:
+        RuntimeError: If the `cargo metadata` command fails
     """
     return json.loads(
         exec_command(
@@ -494,7 +521,7 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
 def _find_target(
     metadata: dict[str, Any],
     src_path: pathlib.Path,
-) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
     for package in metadata["packages"]:
         for target in package["targets"]:
             # A `src_path` may contain `..`

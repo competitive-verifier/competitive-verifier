@@ -1,5 +1,5 @@
 import shutil
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -24,128 +24,122 @@ class CppWithoutConfigData(IntegrationData):
         return "CppData"
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "aplusb.hpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/aplusb.hpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "links": [],
-                        },
-                        "verification": [],
+        return {
+            "files": {
+                "aplusb.hpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(self.config_dir_path / "bundled/aplusb.hpp"),
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "links": [],
                     },
-                    "aplusb.main.cpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": f"{self.config_dir_path / 'bundled/aplusb.main.cpp'}",
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "STANDALONE": "",
-                            "links": [],
-                        },
-                        "verification": [
-                            {
-                                "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "/usr/bin/g++ "
-                                "--std=c++17 -O2 "
-                                "-Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                                "aplusb.main.cpp",
-                                "name": "g++",
-                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
-                                "type": "command",
-                            },
-                            {
-                                "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "/usr/bin/clang++ "
-                                "--std=c++17 -O2 "
-                                "-Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                                "aplusb.main.cpp",
-                                "name": "clang++",
-                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
-                                "type": "command",
-                            },
-                        ],
+                    "verification": [],
+                },
+                "aplusb.main.cpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": f"{self.config_dir_path / 'bundled/aplusb.main.cpp'}",
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "STANDALONE": "",
+                        "links": [],
                     },
-                    "aplusb.test.cpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/aplusb.test.cpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp", "aplusb.test.cpp", "macros.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    "verification": [
+                        {
+                            "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                            "compile": "/usr/bin/g++ "
+                            "--std=c++17 -O2 "
+                            "-Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                            "aplusb.main.cpp",
+                            "name": "g++",
+                            "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
+                            "type": "command",
                         },
-                        "verification": [
-                            {
-                                "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "/usr/bin/g++ "
-                                "--std=c++17 -O2 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                                "aplusb.test.cpp",
-                                "name": "g++",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            },
-                            {
-                                "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "/usr/bin/clang++ "
-                                "--std=c++17 -O2 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                                "aplusb.test.cpp",
-                                "name": "clang++",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            },
-                        ],
-                    },
-                    "macros.hpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/macros.hpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["macros.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "links": [],
+                        {
+                            "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                            "compile": "/usr/bin/clang++ "
+                            "--std=c++17 -O2 "
+                            "-Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                            "aplusb.main.cpp",
+                            "name": "clang++",
+                            "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
+                            "type": "command",
                         },
-                        "verification": [],
+                    ],
+                },
+                "aplusb.test.cpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(
+                                self.config_dir_path / "bundled/aplusb.test.cpp"
+                            ),
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp", "aplusb.test.cpp", "macros.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
                     },
+                    "verification": [
+                        {
+                            "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                            "compile": "/usr/bin/g++ "
+                            "--std=c++17 -O2 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
+                            "aplusb.test.cpp",
+                            "name": "g++",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        },
+                        {
+                            "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                            "compile": "/usr/bin/clang++ "
+                            "--std=c++17 -O2 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
+                            "aplusb.test.cpp",
+                            "name": "clang++",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        },
+                    ],
+                },
+                "macros.hpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(self.config_dir_path / "bundled/macros.hpp"),
+                        }
+                    ],
+                    "dependencies": ["macros.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "links": [],
+                    },
+                    "verification": [],
                 },
             },
-        )
+        }
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {
@@ -351,127 +345,121 @@ class CppWithConfigData(CppWithoutConfigData):
         super().__init__(monkeypatch, set_config_dir, file_paths)
 
     @property
-    def config_path(self) -> Optional[str]:
+    def config_path(self) -> str | None:
         return (self.targets_path / "config.toml").as_posix()
 
     def expected_verify_json(self) -> dict[str, Any]:
-        return dict(
-            {
-                "files": {
-                    "aplusb.hpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/aplusb.hpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "links": [],
-                        },
-                        "verification": [],
+        return {
+            "files": {
+                "aplusb.hpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(self.config_dir_path / "bundled/aplusb.hpp"),
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "links": [],
                     },
-                    "aplusb.main.cpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": f"{self.config_dir_path / 'bundled/aplusb.main.cpp'}",
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "STANDALONE": "",
-                            "links": [],
-                        },
-                        "verification": [
-                            {
-                                "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "g++ "
-                                "--std=c++17 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                                "aplusb.main.cpp",
-                                "name": "g++",
-                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
-                                "type": "command",
-                            },
-                            {
-                                "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                                "compile": "clang++ "
-                                "--std=c++17 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                                "aplusb.main.cpp",
-                                "name": "clang++",
-                                "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
-                                "type": "command",
-                            },
-                        ],
+                    "verification": [],
+                },
+                "aplusb.main.cpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": f"{self.config_dir_path / 'bundled/aplusb.main.cpp'}",
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "STANDALONE": "",
+                        "links": [],
                     },
-                    "aplusb.test.cpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/aplusb.test.cpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["aplusb.hpp", "aplusb.test.cpp", "macros.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                            "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    "verification": [
+                        {
+                            "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                            "compile": "g++ "
+                            "--std=c++17 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                            "aplusb.main.cpp",
+                            "name": "g++",
+                            "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
+                            "type": "command",
                         },
-                        "verification": [
-                            {
-                                "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "g++ "
-                                "--std=c++17 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                                "aplusb.test.cpp",
-                                "name": "g++",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            },
-                            {
-                                "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                                "compile": "clang++ "
-                                "--std=c++17 -Wall -g -I "
-                                f"{self.targets_path} "
-                                "-o "
-                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                                "aplusb.test.cpp",
-                                "name": "clang++",
-                                "problem": "https://judge.yosupo.jp/problem/aplusb",
-                                "type": "problem",
-                            },
-                        ],
-                    },
-                    "macros.hpp": {
-                        "additonal_sources": [
-                            {
-                                "name": "bundled",
-                                "path": str(
-                                    self.config_dir_path / "bundled/macros.hpp"
-                                ),
-                            }
-                        ],
-                        "dependencies": ["macros.hpp"],
-                        "document_attributes": {
-                            "*NOT_SPECIAL_COMMENTS*": "",
-                            "links": [],
+                        {
+                            "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                            "compile": "clang++ "
+                            "--std=c++17 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
+                            "aplusb.main.cpp",
+                            "name": "clang++",
+                            "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
+                            "type": "command",
                         },
-                        "verification": [],
+                    ],
+                },
+                "aplusb.test.cpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(
+                                self.config_dir_path / "bundled/aplusb.test.cpp"
+                            ),
+                        }
+                    ],
+                    "dependencies": ["aplusb.hpp", "aplusb.test.cpp", "macros.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
                     },
+                    "verification": [
+                        {
+                            "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                            "compile": "g++ "
+                            "--std=c++17 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
+                            "aplusb.test.cpp",
+                            "name": "g++",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        },
+                        {
+                            "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                            "compile": "clang++ "
+                            "--std=c++17 -Wall -g -I "
+                            f"{self.targets_path} "
+                            "-o "
+                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
+                            "aplusb.test.cpp",
+                            "name": "clang++",
+                            "problem": "https://judge.yosupo.jp/problem/aplusb",
+                            "type": "problem",
+                        },
+                    ],
+                },
+                "macros.hpp": {
+                    "additonal_sources": [
+                        {
+                            "name": "bundled",
+                            "path": str(self.config_dir_path / "bundled/macros.hpp"),
+                        }
+                    ],
+                    "dependencies": ["macros.hpp"],
+                    "document_attributes": {
+                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "links": [],
+                    },
+                    "verification": [],
                 },
             },
-        )
+        }
