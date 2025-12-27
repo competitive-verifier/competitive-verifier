@@ -1330,7 +1330,4 @@ class AtCoderSubmissionTestCaseResult:
         raise NotImplementedError
 
 
-onlinejudge.dispatch.services += [AtCoderService]
 onlinejudge.dispatch.problems += [AtCoderProblem]
-onlinejudge.dispatch.submissions += [AtCoderSubmission]
-onlinejudge.dispatch.contests += [AtCoderContest]

@@ -140,5 +140,4 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         return self.get_problem_directory_path() / "checker"
 
 
-onlinejudge.dispatch.services += [LibraryCheckerService]
 onlinejudge.dispatch.problems += [LibraryCheckerProblem]

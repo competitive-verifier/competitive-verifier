@@ -301,6 +301,4 @@ class YukicoderProblem(onlinejudge.type.Problem):
         return None
 
 
-onlinejudge.dispatch.services += [YukicoderService]
-onlinejudge.dispatch.contests += [YukicoderContest]
 onlinejudge.dispatch.problems += [YukicoderProblem]

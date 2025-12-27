@@ -132,12 +132,6 @@ def run(
     # prepare values
     problem = dispatch.problem_from_url(url)
     if problem is None:
-        if dispatch.contest_from_url(url) is not None:
-            logger.warning(
-                "You specified a URL for a contest instead of a problem."
-                " If you want to download for all problems of a contest at once,"
-                " please try to use `oj-prepare` command of https://github.com/online-judge-tools/template-generator"
-            )
         logger.error('The URL "%s" is not supported', url)
         return False
 

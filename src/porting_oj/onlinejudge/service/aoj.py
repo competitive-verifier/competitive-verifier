@@ -234,5 +234,4 @@ class AOJArenaProblem(onlinejudge.type.Problem):
         return AOJService()
 
 
-onlinejudge.dispatch.services += [AOJService]
 onlinejudge.dispatch.problems += [AOJProblem, AOJArenaProblem]
