@@ -189,7 +189,7 @@ def check_gnu_time(gnu_time: str | None = None) -> bool:
             )
             with pathlib.Path(fh.name).open() as fh1:
                 data = fh1.read()
-            int(utils.remove_suffix(data.rstrip().splitlines()[-1], " KB"))
+            int(data.rstrip().splitlines()[-1].removesuffix(" KB"))
             return True
     except NameError:
         raise  # NameError is not a runtime error caused by the environment, but a coding mistake

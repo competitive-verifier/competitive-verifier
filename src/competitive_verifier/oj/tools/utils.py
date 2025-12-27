@@ -153,11 +153,6 @@ def red(s: str) -> str:
     return colorama.Fore.RED + s + colorama.Fore.RESET
 
 
-def remove_suffix(s: str, suffix: str) -> str:
-    assert s.endswith(suffix)
-    return s[: -len(suffix)]
-
-
 def get_default_command() -> str:
     r"""get_default_command returns a command to execute the default output of g++ or clang++. The value is basically `./a.out`, but `.\a.exe` on Windows.
 
