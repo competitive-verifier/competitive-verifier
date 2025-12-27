@@ -66,6 +66,11 @@ test-use-prev-dest = "poe test --use-prev-dest"
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
 
+
+"schema-verify_files" = { script = "competitive_verifier.script_tools.schema:show_verify_json_schema" }
+"schema-verify_result" = { script = "competitive_verifier.script_tools.schema:show_result_json_schema" }
+"schema-config_yml" = { script = "competitive_verifier.script_tools.docs:show_default_config_yml" }
+
 [tool.poe.tasks."port-oj"]
 shell = """
 mkdir -p src/porting_oj
@@ -81,13 +86,6 @@ mv downloads/api-client-master/onlinejudge src/porting_oj
 
 echo '\\e[33mThis task should be deleted when https://github.com/online-judge-tools/oj/issues/929 is completed.\\e[m'
 """
-
-[tool.poe.tasks."schema-verify_files"]
-script = "competitive_verifier.script_tools.schema:show_verify_json_schema"
-[tool.poe.tasks."schema-verify_result"]
-script = "competitive_verifier.script_tools.schema:show_result_json_schema"
-[tool.poe.tasks."schema-config_yml"]
-script = "competitive_verifier.script_tools.docs:show_default_config_yml"
 
 [tool.poe.tasks."dev-oj-resolve"]
 shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml > .competitive-verifier/tmp/all-verify_files.json"

@@ -3,6 +3,7 @@ from subprocess import CompletedProcess
 from typing import Annotated, Literal, overload
 
 from pydantic import BaseModel, Field
+from typing_extensions import TypeAliasType
 
 from competitive_verifier.exec import exec_command
 
@@ -73,22 +74,25 @@ class ShellCommand(BaseModel):
         return cmd
 
 
-ShellCommandLike = Annotated[
-    ShellCommand | list[str] | str,
-    Field(
-        examples=[
-            "command",
-            ["command", "arg1", "arg2"],
-            ShellCommand(
-                command=["command", "arg1", "arg2"],
-                env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/work"),
-            ),
-            ShellCommand(
-                command="command",
-                env={"ENVVAR": "DUMMY"},
-                cwd=pathlib.Path("/work"),
-            ),
-        ]
-    ),
-]
+ShellCommandLike = TypeAliasType(
+    "ShellCommandLike",
+    Annotated[
+        ShellCommand | list[str] | str,
+        Field(
+            examples=[
+                "command",
+                ["command", "arg1", "arg2"],
+                ShellCommand(
+                    command=["command", "arg1", "arg2"],
+                    env={"ENVVAR": "DUMMY"},
+                    cwd=pathlib.Path("/work"),
+                ),
+                ShellCommand(
+                    command="command",
+                    env={"ENVVAR": "DUMMY"},
+                    cwd=pathlib.Path("/work"),
+                ),
+            ]
+        ),
+    ],
+)
