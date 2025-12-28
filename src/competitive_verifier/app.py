@@ -16,7 +16,7 @@ def get_parser() -> argparse.ArgumentParser:
     import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.migrate.main as migrate
-    import competitive_verifier.oj_resolve.main as oj_resolve
+    import competitive_verifier.oj.resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
 
     parser = argparse.ArgumentParser()
@@ -88,7 +88,7 @@ def select_runner(
     import competitive_verifier.merge_input.main as merge_input
     import competitive_verifier.merge_result.main as merge_result
     import competitive_verifier.migrate.main as migrate
-    import competitive_verifier.oj_resolve.main as oj_resolve
+    import competitive_verifier.oj.resolve.main as oj_resolve
     import competitive_verifier.verify.main as verify
 
     d = {
