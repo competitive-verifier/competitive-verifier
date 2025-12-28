@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import onlinejudge.type
 import pytest
 import requests
-from onlinejudge.service import atcoder, library_checker, yukicoder
+from onlinejudge.service import library_checker, yukicoder
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
@@ -23,9 +23,7 @@ class MockProblem:
 @pytest.fixture
 def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(pathlib.Path(__file__).parent)
-    mocker.patch.dict(
-        os.environ, {"YUKICODER_TOKEN": "YKTK", "DROPBOX_TOKEN": "DBTK"}, clear=True
-    )
+    mocker.patch.dict(os.environ, {"YUKICODER_TOKEN": "YKTK"}, clear=True)
     mocker.patch(
         "competitive_verifier.oj.tools.oj_test.get_cache_directory",
         return_value=pathlib.Path("/bar/baz/online-judge-tools"),
@@ -47,23 +45,18 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     )
 
     return {
-        problem_type: MockProblem(
+        yukicoder.YukicoderProblem: MockProblem(
             download_system_cases=mocker.patch.object(
-                problem_type,
+                yukicoder.YukicoderProblem,
                 "download_system_cases",
                 return_value=[],
             ),
             download_sample_cases=mocker.patch.object(
-                problem_type,
+                yukicoder.YukicoderProblem,
                 "download_sample_cases",
                 return_value=[],
             ),
-        )
-        for problem_type in [
-            yukicoder.YukicoderProblem,
-            atcoder.AtCoderProblem,
-        ]
-    } | {
+        ),
         library_checker.LibraryCheckerProblem: MockProblem(
             download_system_cases=mocker.patch.object(
                 library_checker.LibraryCheckerProblem,
@@ -80,7 +73,7 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
                 "generate_test_cases_in_cloned_repository",
                 return_value=None,
             ),
-        )
+        ),
     }
 
 
@@ -98,15 +91,11 @@ def test_oj_download(
             "https://judge.yosupo.jp/problem/aplusb",
             "https://judge.yosupo.jp/problem/aplusb",
             "https://yukicoder.me/problems/no/1088",
-            "https://atcoder.jp/contests/abc322/tasks/abc322_a",
         ]
     )
 
-    assert mkdir.call_count == 3
+    assert mkdir.call_count == 2
     assert sorted(call[0][0] for call in mkdir.call_args_list) == [
-        pathlib.Path(
-            ".competitive-verifier/cache/problems/84d0ff7b028fc0f8cf7973b22fee1634"
-        ),
         pathlib.Path(
             ".competitive-verifier/cache/problems/8e3916c7805235eb07ec2a58660d89c6"
         ),
@@ -118,7 +107,6 @@ def test_oj_download(
     assert set(mock_problem.keys()) == {
         library_checker.LibraryCheckerProblem,
         yukicoder.YukicoderProblem,
-        atcoder.AtCoderProblem,
     }
 
     mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
@@ -132,11 +120,4 @@ def test_oj_download(
     mock_yuki_coder.download_system_cases.assert_called_once()
     assert mock_yuki_coder.download_system_cases.call_args[1]["session"].headers == {
         "Authorization": "Bearer YKTK"
-    }
-
-    mock_at_coder = mock_problem[atcoder.AtCoderProblem]
-    mock_at_coder.download_sample_cases.assert_not_called()
-    mock_at_coder.download_system_cases.assert_called_once()
-    assert mock_at_coder.download_system_cases.call_args[1]["session"].headers == {
-        "Authorization": "Bearer DBTK"
     }

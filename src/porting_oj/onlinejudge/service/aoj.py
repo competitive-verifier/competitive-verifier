@@ -28,9 +28,6 @@ class AOJService(onlinejudge.type.Service):
     def get_url(self) -> str:
         return 'http://judge.u-aizu.ac.jp/onlinejudge/'
 
-    def get_name(self) -> str:
-        return 'Aizu Online Judge'
-
     @classmethod
     def from_url(cls, url: str) -> Optional['AOJService']:
         # example: http://judge.u-aizu.ac.jp/onlinejudge/
@@ -234,5 +231,4 @@ class AOJArenaProblem(onlinejudge.type.Problem):
         return AOJService()
 
 
-onlinejudge.dispatch.services += [AOJService]
 onlinejudge.dispatch.problems += [AOJProblem, AOJArenaProblem]

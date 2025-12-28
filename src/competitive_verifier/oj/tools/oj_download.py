@@ -1,7 +1,6 @@
 import os
 import pathlib
 import shutil
-import textwrap
 from collections.abc import Iterator
 from contextlib import nullcontext
 from itertools import chain
@@ -9,7 +8,6 @@ from logging import getLogger
 
 import requests.exceptions
 from onlinejudge import dispatch
-from onlinejudge.service.atcoder import AtCoderProblem
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderProblem
 from onlinejudge.type import NotLoggedInError, Problem, SampleParseError, TestCase
@@ -21,7 +19,6 @@ from .func import (
     get_cache_directory,
     get_checker_path,
     get_directory,
-    is_atcoder,
     is_yukicoder,
 )
 
@@ -58,31 +55,6 @@ def _run_library_checker(
 
 def _run_services(problem: Problem, *, system: bool, cookie: pathlib.Path):
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
-        if isinstance(problem, AtCoderProblem) and system:
-            dropbox_token = os.environ.get("DROPBOX_TOKEN")
-            if not dropbox_token:
-                logger.info(
-                    utils.HINT
-                    + "You need to give the access token. Please do the following:\n%s",
-                    textwrap.dedent(
-                        """
-                        1. Open the following URL in your browser:
-                            https://www.dropbox.com/oauth2/authorize?client_id=153gig8dqgk3ujg&response_type=code
-                        2. Authorize the app and take the access code.
-                        3. Run the following command with replacing the "${YOUR_ACCESS_CODE}":
-                            $ curl https://api.dropbox.com/oauth2/token --user 153gig8dqgk3ujg:5l7o7lh73o8i9ux --data grant_type=authorization_code --data code=${YOUR_ACCESS_CODE}
-                        4. Get the access token from the JSON. It is in the "access_token" field.
-                        5. Use the access token. For example:
-                            $ oj download """
-                        + problem.get_url()
-                        + """ --system --dropbox-token=${YOUR_ACCESS_TOKEN}
-
-                    (Please take care that the access code and the access token are CONFIDENTIAL information. DON'T SHARE with other people!)
-                """
-                    ),
-                )
-                raise SampleParseError("--dropbox-token is not given")
-            sess.headers["Authorization"] = f"Bearer {dropbox_token}"
         if isinstance(problem, YukicoderProblem):
             yukicoder_token = os.environ.get("YUKICODER_TOKEN")
             if yukicoder_token:
@@ -132,12 +104,6 @@ def run(
     # prepare values
     problem = dispatch.problem_from_url(url)
     if problem is None:
-        if dispatch.contest_from_url(url) is not None:
-            logger.warning(
-                "You specified a URL for a contest instead of a problem."
-                " If you want to download for all problems of a contest at once,"
-                " please try to use `oj-prepare` command of https://github.com/online-judge-tools/template-generator"
-            )
         logger.error('The URL "%s" is not supported', url)
         return False
 
@@ -205,8 +171,6 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):
                     logger.exception("Required: $YUKICODER_TOKEN environment variable")
-                elif isinstance(e, NotLoggedInError) and is_atcoder(url):
-                    logger.exception("Required: $DROPBOX_TOKEN environment variable")
                 else:
                     logger.exception("Failed to download")
                 return False

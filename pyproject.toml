@@ -71,22 +71,6 @@ test-use-prev-dest = "poe test --use-prev-dest"
 "schema-verify_result" = { script = "competitive_verifier.script_tools.schema:show_result_json_schema" }
 "schema-config_yml" = { script = "competitive_verifier.script_tools.docs:show_default_config_yml" }
 
-[tool.poe.tasks."port-oj"]
-shell = """
-mkdir -p src/porting_oj
-mkdir -p downloads
-wget -q https://github.com/online-judge-tools/oj/archive/refs/heads/master.zip -O downloads/oj.zip
-wget -q https://github.com/online-judge-tools/api-client/archive/refs/heads/master.zip -O downloads/api-client.zip
-
-unzip -o downloads/oj.zip -d downloads
-unzip -o downloads/api-client.zip -d downloads
-
-mv downloads/oj-master/onlinejudge_command src/porting_oj
-mv downloads/api-client-master/onlinejudge src/porting_oj
-
-echo '\\e[33mThis task should be deleted when https://github.com/online-judge-tools/oj/issues/929 is completed.\\e[m'
-"""
-
 [tool.poe.tasks."dev-oj-resolve"]
 shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml > .competitive-verifier/tmp/all-verify_files.json"
 

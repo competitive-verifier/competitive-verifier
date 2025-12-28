@@ -41,19 +41,6 @@ class Service(ABC):
     def get_url(self) -> str:
         raise NotImplementedError
 
-    @abstractmethod
-    def get_name(self) -> str:
-        """
-        example:
-
-        -   `AtCoder`
-        -   `Codeforces`
-        -   `PKU JudgeOnline`
-
-        :note: If you want something like identifier (e.g. `atcoder`, `codeforces` or `poj`), you can use a domain obtained from :py:meth:`get_url`.
-        """
-        raise NotImplementedError
-
     def __repr__(self) -> str:
         return '{}.from_url({})'.format(self.__class__.__name__, repr(self.get_url()))
 
