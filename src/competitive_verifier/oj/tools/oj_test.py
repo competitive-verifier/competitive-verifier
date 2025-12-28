@@ -1,4 +1,3 @@
-import json
 import pathlib
 import platform
 import subprocess
@@ -9,7 +8,6 @@ from logging import getLogger
 from subprocess import Popen
 from typing import Annotated, Any
 
-import onlinejudge.implementation.format_utils as fmtutils
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 
@@ -23,6 +21,7 @@ from competitive_verifier.models import (
 
 from . import output_comparators, pretty_printers, utils
 from .func import checker_exe_name, get_cache_directory, get_directory
+from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
 
@@ -45,7 +44,6 @@ class OjTestArguments(BaseModel):
     format: str = "%s.%e"
     test: list[pathlib.Path] = Field(default_factory=list[pathlib.Path])
     gnu_time: str | None = None
-    log_file: pathlib.Path | None = None
     silent: bool = False
     ignore_backup: bool = True
     deadline: float = float("inf")
@@ -461,10 +459,6 @@ def run(args: OjTestArguments) -> OjTestResult:
             ac_count,
             len(tests),
         )
-
-    if args.log_file:
-        with args.log_file.open(mode="w") as fh:
-            json.dump(history, fh)
 
     # return the result
     return OjTestResult(

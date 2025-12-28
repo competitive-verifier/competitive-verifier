@@ -1,8 +1,5 @@
 import contextlib
-import http.cookiejar
-import importlib.metadata
 import os
-import pathlib
 import platform
 import shlex
 import signal
@@ -10,13 +7,10 @@ import subprocess
 import sys
 import tempfile
 import time
-from collections.abc import Iterator
 from logging import getLogger
 from typing import BinaryIO
 
 import colorama
-import requests
-from onlinejudge import utils
 from pydantic import BaseModel, Field
 
 logger = getLogger(__name__)
@@ -37,29 +31,6 @@ class OjExecInfo(BaseModel):
     memory: float | None = Field(
         description="The maximum memory usage of the executed command in megabytes"
     )
-
-
-def get_user_agent() -> str:
-    meta = importlib.metadata.metadata("competitive-verifier")
-    name = meta["Name"]
-    version = meta["Version"]
-    url = meta["Home-page"]
-    return f"{name}/{version} (+{url})"
-
-
-@contextlib.contextmanager
-def new_session_with_our_user_agent(
-    *, path: pathlib.Path
-) -> Iterator[requests.Session]:
-    session = requests.Session()
-    session.headers["User-Agent"] = get_user_agent()
-    logger.debug("User-Agent: %s", session.headers["User-Agent"])
-    try:
-        with utils.with_cookiejar(session, path=path) as session:
-            yield session
-    except http.cookiejar.LoadError:
-        logger.info(HINT + "You can delete the broken cookie.jar file: %s", str(path))
-        raise
 
 
 def measure_command(

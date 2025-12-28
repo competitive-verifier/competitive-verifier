@@ -3,9 +3,9 @@ import pathlib
 import sys
 import urllib.parse
 
-from onlinejudge.service.library_checker import LibraryCheckerProblem
-
 from competitive_verifier import config
+
+from .service import LibraryCheckerProblem
 
 checker_exe_name = "checker.exe" if sys.platform == "win32" else "checker"
 

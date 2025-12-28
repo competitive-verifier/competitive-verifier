@@ -1,16 +1,13 @@
-import contextlib
 import os
 import pathlib
 from dataclasses import dataclass
 
-import onlinejudge.type
 import pytest
-import requests
-from onlinejudge.service import library_checker, yukicoder
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
 from competitive_verifier.download.main import run_impl as download
+from competitive_verifier.oj.tools import service
 
 
 @dataclass
@@ -32,33 +29,22 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
         return_value=None,
     )
 
-    @contextlib.contextmanager
-    def new_session_with_our_user_agent(*, path: pathlib.Path):
-        sess = requests.Session()
-        sess.headers = {}
-        yield sess
-
-    mocker.patch(
-        "competitive_verifier.oj.tools.utils.new_session_with_our_user_agent",
-        side_effect=new_session_with_our_user_agent,
-    )
-
     return {
-        yukicoder.YukicoderProblem: MockProblem(
+        service.YukicoderProblem: MockProblem(
             download_system_cases=mocker.patch.object(
-                yukicoder.YukicoderProblem,
+                service.YukicoderProblem,
                 "download_system_cases",
                 return_value=[],
             ),
         ),
-        library_checker.LibraryCheckerProblem: MockProblem(
+        service.LibraryCheckerProblem: MockProblem(
             download_system_cases=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
+                service.LibraryCheckerProblem,
                 "download_system_cases",
                 return_value=[],
             ),
             generate_test_cases_in_cloned_repository=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
+                service.LibraryCheckerProblem,
                 "generate_test_cases_in_cloned_repository",
                 return_value=None,
             ),
@@ -73,7 +59,7 @@ def mkdir(mocker: MockerFixture):
 
 def test_oj_download(
     mkdir: MockType,
-    mock_problem: dict[type[onlinejudge.type.Problem], MockProblem],
+    mock_problem: dict[type[service.Problem], MockProblem],
 ):
     download(
         url_or_file=[
@@ -94,17 +80,17 @@ def test_oj_download(
     ]
 
     assert set(mock_problem.keys()) == {
-        library_checker.LibraryCheckerProblem,
-        yukicoder.YukicoderProblem,
+        service.LibraryCheckerProblem,
+        service.YukicoderProblem,
     }
 
-    mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
+    mock_library_checker = mock_problem[service.LibraryCheckerProblem]
     mock_library_checker.download_system_cases.assert_not_called()
     assert mock_library_checker.generate_test_cases_in_cloned_repository
     mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
 
-    mock_yuki_coder = mock_problem[yukicoder.YukicoderProblem]
+    mock_yuki_coder = mock_problem[service.YukicoderProblem]
     mock_yuki_coder.download_system_cases.assert_called_once()
-    assert mock_yuki_coder.download_system_cases.call_args[1]["session"].headers == {
+    assert mock_yuki_coder.download_system_cases.call_args[1]["headers"] == {
         "Authorization": "Bearer YKTK"
     }

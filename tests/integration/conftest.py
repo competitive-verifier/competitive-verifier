@@ -1,13 +1,12 @@
-import contextlib
 import inspect
 import os
 import pathlib
 import shutil
 
 import pytest
-import requests
-from onlinejudge.service import library_checker
 from pytest_mock import MockerFixture
+
+from competitive_verifier.oj.tools import service
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
@@ -88,17 +87,6 @@ def setenv(
         side_effect=dummy_commit_time,
     )
 
-    @contextlib.contextmanager
-    def new_session_with_our_user_agent(*, path: pathlib.Path):
-        sess = requests.Session()
-        sess.headers = {}
-        yield sess
-
-    mocker.patch(
-        "competitive_verifier.oj.tools.utils.new_session_with_our_user_agent",
-        side_effect=new_session_with_our_user_agent,
-    )
-
 
 @pytest.fixture
 def user_defined_and_python_data(
@@ -117,7 +105,7 @@ def mock_verification(mocker: MockerFixture):
     )
 
     mocker.patch.object(
-        library_checker.LibraryCheckerProblem,
+        service.LibraryCheckerProblem,
         "update_cloned_repository",
         side_effect=update_cloned_repository,
     )

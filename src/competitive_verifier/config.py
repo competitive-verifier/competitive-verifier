@@ -1,16 +1,13 @@
 import os
 import pathlib
 
-import onlinejudge.implementation.utils
-import onlinejudge.utils  # pyright: ignore[reportUnusedImport]
-
 COMPETITIVE_VERIFY_CONFIG_PATH = "COMPETITIVE_VERIFY_CONFIG_PATH"
 
 
 def get_config_dir():
-    p = pathlib.Path(os.getenv(COMPETITIVE_VERIFY_CONFIG_PATH, ".competitive-verifier"))
-    onlinejudge.implementation.utils.user_cache_dir = _get_cache_dir(p)
-    return p
+    return pathlib.Path(
+        os.getenv(COMPETITIVE_VERIFY_CONFIG_PATH, ".competitive-verifier")
+    )
 
 
 def _get_cache_dir(config_dir: pathlib.Path):
