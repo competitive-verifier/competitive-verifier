@@ -37,9 +37,6 @@ class YukicoderService(onlinejudge.type.Service):
     def get_url(self) -> str:
         return 'https://yukicoder.me/'
 
-    def get_name(self) -> str:
-        return 'yukicoder'
-
     @classmethod
     def from_url(cls, url: str) -> Optional['YukicoderService']:
         # example: http://yukicoder.me/

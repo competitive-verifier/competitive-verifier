@@ -27,9 +27,6 @@ class LibraryCheckerService(onlinejudge.type.Service):
     def get_url(self) -> str:
         return 'https://judge.yosupo.jp/'
 
-    def get_name(self) -> str:
-        return 'Library Checker'
-
     @classmethod
     def from_url(cls, url: str) -> Optional['LibraryCheckerService']:
         # example: https://judge.yosupo.jp/

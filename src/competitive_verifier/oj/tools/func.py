@@ -2,7 +2,6 @@ import hashlib
 import pathlib
 import sys
 
-from onlinejudge.service.atcoder import AtCoderService
 from onlinejudge.service.library_checker import LibraryCheckerProblem
 from onlinejudge.service.yukicoder import YukicoderService
 
@@ -28,10 +27,6 @@ def get_directory(url: str) -> pathlib.Path:
 
 def is_yukicoder(url: str) -> bool:
     return YukicoderService.from_url(url) is not None
-
-
-def is_atcoder(url: str) -> bool:
-    return AtCoderService.from_url(url) is not None
 
 
 def get_checker_problem(url: str) -> LibraryCheckerProblem | None:
