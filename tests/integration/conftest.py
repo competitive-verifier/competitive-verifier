@@ -117,8 +117,8 @@ def mock_verification(mocker: MockerFixture):
     )
 
     mocker.patch.object(
-        library_checker.LibraryCheckerService,
-        "_update_cloned_repository",
+        library_checker.LibraryCheckerProblem,
+        "update_cloned_repository",
         side_effect=update_cloned_repository,
     )
 

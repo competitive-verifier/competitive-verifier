@@ -1,9 +1,9 @@
 import hashlib
 import pathlib
 import sys
+import urllib.parse
 
 from onlinejudge.service.library_checker import LibraryCheckerProblem
-from onlinejudge.service.yukicoder import YukicoderService
 
 from competitive_verifier import config
 
@@ -26,7 +26,9 @@ def get_directory(url: str) -> pathlib.Path:
 
 
 def is_yukicoder(url: str) -> bool:
-    return YukicoderService.from_url(url) is not None
+    # example: http://yukicoder.me/
+    result = urllib.parse.urlparse(url)
+    return result.scheme in ("", "http", "https") and result.netloc == "yukicoder.me"
 
 
 def get_checker_problem(url: str) -> LibraryCheckerProblem | None:

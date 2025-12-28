@@ -53,25 +53,16 @@ def _run_library_checker(
     return True
 
 
-def _run_services(problem: Problem, *, system: bool, cookie: pathlib.Path):
+def _run_services(problem: Problem, *, cookie: pathlib.Path):
     with utils.new_session_with_our_user_agent(path=cookie) as sess:
         if isinstance(problem, YukicoderProblem):
             yukicoder_token = os.environ.get("YUKICODER_TOKEN")
             if yukicoder_token:
                 sess.headers["Authorization"] = f"Bearer {yukicoder_token}"
         try:
-            return (
-                problem.download_system_cases(session=sess)
-                if system
-                else problem.download_sample_cases(session=sess)
-            )
+            return problem.download_system_cases(session=sess)
         except requests.exceptions.RequestException:
-            logger.exception(
-                "Failed to download samples from the server\n"
-                + utils.HINT
-                + "You may need to login to use `$ oj download ...` during contest. Please run: $ oj login %s",
-                problem.get_service().get_url(),
-            )
+            logger.exception("Failed to download samples from the server")
             return None
         except SampleParseError:
             logger.exception("Failed to parse samples from the server")
@@ -98,7 +89,6 @@ def run(
     url: str,
     directory: pathlib.Path,
     cookie: pathlib.Path,
-    system: bool = True,
     dry_run: bool = False,
 ) -> bool:
     # prepare values
@@ -116,7 +106,6 @@ def run(
     # get samples from the server
     samples = _run_services(
         problem,
-        system=system,
         cookie=cookie,
     )
 

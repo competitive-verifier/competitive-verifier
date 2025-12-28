@@ -215,7 +215,7 @@ def test_run(
     mocker: MockerFixture,
 ):
     mocker.patch(
-        "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
+        "onlinejudge.implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
     )
     obj.run(
         DataVerificationParams(
@@ -276,7 +276,7 @@ def test_run_with_env(
     mocker: MockerFixture,
 ):
     mocker.patch(
-        "onlinejudge._implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
+        "onlinejudge.implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
     )
     obj.run(
         DataVerificationParams(

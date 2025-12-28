@@ -1,15 +1,7 @@
 # Python Version: 3.x
-"""
-.. py:data:: services
-
-    :type: :py:class:`List` [ :py:class:`Type` [ :py:class:`onlinejudge.type.Service` ] ]
-
-    contains classes to use for :py:func:`service_from_url`
-"""
-
 from typing import List, Optional, Type
 
-from onlinejudge.type import Contest, Problem, Service, Submission
+from onlinejudge.type import Problem
 
 
 problems = []  # type: List[Type['Problem']]
