@@ -16,7 +16,6 @@ from competitive_verifier.download.main import run_impl as download
 @dataclass
 class MockProblem:
     download_system_cases: MockType
-    download_sample_cases: MockType
     generate_test_cases_in_cloned_repository: MockType | None = None
 
 
@@ -51,21 +50,11 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
                 "download_system_cases",
                 return_value=[],
             ),
-            download_sample_cases=mocker.patch.object(
-                yukicoder.YukicoderProblem,
-                "download_sample_cases",
-                return_value=[],
-            ),
         ),
         library_checker.LibraryCheckerProblem: MockProblem(
             download_system_cases=mocker.patch.object(
                 library_checker.LibraryCheckerProblem,
                 "download_system_cases",
-                return_value=[],
-            ),
-            download_sample_cases=mocker.patch.object(
-                library_checker.LibraryCheckerProblem,
-                "download_sample_cases",
                 return_value=[],
             ),
             generate_test_cases_in_cloned_repository=mocker.patch.object(
@@ -110,13 +99,11 @@ def test_oj_download(
     }
 
     mock_library_checker = mock_problem[library_checker.LibraryCheckerProblem]
-    mock_library_checker.download_sample_cases.assert_not_called()
     mock_library_checker.download_system_cases.assert_not_called()
     assert mock_library_checker.generate_test_cases_in_cloned_repository
     mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
 
     mock_yuki_coder = mock_problem[yukicoder.YukicoderProblem]
-    mock_yuki_coder.download_sample_cases.assert_not_called()
     mock_yuki_coder.download_system_cases.assert_called_once()
     assert mock_yuki_coder.download_system_cases.call_args[1]["session"].headers == {
         "Authorization": "Bearer YKTK"
