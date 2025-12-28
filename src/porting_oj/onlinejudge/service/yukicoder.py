@@ -15,8 +15,8 @@ from typing import *
 
 import bs4
 
-import onlinejudge._implementation.testcase_zipper
-import onlinejudge._implementation.utils as utils
+import onlinejudge.implementation.testcase_zipper
+import onlinejudge.implementation.utils as utils
 import onlinejudge.dispatch
 from onlinejudge.type import *
 
@@ -176,7 +176,7 @@ class YukicoderProblem(onlinejudge.type.Problem):
         resp = utils.request('GET', self.get_url(), session=session)
         # parse
         soup = bs4.BeautifulSoup(resp.text, utils.HTML_PARSER)
-        samples = onlinejudge._implementation.testcase_zipper.SampleZipper()
+        samples = onlinejudge.implementation.testcase_zipper.SampleZipper()
         for pre in soup.select('.sample pre'):
             logger.debug('pre: %s', str(pre))
             it = self._parse_sample_tag(pre)
@@ -196,7 +196,7 @@ class YukicoderProblem(onlinejudge.type.Problem):
         url = '{}/testcase.zip'.format(self.get_url())
         resp = utils.request('GET', url, session=session)
         fmt = 'test_%e/%s'
-        return onlinejudge._implementation.testcase_zipper.extract_from_zip(resp.content, fmt, ignore_unmatched_samples=True)  # NOTE: yukicoder's test sets sometimes contain garbages. The owner insists that this is an intended behavior, so we need to ignore them.
+        return onlinejudge.implementation.testcase_zipper.extract_from_zip(resp.content, fmt, ignore_unmatched_samples=True)  # NOTE: yukicoder's test sets sometimes contain garbages. The owner insists that this is an intended behavior, so we need to ignore them.
 
     def _parse_sample_tag(self, tag: bs4.Tag) -> Optional[Tuple[str, str]]:
         assert isinstance(tag, bs4.Tag)

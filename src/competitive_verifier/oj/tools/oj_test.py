@@ -9,7 +9,7 @@ from logging import getLogger
 from subprocess import Popen
 from typing import Annotated, Any
 
-import onlinejudge._implementation.format_utils as fmtutils
+import onlinejudge.implementation.format_utils as fmtutils
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
 

@@ -7,7 +7,7 @@ import zipfile
 from logging import getLogger
 from typing import *
 
-import onlinejudge._implementation.format_utils
+import onlinejudge.implementation.format_utils
 from onlinejudge.type import *
 
 logger = getLogger(__name__)
@@ -52,7 +52,7 @@ def extract_from_files(files: Iterator[Tuple[str, bytes]], format: str = '%s.%e'
     }
     names = collections.defaultdict(dict)  # type: Dict[str, Dict[str, Tuple[str, bytes]]]
     for filename, content in files:
-        m = onlinejudge._implementation.format_utils.percentparse(filename, format, table)
+        m = onlinejudge.implementation.format_utils.percentparse(filename, format, table)
         assert m
         assert m['e'] not in names[m['s']]
         names[m['s']][m['e']] = (filename, content)

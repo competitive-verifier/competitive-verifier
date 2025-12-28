@@ -16,8 +16,8 @@ from typing import *
 import bs4
 import requests
 
-import onlinejudge._implementation.testcase_zipper
-import onlinejudge._implementation.utils as utils
+import onlinejudge.implementation.testcase_zipper
+import onlinejudge.implementation.utils as utils
 import onlinejudge.type
 from onlinejudge.type import TestCase
 
@@ -89,7 +89,7 @@ class AOJProblem(onlinejudge.type.Problem):
             html = json.loads(resp.text)['html']
 
             # list h3+pre
-            zipper = onlinejudge._implementation.testcase_zipper.SampleZipper()
+            zipper = onlinejudge.implementation.testcase_zipper.SampleZipper()
             expected_strings = ('入力例', '出力例', 'Sample Input', 'Sample Output')
             soup = bs4.BeautifulSoup(html, utils.HTML_PARSER)
             for pre in soup.find_all('pre'):

@@ -15,8 +15,8 @@ from typing import *
 
 import requests
 
-import onlinejudge._implementation.testcase_zipper
-import onlinejudge._implementation.utils as utils
+import onlinejudge.implementation.testcase_zipper
+import onlinejudge.implementation.utils as utils
 import onlinejudge.type
 from onlinejudge.type import TestCase
 
@@ -77,7 +77,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in') if file.name.startswith('example_')]
         files += [(file.name, file.read_bytes()) for file in path.glob('out/*.out') if file.name.startswith('example_')]
-        return onlinejudge._implementation.testcase_zipper.extract_from_files(iter(files))
+        return onlinejudge.implementation.testcase_zipper.extract_from_files(iter(files))
 
     def download_system_cases(self, *, session: Optional[requests.Session] = None) -> List[TestCase]:
         self.generate_test_cases_in_cloned_repository()
@@ -85,7 +85,7 @@ class LibraryCheckerProblem(onlinejudge.type.Problem):
         files = []  # type: List[Tuple[str, bytes]]
         files += [(file.name, file.read_bytes()) for file in path.glob('in/*.in')]
         files += [(file.name, file.read_bytes()) for file in path.glob('out/*.out')]
-        return onlinejudge._implementation.testcase_zipper.extract_from_files(iter(files))
+        return onlinejudge.implementation.testcase_zipper.extract_from_files(iter(files))
 
     def generate_test_cases_in_cloned_repository(self, compile_checker: bool = False) -> None:
         LibraryCheckerService._update_cloned_repository()
