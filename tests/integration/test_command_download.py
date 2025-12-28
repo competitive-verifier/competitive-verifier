@@ -29,7 +29,7 @@ class TestCommandDownload:
         outputs = list(promlem_path.glob("test/*.out"))
         assert outputs
         for out_path in outputs:
-            in_path = out_path.with_suffix(".out")
+            in_path = out_path.with_suffix(".in")
             assert in_path.exists()
             assert (
                 subprocess.run(
@@ -60,11 +60,23 @@ class TestCommandDownload:
         oj.download(url)
 
         outputs = list(promlem_path.glob("test/*.out"))
-        assert outputs
+        assert {p.stem: p.read_bytes().strip() for p in outputs} == {
+            "input1": b"103",
+            "input2": b"112",
+            "input3": b"74",
+            "input4": b"45",
+            "input5": b"96",
+            "input6": b"129",
+            "input7": b"65",
+            "input8": b"92",
+            "input9": b"65",
+            "input10": b"130",
+            "01_sample_01": b"46",
+            "01_sample_02": b"72",
+        }
         for out_path in outputs:
-            in_path = out_path.with_suffix(".out")
+            in_path = out_path.with_suffix(".in")
             assert in_path.exists()
-            assert out_path.read_bytes().strip() == b"A + B"
 
     @pytest.mark.integration
     def test_aizu_onlinejudge(self, set_config_dir: ConfigDirSetter):
@@ -78,8 +90,9 @@ class TestCommandDownload:
         oj.download(url)
 
         outputs = list(promlem_path.glob("test/*.out"))
-        assert outputs
+        assert {p.stem: p.read_bytes().strip() for p in outputs} == {
+            "judge_data": b"Hello World",
+        }
         for out_path in outputs:
-            in_path = out_path.with_suffix(".out")
+            in_path = out_path.with_suffix(".in")
             assert in_path.exists()
-            assert out_path.read_bytes().strip() == b"Hello World"
