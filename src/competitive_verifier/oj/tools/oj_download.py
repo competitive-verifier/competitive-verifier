@@ -7,19 +7,24 @@ from itertools import chain
 from logging import getLogger
 
 import requests.exceptions
-from onlinejudge import dispatch
-from onlinejudge.service.library_checker import LibraryCheckerProblem
-from onlinejudge.service.yukicoder import YukicoderProblem
-from onlinejudge.type import NotLoggedInError, Problem, SampleParseError, TestCase
 
 from competitive_verifier import log
 
 from . import utils
 from .func import (
-    get_cache_directory,
     get_checker_path,
     get_directory,
     is_yukicoder,
+)
+from .service import (
+    AOJArenaProblem,
+    AOJProblem,
+    LibraryCheckerProblem,
+    NotLoggedInError,
+    Problem,
+    SampleParseError,
+    TestCase,
+    YukicoderProblem,
 )
 
 logger = getLogger(__name__)
@@ -53,20 +58,20 @@ def _run_library_checker(
     return True
 
 
-def _run_services(problem: Problem, *, cookie: pathlib.Path):
-    with utils.new_session_with_our_user_agent(path=cookie) as sess:
-        if isinstance(problem, YukicoderProblem):
-            yukicoder_token = os.environ.get("YUKICODER_TOKEN")
-            if yukicoder_token:
-                sess.headers["Authorization"] = f"Bearer {yukicoder_token}"
-        try:
-            return problem.download_system_cases(session=sess)
-        except requests.exceptions.RequestException:
-            logger.exception("Failed to download samples from the server")
-            return None
-        except SampleParseError:
-            logger.exception("Failed to parse samples from the server")
-            return None
+def _run_services(problem: Problem):
+    headers: dict[str, str] | None = None
+    if isinstance(problem, YukicoderProblem):
+        yukicoder_token = os.environ.get("YUKICODER_TOKEN")
+        if yukicoder_token:
+            headers = {"Authorization": f"Bearer {yukicoder_token}"}
+    try:
+        return problem.download_system_cases(headers=headers)
+    except requests.exceptions.RequestException:
+        logger.exception("Failed to download samples from the server")
+        return None
+    except SampleParseError:
+        logger.exception("Failed to parse samples from the server")
+        return None
 
 
 # prepare files to write
@@ -84,15 +89,27 @@ def _iterate_files_to_write(
         yield ext, path, data
 
 
+def problem_from_url(url: str) -> Problem | None:
+    """Try getting problem.
+
+    Examples:
+        url: https://atcoder.jp/contests/abc077/tasks/arc084_b
+    """
+    for cls in (LibraryCheckerProblem, YukicoderProblem, AOJProblem, AOJArenaProblem):
+        problem = cls.from_url(url)
+        if problem is not None:
+            return problem
+    return None
+
+
 def run(
     *,
     url: str,
     directory: pathlib.Path,
-    cookie: pathlib.Path,
     dry_run: bool = False,
 ) -> bool:
     # prepare values
-    problem = dispatch.problem_from_url(url)
+    problem = problem_from_url(url)
     if problem is None:
         logger.error('The URL "%s" is not supported', url)
         return False
@@ -104,10 +121,7 @@ def run(
         )
 
     # get samples from the server
-    samples = _run_services(
-        problem,
-        cookie=cookie,
-    )
+    samples = _run_services(problem)
 
     if not samples:
         if samples is not None:
@@ -155,7 +169,6 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
                 run(
                     url=url,
                     directory=directory,
-                    cookie=get_cache_directory() / "cookie.txt",
                 )
             except Exception as e:
                 if isinstance(e, NotLoggedInError) and is_yukicoder(url):

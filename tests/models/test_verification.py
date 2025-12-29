@@ -212,11 +212,7 @@ def test_run(
     args: Sequence[Any],
     kwargs: dict[str, Any],
     mock_exec_command: MockType,
-    mocker: MockerFixture,
 ):
-    mocker.patch(
-        "onlinejudge.implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
-    )
     obj.run(
         DataVerificationParams(
             default_tle=22,
@@ -273,11 +269,7 @@ def test_run_with_env(
     kwargs: dict[str, Any],
     env: dict[str, str],
     mock_exec_command: MockType,
-    mocker: MockerFixture,
 ):
-    mocker.patch(
-        "onlinejudge.implementation.utils.user_cache_dir", pathlib.Path("/bar/baz")
-    )
     obj.run(
         DataVerificationParams(
             default_tle=22,
