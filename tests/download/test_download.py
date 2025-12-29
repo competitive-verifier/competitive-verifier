@@ -21,10 +21,6 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(pathlib.Path(__file__).parent)
     mocker.patch.dict(os.environ, {"YUKICODER_TOKEN": "YKTK"}, clear=True)
     mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.get_cache_directory",
-        return_value=pathlib.Path("/bar/baz/online-judge-tools"),
-    )
-    mocker.patch(
         "competitive_verifier.oj.tools.oj_download.get_checker_path",
         return_value=None,
     )

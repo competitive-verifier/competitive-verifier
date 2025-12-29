@@ -20,7 +20,6 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
         OjTestArguments(
             command="ls .",
             tle=2,
-            cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
             print_input=True,
             mle=128,
             error=None,
@@ -42,7 +41,6 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
         OjTestArguments(
             command=["ls", "."],
             tle=30,
-            cookie=pathlib.Path("/bar/baz/online-judge-tools") / "cookie.txt",
             print_input=True,
             mle=256,
             error=None,
@@ -66,10 +64,6 @@ def test_oj_test(
     args: dict[str, Any],
     expected: OjTestArguments,
 ):
-    mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.get_cache_directory",
-        return_value=pathlib.Path("/bar/baz/online-judge-tools"),
-    )
     run = mocker.patch("competitive_verifier.oj.tools.oj_test.run")
 
     oj.test(**args)
