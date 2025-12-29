@@ -13,7 +13,6 @@ readme = "README.md"
 packages = [
     { include = "competitive_verifier", from = "src" },
     { include = "competitive_verifier_resources", from = "src" },
-    { include = "onlinejudge", from = "src/porting_oj" },
 ]
 include = [{ path = "tests", format = "sdist" }]
 

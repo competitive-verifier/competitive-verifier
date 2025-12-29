@@ -20,7 +20,7 @@ from competitive_verifier.models import (
 )
 
 from . import output_comparators, pretty_printers, utils
-from .func import checker_exe_name, get_cache_directory, get_directory
+from .func import checker_exe_name, get_directory
 from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
@@ -33,7 +33,6 @@ class OjTestArguments(BaseModel):
     """
 
     command: str | list[str]
-    cookie: pathlib.Path
     env: dict[str, str] | None = None
     directory: pathlib.Path
     judge: pathlib.Path | None
@@ -490,7 +489,6 @@ def run_wrapper(
     args = OjTestArguments(
         command=command,
         env=env,
-        cookie=get_cache_directory() / "cookie.txt",
         directory=test_directory,
         tle=tle,
         mle=mle,

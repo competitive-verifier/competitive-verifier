@@ -10,10 +10,6 @@ from .service import LibraryCheckerProblem
 checker_exe_name = "checker.exe" if sys.platform == "win32" else "checker"
 
 
-def get_cache_directory() -> pathlib.Path:
-    return config.get_cache_dir().resolve() / "online-judge-tools"
-
-
 def get_problem_cache_dir() -> pathlib.Path:
     return config.get_cache_dir() / "problems"
 

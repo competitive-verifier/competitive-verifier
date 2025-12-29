@@ -290,7 +290,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
         OjTestArguments(
-            cookie=pathlib.Path("/any/cache/cookie.txt"),
             directory=pathlib.Path("/any/test"),
             judge=None,
             command="ls ~",
@@ -305,7 +304,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
         OjTestArguments(
-            cookie=pathlib.Path("/any/cache/cookie.txt"),
             directory=pathlib.Path("/any/test"),
             judge=None,
             command="ls ~",
@@ -325,7 +323,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             mle=1.2,
         ),
         OjTestArguments(
-            cookie=pathlib.Path("/any/cache/cookie.txt"),
             directory=pathlib.Path("/any/test"),
             judge=None,
             command="ls ~",
@@ -344,7 +341,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            cookie=pathlib.Path("/any/cache/cookie.txt"),
             directory=pathlib.Path("/any/test"),
             judge=None,
             command="ls ~",
@@ -363,7 +359,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            cookie=pathlib.Path("/any/cache/cookie.txt"),
             directory=pathlib.Path("/any/test"),
             judge=None,
             command="ls ~",
@@ -388,10 +383,6 @@ def test_run_problem_command(
 ):
     patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "run")
 
-    mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.get_cache_directory",
-        return_value=pathlib.Path("/any/cache"),
-    )
     mocker.patch(
         "competitive_verifier.oj.tools.oj_test.get_directory",
         return_value=pathlib.Path("/any/"),

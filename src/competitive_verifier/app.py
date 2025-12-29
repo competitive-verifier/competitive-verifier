@@ -23,7 +23,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version",
         action="store_true",
-        help="print the online-judge-tools version number",
+        help="print the competitive-verifier version number",
     )
 
     subparsers = parser.add_subparsers(dest="subcommand")
