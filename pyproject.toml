@@ -98,19 +98,19 @@ capture_stdout = ".competitive-verifier/tmp/all-verify_files.json"
 
 [tool.poe.tasks."dev-verify"]
 shell = "competitive-verifier verify --output .competitive-verifier/tmp/all-result.json"
-env = { COMPETITIVE_VERIFY_FILES_PATH = ".competitive-verifier/tmp/all-verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = ".competitive-verifier/tmp/all-verify_files.json" }
 
 [tool.poe.tasks."dev-docs"]
 shell = "competitive-verifier docs .competitive-verifier/tmp/all-result.json --include examples/"
-env = { COMPETITIVE_VERIFY_FILES_PATH = ".competitive-verifier/tmp/all-verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = ".competitive-verifier/tmp/all-verify_files.json" }
 
 [tool.poe.tasks."dev-external-verify"]
 shell = "competitive-verifier verify --output .competitive-verifier/tmp/result.json"
-env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.json" }
 
 [tool.poe.tasks."dev-external-docs"]
 shell = "competitive-verifier docs .competitive-verifier/tmp/result.json --include examples/"
-env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.json" }
 
 
 [tool.poe.tasks.serve]
