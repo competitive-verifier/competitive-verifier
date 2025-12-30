@@ -10,7 +10,6 @@ import requests.exceptions
 
 from competitive_verifier import log
 
-from . import utils
 from .func import (
     get_checker_path,
     get_directory,
@@ -128,24 +127,14 @@ def run(
             logger.error("Sample not found")
         return False
 
-    for _i, sample in enumerate(samples):
-        for _, path, _ in _iterate_files_to_write(sample, directory=directory):
-            if path.exists():
-                logger.error(
-                    "Failed to download since file already exists: %s", str(path)
-                )
-                logger.info(
-                    utils.HINT
-                    + "We recommend adding your own test cases to test/ directory, and using one directory per one problem."
-                    " Please see also https://github.com/online-judge-tools/oj/blob/master/docs/getting-started.md#random-testing."
-                    " If you wanted to keep using one directory per one contest, you can run like `$ rm -rf test/ && oj d https://...`."
-                )
-                return False
-
     # write samples to files
     for _i, sample in enumerate(samples):
         for _, path, data in _iterate_files_to_write(sample, directory=directory):
             if not dry_run:
+                if path.exists():
+                    logger.error(
+                        "Failed to download since file already exists: %s", str(path)
+                    )
                 path.parent.mkdir(parents=True, exist_ok=True)
                 with path.open("wb") as fh:
                     fh.write(data)

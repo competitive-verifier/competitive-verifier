@@ -233,7 +233,6 @@ convention = "google"
     "PLR2004",
     "PLR0913",
 ]
-"src/competitive_verifier/oj/tools/**" = ["G003"]
 "src/competitive_verifier/*/main.py" = ["BLE001"]
 "src/competitive_verifier/**" = ["T201"]
 "src/competitive_verifier/oj/verify/languages/**" = [
