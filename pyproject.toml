@@ -93,7 +93,8 @@ test-use-prev-dest = "poe test --use-prev-dest"
 ]
 
 [tool.poe.tasks."dev-oj-resolve"]
-shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml > .competitive-verifier/tmp/all-verify_files.json"
+shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml"
+capture_stdout = ".competitive-verifier/tmp/all-verify_files.json"
 
 [tool.poe.tasks."dev-verify"]
 shell = "competitive-verifier verify --output .competitive-verifier/tmp/all-result.json"
