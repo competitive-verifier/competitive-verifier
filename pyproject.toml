@@ -47,14 +47,13 @@ ruff = "^0.14.10"
 pyright = "^1.1.407"
 
 [tool.poe.tasks]
-flake8 = "pflake8 src/competitive_verifier tests"
 ruff-check = "ruff check --fix"
 ruff-format = "ruff format"
 pyright = "pyright src/competitive_verifier tests"
 format = ["ruff-format", "ruff-check", "pyright"]
 "lint:check" = "ruff check"
 "lint:format" = "ruff format --check"
-lint = ["lint:check", "lint:format", "pyright"]
+lint.parallel = ["lint:check", "lint:format", "pyright"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
@@ -64,29 +63,54 @@ test-use-prev-dest = "poe test --use-prev-dest"
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
 
+"schema:verify_files" = { expr = "json.dumps(competitive_verifier.models.VerificationInput.model_json_schema(), indent=2)", imports = [
+    "json",
+    "competitive_verifier.models",
+] }
+"schema:verify_result" = { expr = "json.dumps(competitive_verifier.models.VerifyCommandResult.model_json_schema(), indent=2)", imports = [
+    "json",
+    "competitive_verifier.models",
+] }
+"deafult:config_yml" = { expr = "competitive_verifier.documents.config.ConfigYaml().model_dump_yml().decode(encoding='utf-8')", imports = [
+    "json",
+    "competitive_verifier.documents.config",
+] }
 
-"schema-verify_files" = { script = "competitive_verifier.script_tools.schema:show_verify_json_schema" }
-"schema-verify_result" = { script = "competitive_verifier.script_tools.schema:show_result_json_schema" }
-"schema-config_yml" = { script = "competitive_verifier.script_tools.docs:show_default_config_yml" }
+# https://github.com/nat-n/poethepoet/pull/343
+"schema:write" = [
+    { expr = "json.dumps(competitive_verifier.models.VerificationInput.model_json_schema(), indent=2)", imports = [
+        "json",
+        "competitive_verifier.models",
+    ], capture_stdout = "schema/verify_files.schema.json" },
+    { expr = "json.dumps(competitive_verifier.models.VerifyCommandResult.model_json_schema(), indent=2)", imports = [
+        "json",
+        "competitive_verifier.models",
+    ], capture_stdout = "schema/verify_result.schema.json" },
+    { expr = "competitive_verifier.documents.config.ConfigYaml().model_dump_yml().decode(encoding='utf-8')", imports = [
+        "json",
+        "competitive_verifier.documents.config",
+    ], capture_stdout = ".competitive-verifier/docs/_config.default.yml" },
+]
 
 [tool.poe.tasks."dev-oj-resolve"]
-shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml > .competitive-verifier/tmp/all-verify_files.json"
+shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml"
+capture_stdout = ".competitive-verifier/tmp/all-verify_files.json"
 
 [tool.poe.tasks."dev-verify"]
 shell = "competitive-verifier verify --output .competitive-verifier/tmp/all-result.json"
-env = { COMPETITIVE_VERIFY_FILES_PATH = ".competitive-verifier/tmp/all-verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = ".competitive-verifier/tmp/all-verify_files.json" }
 
 [tool.poe.tasks."dev-docs"]
 shell = "competitive-verifier docs .competitive-verifier/tmp/all-result.json --include examples/"
-env = { COMPETITIVE_VERIFY_FILES_PATH = ".competitive-verifier/tmp/all-verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = ".competitive-verifier/tmp/all-verify_files.json" }
 
 [tool.poe.tasks."dev-external-verify"]
 shell = "competitive-verifier verify --output .competitive-verifier/tmp/result.json"
-env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.json" }
 
 [tool.poe.tasks."dev-external-docs"]
 shell = "competitive-verifier docs .competitive-verifier/tmp/result.json --include examples/"
-env = { COMPETITIVE_VERIFY_FILES_PATH = "examples/external/verify_files.json" }
+env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.json" }
 
 
 [tool.poe.tasks.serve]
@@ -209,7 +233,6 @@ convention = "google"
     "PLR2004",
     "PLR0913",
 ]
-"src/competitive_verifier/oj/tools/**" = ["G003"]
 "src/competitive_verifier/*/main.py" = ["BLE001"]
 "src/competitive_verifier/**" = ["T201"]
 "src/competitive_verifier/oj/verify/languages/**" = [

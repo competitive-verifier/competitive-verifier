@@ -82,18 +82,18 @@ def display_result(
     # check TLE, RE or not
     status = JudgeStatus.AC
     if proc.returncode is None:
-        logger.info(utils.FAILURE + "" + utils.red("TLE"))
+        logger.info("%s%s", utils.FAILURE, utils.red("TLE"))
         status = JudgeStatus.TLE
         if not silent:
             print_input()
     elif memory is not None and mle is not None and memory > mle:
-        logger.info(utils.FAILURE + "" + utils.red("MLE"))
+        logger.info("%s%s", utils.FAILURE, utils.red("MLE"))
         status = JudgeStatus.MLE
         if not silent:
             print_input()
     elif proc.returncode != 0:
         logger.info(
-            utils.FAILURE + "" + utils.red("RE") + ": return code %d", proc.returncode
+            "%s%s: return code %d", utils.FAILURE, utils.red("RE"), proc.returncode
         )
         status = JudgeStatus.RE
         if not silent:
@@ -103,7 +103,7 @@ def display_result(
     # 元の実装では TLE や RE でもこっちに来てしまうので elif に変更
     elif match_result is not None and not match_result:
         if status == JudgeStatus.AC:
-            logger.info(utils.FAILURE + "" + utils.red("WA"))
+            logger.info("%s%s", utils.FAILURE, utils.red("WA"))
         status = JudgeStatus.WA
         if not silent:
             print_input()
@@ -133,7 +133,7 @@ def display_result(
             ),
         )
     if status == JudgeStatus.AC:
-        logger.info(utils.SUCCESS + "" + utils.green("AC"))
+        logger.info("%s%s", utils.SUCCESS, utils.green("AC"))
 
     return status
 
@@ -406,9 +406,9 @@ def run(args: OjTestArguments) -> OjTestResult:
             args.gnu_time = "time"
     if not check_gnu_time(args.gnu_time):
         logger.warning("GNU time is not available: %s", args.gnu_time)
-        if platform.system() == "Darwin":
+        if True:
             logger.info(
-                utils.HINT + "You can install GNU time with: $ brew install gnu-time"
+                "%sYou can install GNU time with: $ brew install gnu-time", utils.HINT
             )
         args.gnu_time = None
     if args.mle is not None and args.gnu_time is None:
@@ -450,11 +450,16 @@ def run(args: OjTestArguments) -> OjTestResult:
         logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
     if ac_count == len(tests):
         logger.info(
-            utils.SUCCESS + "test " + utils.green("success") + ": %d cases", len(tests)
+            "%stest %s: %d cases",
+            utils.SUCCESS,
+            utils.green("success"),
+            len(tests),
         )
     else:
         logger.info(
-            utils.FAILURE + "test " + utils.red("failed") + ": %d AC / %d cases",
+            "%stest %s: %d AC / %d cases",
+            utils.FAILURE,
+            utils.red("failed"),
             ac_count,
             len(tests),
         )
