@@ -34,6 +34,7 @@ charset-normalizer = "^3.4.4"
 tomli = { version = "^2.0.1", python = "<3.11" }
 requests = "^2.32.5"
 appdirs = "^1.4.4"
+pydantic-settings = {git = "https://github.com/pydantic/pydantic-settings"}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^9.0.2"

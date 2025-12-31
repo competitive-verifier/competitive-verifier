@@ -7,12 +7,11 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier import app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
 
 
 def parse_args(args: list[str]) -> argparse.Namespace:
-    return app.get_parser().parse_args(args)
+    return argparse.ArgumentParser().parse_args(args)
 
 
 @pytest.fixture

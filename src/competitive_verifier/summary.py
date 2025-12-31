@@ -62,6 +62,13 @@ class TableWriter:
         fp.write("|\n")
 
 
+def try_write_summary(path: pathlib.Path | None, result: VerifyCommandResult):
+    if not path:
+        return
+    with path.open("w", encoding="utf-8") as fp:
+        write_summary(fp, result)
+
+
 def write_summary(fp: TextIO, result: VerifyCommandResult):
     def with_icon(icon: str, text: str) -> str:
         return icon + "&nbsp;&nbsp;" + text

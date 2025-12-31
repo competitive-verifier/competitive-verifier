@@ -4,8 +4,7 @@ import pathlib
 import sys
 from logging import getLogger
 
-import competitive_verifier.merge_result.main as merge_result
-from competitive_verifier import config
+from competitive_verifier import config, merge, summary
 from competitive_verifier.arg import (
     add_ignore_error_argument,
     add_include_exclude_argument,
@@ -63,10 +62,8 @@ def run(args: argparse.Namespace) -> bool:
     logger.info("result_json=%s", [str(p) for p in args.result_json])
 
     verifications = VerificationInput.parse_file_relative(args.verify_files_json)
-    result = merge_result.run_impl(
-        *args.result_json,
-        write_summary=args.write_summary,
-    )
+    result = merge.merge_result_files(args.result_json)
+    summary.try_write_summary(args.write_summary, result)
     return (
         run_impl(
             verifications,

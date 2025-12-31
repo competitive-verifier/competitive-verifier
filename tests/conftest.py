@@ -3,6 +3,10 @@ import pathlib
 import pytest
 from pytest_mock import MockerFixture
 
+import competitive_verifier.app
+
+competitive_verifier.app.LOGGING_ENABLED = False
+
 
 def pytest_addoption(parser: pytest.Parser):
     parser.addoption(

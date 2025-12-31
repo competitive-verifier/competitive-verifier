@@ -9,7 +9,10 @@ def add_verbose_argument(
     parser: argparse.ArgumentParser,
 ) -> argparse.Action:
     return parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show debug level log."
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show debug level log.",
     )
 
 
