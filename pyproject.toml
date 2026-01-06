@@ -42,9 +42,12 @@ pytest-subtests = "^0.15.0"
 pytest-order = "^1.3.0"
 
 [tool.poetry.group.dev.dependencies]
-poethepoet = "^0.38.0"
+poethepoet = "^0.40.0"
 ruff = "^0.14.10"
 pyright = "^1.1.407"
+
+[tool.poe]
+envfile.optional = [".env"] 
 
 [tool.poe.tasks]
 ruff-check = "ruff check --fix"
@@ -63,35 +66,24 @@ test-use-prev-dest = "poe test --use-prev-dest"
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
 
-"schema:verify_files" = { expr = "json.dumps(competitive_verifier.models.VerificationInput.model_json_schema(), indent=2)", imports = [
-    "json",
-    "competitive_verifier.models",
-] }
-"schema:verify_result" = { expr = "json.dumps(competitive_verifier.models.VerifyCommandResult.model_json_schema(), indent=2)", imports = [
-    "json",
-    "competitive_verifier.models",
-] }
-"deafult:config_yml" = { expr = "competitive_verifier.documents.config.ConfigYaml().model_dump_yml().decode(encoding='utf-8')", imports = [
-    "json",
-    "competitive_verifier.documents.config",
-] }
-
-# https://github.com/nat-n/poethepoet/pull/343
 "schema:write" = [
-    { expr = "json.dumps(competitive_verifier.models.VerificationInput.model_json_schema(), indent=2)", imports = [
-        "json",
-        "competitive_verifier.models",
-    ], capture_stdout = "schema/verify_files.schema.json" },
-    { expr = "json.dumps(competitive_verifier.models.VerifyCommandResult.model_json_schema(), indent=2)", imports = [
-        "json",
-        "competitive_verifier.models",
-    ], capture_stdout = "schema/verify_result.schema.json" },
-    { expr = "competitive_verifier.documents.config.ConfigYaml().model_dump_yml().decode(encoding='utf-8')", imports = [
-        "json",
-        "competitive_verifier.documents.config",
-    ], capture_stdout = ".competitive-verifier/docs/_config.default.yml" },
+    { ref = "schema:verify_files", capture_stdout = "schema/verify_files.schema.json" },
+    { ref = "schema:verify_result", capture_stdout = "schema/verify_result.schema.json" },
+    { ref = "deafult:config_yml", capture_stdout = ".competitive-verifier/docs/_config.default.yml" },
 ]
 
+# schema
+[tool.poe.tasks."schema:verify_files"]
+expr = "json.dumps(competitive_verifier.models.VerificationInput.model_json_schema(), indent=2)"
+imports = ["json", "competitive_verifier.models"]
+[tool.poe.tasks."schema:verify_result"]
+expr = "json.dumps(competitive_verifier.models.VerifyCommandResult.model_json_schema(), indent=2)"
+imports = ["json", "competitive_verifier.models"]
+[tool.poe.tasks."deafult:config_yml"]
+expr = "competitive_verifier.documents.config.ConfigYaml().model_dump_yml().decode(encoding='utf-8')"
+imports = ["json", "competitive_verifier.documents.config"]
+
+# dev
 [tool.poe.tasks."dev-oj-resolve"]
 shell = "competitive-verifier oj-resolve --include examples --config examples/config.toml"
 capture_stdout = ".competitive-verifier/tmp/all-verify_files.json"
@@ -112,7 +104,7 @@ env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.
 shell = "competitive-verifier docs .competitive-verifier/tmp/result.json --include examples/"
 env = { COMPETITIVE_VERIFY_FILES_PATH.default = "examples/external/verify_files.json" }
 
-
+# serve local documents
 [tool.poe.tasks.serve]
 env = { _COMPETITIVE_SERVE_DIR = ".competitive-verifier/_jekyll" }
 [[tool.poe.tasks.serve.sequence]]
