@@ -3,11 +3,15 @@ import pathlib
 import re
 import shutil
 import urllib.parse
+from argparse import ArgumentParser
 from logging import getLogger
+from typing import Literal
 
 import yaml
+from pydantic import Field
 
 from competitive_verifier import git
+from competitive_verifier.arg import VerboseArguments
 from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
 from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
@@ -230,3 +234,26 @@ def main(*, dry_run: bool) -> bool:
     print(f"  1. Open {page}/installer.html?{urllib.parse.urlencode(d)}")
     print("  2. Update your GitHub Actions.")
     return True
+
+
+class Migration(VerboseArguments):
+    subcommand: Literal["migrate"] = Field(
+        default="migrate",
+        description="Migrate from verification-helper(`oj-verify`) project",
+    )
+    dry_run: bool = False
+
+    @classmethod
+    def add_parser(cls, parser: ArgumentParser):
+        super().add_parser(parser)
+        parser.add_argument(
+            "--dry-run",
+            "-n",
+            dest="dry_run",
+            action="store_true",
+            help="Run a trial migration with no changes. Just show logs only.",
+        )
+
+    def _run(self) -> bool:
+        logger.debug("arguments:%s", self)
+        return main(dry_run=self.dry_run)

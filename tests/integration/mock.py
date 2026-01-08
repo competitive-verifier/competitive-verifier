@@ -12,7 +12,8 @@ from competitive_verifier import config
 from competitive_verifier.models import FileResult, VerificationResult
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.verify import verifier
-from tests.integration.utils import md5_number
+
+from .utils import md5_number
 
 
 class MockVerifyCommandResult(verifier.VerifyCommandResult):

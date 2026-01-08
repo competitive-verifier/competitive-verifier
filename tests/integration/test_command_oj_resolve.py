@@ -5,7 +5,7 @@ from typing import Protocol
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.app import main
+from competitive_verifier import app
 from competitive_verifier.oj.verify.languages import special_comments
 
 from .data.integration_data import IntegrationData
@@ -84,7 +84,9 @@ class TestCommandOjResolve:
             config=integration_data.config_path,
             bundle=True,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -107,7 +109,9 @@ class TestCommandOjResolve:
             config="config.toml",
             bundle=True,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -204,7 +208,9 @@ class TestCommandOjResolve:
             config="config.toml",
             bundle=bundle,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -263,7 +269,9 @@ class TestCommandOjResolve:
             config="config.toml",
             bundle=True,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -310,7 +318,9 @@ class TestCommandOjResolve:
             config="config.toml",
             bundle=True,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
@@ -369,7 +379,9 @@ class TestCommandOjResolve:
             config="config.toml",
             bundle=True,
         )
-        main(args)
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
 
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)

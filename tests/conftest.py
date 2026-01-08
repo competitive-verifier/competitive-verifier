@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 import pytest
@@ -35,4 +36,10 @@ def mock_perf_counter(mocker: MockerFixture):
         pc += 1.0
         return ppc
 
-    mocker.patch("time.perf_counter", side_effect=_perf_counter)
+    with mocker.patch("time.perf_counter", side_effect=_perf_counter):
+        yield
+
+
+@pytest.fixture
+def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
+    mocker.patch.dict(os.environ, request.param or {}, clear=True)

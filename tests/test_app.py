@@ -1,9 +1,6 @@
-import argparse
 import math
-import os
 import pathlib
 import re
-from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -13,102 +10,27 @@ from competitive_verifier import app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
 
 
-def parse_args(args: list[str]) -> argparse.Namespace:
-    return app.get_parser().parse_args(args)
-
-
-@pytest.fixture
-def setenv(mocker: MockerFixture):
-    def _setenv(verify_files_path: str | None):
-        if verify_files_path:
-            mocker.patch.dict(
-                os.environ,
-                {COMPETITIVE_VERIFY_FILES_PATH: verify_files_path},
-                clear=True,
-            )
-
-    return _setenv
-
-
-def test_parse_args_default(setenv: Callable[[str | None], None]):
-    setenv(".competitive-verifier/verify_files.json")
-    parsed = parse_args(["verify"])
-
-    assert parsed.verify_files_json == pathlib.Path(
-        ".competitive-verifier/verify_files.json"
-    )
-    assert parsed.timeout == math.inf
-    assert parsed.default_tle is None
-    assert parsed.default_mle is None
-    assert parsed.prev_result is None
-    assert parsed.split is None
-    assert parsed.split_index is None
-
-    parsed = parse_args(
-        [
-            "docs",
-            ".cr/res0.json",
-            ".cr/res1.json",
-        ]
-    )
-
-    assert parsed.verify_files_json == pathlib.Path(
-        ".competitive-verifier/verify_files.json"
-    )
-    assert parsed.result_json == [
-        pathlib.Path(".cr/res0.json"),
-        pathlib.Path(".cr/res1.json"),
-    ]
-
-
-def test_parse_args_json_path(setenv: Callable[[str | None], None]):
-    parsed = parse_args(["verify", "--verify-json", ".cv/f.json"])
-    assert parsed.verify_files_json == pathlib.Path(".cv/f.json")
-
-    parsed = parse_args(
-        [
-            "docs",
-            "--verify-json",
-            ".cv/d.json",
-            ".cr/res0.json",
-            ".cr/res1.json",
-        ]
-    )
-    assert parsed.verify_files_json == pathlib.Path(".cv/d.json")
-    assert parsed.result_json == [
-        pathlib.Path(".cr/res0.json"),
-        pathlib.Path(".cr/res1.json"),
-    ]
-
-
-def test_parse_args_time(setenv: Callable[[str | None], None]):
-    setenv(".competitive-verifier/verify_files.json")
-    parsed = parse_args(["verify", "--timeout", "600", "--tle", "10"])
-
-    assert parsed.timeout == 600.0
-    assert parsed.default_tle == 10.0
-    assert parsed.prev_result is None
-
-
-def test_parse_args_prev_result(setenv: Callable[[str | None], None]):
-    setenv(".competitive-verifier/verify_files.json")
-    parsed = parse_args(["verify", "--prev-result", ".cv/prev.json"])
-    assert parsed.prev_result == pathlib.Path(".cv/prev.json")
-
-
-def test_parallel_split(setenv: Callable[[str | None], None]):
-    setenv(".competitive-verifier/verify_files.json")
-    parsed = parse_args(["verify", "--split-index", "1", "--split", "5"])
-    assert parsed.split == 5
-    assert parsed.split_index == 1
+def parse_args(args: list[str]) -> app.Arguments:
+    return app.ArgumentParser().parse(args)
 
 
 def test_app_help(capsys: pytest.CaptureFixture[str]):
     assert app.main([]) == 2
 
     out, err = capsys.readouterr()
-    assert out == app.get_parser().format_help()
+    assert out == app.ArgumentParser().format_help()
     assert err == ""
+
+
+@pytest.mark.parametrize(("return_value", "expected"), [(True, 0), (False, 1)])
+def test_result(return_value: bool, expected: int, mocker: MockerFixture):
+    mocker.patch.object(
+        app.Download,
+        "run",
+        return_value=return_value,
+    )
+
+    assert app.main(["download"]) == expected
 
 
 test_parse_args_params: list[
@@ -453,19 +375,18 @@ test_parse_args_params: list[
 
 
 @pytest.mark.parametrize(
-    ("env", "args", "expected"),
+    ("mockenv", "args", "expected"),
     test_parse_args_params,
     ids=(f"{' '.join(t[1])}:{t[0]}" for t in test_parse_args_params),
+    indirect=["mockenv"],
 )
 def test_parse_args(
-    env: dict[str, str] | None,
+    mockenv: Any,
     args: list[str],
     expected: dict[str, Any],
-    mocker: MockerFixture,
 ):
-    mocker.patch.dict(os.environ, env or {}, clear=True)
-    parsed = app.get_parser().parse_args(args)
-    assert vars(parsed) == expected
+    parsed = app.ArgumentParser().parse(args)
+    assert parsed.model_dump() == expected
 
 
 test_parse_args_error_params: list[tuple[dict[str, str] | None, list[str], str]] = [
@@ -475,14 +396,14 @@ test_parse_args_error_params: list[tuple[dict[str, str] | None, list[str], str]]
         ["docs"],
         "the following arguments are required: --verify-json, result_json",
     ),
-    (None, ["merge-input"], "the following arguments are required: verify_files_json"),
-    (None, ["merge-result"], "the following arguments are required: result_json"),
-    (None, ["check"], "the following arguments are required: result_json"),
     (
         {COMPETITIVE_VERIFY_FILES_PATH: ".competitive-verifier/verify_files.json"},
         ["docs"],
         "the following arguments are required: result_json",
     ),
+    (None, ["merge-input"], "the following arguments are required: verify_files_json"),
+    (None, ["merge-result"], "the following arguments are required: result_json"),
+    (None, ["check"], "the following arguments are required: result_json"),
 ]
 
 
@@ -491,12 +412,13 @@ class ParseError(Exception):
 
 
 @pytest.mark.parametrize(
-    ("env", "args", "expected_message"),
+    ("mockenv", "args", "expected_message"),
     test_parse_args_error_params,
     ids=(f"{' '.join(t[1])}:{t[0]}" for t in test_parse_args_error_params),
+    indirect=["mockenv"],
 )
 def test_parse_args_error(
-    env: dict[str, str] | None,
+    mockenv: Any,
     args: list[str],
     expected_message: str,
     mocker: MockerFixture,
@@ -505,7 +427,8 @@ def test_parse_args_error(
         if message:
             raise ParseError(message)
 
-    mocker.patch("argparse.ArgumentParser.error", side_effect=_error)
-    mocker.patch.dict(os.environ, env or {}, clear=True)
-    with pytest.raises(ParseError, match=f"^{re.escape(expected_message)}$"):
-        app.get_parser().parse_args(args)
+    with (
+        mocker.patch("argparse.ArgumentParser.error", side_effect=_error),
+        pytest.raises(ParseError, match=f"^{re.escape(expected_message)}$"),
+    ):
+        app.ArgumentParser().parse(args)

@@ -7,8 +7,7 @@ from functools import cached_property
 from logging import getLogger
 
 from competitive_verifier import git, github, log
-from competitive_verifier.download.main import run_impl as run_download
-from competitive_verifier.error import VerifierError
+from competitive_verifier.download import download_files as run_download
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
@@ -17,6 +16,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
     VerificationResult,
+    VerifierError,
     VerifyCommandResult,
 )
 from competitive_verifier.resource import ulimit_stack

@@ -1,118 +1,79 @@
-import argparse
 import importlib.metadata
-from collections.abc import Callable
+from argparse import ArgumentParser as BaseParser
 from logging import getLogger
+from typing import Annotated, Any, Literal, get_args
 
-# ruff: noqa: PLC0415
+from pydantic import Field, TypeAdapter
+
+from competitive_verifier.arg import BaseArguments
+from competitive_verifier.documents import Docs
+from competitive_verifier.download import Download
+from competitive_verifier.inout import Check, MergeInput, MergeResult
+from competitive_verifier.migrate import Migration
+from competitive_verifier.oj.resolve import OjResolve
+from competitive_verifier.verify import Verify
 
 logger = getLogger(__name__)
 
 
-def get_parser() -> argparse.ArgumentParser:
-    import competitive_verifier.check.main as check
-    import competitive_verifier.documents.main as docs
-    import competitive_verifier.download.main as download
-    import competitive_verifier.merge_input.main as merge_input
-    import competitive_verifier.merge_result.main as merge_result
-    import competitive_verifier.migrate.main as migrate
-    import competitive_verifier.oj.resolve.main as oj_resolve
-    import competitive_verifier.verify.main as verify
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=importlib.metadata.version("competitive-verifier"),
-        help="print the competitive-verifier version number",
-    )
-
-    subparsers = parser.add_subparsers(dest="subcommand")
-
-    subparser = subparsers.add_parser(
-        "verify",
-        help="Verify library",
-    )
-    verify.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "docs",
-        help="Create documents",
-    )
-    docs.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "download",
-        help="Download problems",
-    )
-    download.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "merge-input",
-        help="Merge verify_files.json",
-    )
-    merge_input.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "merge-result",
-        help="Merge result of `verify`",
-    )
-    merge_result.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "check",
-        help="Check result of `verify`",
-    )
-    check.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "oj-resolve",
-        help="Create verify_files json using `oj-verify`",
-    )
-    oj_resolve.argument(subparser)
-
-    subparser = subparsers.add_parser(
-        "migrate",
-        help="Migration from verification-helper(`oj-verify`) project",
-    )
-    migrate.argument(subparser)
-
-    return parser
+class HelpError(Exception):
+    pass
 
 
-def select_runner(
-    subcommand: str,
-) -> Callable[[argparse.Namespace], bool] | None:
-    import competitive_verifier.check.main as check
-    import competitive_verifier.documents.main as docs
-    import competitive_verifier.download.main as download
-    import competitive_verifier.merge_input.main as merge_input
-    import competitive_verifier.merge_result.main as merge_result
-    import competitive_verifier.migrate.main as migrate
-    import competitive_verifier.oj.resolve.main as oj_resolve
-    import competitive_verifier.verify.main as verify
+class NoSubcommand(BaseArguments):
+    subcommand: Literal[None] = None  # noqa: PYI061
 
-    d = {
-        # Use sys.stdout for result
-        "merge-result": merge_result.run,
-        "merge-input": merge_input.run,
-        "oj-resolve": oj_resolve.run,
-        "check": check.run,
-        "migrate": migrate.run,
-        # Use sys.stdout for logging
-        "download": download.run,
-        "verify": verify.run,
-        "docs": docs.run,
-    }
+    def run(self) -> bool:
+        raise HelpError
 
-    return d.get(subcommand)
+    @classmethod
+    def add_parser(cls, parser: BaseParser):
+        super().add_parser(parser)
+        parser.add_argument(
+            "--version",
+            action="version",
+            version=importlib.metadata.version("competitive-verifier"),
+            help="print the competitive-verifier version number",
+        )
 
 
-def main(args: list[str] | None = None) -> int:
-    parser = get_parser()
-    parsed = parser.parse_args(args)
+Arguments = Annotated[
+    NoSubcommand
+    | Verify
+    | Docs
+    | Download
+    | MergeInput
+    | MergeResult
+    | Check
+    | OjResolve
+    | Migration,
+    Field(discriminator="subcommand"),
+]
+ARG_TYPES: tuple[type[BaseArguments], ...] = get_args(Arguments.__origin__)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
-    runner = select_runner(parsed.subcommand)
-    if runner:
-        return not runner(parsed)
-    parser.print_help()
-    return 2
+
+class ArgumentParser(BaseParser):
+    def __init__(self, **kwargs: dict[str, Any]) -> None:
+        super().__init__(**kwargs)  # pyright: ignore[reportArgumentType]
+        subparsers = self.add_subparsers(dest="subcommand", parser_class=BaseParser)
+
+        for s in ARG_TYPES:
+            s.add_parser(
+                self
+                if (sub := s.get_subcommand_info()) is None
+                else subparsers.add_parser(**sub)
+            )
+
+    def parse(self, args: list[str] | None = None) -> Arguments:
+        type_adapter = TypeAdapter[Arguments](Arguments)
+        return type_adapter.validate_python(self.parse_args(args).__dict__)
+
+
+def main(args: list[str] | None = None) -> int | None:
+    parser = ArgumentParser()
+
+    try:
+        return not parser.parse(args).run()
+    except HelpError:
+        parser.print_help()
+        return 2

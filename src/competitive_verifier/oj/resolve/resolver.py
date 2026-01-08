@@ -3,13 +3,17 @@ import hashlib
 import os
 import pathlib
 import traceback
+from argparse import ArgumentParser
 from collections.abc import Generator
 from functools import cached_property
 from itertools import chain
 from logging import getLogger
-from typing import Any
+from typing import Any, Literal
+
+from pydantic import Field, ValidationError
 
 from competitive_verifier import config, git, oj
+from competitive_verifier.arg import IncludeExcludeArguments, VerboseArguments
 from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
@@ -217,3 +221,55 @@ class OjResolver:
                 additonal_sources=additonal_sources,
             )
         return VerificationInput(files=files)
+
+
+class OjResolve(IncludeExcludeArguments, VerboseArguments):
+    subcommand: Literal["oj-resolve"] = Field(
+        default="oj-resolve",
+        description="Create verify_files json using `oj-verify`",
+    )
+    bundle: bool = True
+    config: pathlib.Path | OjVerifyConfig | None = None
+
+    @classmethod
+    def add_parser(cls, parser: ArgumentParser):
+        super().add_parser(parser)
+        parser.add_argument(
+            "--no-bundle",
+            dest="bundle",
+            action="store_false",
+            help="Disable bundle",
+        )
+        parser.add_argument(
+            "--config",
+            help="config.toml",
+            type=pathlib.Path,
+        )
+
+    def to_resolver(self) -> OjResolver:
+        if self.config is None:
+            logger.info("no config file")
+            config = OjVerifyConfig()
+        elif not isinstance(self.config, OjVerifyConfig):
+            try:
+                config_path = self.config
+                with pathlib.Path(config_path).open("rb") as fp:
+                    config = OjVerifyConfig.load(fp)
+                    logger.info("config file loaded: %s: %s", str(config_path), config)
+            except ValidationError:
+                logger.exception("config file validation error")
+                config = OjVerifyConfig()
+        else:
+            config = self.config
+
+        return OjResolver(
+            include=self.include,
+            exclude=self.exclude,
+            config=config,
+        )
+
+    def _run(self) -> bool:
+        logger.debug("arguments:%s", self)
+        resolved = self.to_resolver().resolve(bundle=self.bundle)
+        print(resolved.model_dump_json(exclude_none=True))
+        return True

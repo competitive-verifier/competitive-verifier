@@ -6,7 +6,7 @@ import shutil
 
 import pytest
 
-from competitive_verifier.app import main
+from competitive_verifier import app
 from competitive_verifier.models import (
     FileResult,
     JudgeStatus,
@@ -163,7 +163,11 @@ class TestCommandVerfy:
         result = integration_data.config_dir_path / "result.json"
         shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
 
-        main(["verify", "--verify-json", str(verify), "--output", str(result)])
+        parsed = app.ArgumentParser().parse(
+            ["verify", "--verify-json", str(verify), "--output", str(result)]
+        )
+        assert isinstance(parsed, app.Verify)
+        assert parsed.run()
 
         assert (
             json.loads(pathlib.Path(result).read_bytes())

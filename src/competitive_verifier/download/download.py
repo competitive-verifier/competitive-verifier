@@ -1,20 +1,21 @@
-import argparse
-import logging
+from argparse import ArgumentParser
 from collections.abc import Iterable
 from itertools import chain
 from logging import getLogger
+from typing import Literal
+
+from pydantic import Field
 
 from competitive_verifier import oj
 from competitive_verifier.arg import (
-    add_verbose_argument,
-    add_verify_files_json_argument,
+    OptionalVerifyFilesJsonArguments,
+    VerboseArguments,
 )
-from competitive_verifier.error import VerifierError
-from competitive_verifier.log import configure_stderr_logging
 from competitive_verifier.models import (
     ProblemVerification,
     VerificationFile,
     VerificationInput,
+    VerifierError,
 )
 from competitive_verifier.resource import ulimit_stack
 
@@ -43,7 +44,7 @@ def enumerate_urls(file: VerificationFile) -> Iterable[str]:
             yield v.problem
 
 
-def run_impl(
+def download_files(
     url_or_file: UrlOrVerificationFile | Iterable[UrlOrVerificationFile],
     *,
     check: bool = False,
@@ -52,7 +53,7 @@ def run_impl(
     result = True
     try:
         ulimit_stack()
-    except Exception:
+    except Exception:  # noqa: BLE001
         logger.warning("failed to increase the stack size[ulimit]")
     for url in parse_urls(url_or_file):
         if not oj.download(url, group_log=group_log):
@@ -63,29 +64,35 @@ def run_impl(
     return result
 
 
-def run(args: argparse.Namespace) -> bool:
-    default_level = logging.INFO
-    if args.verbose:
-        default_level = logging.DEBUG
-    configure_stderr_logging(default_level)
-
-    logger.debug("arguments=%s", vars(args))
-    logger.info("verify_files_json=%s", str(args.verify_files_json))
-    logger.info("urls=%s", args.urls)
-    files: list[VerificationFile] = []
-    if args.verify_files_json:
-        verification = VerificationInput.parse_file_relative(args.verify_files_json)
-        files = list(verification.files.values())
-
-    return run_impl(files + args.urls, group_log=True)
-
-
-def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    add_verbose_argument(parser)
-    add_verify_files_json_argument(parser, required=False)
-    parser.add_argument(
-        "urls",
-        nargs="*",
-        help="A list of problem URL",
+class Download(OptionalVerifyFilesJsonArguments, VerboseArguments):
+    subcommand: Literal["download"] = Field(
+        default="download",
+        description="Download problems",
     )
-    return parser
+    urls: list[str] = Field(default_factory=list)
+
+    @classmethod
+    def add_parser(cls, parser: ArgumentParser):
+        super().add_parser(parser)
+        parser.add_argument(
+            "urls",
+            nargs="*",
+            help="A list of problem URL",
+        )
+
+    def _run(self) -> bool:
+        logger.debug("arguments:%s", self)
+        logger.info(
+            "verify_files_json=%s, urls=%s",
+            str(self.verify_files_json),
+            self.urls,
+        )
+        files: list[VerificationFile] = []
+        if self.verify_files_json:
+            files.extend(
+                VerificationInput.parse_file_relative(
+                    self.verify_files_json
+                ).files.values()
+            )
+
+        return download_files(files + self.urls, group_log=True)

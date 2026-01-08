@@ -6,7 +6,7 @@ import pytest
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
-from competitive_verifier.download.main import run_impl as download
+from competitive_verifier.download import download_files as download
 from competitive_verifier.oj.tools import service
 
 

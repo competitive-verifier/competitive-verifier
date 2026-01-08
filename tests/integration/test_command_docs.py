@@ -14,9 +14,9 @@ from pydantic import BaseModel, Field
 from pytest_mock import MockerFixture
 from pytest_subtests import SubTests
 
+from competitive_verifier import app
 from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
 from competitive_verifier.documents.front_matter import split_front_matter_raw
-from competitive_verifier.documents.main import main
 from competitive_verifier.oj import check_gnu_time
 
 from .data.user_defined_and_python import UserDefinedAndPythonData
@@ -1732,8 +1732,9 @@ class TestCommandDocuments:
         destination = package_dst / inspect.stack()[0].function
         docs_settings_dir = user_defined_and_python_data.targets_path / "docs_settings"
 
-        main(
+        parsed = app.ArgumentParser().parse(
             [
+                "docs",
                 "--docs",
                 docs_settings_dir.as_posix(),
                 "--destination",
@@ -1741,6 +1742,8 @@ class TestCommandDocuments:
                 *data.default_args,
             ]
         )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1793,7 +1796,16 @@ class TestCommandDocuments:
     ):
         destination = package_dst / inspect.stack()[0].function
 
-        main(["--destination", destination.as_posix(), *data.default_args])
+        parsed = app.ArgumentParser().parse(
+            [
+                "docs",
+                "--destination",
+                destination.as_posix(),
+                *data.default_args,
+            ]
+        )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1845,7 +1857,16 @@ class TestCommandDocuments:
         caplog.set_level(logging.WARNING)
         destination = package_dst / inspect.stack()[0].function
 
-        main(["--destination", destination.as_posix(), *data.default_args])
+        parsed = app.ArgumentParser().parse(
+            [
+                "docs",
+                "--destination",
+                destination.as_posix(),
+                *data.default_args,
+            ]
+        )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1862,8 +1883,9 @@ class TestCommandDocuments:
         caplog.set_level(logging.WARNING)
         destination = package_dst / inspect.stack()[0].function
 
-        main(
+        parsed = app.ArgumentParser().parse(
             [
+                "docs",
                 "--include",
                 "python/",
                 "encoding",
@@ -1874,6 +1896,8 @@ class TestCommandDocuments:
                 *data.default_args,
             ]
         )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1898,8 +1922,9 @@ class TestCommandDocuments:
         caplog.set_level(logging.WARNING)
         destination = package_dst / inspect.stack()[0].function
 
-        main(
+        parsed = app.ArgumentParser().parse(
             [
+                "docs",
                 "--exclude",
                 *exclude,
                 "--destination",
@@ -1907,6 +1932,8 @@ class TestCommandDocuments:
                 *data.default_args,
             ]
         )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1923,8 +1950,9 @@ class TestCommandDocuments:
         caplog.set_level(logging.WARNING)
         destination = package_dst / inspect.stack()[0].function
 
-        main(
+        parsed = app.ArgumentParser().parse(
             [
+                "docs",
                 "--exclude",
                 "dummy/dummy.py",
                 "--destination",
@@ -1932,6 +1960,8 @@ class TestCommandDocuments:
                 *data.default_args,
             ]
         )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
 
         check_common(destination, data=data, subtests=subtests)
 
@@ -1959,8 +1989,9 @@ def test_hand_docs(
 
     destination = package_dst / "handmade" / inspect.stack()[0].function
 
-    main(
+    parsed = app.ArgumentParser().parse(
         [
+            "docs",
             "--exclude",
             "docs/",
             "--docs",
@@ -1972,6 +2003,8 @@ def test_hand_docs(
             str(targets / "result.json"),
         ]
     )
+    assert isinstance(parsed, app.Docs)
+    assert parsed.run()
 
     assert (destination / "_config.yml").exists()
     with (destination / "_config.yml").open("rb") as fp:

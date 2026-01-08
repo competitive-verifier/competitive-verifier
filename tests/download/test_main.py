@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 import pytest
 
-from competitive_verifier.download.main import UrlOrVerificationFile, parse_urls
+from competitive_verifier.download.download import UrlOrVerificationFile, parse_urls
 from competitive_verifier.models import ProblemVerification, VerificationFile
 
 

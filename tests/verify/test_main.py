@@ -1,10 +1,10 @@
-import argparse
+import pathlib
 
 import pytest
 
-from competitive_verifier.error import VerifierError
-from competitive_verifier.verify.main import argument as argument_verify
-from competitive_verifier.verify.main import get_split_state
+from competitive_verifier import app
+from competitive_verifier.models.error import VerifierError
+from competitive_verifier.verify import Verify
 from competitive_verifier.verify.verifier import SplitState
 
 test_get_split_state_params = [
@@ -27,7 +27,13 @@ def test_get_split_state(
     index: int | None,
     expected: SplitState | None,
 ):
-    assert get_split_state(size, index) == expected
+    v = Verify(
+        subcommand="verify",
+        verify_files_json=pathlib.Path("verify.json"),
+        split=size,
+        split_index=index,
+    )
+    assert v.split_state == expected
 
 
 get_split_state_error_params = {
@@ -60,10 +66,11 @@ get_split_state_error_params = {
     ids=get_split_state_error_params.keys(),
 )
 def test_get_split_state_error(args: list[str], message: str):
-    parser = argument_verify(argparse.ArgumentParser())
-    parsed = parser.parse_args(args)
+    parsed = app.ArgumentParser().parse(["verify", *args])
+
+    assert isinstance(parsed, app.Verify)
 
     with pytest.raises(VerifierError) as e:
-        get_split_state(parsed.split, parsed.split_index)
+        _ = parsed.split_state
 
     assert e.value.message == message
