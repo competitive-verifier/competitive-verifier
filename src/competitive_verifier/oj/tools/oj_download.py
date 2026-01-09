@@ -19,6 +19,7 @@ from .service import (
     AOJArenaProblem,
     AOJProblem,
     LibraryCheckerProblem,
+    LOJProblem,
     NotLoggedInError,
     Problem,
     SampleParseError,
@@ -94,7 +95,13 @@ def problem_from_url(url: str) -> Problem | None:
     Examples:
         url: https://atcoder.jp/contests/abc077/tasks/arc084_b
     """
-    for cls in (LibraryCheckerProblem, YukicoderProblem, AOJProblem, AOJArenaProblem):
+    for cls in (
+        LibraryCheckerProblem,
+        LOJProblem,
+        YukicoderProblem,
+        AOJProblem,
+        AOJArenaProblem,
+    ):
         problem = cls.from_url(url)
         if problem is not None:
             return problem
