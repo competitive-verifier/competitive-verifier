@@ -6,6 +6,7 @@ import shutil
 
 import pytest
 
+from competitive_verifier.app import main
 from competitive_verifier.models import (
     FileResult,
     JudgeStatus,
@@ -13,7 +14,7 @@ from competitive_verifier.models import (
     VerificationResult,
 )
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
-from competitive_verifier.verify import main, verifier
+from competitive_verifier.verify import verifier
 
 from .data.integration_data import IntegrationData
 
@@ -162,7 +163,7 @@ class TestCommandVerfy:
         result = integration_data.config_dir_path / "result.json"
         shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
 
-        main.main(["--verify-json", str(verify), "--output", str(result)])
+        main(["verify", "--verify-json", str(verify), "--output", str(result)])
 
         assert (
             json.loads(pathlib.Path(result).read_bytes())

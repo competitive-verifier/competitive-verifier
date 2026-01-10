@@ -131,6 +131,5 @@ def integration_data(
     cls = request.param
     assert issubclass(cls, IntegrationData)
     d = cls(monkeypatch, set_config_dir, file_paths)
-    if not d.check_envinronment():
-        pytest.skip(f"No envinronment {cls.__name__}")
+    assert d.check_envinronment()
     return d

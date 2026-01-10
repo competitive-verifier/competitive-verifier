@@ -2,7 +2,6 @@ import argparse
 import logging
 import math
 import pathlib
-import sys
 from logging import getLogger
 
 from competitive_verifier import github, summary
@@ -192,17 +191,3 @@ def get_split_state(
         raise VerifierError("--split-index argument requires --split argument.")
 
     raise VerifierError("invalid state.")
-
-
-def main(args: list[str] | None = None) -> None:
-    try:
-        parsed = argument(argparse.ArgumentParser()).parse_args(args)
-        if not run(parsed):
-            sys.exit(1)
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.exit(2)
-
-
-if __name__ == "__main__":
-    main()

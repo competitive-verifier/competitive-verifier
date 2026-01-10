@@ -366,9 +366,6 @@ test_remaining_verification_files_params: list[
                 },
             },
             verification_time=datetime.datetime(9999, 5, 22),
-            file_timestamps={
-                None: datetime.datetime(2018, 5, 22),
-            },
             prev_result=VerifyCommandResult(
                 total_seconds=1.5,
                 files={

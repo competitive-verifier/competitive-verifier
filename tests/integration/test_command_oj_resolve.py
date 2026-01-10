@@ -5,7 +5,7 @@ from typing import Protocol
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.resolve.main import main
+from competitive_verifier.app import main
 from competitive_verifier.oj.verify.languages import special_comments
 
 from .data.integration_data import IntegrationData
@@ -48,7 +48,7 @@ def make_args() -> _ArgsFunc:
         exclude: list[str] | None = None,
         config: str | None = None,
     ) -> list[str]:
-        args: list[str] = []
+        args: list[str] = ["oj-resolve"]
         if not bundle:
             args.append("--no-bundle")
         if include is not None:

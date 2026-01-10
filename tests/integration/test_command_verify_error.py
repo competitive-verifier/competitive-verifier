@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.verify import main
+from competitive_verifier.app import main
 
 from .data.integration_data import IntegrationData
 from .types import ConfigDirSetter, FilePaths
@@ -145,7 +145,7 @@ def test_compile_failure(
 ):
     verify = compile_failure_integration_data.targets_path / "verify.json"
     result = compile_failure_integration_data.config_dir_path / "result.json"
-    main.main(["--verify-json", str(verify), "--output", str(result)])
+    main(["verify", "--verify-json", str(verify), "--output", str(result)])
 
     assert (
         json.loads(pathlib.Path(result).read_bytes())
