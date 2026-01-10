@@ -28,7 +28,7 @@ class MockInputContainer(InputContainer):
         *,
         prev_result: VerifyCommandResult | None = None,
         verification_time: datetime.datetime | None = None,
-        file_timestamps: dict[Path | None, datetime.datetime] | None = None,
+        file_timestamps: dict[Path, datetime.datetime] | None = None,
         split_state: SplitState | None = None,
     ) -> None:
         super().__init__(
@@ -45,9 +45,8 @@ class MockInputContainer(InputContainer):
     def get_file_timestamp(self, path: Path) -> datetime.datetime:
         assert self.file_timestamps is not None
         dt = self.file_timestamps.get(path)
-        if dt:
-            return dt
-        return self.file_timestamps[None]
+        assert dt is not None
+        return dt
 
 
 test_verification_files_params: list[

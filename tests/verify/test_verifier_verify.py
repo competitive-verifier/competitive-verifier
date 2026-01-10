@@ -47,11 +47,6 @@ class MockVerifier(BaseVerifier):
         )
         self.mock_current_time = datetime.datetime(2006, 1, 2, 15, 4, 5)
 
-    def now(self) -> datetime.datetime:
-        dt = self.mock_current_time
-        self.mock_current_time = dt + datetime.timedelta(seconds=1)
-        return dt
-
     def get_file_timestamp(self, path: Path) -> datetime.datetime:
         return datetime.datetime(2005, 1, 2, 15, 4, 5)
 

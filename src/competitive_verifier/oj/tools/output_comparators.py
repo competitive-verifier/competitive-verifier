@@ -19,7 +19,7 @@ class OutputComparator(abc.ABC):
         Returns:
             bool: True if they are considered equal
         """
-        raise NotImplementedError
+        ...
 
 
 class ExactComparator(OutputComparator):

@@ -188,6 +188,7 @@ class TestCommandOjResolve:
             },
         }
 
+    @pytest.mark.parametrize("bundle", [True, False])
     @pytest.mark.usefixtures("setenv_resolve")
     def test_with_include1(
         self,
@@ -195,12 +196,13 @@ class TestCommandOjResolve:
         monkeypatch: pytest.MonkeyPatch,
         file_paths: FilePaths,
         capfd: pytest.CaptureFixture[str],
+        bundle: bool,
     ):
         monkeypatch.chdir(file_paths.root / "IncludeExclude")
         args = make_args(
             include=["subdir/"],
             config="config.toml",
-            bundle=True,
+            bundle=bundle,
         )
         main(args)
 
