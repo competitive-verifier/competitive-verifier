@@ -1,6 +1,5 @@
 import argparse
 import importlib.metadata
-import sys
 from collections.abc import Callable
 from logging import getLogger
 
@@ -117,7 +116,3 @@ def main(args: list[str] | None = None) -> int:
         return not runner(parsed)
     parser.print_help()
     return 2
-
-
-if __name__ == "__main__":
-    sys.exit(main())
