@@ -10,10 +10,6 @@ from competitive_verifier import app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
 
 
-def parse_args(args: list[str]) -> app.Arguments:
-    return app.ArgumentParser().parse(args)
-
-
 def test_app_help(capsys: pytest.CaptureFixture[str]):
     assert app.main([]) == 2
 

@@ -7,7 +7,6 @@ from typing import Any
 import pytest
 from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
-from pytest_mock.plugin import MockType
 
 import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
@@ -108,7 +107,8 @@ def test_command_union_json(
     assert obj == TypeAdapter(Verification).validate_json(raw_json)
 
 
-def test_const_verification(mock_exec_command: MockType):
+def test_const_verification(mocker: MockerFixture):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj = ConstVerification(status=ResultStatus.SUCCESS)
 
     assert obj.run() == ResultStatus.SUCCESS
@@ -211,8 +211,9 @@ def test_run(
     obj: Verification,
     args: Sequence[Any],
     kwargs: dict[str, Any],
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run(
         DataVerificationParams(
             default_tle=22,
@@ -268,8 +269,9 @@ def test_run_with_env(
     args: Sequence[Any],
     kwargs: dict[str, Any],
     env: dict[str, str],
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run(
         DataVerificationParams(
             default_tle=22,
@@ -507,8 +509,9 @@ def test_run_compile(
     obj: Verification,
     args: Sequence[Any] | None,
     kwargs: dict[str, Any] | None,
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run_compile_command(
         DataVerificationParams(
             default_tle=22,
@@ -540,8 +543,9 @@ test_params_run_params: list[tuple[Verification, str | None]] = [
 def test_params_run(
     obj: Verification,
     error_message: str | None,
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     if error_message:
         with pytest.raises(ValueError, match=error_message) as e:
             obj.run()

@@ -22,11 +22,6 @@ def mock_exists(mocker: MockerFixture):
 
 
 @pytest.fixture
-def mock_exec_command(mocker: MockerFixture):
-    return mocker.patch("subprocess.run")
-
-
-@pytest.fixture
 def mock_perf_counter(mocker: MockerFixture):
     pc = 0.0
 
