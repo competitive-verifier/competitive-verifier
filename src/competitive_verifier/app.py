@@ -1,6 +1,5 @@
 import argparse
 import importlib.metadata
-import sys
 from collections.abc import Callable
 from logging import getLogger
 
@@ -22,7 +21,8 @@ def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--version",
-        action="store_true",
+        action="version",
+        version=importlib.metadata.version("competitive-verifier"),
         help="print the competitive-verifier version number",
     )
 
@@ -107,20 +107,12 @@ def select_runner(
     return d.get(subcommand)
 
 
-def main(args: list[str] | None = None):
+def main(args: list[str] | None = None) -> int:
     parser = get_parser()
     parsed = parser.parse_args(args)
 
-    if parsed.version:
-        print(importlib.metadata.version("competitive-verifier"))
-        sys.exit(0)
-
     runner = select_runner(parsed.subcommand)
     if runner:
-        sys.exit(0 if runner(parsed) else 1)
-    else:
-        parser.print_help()
-
-
-if __name__ == "__main__":
-    main()
+        return not runner(parsed)
+    parser.print_help()
+    return 2

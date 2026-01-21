@@ -22,7 +22,7 @@ def add_verify_files_json_argument(
     return parser.add_argument(
         "--verify-json",
         dest="verify_files_json",
-        default=default,
+        default=default or None,
         required=required and not bool(default),
         help="File path of verify_files.json. default: environ variable $COMPETITIVE_VERIFY_FILES_PATH",
         type=pathlib.Path,

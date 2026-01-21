@@ -5,7 +5,7 @@ from typing import Protocol
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.resolve.main import main
+from competitive_verifier.app import main
 from competitive_verifier.oj.verify.languages import special_comments
 
 from .data.integration_data import IntegrationData
@@ -48,7 +48,7 @@ def make_args() -> _ArgsFunc:
         exclude: list[str] | None = None,
         config: str | None = None,
     ) -> list[str]:
-        args: list[str] = []
+        args: list[str] = ["oj-resolve"]
         if not bundle:
             args.append("--no-bundle")
         if include is not None:
@@ -188,6 +188,7 @@ class TestCommandOjResolve:
             },
         }
 
+    @pytest.mark.parametrize("bundle", [True, False])
     @pytest.mark.usefixtures("setenv_resolve")
     def test_with_include1(
         self,
@@ -195,12 +196,13 @@ class TestCommandOjResolve:
         monkeypatch: pytest.MonkeyPatch,
         file_paths: FilePaths,
         capfd: pytest.CaptureFixture[str],
+        bundle: bool,
     ):
         monkeypatch.chdir(file_paths.root / "IncludeExclude")
         args = make_args(
             include=["subdir/"],
             config="config.toml",
-            bundle=True,
+            bundle=bundle,
         )
         main(args)
 

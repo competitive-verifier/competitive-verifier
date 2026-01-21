@@ -1,7 +1,6 @@
 import argparse
 import logging
 import pathlib
-import sys
 from logging import getLogger
 
 from pydantic import ValidationError
@@ -75,17 +74,3 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     )
 
     return parser
-
-
-def main(args: list[str] | None = None) -> None:
-    try:
-        parsed = argument(argparse.ArgumentParser()).parse_args(args)
-        if not run(parsed):
-            sys.exit(1)
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.exit(2)
-
-
-if __name__ == "__main__":
-    main()

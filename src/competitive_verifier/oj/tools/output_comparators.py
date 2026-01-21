@@ -19,7 +19,7 @@ class OutputComparator(abc.ABC):
         Returns:
             bool: True if they are considered equal
         """
-        raise NotImplementedError
+        ...
 
 
 class ExactComparator(OutputComparator):
@@ -103,20 +103,3 @@ class CompareMode(enum.Enum):
     CRLF_INSENSITIVE_EXACT_MATCH = "crlf-insensitive-exact-match"
     IGNORE_SPACES = "ignore-spaces"
     IGNORE_SPACES_AND_NEWLINES = "ignore-spaces-and-newlines"
-
-
-# This function is used from onlinejudge_command.pretty_printers.
-def check_lines_match(a: str, b: str, *, compare_mode: CompareMode) -> bool:
-    if compare_mode == CompareMode.EXACT_MATCH:
-        comparator: OutputComparator = ExactComparator()
-    elif compare_mode == CompareMode.CRLF_INSENSITIVE_EXACT_MATCH:
-        comparator = CRLFInsensitiveComparator(ExactComparator())
-    elif compare_mode == CompareMode.IGNORE_SPACES:
-        comparator = SplitComparator(ExactComparator())
-    elif compare_mode == CompareMode.IGNORE_SPACES_AND_NEWLINES:
-        raise RuntimeError(
-            "CompareMode.IGNORE_SPACES_AND_NEWLINES is not allowed for this function"
-        )
-    else:
-        raise AssertionError
-    return comparator(a.encode(), b.encode())

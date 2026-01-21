@@ -1,34 +1,7 @@
-import uuid
 from contextlib import contextmanager
 from typing import TextIO
 
 from . import env
-
-
-def print_debug(
-    message: str,
-    *,
-    title: str | None = None,
-    file: str | None = None,
-    col: int | None = None,
-    end_column: int | None = None,
-    line: int | None = None,
-    end_line: int | None = None,
-    force: bool = False,
-    stream: TextIO | None = None,
-) -> None:
-    _print_github(
-        "debug",
-        message,
-        title=title,
-        file=file,
-        col=col,
-        end_column=end_column,
-        line=line,
-        end_line=end_line,
-        force=force,
-        stream=stream,
-    )
 
 
 def print_warning(
@@ -136,23 +109,6 @@ def begin_group(title: str, *, stream: TextIO | None = None):
 
 def end_group(*, stream: TextIO | None = None):
     print("::endgroup::", file=stream)
-
-
-def set_output(name: str, value: str) -> bool:
-    path = env.get_output_path()
-    if path and path.exists():
-        delimiter = "outputdelimiter_" + str(uuid.uuid4())
-        with path.open(mode="a", encoding="utf-8") as fp:
-            fp.write(name)
-            fp.write("<<")
-            fp.write(delimiter)
-            fp.write("\n")
-            fp.write(value)
-            fp.write("\n")
-            fp.write(delimiter)
-            fp.write("\n")
-        return True
-    return False
 
 
 @contextmanager

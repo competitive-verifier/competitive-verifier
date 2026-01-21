@@ -1,6 +1,5 @@
 import argparse
 import logging
-import sys
 from logging import getLogger
 
 from competitive_verifier.arg import add_verbose_argument
@@ -35,17 +34,3 @@ def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         help="Run a trial migration with no changes. Just show logs only.",
     )
     return parser
-
-
-def main(args: list[str] | None = None) -> None:
-    try:
-        parsed = argument(argparse.ArgumentParser()).parse_args(args)
-        if not run(parsed):
-            sys.exit(1)
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.exit(2)
-
-
-if __name__ == "__main__":
-    main()
