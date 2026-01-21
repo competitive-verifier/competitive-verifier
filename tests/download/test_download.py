@@ -48,15 +48,11 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     }
 
 
-@pytest.fixture
-def mkdir(mocker: MockerFixture):
-    return mocker.patch.object(pathlib.Path, "mkdir", autospec=True)
-
-
 def test_oj_download(
-    mkdir: MockType,
-    mock_problem: dict[type[service.Problem], MockProblem],
+    mocker: MockerFixture, mock_problem: dict[type[service.Problem], MockProblem]
 ):
+    mkdir = mocker.patch.object(pathlib.Path, "mkdir", autospec=True)
+
     download(
         url_or_file=[
             "https://judge.yosupo.jp/problem/aplusb",

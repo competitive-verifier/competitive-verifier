@@ -1,10 +1,10 @@
-# pyright: reportPrivateUsage=none
 import datetime
-from collections.abc import Callable
+import pathlib
 from pathlib import Path
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
 
 from competitive_verifier.models import (
     CommandVerification,
@@ -275,26 +275,13 @@ def test_file_need_verification(
     path: Path,
     file_result: FileResult,
     expected: bool,
-    mock_exists: Callable[[bool], Any],
+    mocker: MockerFixture,
 ):
-    mock_exists(True)
-    assert resolver.file_need_verification(path, file_result) == expected
+    with mocker.patch.object(pathlib.Path, "exists", return_value=True):
+        assert resolver.file_need_verification(path, file_result) == expected
 
-
-@pytest.mark.parametrize(
-    ("resolver", "path", "file_result", "_"),
-    test_file_need_verification_params,
-    ids=range(len(test_file_need_verification_params)),
-)
-def test_file_need_verification_no_file(
-    resolver: InputContainer,
-    path: Path,
-    file_result: FileResult,
-    _: bool,
-    mock_exists: Callable[[bool], Any],
-):
-    mock_exists(False)
-    assert not resolver.file_need_verification(path, file_result)
+    with mocker.patch.object(pathlib.Path, "exists", return_value=False):
+        assert not resolver.file_need_verification(path, file_result)
 
 
 test_remaining_verification_files_params: list[

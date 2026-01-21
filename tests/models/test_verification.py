@@ -545,7 +545,7 @@ def test_params_run(
     error_message: str | None,
     mocker: MockerFixture,
 ):
-    mock_exec_command = mocker.patch("subprocess.run")
+    mocker.patch("subprocess.run")
     if error_message:
         with pytest.raises(ValueError, match=error_message) as e:
             obj.run()

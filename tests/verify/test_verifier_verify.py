@@ -1,6 +1,5 @@
-# pyright: reportPrivateUsage=none
 import datetime
-from collections.abc import Callable
+import pathlib
 from pathlib import Path
 from typing import Any
 
@@ -426,9 +425,9 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 def test_verify(
     verifier: MockVerifier,
     expected: Any,
-    mock_exists: Callable[[bool], Any],
+    mocker: MockerFixture,
 ):
-    mock_exists(True)
+    mocker.patch.object(pathlib.Path, "exists", return_value=True)
     assert verifier.verify() == VerifyCommandResult.model_validate(expected)
 
 
@@ -641,13 +640,12 @@ test_verify_timeout_params: list[
 )
 def test_verify_timeout(
     mocker: MockerFixture,
-    mock_exists: Callable[[bool], Any],
     verifier: MockVerifier,
     perf_counter_sequence: list[float],
     expected: dict[str, Any],
 ):
     """Test timeout exception scenarios in enumerate_verifications."""
-    mock_exists(True)
+    mocker.patch.object(pathlib.Path, "exists", return_value=True)
     mocker.patch("time.perf_counter", side_effect=perf_counter_sequence)
     mocker.patch("competitive_verifier.verify.verifier.run_download", return_value=True)
 
