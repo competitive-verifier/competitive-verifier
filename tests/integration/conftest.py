@@ -45,13 +45,26 @@ def additional_path(
         monkeypatch.setenv("PATH", check_necessary_commands, prepend=os.pathsep)
 
 
+def is_vscode_debug() -> bool:
+    try:
+        from debugpy import is_client_connected  # type: ignore  # noqa: PGH003, PLC0415
+    except ImportError:
+        return False
+
+    return is_client_connected()  # type: ignore  # noqa: PGH003
+
+
 @pytest.fixture(scope="session")
 def file_paths(request: pytest.FixtureRequest) -> FilePaths:
     root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
     assert root.exists()
 
-    if dest_root.is_dir() and not request.config.getoption("--use-prev-dest"):
+    if (
+        dest_root.is_dir()
+        and not request.config.getoption("--use-prev-dest")
+        and not is_vscode_debug()
+    ):
         shutil.rmtree(dest_root)
 
     return FilePaths(
