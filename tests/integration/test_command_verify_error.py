@@ -11,14 +11,6 @@ from .types import ConfigDirSetter, FilePaths
 
 
 class CompileFailureData(IntegrationData):
-    def __init__(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-        set_config_dir: ConfigDirSetter,
-        file_paths: FilePaths,
-    ) -> None:
-        super().__init__(monkeypatch, set_config_dir, file_paths)
-
     @classmethod
     def input_name(cls) -> str:
         return "CompileFailure"

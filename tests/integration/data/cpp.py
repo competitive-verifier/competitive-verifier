@@ -8,14 +8,6 @@ from .integration_data import IntegrationData
 
 
 class CppWithoutConfigData(IntegrationData):
-    def __init__(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-        set_config_dir: ConfigDirSetter,
-        file_paths: FilePaths,
-    ) -> None:
-        super().__init__(monkeypatch, set_config_dir, file_paths)
-
     def check_envinronment(self) -> bool:
         return bool(shutil.which("g++") and shutil.which("clang++"))
 

@@ -1,21 +1,10 @@
 import shutil
 from typing import Any
 
-import pytest
-
-from ..types import ConfigDirSetter, FilePaths
 from .integration_data import IntegrationData
 
 
 class RustWithoutConfigData(IntegrationData):
-    def __init__(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-        set_config_dir: ConfigDirSetter,
-        file_paths: FilePaths,
-    ) -> None:
-        super().__init__(monkeypatch, set_config_dir, file_paths)
-
     def check_envinronment(self) -> bool:
         return bool(shutil.which("rustc"))
 
