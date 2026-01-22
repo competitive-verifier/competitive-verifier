@@ -380,9 +380,22 @@ def test_parse_args(
     mockenv: Any,
     args: list[str],
     expected: dict[str, Any],
+    mocker: MockerFixture,
 ):
     parsed = app.ArgumentParser().parse(args)
     assert parsed.model_dump() == expected
+
+    if not isinstance(parsed, app.NoSubcommand):
+        mock_run = mocker.patch.object(parsed, "_run", return_value=True)
+        mock_configure_stderr_logging = mocker.patch(
+            "competitive_verifier.arg.configure_stderr_logging"
+        )
+
+        parsed.run()
+        mock_run.assert_called_once()
+        mock_configure_stderr_logging.assert_called_once_with(
+            10 if parsed.verbose else 20
+        )
 
 
 test_parse_args_error_params: list[tuple[dict[str, str] | None, list[str], str]] = [
@@ -419,12 +432,10 @@ def test_parse_args_error(
     expected_message: str,
     mocker: MockerFixture,
 ):
-    def _error(message: str | None):
-        if message:
-            raise ParseError(message)
+    def _error(message: str):
+        assert message
+        raise ParseError(message)
 
-    with (
-        mocker.patch("argparse.ArgumentParser.error", side_effect=_error),
-        pytest.raises(ParseError, match=f"^{re.escape(expected_message)}$"),
-    ):
+    mocker.patch("argparse.ArgumentParser.error", side_effect=_error)
+    with pytest.raises(ParseError, match=f"^{re.escape(expected_message)}$"):
         app.ArgumentParser().parse(args)

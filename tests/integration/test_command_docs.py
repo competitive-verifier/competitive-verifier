@@ -1840,7 +1840,9 @@ class TestCommandDocuments:
 
         assert not (destination / "static.md").exists()
 
-        resource_dir = pathlib.Path("src/competitive_verifier_resources/jekyll")
+        resource_dir = data.root / "../src/competitive_verifier_resources/jekyll"
+
+        assert resource_dir.exists()
         for resource_file in filter(lambda p: p.is_file(), resource_dir.glob("**/*")):
             assert filecmp.cmp(
                 resource_file, destination / resource_file.relative_to(resource_dir)

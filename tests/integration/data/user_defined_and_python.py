@@ -23,7 +23,7 @@ class UserDefinedAndPythonData(IntegrationData):
     def exclude_path(self) -> list[str] | None:
         return ["dummy/"]
 
-    def assert_extra(self):
+    def assert_oj_resolve(self):
         assert self.bundle_euc_ke_path.read_bytes().strip() == b"cp949"
         assert self.bundle_cp932_path.read_bytes().strip() == b"cp932"
 

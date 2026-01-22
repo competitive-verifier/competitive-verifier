@@ -96,6 +96,8 @@ class TestCommandOjResolve:
         verify.parent.mkdir(parents=True, exist_ok=True)
         verify.write_text(stdout, encoding="utf-8")
 
+        integration_data.assert_oj_resolve()
+
     @pytest.mark.usefixtures("setenv_resolve")
     def test_without_include_exclude(
         self,

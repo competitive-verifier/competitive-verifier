@@ -1,6 +1,6 @@
 from .aoj import AOJArenaProblem, AOJProblem
 from .library_checker import LibraryCheckerProblem
-from .type import NotLoggedInError, Problem, SampleParseError, TestCase
+from .type import NotLoggedInError, Problem, TestCase
 from .yukicoder import YukicoderProblem
 
 __all__ = [
@@ -9,7 +9,6 @@ __all__ = [
     "LibraryCheckerProblem",
     "NotLoggedInError",
     "Problem",
-    "SampleParseError",
     "TestCase",
     "YukicoderProblem",
 ]

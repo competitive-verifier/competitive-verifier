@@ -48,7 +48,7 @@ ruff = "^0.14.10"
 pyright = "^1.1.407"
 
 [tool.poe]
-envfile.optional = [".env"] 
+envfile.optional = [".env"]
 
 [tool.poe.tasks]
 ruff-check = "ruff check --fix"
@@ -250,3 +250,6 @@ reportMissingTypeStubs = false
 [tool.pytest.ini_options]
 testpaths = "tests/"
 markers = ["integration", "each_language_integration"]
+
+[tool.coverage.report]
+exclude_also = ['raise NotImplementedError', 'class \w+\(Protocol\):']

@@ -10,11 +10,6 @@ class NotLoggedInError(RuntimeError):
         super().__init__(message)
 
 
-class SampleParseError(RuntimeError):
-    def __init__(self, message: str = "failed to parse samples"):
-        super().__init__(message)
-
-
 class Language(NamedTuple):
     name: str
 
@@ -29,7 +24,7 @@ class TestCase(NamedTuple):
 
 class Problem(ABC):
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}.from_url({self.get_url()!r})"
+        return f"{self.__class__.__name__}.from_url({self.get_url()!r})"  # pragma: no cover
 
     @abstractmethod
     def download_system_cases(
@@ -43,5 +38,4 @@ class Problem(ABC):
 
     @classmethod
     @abstractmethod
-    def from_url(cls, url: str) -> Optional["Problem"]:
-        pass
+    def from_url(cls, url: str) -> Optional["Problem"]: ...
