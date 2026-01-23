@@ -128,7 +128,7 @@ expr = "os.path.isdir(os.getenv('_COMPETITIVE_SERVE_DIR'))"
 imports = ["os"]
 [[tool.poe.tasks.serve-handmade.sequence.switch]]
 case = "False"
-cmd = "pytest --use-prev-dest tests/integration/test_command_docs.py::test_hand_docs"
+cmd = "pytest --use-prev-dest tests_integration/test_command_docs.py::test_hand_docs"
 [[tool.poe.tasks.serve-handmade.sequence]]
 ref = "_serve"
 
@@ -209,7 +209,7 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["D104", "F401"]
-"tests/**" = [
+"{tests,tests_integration}/**" = [
     "ARG",
     "DTZ",
     "S101",
@@ -241,14 +241,14 @@ typeCheckingMode = "strict"
 include = ["src", "tests"]
 ignore = [
     "src/competitive_verifier_resources/jekyll",
-    "tests/integration/testdata",
+    "tests_integration/testdata",
     "src/porting_oj",
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
-testpaths = "tests/"
+testpaths = ["tests/", "tests_integration/"]
 markers = ["integration", "each_language_integration"]
 
 [tool.coverage.report]
