@@ -14,7 +14,9 @@ from colorama import Fore, Style
 from competitive_verifier import github
 
 
-def configure_stderr_logging(default_level: int | None = None) -> None:
+def configure_stderr_logging(
+    default_level: int | None = None,
+) -> None:  # pragma: no cover
     colorlog_handler = colorlog.StreamHandler(sys.stderr)
     colorlog_handler.setLevel(default_level or WARNING)
     colorlog_handler.setFormatter(

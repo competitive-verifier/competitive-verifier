@@ -1,8 +1,9 @@
+import os
 import pathlib
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 from pydantic import TypeAdapter
@@ -552,3 +553,135 @@ def test_params_run(
         assert e.value.args == (error_message,)
     else:
         obj.run()
+
+
+@pytest.mark.parametrize(
+    "status", [ResultStatus.FAILURE, ResultStatus.SKIPPED, ResultStatus.SUCCESS]
+)
+def test_run_const_verification(status: ResultStatus):
+    obj = ConstVerification(name="name", status=status)
+    assert obj.run_compile_command()
+    assert obj.run() == status
+
+
+class Return(NamedTuple):
+    returncode: int
+
+
+class TestCommandVerification:
+    def test_command(self, mocker: MockerFixture):
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+        obj = CommandVerification(name="name", command="echo 1")
+
+        assert obj.run_compile_command()
+        assert obj.run() == ResultStatus.SUCCESS
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+
+    def test_command_failure(self, mocker: MockerFixture):
+        mockrun = mocker.patch("subprocess.run", return_value=Return(1))
+        obj = CommandVerification(name="name", command=["echo", "1"])
+
+        assert obj.run_compile_command()
+        assert obj.run() == ResultStatus.FAILURE
+        mockrun.assert_called_once_with(
+            ["echo", "1"],
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=False,
+            text=True,
+        )
+
+    def test_command_and_compile(self, mocker: MockerFixture):
+        mocker.patch.dict(os.environ, {"DEFAULT": "dd"}, clear=True)
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+        obj = CommandVerification(
+            name="name",
+            compile="echo 1",
+            command=ShellCommand(
+                command="ls .",
+                env={"MOCK": "mocker"},
+                cwd=pathlib.Path("/root"),
+            ),
+        )
+
+        assert obj.run_compile_command()
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+        mockrun.reset_mock()
+
+        assert obj.run() == ResultStatus.SUCCESS
+        mockrun.assert_called_once_with(
+            "ls .",
+            capture_output=False,
+            check=False,
+            cwd=pathlib.Path("/root"),
+            encoding="utf-8",
+            env={"DEFAULT": "dd", "MOCK": "mocker"},
+            shell=True,
+            text=True,
+        )
+
+    def test_tempdir(self, mocker: MockerFixture):
+        mocker.patch.dict(os.environ, {"DEFAULT": "dd"}, clear=True)
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+
+        mockmkdir = mocker.patch.object(pathlib.Path, "mkdir")
+
+        obj = CommandVerification(
+            name="name",
+            compile="echo 1",
+            command=ShellCommand(
+                command="ls .",
+                env={"MOCK": "mocker"},
+                cwd=pathlib.Path("/root"),
+            ),
+            tempdir=pathlib.Path("/root/tmp"),
+        )
+
+        assert obj.run_compile_command()
+        mockmkdir.assert_called_once_with(exist_ok=True, parents=True)
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+        mockmkdir.reset_mock()
+        mockrun.reset_mock()
+
+        assert obj.run() == ResultStatus.SUCCESS
+        mockmkdir.assert_called_once_with(exist_ok=True, parents=True)
+        mockrun.assert_called_once_with(
+            "ls .",
+            capture_output=False,
+            check=False,
+            cwd=pathlib.Path("/root"),
+            encoding="utf-8",
+            env={"DEFAULT": "dd", "MOCK": "mocker"},
+            shell=True,
+            text=True,
+        )

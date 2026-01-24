@@ -19,6 +19,7 @@ from competitive_verifier.verify import verifier
 from .data.integration_data import IntegrationData
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-500)
 class TestCommandVerfy:
@@ -153,7 +154,6 @@ class TestCommandVerfy:
             }
 
     @pytest.mark.each_language_integration
-    @pytest.mark.integration
     @pytest.mark.usefixtures("mock_verification")
     def test_verify(
         self,

@@ -65,11 +65,11 @@ def make_args() -> _ArgsFunc:
     return _make_args
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-1000)
 class TestCommandOjResolve:
     @pytest.mark.each_language_integration
-    @pytest.mark.integration
     @pytest.mark.usefixtures("setenv_resolve")
     def test_oj_resolve_by_lang_data(
         self,

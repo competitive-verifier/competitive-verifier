@@ -36,9 +36,6 @@ class SccGraph:
         self._n = n
         self._edges: list[tuple[int, int]] = []
 
-    def num_vertices(self) -> int:
-        return self._n
-
     def add_edge(self, from_vertex: int, to_vertex: int) -> None:
         self._edges.append((from_vertex, to_vertex))
 

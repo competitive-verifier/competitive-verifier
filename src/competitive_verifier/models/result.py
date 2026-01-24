@@ -93,9 +93,7 @@ class VerificationResult(BaseModel):
     @field_validator("status", mode="before")
     @classmethod
     def verification_list(cls, v: Any) -> Any:  # noqa: ANN401
-        if isinstance(v, str):
-            return v.lower()
-        return v
+        return v.lower() if isinstance(v, str) else v
 
     def need_reverifying(self, base_time: datetime.datetime) -> bool:
         if self.status != ResultStatus.SUCCESS:
@@ -145,15 +143,16 @@ class VerifyCommandResult(BaseModel):
     """
 
     @classmethod
-    def parse_file_relative(
-        cls, path: "StrPath", **kwargs: Any
-    ) -> "VerifyCommandResult":
+    def parse_file_relative(cls, path: "StrPath") -> "VerifyCommandResult":
         with pathlib.Path(path).open("rb") as p:
-            impl = cls.model_validate_json(p.read(), **kwargs)
+            impl = cls.model_validate_json(p.read())
         new_files: dict[pathlib.Path, FileResult] = {}
         for p, f in impl.files.items():
             rp = to_relative(p)
             if not rp:
+                logger.warning(
+                    "Files in other directories are not subject to verification: %s", p
+                )
                 continue
             new_files[rp] = f
 

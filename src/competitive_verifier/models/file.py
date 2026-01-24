@@ -94,10 +94,8 @@ class VerificationFile(BaseModel):
     @property
     def title(self) -> str | None:
         """The document title specified as a attributes."""
-        title = self.document_attributes.get("TITLE")
-        if not title:
-            title = self.document_attributes.get("document_title")
-        return title
+        d = self.document_attributes
+        return d.get("TITLE") or d.get("document_title")
 
     @property
     def display(self) -> DocumentOutputMode | None:
@@ -138,13 +136,16 @@ class VerificationInput(BaseModel):
         return VerificationInput(files=self.files | other.files)
 
     @staticmethod
-    def parse_file_relative(path: "StrPath", **kwargs: Any) -> "VerificationInput":
+    def parse_file_relative(path: "StrPath") -> "VerificationInput":
         with pathlib.Path(path).open("rb") as rp:
-            impl = VerificationInput.model_validate_json(rp.read(), **kwargs)
+            impl = VerificationInput.model_validate_json(rp.read())
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
             rp = to_relative(p)
             if not rp:
+                logger.warning(
+                    "Files in other directories are not subject to verification: %s", p
+                )
                 continue
             f.dependencies = {d for d in map(to_relative, f.dependencies) if d}
             new_files[rp] = f
@@ -213,7 +214,7 @@ class VerificationInput(BaseModel):
             for dst in vf.dependencies:
                 if src == dst:
                     continue
-                if dst not in depends_on:
+                if dst not in depends_on:  # pragma: no cover
                     msg = (
                         "The file `%s` which is depended from `%s` is ignored "
                         "because it's not listed as a source code file."

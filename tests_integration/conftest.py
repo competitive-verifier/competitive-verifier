@@ -27,11 +27,6 @@ def pytest_addoption(parser: pytest.Parser):
     )
 
 
-@pytest.fixture
-def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
-    mocker.patch.dict(os.environ, request.param or {}, clear=True)
-
-
 @pytest.fixture(scope="session")
 def check_necessary_commands() -> str | None:  # pragma: no cover
     git_path = shutil.which("git")

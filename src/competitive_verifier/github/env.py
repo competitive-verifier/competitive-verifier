@@ -4,27 +4,11 @@ import re
 
 
 def is_in_github_actions() -> bool:
-    return os.getenv("GITHUB_ACTIONS") == "true"
-
-
-def is_enable_debug() -> bool:
-    return os.getenv("GITHUB_ACTIONS") == "1"
+    return os.getenv("GITHUB_ACTIONS", "").lower() == "true"
 
 
 def get_ref_name() -> str | None:
     return os.getenv("GITHUB_REF_NAME")
-
-
-def get_api_token() -> str | None:
-    return os.getenv("GITHUB_TOKEN")
-
-
-def get_event_name() -> str | None:
-    return os.getenv("GITHUB_EVENT_NAME")
-
-
-def get_api_url() -> str | None:
-    return os.getenv("GITHUB_API_URL")
 
 
 def get_repository() -> str | None:

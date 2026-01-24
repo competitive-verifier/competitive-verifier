@@ -63,6 +63,8 @@ test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
 test-each-language-integration = "pytest -m each_language_integration"
 test-use-prev-dest = "poe test --use-prev-dest"
+test-cov.cmd = "pytest -m 'not integration' --cov=${cov} --cov-branch --cov-report=html"
+test-cov.args = [{ name = "cov", default = "." }]
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
@@ -214,6 +216,7 @@ convention = "google"
     "DTZ",
     "S101",
     "S311",
+    "S604",
     "N802",
     "N806",
     "N816",

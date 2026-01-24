@@ -21,8 +21,7 @@ def mock_perf_counter(mocker: MockerFixture):
         pc += 1.0
         return ppc
 
-    with mocker.patch("time.perf_counter", side_effect=_perf_counter):
-        yield
+    mocker.patch("time.perf_counter", side_effect=_perf_counter)
 
 
 @pytest.fixture

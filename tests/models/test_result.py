@@ -1,8 +1,11 @@
+import json
 import pathlib
+import tempfile
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
 
 from competitive_verifier.models import (
     FileResult,
@@ -280,6 +283,74 @@ test_is_success_params = [
         ),
         (False, True),
     ),
+    (
+        VerifyCommandResult(
+            total_seconds=1,
+            files={
+                pathlib.Path("failure.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.FAILURE),
+                    ]
+                )
+            },
+        ),
+        (False, False),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=1,
+            files={
+                pathlib.Path("success.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                    ]
+                ),
+            },
+        ),
+        (True, True),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=1,
+            files={
+                pathlib.Path("failure.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.FAILURE),
+                    ]
+                ),
+                pathlib.Path("success.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                    ]
+                ),
+            },
+        ),
+        (False, False),
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=1,
+            files={
+                pathlib.Path("skipped.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.SKIPPED),
+                    ]
+                ),
+                pathlib.Path("success.c"): FileResult(
+                    verifications=[
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                        VerificationResult(elapsed=1, status=ResultStatus.SUCCESS),
+                    ]
+                ),
+            },
+        ),
+        (False, True),
+    ),
 ]
 
 
@@ -288,7 +359,7 @@ test_is_success_params = [
     test_is_success_params,
 )
 def test_is_success(
-    obj: FileResult,
+    obj: VerifyCommandResult | FileResult,
     expected: tuple[bool, bool],
 ):
     assert obj.is_success(allow_skip=False) == expected[0]
@@ -691,3 +762,32 @@ def test_merge(
     expected: VerifyCommandResult,
 ):
     assert obj1.merge(obj2) == expected
+
+
+def test_parse_file_relative(mocker: MockerFixture):
+    mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path("/foo/rootdir"))
+    with tempfile.NamedTemporaryFile("w+") as tmp:
+        json.dump(
+            {
+                "files": {
+                    "/foo/rootdir/libfile.py": {},
+                    "/foo/rootdir/libfile2.py": {},
+                    "/foo/other/libfile.py": {},
+                    "/foo/rootdir/test/test.py": {},
+                },
+                "total_seconds": 2.5,
+            },
+            tmp,
+        )
+        tmp.flush()
+        assert (
+            VerifyCommandResult.parse_file_relative(tmp.name).model_dump()
+            == VerifyCommandResult(
+                files={
+                    pathlib.Path("libfile.py"): FileResult(),
+                    pathlib.Path("libfile2.py"): FileResult(),
+                    pathlib.Path("test/test.py"): FileResult(),
+                },
+                total_seconds=2.5,
+            ).model_dump()
+        )

@@ -277,11 +277,11 @@ def test_file_need_verification(
     expected: bool,
     mocker: MockerFixture,
 ):
-    with mocker.patch.object(pathlib.Path, "exists", return_value=True):
-        assert resolver.file_need_verification(path, file_result) == expected
+    mocker.patch.object(pathlib.Path, "exists", return_value=True)
+    assert resolver.file_need_verification(path, file_result) == expected
 
-    with mocker.patch.object(pathlib.Path, "exists", return_value=False):
-        assert not resolver.file_need_verification(path, file_result)
+    mocker.patch.object(pathlib.Path, "exists", return_value=False)
+    assert not resolver.file_need_verification(path, file_result)
 
 
 test_remaining_verification_files_params: list[

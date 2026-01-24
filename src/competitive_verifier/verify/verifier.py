@@ -252,14 +252,14 @@ class BaseVerifier(InputContainer):
         except BaseException:  # noqa: BLE001
             logger.warning("failed to increase the stack size[ulimit]")
 
-        file_results = (
+        file_results: dict[pathlib.Path, FileResult] = (
             {
                 k: v.model_copy(update={"newest": False})
                 for k, v in self.verifications.filterd_files(self.prev_result.files)
                 if k.exists()
             }
             if self.prev_result
-            else dict[pathlib.Path, FileResult]()
+            else {}
         )
 
         for p, f in current_verification_files.items():
