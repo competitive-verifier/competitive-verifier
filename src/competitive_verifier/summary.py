@@ -7,7 +7,7 @@ import os
 import pathlib
 from collections import Counter
 from itertools import chain
-from typing import TextIO
+from typing import IO
 
 from competitive_verifier.models import (
     FileResult,
@@ -49,7 +49,7 @@ def to_human_str_mega_bytes(total_mega_bytes: float) -> str:
 
 
 class TableWriter:
-    def __init__(self, fp: TextIO, header: list[str]) -> None:
+    def __init__(self, fp: IO[str], header: list[str]) -> None:
         self.size = len(header)
         self.fp = fp
         self.write_table_line(*header)
@@ -61,11 +61,39 @@ class TableWriter:
             fp.write(c)
         fp.write("|\n")
 
+    def write_table_file_result(
+        self, results: list[tuple[pathlib.Path, FileResult]]
+    ) -> None:
+        for p, fr in results:
+            counter = Counter(r.status for r in fr.verifications)
+            if counter.get(FAILURE):
+                emoji_status = "❌"
+            elif counter.get(SKIPPED):
+                emoji_status = "⚠"
+            else:
+                emoji_status = "✔"
+            elapsed = sum(r.elapsed for r in fr.verifications)
+            slowest = max(
+                (r.slowest for r in fr.verifications if r.slowest is not None),
+                default=None,
+            )
+            heaviest = max(
+                (r.heaviest for r in fr.verifications if r.heaviest is not None),
+                default=None,
+            )
+            self.write_table_line(
+                _with_icon(emoji_status, p.as_posix()),
+                str(counter.get(SUCCESS, "-")),
+                str(counter.get(FAILURE, "-")),
+                str(counter.get(SKIPPED, "-")),
+                str(sum(counter.values())),
+                to_human_str_seconds(elapsed),
+                "-" if slowest is None else to_human_str_seconds(slowest),
+                "-" if heaviest is None else to_human_str_mega_bytes(heaviest),
+            )
 
-def write_summary(fp: TextIO, result: VerifyCommandResult):
-    def with_icon(icon: str, text: str) -> str:
-        return icon + "&nbsp;&nbsp;" + text
 
+def write_summary(fp: IO[str], result: VerifyCommandResult):
     file_results: list[tuple[pathlib.Path, FileResult]] = []
     past_results: list[tuple[pathlib.Path, FileResult]] = []
     for p, fr in result.files.items():
@@ -95,17 +123,17 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
     fp.write("\n\n")
 
     fp.write("- ")
-    fp.write(with_icon("✔", "All test case results are `success`"))
+    fp.write(_with_icon("✔", "All test case results are `success`"))
     fp.write("\n")
     fp.write("- ")
-    fp.write(with_icon("❌", "Test case results containts `failure`"))
+    fp.write(_with_icon("❌", "Test case results containts `failure`"))
     fp.write("\n")
     fp.write("- ")
-    fp.write(with_icon("⚠", "Test case results containts `skipped`"))
+    fp.write(_with_icon("⚠", "Test case results containts `skipped`"))
     fp.write("\n\n\n")
 
     header = [
-        with_icon("📝", "File"),
+        _with_icon("📝", "File"),
         "✔<br>Passed",
         "❌<br>Failed",
         "⚠<br>Skipped",
@@ -115,35 +143,6 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
         "🐘<br>Heaviest",
     ]
     alignment = [":---"] + [":---:"] * (len(header) - 1)
-
-    def write_table_file_result(results: list[tuple[pathlib.Path, FileResult]]) -> None:
-        for p, fr in results:
-            counter = Counter(r.status for r in fr.verifications)
-            if counter.get(FAILURE):
-                emoji_status = "❌"
-            elif counter.get(SKIPPED):
-                emoji_status = "⚠"
-            else:
-                emoji_status = "✔"
-            elapsed = sum(r.elapsed for r in fr.verifications)
-            slowest = max(
-                (r.slowest for r in fr.verifications if r.slowest is not None),
-                default=None,
-            )
-            heaviest = max(
-                (r.heaviest for r in fr.verifications if r.heaviest is not None),
-                default=None,
-            )
-            tb.write_table_line(
-                with_icon(emoji_status, p.as_posix()),
-                str(counter.get(SUCCESS, "-")),
-                str(counter.get(FAILURE, "-")),
-                str(counter.get(SKIPPED, "-")),
-                str(sum(counter.values())),
-                to_human_str_seconds(elapsed),
-                "-" if slowest is None else to_human_str_seconds(slowest),
-                "-" if heaviest is None else to_human_str_mega_bytes(heaviest),
-            )
 
     if file_results:
         fp.write("## Results\n")
@@ -160,19 +159,15 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
             "-",
         )
         tb.write_table_line(*[""] * len(header))
-
-        write_table_file_result(file_results)
+        tb.write_table_file_result(file_results)
 
     if past_results:
         fp.write("## Past results\n")
         tb = TableWriter(fp, header)
         tb.write_table_line(*alignment)
-        write_table_file_result(past_results)
+        tb.write_table_file_result(past_results)
 
     if counter.get(FAILURE):
-        if not file_results:
-            raise ValueError("file_results is empty but there are failures")
-
         first_failure = True
         for p, fr in file_results:
             cases = [
@@ -201,6 +196,10 @@ def write_summary(fp: TextIO, result: VerifyCommandResult):
                     c.elapsed_str,
                     c.memory_str,
                 )
+
+
+def _with_icon(icon: str, text: str) -> str:
+    return icon + "&nbsp;&nbsp;" + text
 
 
 class DisplayTestcaseResult(TestcaseResult):

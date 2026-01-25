@@ -3,10 +3,6 @@ import pathlib
 import re
 
 
-def _optional_path(strpath: str | None) -> pathlib.Path | None:
-    return pathlib.Path(strpath) if strpath else None
-
-
 def is_in_github_actions() -> bool:
     return os.getenv("GITHUB_ACTIONS") == "true"
 
@@ -50,16 +46,9 @@ def get_workflow_filename() -> str | None:
     return re.sub(r".*/([^/]+\.yml)@.*$", r"\1", ref)
 
 
-def get_output_path() -> pathlib.Path | None:
-    strpath = os.getenv("GITHUB_OUTPUT")
-    return _optional_path(strpath)
-
-
-def get_workspace_path() -> pathlib.Path | None:
-    strpath = os.getenv("GITHUB_WORKSPACE")
-    return _optional_path(strpath)
+def _optional_path(strpath: str | None) -> pathlib.Path | None:
+    return pathlib.Path(strpath) if strpath else None
 
 
 def get_step_summary_path() -> pathlib.Path | None:
-    strpath = os.getenv("GITHUB_STEP_SUMMARY")
-    return _optional_path(strpath)
+    return _optional_path(os.getenv("GITHUB_STEP_SUMMARY"))

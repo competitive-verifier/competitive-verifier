@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator
 
-from competitive_verifier import github, summary
+from competitive_verifier import github
 from competitive_verifier.arg import (
     IgnoreErrorArguments,
     VerboseArguments,

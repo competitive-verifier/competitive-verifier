@@ -8,7 +8,6 @@ from typing import Literal, TypeVar
 
 from pydantic import Field
 
-from competitive_verifier import github, summary
 from competitive_verifier.arg import (
     ResultJsonArguments,
     VerboseArguments,
