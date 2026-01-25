@@ -157,16 +157,9 @@ class Verify(
             split_state=self.split_state,
         )
         result = verifier.verify(download=self.download)
+        self.write_result(result)
+
         result_json = result.model_dump_json(exclude_none=True)
-
-        if self.write_summary:
-            gh_summary_path = github.env.get_step_summary_path()
-            if gh_summary_path and gh_summary_path.parent.exists():
-                with gh_summary_path.open("w", encoding="utf-8") as fp:
-                    summary.write_summary(fp, result)
-            else:
-                logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
-
         print(result_json)
 
         if self.output:

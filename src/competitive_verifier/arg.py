@@ -3,13 +3,21 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import TypedDict, cast, get_args
+from logging import getLogger
+from typing import TYPE_CHECKING, TypedDict, cast, get_args
 
 from pydantic import BaseModel, Field
 
+from competitive_verifier import github, summary
+
 from .log import configure_stderr_logging
 
+if TYPE_CHECKING:
+    from competitive_verifier.models import VerifyCommandResult
+
 COMPETITIVE_VERIFY_FILES_PATH = "COMPETITIVE_VERIFY_FILES_PATH"
+
+logger = getLogger(__name__)
 
 
 class _SubcommandInfo(TypedDict):
@@ -107,6 +115,15 @@ class WriteSummaryArguments(BaseArguments):
             action="store_true",
             help="Write GitHub Actions summary",
         )
+
+    def write_result(self, result: "VerifyCommandResult"):
+        if self.write_summary:
+            gh_summary_path = github.env.get_step_summary_path()
+            if gh_summary_path and gh_summary_path.parent.exists():
+                with gh_summary_path.open("w", encoding="utf-8") as fp:
+                    summary.write_summary(fp, result)
+            else:
+                logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
 
 
 class IncludeExcludeArguments(BaseArguments):
