@@ -1,11 +1,6 @@
 import pathlib
-from os import PathLike
-from typing import Any
 
-from charset_normalizer import (
-    from_bytes,
-    from_path,  # pyright: ignore[reportUnknownVariableType]
-)
+from charset_normalizer import from_bytes
 
 
 def to_relative(path: pathlib.Path) -> pathlib.Path | None:
@@ -15,8 +10,8 @@ def to_relative(path: pathlib.Path) -> pathlib.Path | None:
         return None
 
 
-def read_text_normalized(path: PathLike[Any]) -> str:
-    return str(from_path(path).best())
+def read_text_normalized(path: pathlib.Path) -> str:
+    return normalize_bytes_text(path.read_bytes())
 
 
 def normalize_bytes_text(b: bytes) -> str:

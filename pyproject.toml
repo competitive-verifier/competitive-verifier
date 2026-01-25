@@ -241,12 +241,8 @@ convention = "google"
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
-include = ["src", "tests"]
-ignore = [
-    "src/competitive_verifier_resources/jekyll",
-    "tests_integration/testdata",
-    "src/porting_oj",
-]
+include = ["src", "tests", "tests_integration"]
+ignore = ["src/competitive_verifier_resources/jekyll"]
 reportMissingImports = true
 reportMissingTypeStubs = false
 
