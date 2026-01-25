@@ -17,7 +17,7 @@ from competitive_verifier.models import (
     VerificationInput,
     VerifierError,
 )
-from competitive_verifier.resource import ulimit_stack
+from competitive_verifier.resource import try_ulimit_stack
 
 logger = getLogger(__name__)
 
@@ -51,10 +51,8 @@ def download_files(
     group_log: bool = False,
 ) -> bool:
     result = True
-    try:
-        ulimit_stack()
-    except Exception:  # noqa: BLE001
-        logger.warning("failed to increase the stack size[ulimit]")
+    try_ulimit_stack()
+
     for url in parse_urls(url_or_file):
         if not oj.download(url, group_log=group_log):
             result = False

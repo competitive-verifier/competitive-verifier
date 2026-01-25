@@ -19,7 +19,7 @@ from competitive_verifier.models import (
     VerifierError,
     VerifyCommandResult,
 )
-from competitive_verifier.resource import ulimit_stack
+from competitive_verifier.resource import try_ulimit_stack
 from competitive_verifier.verify.split_state import SplitState
 
 logger = getLogger(__name__)
@@ -247,10 +247,7 @@ class BaseVerifier(InputContainer):
             "current_verification_files: %s",
             " ".join(p.as_posix() for p in current_verification_files),
         )
-        try:
-            ulimit_stack()
-        except BaseException:  # noqa: BLE001
-            logger.warning("failed to increase the stack size[ulimit]")
+        try_ulimit_stack()
 
         file_results: dict[pathlib.Path, FileResult] = (
             {

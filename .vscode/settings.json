@@ -21,10 +21,6 @@
     "python.experiments.optInto": [
         "pythonTestAdapter"
     ],
-    "python.testing.pytestArgs": [
-        "tests",
-        "tests_integration"
-    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
 }

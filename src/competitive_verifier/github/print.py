@@ -1,33 +1,6 @@
-from contextlib import contextmanager
-from typing import TextIO
+from typing import Literal, TextIO
 
 from . import env
-
-
-def print_warning(
-    message: str,
-    *,
-    title: str | None = None,
-    file: str | None = None,
-    col: int | None = None,
-    end_column: int | None = None,
-    line: int | None = None,
-    end_line: int | None = None,
-    force: bool = False,
-    stream: TextIO | None = None,
-) -> None:
-    _print_github(
-        "warning",
-        message,
-        title=title,
-        file=file,
-        col=col,
-        end_column=end_column,
-        line=line,
-        end_line=end_line,
-        force=force,
-        stream=stream,
-    )
 
 
 def print_error(
@@ -57,7 +30,7 @@ def print_error(
 
 
 def _print_github(
-    command: str,
+    command: Literal["error", "warning", "debug"],
     message: str,
     *,
     title: str | None = None,
@@ -109,12 +82,3 @@ def begin_group(title: str, *, stream: TextIO | None = None):
 
 def end_group(*, stream: TextIO | None = None):
     print("::endgroup::", file=stream)
-
-
-@contextmanager
-def group(title: str, *, stream: TextIO | None = None):
-    try:
-        begin_group(title, stream=stream)
-        yield
-    finally:
-        end_group(stream=stream)
