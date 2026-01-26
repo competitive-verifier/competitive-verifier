@@ -8,12 +8,13 @@ from pydantic import BaseModel
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
 from competitive_verifier.oj.verify import utils
-from competitive_verifier.oj.verify.languages import special_comments
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
     OjVerifyUserDefinedConfig,
 )
+
+from . import special_comments
 
 logger = getLogger(__name__)
 

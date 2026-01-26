@@ -6,11 +6,12 @@ from typing import Any
 from pydantic import ValidationInfo, field_validator
 
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
 from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyUserDefinedConfig,
 )
+
+from .user_defined import UserDefinedLanguage
 
 logger = getLogger(__name__)
 

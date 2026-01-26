@@ -4,30 +4,24 @@ from typing import BinaryIO
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from competitive_verifier.oj.verify.languages.cplusplus import (
+from competitive_verifier.oj.verify.languages import (
     CPlusPlusLanguage,
-    OjVerifyCPlusPlusConfig,
-)
-from competitive_verifier.oj.verify.languages.go import GoLanguage, OjVerifyGoConfig
-from competitive_verifier.oj.verify.languages.haskell import (
+    GoLanguage,
     HaskellLanguage,
-    OjVerifyHaskellConfig,
-)
-from competitive_verifier.oj.verify.languages.java import (
     JavaLanguage,
+    NimLanguage,
+    OjVerifyCPlusPlusConfig,
+    OjVerifyGoConfig,
+    OjVerifyHaskellConfig,
     OjVerifyJavaConfig,
-)
-from competitive_verifier.oj.verify.languages.nim import NimLanguage, OjVerifyNimConfig
-from competitive_verifier.oj.verify.languages.python import PythonLanguage
-from competitive_verifier.oj.verify.languages.ruby import (
+    OjVerifyNimConfig,
     OjVerifyRubyConfig,
-    RubyLanguage,
-)
-from competitive_verifier.oj.verify.languages.rust import (
     OjVerifyRustConfig,
+    PythonLanguage,
+    RubyLanguage,
     RustLanguage,
+    UserDefinedLanguage,
 )
-from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
 from competitive_verifier.oj.verify.models import Language, OjVerifyUserDefinedConfig
 
 if sys.version_info >= (3, 11):

@@ -10,14 +10,15 @@ from typing import Any
 from pydantic import BaseModel
 
 import competitive_verifier.oj.verify.shlex2 as shlex
-from competitive_verifier.oj.verify.languages import special_comments
-from competitive_verifier.oj.verify.languages.cplusplus_bundle import Bundler
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
 from competitive_verifier.oj.verify.utils import exec_command
+
+from . import special_comments
+from .cplusplus_bundle import Bundler
 
 # ruff: noqa: N803
 

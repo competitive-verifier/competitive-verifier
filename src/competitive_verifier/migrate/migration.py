@@ -14,14 +14,16 @@ from competitive_verifier import git
 from competitive_verifier.arg import VerboseArguments
 from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import exec_command
-from competitive_verifier.oj.verify.languages.cplusplus import CPlusPlusLanguage
-from competitive_verifier.oj.verify.languages.go import GoLanguage
-from competitive_verifier.oj.verify.languages.haskell import HaskellLanguage
-from competitive_verifier.oj.verify.languages.java import JavaLanguage
-from competitive_verifier.oj.verify.languages.nim import NimLanguage
-from competitive_verifier.oj.verify.languages.python import PythonLanguage
-from competitive_verifier.oj.verify.languages.ruby import RubyLanguage
-from competitive_verifier.oj.verify.languages.rust import RustLanguage
+from competitive_verifier.oj.verify.languages import (
+    CPlusPlusLanguage,
+    GoLanguage,
+    HaskellLanguage,
+    JavaLanguage,
+    NimLanguage,
+    PythonLanguage,
+    RubyLanguage,
+    RustLanguage,
+)
 from competitive_verifier.oj.verify.list import OjVerifyConfig
 from competitive_verifier.oj.verify.models import Language
 
