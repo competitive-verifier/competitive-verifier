@@ -4,21 +4,13 @@ from typing import Any
 
 import pytest
 
-from competitive_verifier.app import main
+from competitive_verifier import app
 
 from .data.integration_data import IntegrationData
 from .types import ConfigDirSetter, FilePaths
 
 
 class CompileFailureData(IntegrationData):
-    def __init__(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-        set_config_dir: ConfigDirSetter,
-        file_paths: FilePaths,
-    ) -> None:
-        super().__init__(monkeypatch, set_config_dir, file_paths)
-
     @classmethod
     def input_name(cls) -> str:
         return "CompileFailure"
@@ -145,7 +137,12 @@ def test_compile_failure(
 ):
     verify = compile_failure_integration_data.targets_path / "verify.json"
     result = compile_failure_integration_data.config_dir_path / "result.json"
-    main(["verify", "--verify-json", str(verify), "--output", str(result)])
+
+    parsed = app.ArgumentParser().parse(
+        ["verify", "--verify-json", str(verify), "--output", str(result)]
+    )
+    assert isinstance(parsed, app.Verify)
+    assert parsed.run()
 
     assert (
         json.loads(pathlib.Path(result).read_bytes())

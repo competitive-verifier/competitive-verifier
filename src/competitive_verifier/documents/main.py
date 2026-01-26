@@ -1,21 +1,23 @@
-import argparse
-import logging
 import pathlib
-import sys
+from argparse import ArgumentParser
 from logging import getLogger
+from typing import Literal
 
-import competitive_verifier.merge_result.main as merge_result
+from pydantic import Field
+
 from competitive_verifier import config
 from competitive_verifier.arg import (
-    add_ignore_error_argument,
-    add_include_exclude_argument,
-    add_result_json_argument,
-    add_verbose_argument,
-    add_verify_files_json_argument,
-    add_write_summary_argument,
+    IgnoreErrorArguments,
+    IncludeExcludeArguments,
+    ResultJsonArguments,
+    VerboseArguments,
+    VerifyFilesJsonArguments,
+    WriteSummaryArguments,
 )
-from competitive_verifier.log import configure_stderr_logging
-from competitive_verifier.models import VerificationInput, VerifyCommandResult
+from competitive_verifier.inout import MergeResult
+from competitive_verifier.models import (
+    VerificationInput,
+)
 
 from .builder import DocumentBuilder
 
@@ -30,84 +32,60 @@ def get_default_docs_dir() -> pathlib.Path:
     return default_docs_dir
 
 
-def run_impl(
-    verifications: VerificationInput,
-    result: VerifyCommandResult,
-    *,
-    destination_dir: pathlib.Path,
-    docs_dir: pathlib.Path | None,
-    include: list[str] | None,
-    exclude: list[str] | None,
-) -> bool:
-    logger.debug("verifications=%s", verifications.model_dump_json(exclude_none=True))
-    logger.debug("result=%s", result.model_dump_json(exclude_none=True))
-    builder = DocumentBuilder(
-        verifications=verifications,
-        result=result,
-        docs_dir=docs_dir or get_default_docs_dir(),
-        destination_dir=destination_dir,
-        include=include,
-        exclude=exclude,
+class Docs(
+    IncludeExcludeArguments,
+    WriteSummaryArguments,
+    IgnoreErrorArguments,
+    ResultJsonArguments,
+    VerifyFilesJsonArguments,
+    VerboseArguments,
+):
+    subcommand: Literal["docs"] = Field(
+        default="docs",
+        description="Create documents",
     )
-    return builder.build()
+    docs: pathlib.Path | None = None
+    destination: pathlib.Path
 
-
-def run(args: argparse.Namespace) -> bool:
-    default_level = logging.INFO
-    if args.verbose:
-        default_level = logging.DEBUG
-    configure_stderr_logging(default_level)
-
-    logger.debug("arguments=%s", vars(args))
-    logger.info("verify_files_json=%s", str(args.verify_files_json))
-    logger.info("result_json=%s", [str(p) for p in args.result_json])
-
-    verifications = VerificationInput.parse_file_relative(args.verify_files_json)
-    result = merge_result.run_impl(
-        *args.result_json,
-        write_summary=args.write_summary,
-    )
-    return (
-        run_impl(
-            verifications,
-            result,
-            docs_dir=args.docs,
-            destination_dir=args.destination,
-            include=args.include,
-            exclude=args.exclude,
+    @classmethod
+    def add_parser(cls, parser: ArgumentParser):
+        super().add_parser(parser)
+        destination = config.get_config_dir() / "_jekyll"
+        parser.add_argument(
+            "--docs",
+            type=pathlib.Path,
+            help=f"Document settings directory. default: {get_default_docs_dir().as_posix()}",
         )
-        or args.ignore_error
-    )
+        parser.add_argument(
+            "--destination",
+            type=pathlib.Path,
+            default=destination,
+            help=f"Output directory for markdown document. default: {destination.as_posix()}",
+        )
 
+    def _run(self) -> bool:
+        logger.debug("arguments:%s", self)
+        logger.info("verify_files_json=%s", str(self.verify_files_json))
+        logger.info("result_json=%s", [str(p) for p in self.result_json])
 
-def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    add_verbose_argument(parser)
-    add_verify_files_json_argument(parser)
-    add_result_json_argument(parser)
-    add_ignore_error_argument(parser)
-    add_write_summary_argument(parser)
-    add_include_exclude_argument(parser)
+        verifications = VerificationInput.parse_file_relative(self.verify_files_json)
 
-    destination = config.get_config_dir() / "_jekyll"
-    parser.add_argument(
-        "--docs",
-        type=pathlib.Path,
-        help=f"Document settings directory. default: {get_default_docs_dir().as_posix()}",
-    )
-    parser.add_argument(
-        "--destination",
-        type=pathlib.Path,
-        default=destination,
-        help=f"Output directory for markdown document. default: {destination.as_posix()}",
-    )
-    return parser
+        result = MergeResult(
+            subcommand="merge-result",
+            result_json=self.result_json,
+            write_summary=self.write_summary,
+        ).merge()
 
+        logger.debug(
+            "verifications=%s", verifications.model_dump_json(exclude_none=True)
+        )
+        logger.debug("result=%s", result.model_dump_json(exclude_none=True))
 
-def main(args: list[str] | None = None) -> None:
-    try:
-        parsed = argument(argparse.ArgumentParser()).parse_args(args)
-        if not run(parsed):
-            sys.exit(1)
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.exit(2)
+        return DocumentBuilder(
+            verifications=verifications,
+            result=result,
+            docs_dir=self.docs or get_default_docs_dir(),
+            destination_dir=self.destination,
+            include=self.include,
+            exclude=self.exclude,
+        ).build()

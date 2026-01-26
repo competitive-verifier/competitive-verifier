@@ -1,13 +1,13 @@
+import os
 import pathlib
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
-from pytest_mock.plugin import MockType
 
 import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
@@ -108,7 +108,8 @@ def test_command_union_json(
     assert obj == TypeAdapter(Verification).validate_json(raw_json)
 
 
-def test_const_verification(mock_exec_command: MockType):
+def test_const_verification(mocker: MockerFixture):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj = ConstVerification(status=ResultStatus.SUCCESS)
 
     assert obj.run() == ResultStatus.SUCCESS
@@ -211,8 +212,9 @@ def test_run(
     obj: Verification,
     args: Sequence[Any],
     kwargs: dict[str, Any],
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run(
         DataVerificationParams(
             default_tle=22,
@@ -268,8 +270,9 @@ def test_run_with_env(
     args: Sequence[Any],
     kwargs: dict[str, Any],
     env: dict[str, str],
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run(
         DataVerificationParams(
             default_tle=22,
@@ -507,8 +510,9 @@ def test_run_compile(
     obj: Verification,
     args: Sequence[Any] | None,
     kwargs: dict[str, Any] | None,
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mock_exec_command = mocker.patch("subprocess.run")
     obj.run_compile_command(
         DataVerificationParams(
             default_tle=22,
@@ -540,11 +544,144 @@ test_params_run_params: list[tuple[Verification, str | None]] = [
 def test_params_run(
     obj: Verification,
     error_message: str | None,
-    mock_exec_command: MockType,
+    mocker: MockerFixture,
 ):
+    mocker.patch("subprocess.run")
     if error_message:
         with pytest.raises(ValueError, match=error_message) as e:
             obj.run()
         assert e.value.args == (error_message,)
     else:
         obj.run()
+
+
+@pytest.mark.parametrize(
+    "status", [ResultStatus.FAILURE, ResultStatus.SKIPPED, ResultStatus.SUCCESS]
+)
+def test_run_const_verification(status: ResultStatus):
+    obj = ConstVerification(name="name", status=status)
+    assert obj.run_compile_command()
+    assert obj.run() == status
+
+
+class Return(NamedTuple):
+    returncode: int
+
+
+class TestCommandVerification:
+    def test_command(self, mocker: MockerFixture):
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+        obj = CommandVerification(name="name", command="echo 1")
+
+        assert obj.run_compile_command()
+        assert obj.run() == ResultStatus.SUCCESS
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+
+    def test_command_failure(self, mocker: MockerFixture):
+        mockrun = mocker.patch("subprocess.run", return_value=Return(1))
+        obj = CommandVerification(name="name", command=["echo", "1"])
+
+        assert obj.run_compile_command()
+        assert obj.run() == ResultStatus.FAILURE
+        mockrun.assert_called_once_with(
+            ["echo", "1"],
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=False,
+            text=True,
+        )
+
+    def test_command_and_compile(self, mocker: MockerFixture):
+        mocker.patch.dict(os.environ, {"DEFAULT": "dd"}, clear=True)
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+        obj = CommandVerification(
+            name="name",
+            compile="echo 1",
+            command=ShellCommand(
+                command="ls .",
+                env={"MOCK": "mocker"},
+                cwd=pathlib.Path("/root"),
+            ),
+        )
+
+        assert obj.run_compile_command()
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+        mockrun.reset_mock()
+
+        assert obj.run() == ResultStatus.SUCCESS
+        mockrun.assert_called_once_with(
+            "ls .",
+            capture_output=False,
+            check=False,
+            cwd=pathlib.Path("/root"),
+            encoding="utf-8",
+            env={"DEFAULT": "dd", "MOCK": "mocker"},
+            shell=True,
+            text=True,
+        )
+
+    def test_tempdir(self, mocker: MockerFixture):
+        mocker.patch.dict(os.environ, {"DEFAULT": "dd"}, clear=True)
+        mockrun = mocker.patch("subprocess.run", return_value=Return(0))
+
+        mockmkdir = mocker.patch.object(pathlib.Path, "mkdir")
+
+        obj = CommandVerification(
+            name="name",
+            compile="echo 1",
+            command=ShellCommand(
+                command="ls .",
+                env={"MOCK": "mocker"},
+                cwd=pathlib.Path("/root"),
+            ),
+            tempdir=pathlib.Path("/root/tmp"),
+        )
+
+        assert obj.run_compile_command()
+        mockmkdir.assert_called_once_with(exist_ok=True, parents=True)
+        mockrun.assert_called_once_with(
+            "echo 1",
+            capture_output=False,
+            check=False,
+            cwd=None,
+            encoding="utf-8",
+            env=None,
+            shell=True,
+            text=True,
+        )
+        mockmkdir.reset_mock()
+        mockrun.reset_mock()
+
+        assert obj.run() == ResultStatus.SUCCESS
+        mockmkdir.assert_called_once_with(exist_ok=True, parents=True)
+        mockrun.assert_called_once_with(
+            "ls .",
+            capture_output=False,
+            check=False,
+            cwd=pathlib.Path("/root"),
+            encoding="utf-8",
+            env={"DEFAULT": "dd", "MOCK": "mocker"},
+            shell=True,
+            text=True,
+        )

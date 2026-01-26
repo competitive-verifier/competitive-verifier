@@ -1,10 +1,14 @@
+import logging
+import os
 import pathlib
+import tempfile
 from datetime import datetime, timedelta
-from io import StringIO
 
 import pytest
+from pytest_mock import MockerFixture, MockType
 
 from competitive_verifier import summary
+from competitive_verifier.arg import WriteSummaryArguments
 from competitive_verifier.models import (
     FileResult,
     JudgeStatus,
@@ -57,110 +61,156 @@ def test_to_human_str_mega_bytes(megabytes: float, expected: str):
     assert summary.to_human_str_mega_bytes(megabytes) == expected
 
 
-def test_summary():
-    with StringIO() as fp:
-        summary.write_summary(
-            fp=fp,
-            result=VerifyCommandResult(
-                total_seconds=4.25,
-                files={
-                    pathlib.Path("foo/bar.py"): FileResult(
-                        verifications=[
-                            VerificationResult(
-                                verification_name="ver",
-                                heaviest=31.432342,
-                                slowest=0.420321,
-                                elapsed=1,
-                                status=ResultStatus.FAILURE,
-                                last_execution_time=datetime.fromtimestamp(1675125600),
-                                testcases=[
-                                    CaseResult(
-                                        name="case01",
-                                        status=JudgeStatus.TLE,
-                                        elapsed=0.2,
-                                        memory=30,
-                                    ),
-                                    CaseResult(
-                                        name="case02",
-                                        status=JudgeStatus.WA,
-                                        elapsed=0.4,
-                                        memory=32,
-                                    ),
-                                ],
-                            ),
-                            VerificationResult(
-                                elapsed=2,
-                                status=ResultStatus.FAILURE,
-                                last_execution_time=datetime.fromtimestamp(1675125601),
-                            ),
-                        ]
-                    ),
-                    pathlib.Path("foo/baz.py"): FileResult(
-                        verifications=[
-                            VerificationResult(
-                                verification_name="fi",
-                                heaviest=31.432342,
-                                slowest=0.420321,
-                                elapsed=1,
-                                status=ResultStatus.SUCCESS,
-                                last_execution_time=datetime.fromtimestamp(1675125600),
-                                testcases=[
-                                    CaseResult(
-                                        name="case01",
-                                        status=JudgeStatus.AC,
-                                        elapsed=0.2,
-                                        memory=30,
-                                    ),
-                                    CaseResult(
-                                        name="case02",
-                                        status=JudgeStatus.AC,
-                                        elapsed=0.4,
-                                        memory=32,
-                                    ),
-                                ],
-                            ),
-                            VerificationResult(
-                                elapsed=2,
-                                status=ResultStatus.SUCCESS,
-                                last_execution_time=datetime.fromtimestamp(1675125601),
-                            ),
-                        ]
-                    ),
-                    pathlib.Path("hoge.py"): FileResult(
-                        verifications=[
-                            VerificationResult(
-                                heaviest=31.432342,
-                                slowest=0.420321,
-                                elapsed=1,
-                                status=ResultStatus.FAILURE,
-                                last_execution_time=datetime.fromtimestamp(1675125600),
-                                testcases=[
-                                    CaseResult(
-                                        name="case01",
-                                        status=JudgeStatus.RE,
-                                        elapsed=0.2,
-                                        memory=30,
-                                    ),
-                                    CaseResult(
-                                        name="case02",
-                                        status=JudgeStatus.MLE,
-                                        elapsed=0.4,
-                                        memory=32,
-                                    ),
-                                ],
-                            ),
-                            VerificationResult(
-                                elapsed=2,
-                                status=ResultStatus.SUCCESS,
-                                last_execution_time=datetime.fromtimestamp(1675125601),
-                            ),
-                        ]
-                    ),
-                },
-            ),
-        )
+class MockWriteSummaryArguments(WriteSummaryArguments):
+    def run(self) -> bool:
+        raise NotImplementedError
 
-        expected = r"""# ❌ Verification result
+
+def test_no_summary(mocker: MockerFixture):
+    mocker.patch.dict(os.environ, {}, clear=True)
+    mock_summary = mocker.patch.object(summary, "write_summary")
+    MockWriteSummaryArguments(write_summary=False).write_result(
+        VerifyCommandResult(files={}, total_seconds=1)
+    )
+    mock_summary.assert_not_called()
+
+
+def test_summary_not_exist(mocker: MockerFixture, mock_logger: MockType):
+    mocker.patch.dict(os.environ, {}, clear=True)
+    mock_summary = mocker.patch.object(summary, "write_summary")
+    MockWriteSummaryArguments(write_summary=True).write_result(
+        VerifyCommandResult(files={}, total_seconds=1)
+    )
+    mock_summary.assert_not_called()
+    mock_logger.assert_called_once_with(
+        logging.WARNING, "write_summary=True but not found $GITHUB_STEP_SUMMARY", ()
+    )
+
+
+test_summary_params = [
+    (
+        VerifyCommandResult(
+            total_seconds=4.25,
+            files={
+                pathlib.Path("foo/bar.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            verification_name="ver",
+                            heaviest=31.432342,
+                            slowest=0.420321,
+                            elapsed=1,
+                            status=ResultStatus.FAILURE,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                            testcases=[
+                                CaseResult(
+                                    name="case01",
+                                    status=JudgeStatus.TLE,
+                                    elapsed=0.2,
+                                    memory=30,
+                                ),
+                                CaseResult(
+                                    name="case02",
+                                    status=JudgeStatus.WA,
+                                    elapsed=0.4,
+                                    memory=32,
+                                ),
+                            ],
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.FAILURE,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("foo/baz.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            verification_name="fi",
+                            heaviest=31.432342,
+                            slowest=0.420321,
+                            elapsed=1,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                            testcases=[
+                                CaseResult(
+                                    name="case01",
+                                    status=JudgeStatus.AC,
+                                    elapsed=0.2,
+                                    memory=30,
+                                ),
+                                CaseResult(
+                                    name="case02",
+                                    status=JudgeStatus.AC,
+                                    elapsed=0.4,
+                                    memory=32,
+                                ),
+                            ],
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("hoge.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            heaviest=31.432342,
+                            slowest=0.420321,
+                            elapsed=1,
+                            status=ResultStatus.FAILURE,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                            testcases=[
+                                CaseResult(
+                                    name="case01",
+                                    status=JudgeStatus.RE,
+                                    elapsed=0.2,
+                                    memory=30,
+                                ),
+                                CaseResult(
+                                    name="case02",
+                                    status=JudgeStatus.MLE,
+                                    elapsed=0.4,
+                                    memory=32,
+                                ),
+                            ],
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("piyo.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+                pathlib.Path("old.py"): FileResult(
+                    newest=False,
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        r"""# ❌ Verification result
 
 - ✔&nbsp;&nbsp;All test case results are `success`
 - ❌&nbsp;&nbsp;Test case results containts `failure`
@@ -170,11 +220,16 @@ def test_summary():
 ## Results
 |📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|_**Sum**_|3|3|-|6|4.2s|-|-|
+|_**Sum**_|3|3|1|7|4.2s|-|-|
 |||||||||
 |❌&nbsp;&nbsp;foo/bar.py|-|2|-|2|3.0s|420ms|31.4MB|
 |✔&nbsp;&nbsp;foo/baz.py|2|-|-|2|3.0s|420ms|31.4MB|
 |❌&nbsp;&nbsp;hoge.py|1|1|-|2|3.0s|420ms|31.4MB|
+|⚠&nbsp;&nbsp;piyo.py|-|-|1|1|2.0s|-|-|
+## Past results
+|📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|✔&nbsp;&nbsp;old.py|2|-|-|2|4.0s|-|-|
 ## Failed tests
 
 ### foo/bar.py
@@ -189,5 +244,150 @@ def test_summary():
 |:---|:---|:---:|:---:|:---:|
 ||case01|RE|200ms|30MB|
 ||case02|MLE|400ms|32MB|
-"""
-        assert fp.getvalue() == expected.replace("\r\n", "\n")
+""",
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=11.12,
+            files={
+                pathlib.Path("hoge.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                    ]
+                ),
+                pathlib.Path("piyo.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SKIPPED,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ]
+                ),
+            },
+        ),
+        r"""# ⚠ Verification result
+
+- ✔&nbsp;&nbsp;All test case results are `success`
+- ❌&nbsp;&nbsp;Test case results containts `failure`
+- ⚠&nbsp;&nbsp;Test case results containts `skipped`
+
+
+## Results
+|📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|_**Sum**_|1|-|1|2|11s|-|-|
+|||||||||
+|✔&nbsp;&nbsp;hoge.py|1|-|-|1|2.0s|-|-|
+|⚠&nbsp;&nbsp;piyo.py|-|-|1|1|2.0s|-|-|
+""",
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=11.12,
+            files={
+                pathlib.Path("hoge.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                    ]
+                ),
+                pathlib.Path("piyo.py"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        r"""# ✔ Verification result
+
+- ✔&nbsp;&nbsp;All test case results are `success`
+- ❌&nbsp;&nbsp;Test case results containts `failure`
+- ⚠&nbsp;&nbsp;Test case results containts `skipped`
+
+
+## Results
+|📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|_**Sum**_|2|-|-|2|11s|-|-|
+|||||||||
+|✔&nbsp;&nbsp;hoge.py|1|-|-|1|2.0s|-|-|
+|✔&nbsp;&nbsp;piyo.py|1|-|-|1|2.0s|-|-|
+""",
+    ),
+    (
+        VerifyCommandResult(
+            total_seconds=11.12,
+            files={
+                pathlib.Path("hoge.py"): FileResult(
+                    newest=False,
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125600),
+                        ),
+                    ],
+                ),
+                pathlib.Path("piyo.py"): FileResult(
+                    newest=False,
+                    verifications=[
+                        VerificationResult(
+                            elapsed=2,
+                            status=ResultStatus.SUCCESS,
+                            last_execution_time=datetime.fromtimestamp(1675125601),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        r"""# ✔ Verification result
+
+- ✔&nbsp;&nbsp;All test case results are `success`
+- ❌&nbsp;&nbsp;Test case results containts `failure`
+- ⚠&nbsp;&nbsp;Test case results containts `skipped`
+
+
+## Past results
+|📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|✔&nbsp;&nbsp;hoge.py|1|-|-|1|2.0s|-|-|
+|✔&nbsp;&nbsp;piyo.py|1|-|-|1|2.0s|-|-|
+""",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("verify_command_result", "expected"),
+    test_summary_params,
+    ids=range(len(test_summary_params)),
+)
+def test_summary(
+    verify_command_result: VerifyCommandResult,
+    expected: str,
+    mocker: MockerFixture,
+):
+    with tempfile.NamedTemporaryFile("w+") as tmp:
+        mocker.patch.dict(
+            os.environ,
+            {"GITHUB_STEP_SUMMARY": tmp.name},
+            clear=True,
+        )
+        MockWriteSummaryArguments(write_summary=True).write_result(
+            verify_command_result
+        )
+        tmp.seek(0)
+
+        assert tmp.read() == expected.replace("\r\n", "\n")

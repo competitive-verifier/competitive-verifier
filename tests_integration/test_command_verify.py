@@ -6,7 +6,7 @@ import shutil
 
 import pytest
 
-from competitive_verifier.app import main
+from competitive_verifier import app
 from competitive_verifier.models import (
     FileResult,
     JudgeStatus,
@@ -19,6 +19,7 @@ from competitive_verifier.verify import verifier
 from .data.integration_data import IntegrationData
 
 
+@pytest.mark.integration
 @pytest.mark.usefixtures("additional_path")
 @pytest.mark.order(-500)
 class TestCommandVerfy:
@@ -153,7 +154,6 @@ class TestCommandVerfy:
             }
 
     @pytest.mark.each_language_integration
-    @pytest.mark.integration
     @pytest.mark.usefixtures("mock_verification")
     def test_verify(
         self,
@@ -163,7 +163,11 @@ class TestCommandVerfy:
         result = integration_data.config_dir_path / "result.json"
         shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
 
-        main(["verify", "--verify-json", str(verify), "--output", str(result)])
+        parsed = app.ArgumentParser().parse(
+            ["verify", "--verify-json", str(verify), "--output", str(result)]
+        )
+        assert isinstance(parsed, app.Verify)
+        assert parsed.run()
 
         assert (
             json.loads(pathlib.Path(result).read_bytes())

@@ -1,5 +1,4 @@
 import pathlib
-from abc import ABC, abstractmethod
 from typing import Any
 
 import pytest
@@ -7,7 +6,7 @@ import pytest
 from ..types import ConfigDirSetter, FilePaths
 
 
-class IntegrationData(ABC):
+class IntegrationData:
     config_dir_path: pathlib.Path
     targets_path: pathlib.Path
     file_paths: FilePaths
@@ -43,14 +42,11 @@ class IntegrationData(ABC):
     def exclude_path(self) -> list[str] | None:
         return None
 
-    def assert_extra(self):
-        return
+    def assert_oj_resolve(self): ...
 
     def check_envinronment(self) -> bool:
         return True
 
-    @abstractmethod
     def expected_verify_json(self) -> dict[str, Any]: ...
 
-    @abstractmethod
     def expected_verify_result(self) -> dict[str, Any]: ...

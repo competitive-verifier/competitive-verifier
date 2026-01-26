@@ -21,7 +21,6 @@ from .service import (
     LibraryCheckerProblem,
     NotLoggedInError,
     Problem,
-    SampleParseError,
     TestCase,
     YukicoderProblem,
 )
@@ -67,9 +66,6 @@ def _run_services(problem: Problem):
         return problem.download_system_cases(headers=headers)
     except requests.exceptions.RequestException:
         logger.exception("Failed to download samples from the server")
-        return None
-    except SampleParseError:
-        logger.exception("Failed to parse samples from the server")
         return None
 
 

@@ -6,7 +6,7 @@ import pytest
 from pytest_mock import MockerFixture
 from pytest_mock.plugin import MockType
 
-from competitive_verifier.download.main import run_impl as download
+from competitive_verifier.download import download_files as download
 from competitive_verifier.oj.tools import service
 
 
@@ -48,15 +48,11 @@ def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     }
 
 
-@pytest.fixture
-def mkdir(mocker: MockerFixture):
-    return mocker.patch.object(pathlib.Path, "mkdir", autospec=True)
-
-
 def test_oj_download(
-    mkdir: MockType,
-    mock_problem: dict[type[service.Problem], MockProblem],
+    mocker: MockerFixture, mock_problem: dict[type[service.Problem], MockProblem]
 ):
+    mkdir = mocker.patch.object(pathlib.Path, "mkdir", autospec=True)
+
     download(
         url_or_file=[
             "https://judge.yosupo.jp/problem/aplusb",

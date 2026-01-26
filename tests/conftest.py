@@ -1,28 +1,14 @@
-import pathlib
+import logging
+import os
 
 import pytest
-from pytest_mock import MockerFixture
-
-
-def pytest_addoption(parser: pytest.Parser):
-    parser.addoption(
-        "--use-prev-dest",
-        action="store_true",
-        help="Skip deletion of dst_dir.",
-    )
+from pytest_mock import MockerFixture, MockType
 
 
 @pytest.fixture
-def mock_exists(mocker: MockerFixture):
-    def _mock_exists(val: bool):
-        return mocker.patch.object(pathlib.Path, "exists", return_value=val)
-
-    return _mock_exists
-
-
-@pytest.fixture
-def mock_exec_command(mocker: MockerFixture):
-    return mocker.patch("subprocess.run")
+def mock_logger(mocker: MockerFixture) -> MockType:
+    mocker.patch.object(logging.Logger, "isEnabledFor", return_value=True)
+    return mocker.patch.object(logging.Logger, "_log")
 
 
 @pytest.fixture
@@ -36,3 +22,8 @@ def mock_perf_counter(mocker: MockerFixture):
         return ppc
 
     mocker.patch("time.perf_counter", side_effect=_perf_counter)
+
+
+@pytest.fixture
+def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
+    mocker.patch.dict(os.environ, request.param or {}, clear=True)

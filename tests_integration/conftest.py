@@ -19,8 +19,16 @@ from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
 
 
+def pytest_addoption(parser: pytest.Parser):
+    parser.addoption(
+        "--use-prev-dest",
+        action="store_true",
+        help="Skip deletion of dst_dir.",
+    )
+
+
 @pytest.fixture(scope="session")
-def check_necessary_commands() -> str | None:
+def check_necessary_commands() -> str | None:  # pragma: no cover
     git_path = shutil.which("git")
     if not git_path:
         raise AssertionError("The integration test needs command")
@@ -36,22 +44,39 @@ def check_necessary_commands() -> str | None:
     raise AssertionError("The integration test needs env command")
 
 
+@pytest.fixture(scope="session")
+def is_vscode_debug() -> bool:  # pragma: no cover
+    try:
+        from debugpy import is_client_connected  # type: ignore  # noqa: PGH003, PLC0415
+    except ImportError:
+        return False
+
+    return is_client_connected()  # pyright: ignore[reportUnknownVariableType]
+
+
+@pytest.fixture(scope="session")
+def use_prev_result(
+    request: pytest.FixtureRequest, is_vscode_debug: bool
+) -> bool:  # pragma: no cover
+    return request.config.getoption("--use-prev-dest") or is_vscode_debug
+
+
 @pytest.fixture
 def additional_path(
     monkeypatch: pytest.MonkeyPatch,
     check_necessary_commands: str | None,
 ):
-    if check_necessary_commands:
+    if check_necessary_commands:  # pragma: no cover
         monkeypatch.setenv("PATH", check_necessary_commands, prepend=os.pathsep)
 
 
 @pytest.fixture(scope="session")
-def file_paths(request: pytest.FixtureRequest) -> FilePaths:
-    root = pathlib.Path(__file__).parent.parent.parent / "integration_test_data"
+def file_paths(use_prev_result: bool) -> FilePaths:
+    root = pathlib.Path(__file__).parent.parent / "integration_test_data"
     dest_root = root / "dst_dir"
     assert root.exists()
 
-    if dest_root.is_dir() and not request.config.getoption("--use-prev-dest"):
+    if dest_root.is_dir() and not use_prev_result:  # pragma: no cover
         shutil.rmtree(dest_root)
 
     return FilePaths(

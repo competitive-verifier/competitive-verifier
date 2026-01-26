@@ -12,7 +12,8 @@ from competitive_verifier import config
 from competitive_verifier.models import FileResult, VerificationResult
 from competitive_verifier.models import TestcaseResult as _TestcaseResult
 from competitive_verifier.verify import verifier
-from tests.integration.utils import md5_number
+
+from .utils import md5_number
 
 
 class MockVerifyCommandResult(verifier.VerifyCommandResult):
@@ -28,7 +29,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
         exclude_none: bool = False,
         round_trip: bool = False,
         warnings: bool | Literal["none", "warn", "error"] = True,
-    ) -> str:
+    ) -> str:  # pragma: no cover
         return self.model_copy()._dump_super(  # noqa: SLF001
             indent=indent,
             include=include,
@@ -91,7 +92,7 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
             return verification
 
         def rewriteTestcaseResult(seed: bytes, case: _TestcaseResult):
-            seed += (case.name or "").encode()
+            seed += case.name.encode()
             seed += case.status.name.encode()
 
             case.elapsed = md5_number(seed + b"elapsed") % 1000 / 100
@@ -120,7 +121,7 @@ def update_cloned_repository() -> None:
 
     gz_path = config.get_cache_dir() / "library-checker-problems.tar.gz"
     gz_path = gz_path.resolve()
-    if not gz_path.exists():
+    if not gz_path.exists():  # pragma: no cover
         gz_path.parent.mkdir(parents=True, exist_ok=True)
 
         if _library_checker_problems_tar_gz:
@@ -156,11 +157,10 @@ def update_cloned_repository() -> None:
 
 
 def _match_aplusb(t: tarfile.TarInfo) -> tarfile.TarInfo | None:
-    if t.path.startswith("library-checker-problems/sample/aplusb"):
-        return t
-    if t.isdir():
-        if "library-checker-problems/sample/aplusb".startswith(t.path):
-            return t
-    elif t.isfile() and t.path.endswith(".py"):
+    if (
+        t.path.startswith("library-checker-problems/sample/aplusb")
+        or (t.isdir() and "library-checker-problems/sample/aplusb".startswith(t.path))
+        or t.isfile()
+    ):
         return t
     return None

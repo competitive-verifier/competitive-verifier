@@ -1,23 +1,12 @@
 import pathlib
 from typing import Any
 
-import pytest
-
 from competitive_verifier.oj.tools.oj_test import check_gnu_time
 
-from ..types import ConfigDirSetter, FilePaths
 from .integration_data import IntegrationData
 
 
 class UserDefinedAndPythonData(IntegrationData):
-    def __init__(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
-        set_config_dir: ConfigDirSetter,
-        file_paths: FilePaths,
-    ) -> None:
-        super().__init__(monkeypatch, set_config_dir, file_paths)
-
     @property
     def bundle_euc_ke_path(self):
         return self.config_dir_path / "bundled/encoding/EUC-KR.txt"
@@ -34,7 +23,7 @@ class UserDefinedAndPythonData(IntegrationData):
     def exclude_path(self) -> list[str] | None:
         return ["dummy/"]
 
-    def assert_extra(self):
+    def assert_oj_resolve(self):
         assert self.bundle_euc_ke_path.read_bytes().strip() == b"cp949"
         assert self.bundle_cp932_path.read_bytes().strip() == b"cp932"
 

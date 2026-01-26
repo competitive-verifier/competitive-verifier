@@ -1,193 +1,176 @@
-import argparse
-import logging
 import math
 import pathlib
+from argparse import ArgumentParser
+from functools import cached_property
 from logging import getLogger
+from typing import Literal
 
-from competitive_verifier import github, summary
+from pydantic import Field, field_validator
+
+from competitive_verifier import github
 from competitive_verifier.arg import (
-    add_ignore_error_argument,
-    add_verbose_argument,
-    add_verify_files_json_argument,
-    add_write_summary_argument,
+    IgnoreErrorArguments,
+    VerboseArguments,
+    VerifyFilesJsonArguments,
+    WriteSummaryArguments,
 )
-from competitive_verifier.error import VerifierError
-from competitive_verifier.log import configure_stderr_logging
-from competitive_verifier.models import VerificationInput, VerifyCommandResult
-from competitive_verifier.verify.verifier import SplitState, Verifier
+from competitive_verifier.models import (
+    VerificationInput,
+    VerifierError,
+    VerifyCommandResult,
+)
+
+from .verifier import SplitState, Verifier
 
 logger = getLogger(__name__)
 
 
-def run_impl(
-    verifications: VerificationInput,
-    *,
-    prev_result: VerifyCommandResult | None,
-    timeout: float = math.inf,
-    default_tle: float | None = None,
-    default_mle: float | None = None,
-    download: bool = True,
-    split: int | None = None,
-    split_index: int | None = None,
-    output_path: pathlib.Path | None = None,
-    write_summary: bool = False,
-    ignore_error: bool = False,
-) -> bool:
-    split_state = get_split_state(split, split_index)
-
-    if timeout == 0:
-        timeout = math.inf
-
-    verifier = Verifier(
-        verifications,
-        use_git_timestamp=github.env.is_in_github_actions(),
-        timeout=timeout,
-        default_tle=default_tle,
-        default_mle=default_mle,
-        prev_result=prev_result,
-        split_state=split_state,
+class Verify(
+    WriteSummaryArguments,
+    IgnoreErrorArguments,
+    VerifyFilesJsonArguments,
+    VerboseArguments,
+):
+    subcommand: Literal["verify"] = Field(
+        default="verify",
+        description="Verify library",
     )
-    result = verifier.verify(download=download)
-    result_json = result.model_dump_json(exclude_none=True)
+    timeout: float = math.inf
+    default_tle: float | None = None
+    default_mle: float | None = None
 
-    if write_summary:
-        gh_summary_path = github.env.get_step_summary_path()
-        if gh_summary_path and gh_summary_path.parent.exists():
-            with gh_summary_path.open("w", encoding="utf-8") as fp:
-                summary.write_summary(fp, result)
+    prev_result: pathlib.Path | None = None
+
+    download: bool = True
+
+    output: pathlib.Path | None = None
+
+    split: int | None = None
+    split_index: int | None = None
+
+    @field_validator("timeout", mode="after")
+    @classmethod
+    def timeout_zero_equals_inf(cls, value: float) -> float:
+        if value == 0:
+            return math.inf
+        return value
+
+    @cached_property
+    def split_state(self) -> SplitState | None:
+        split = self.split
+        split_index = self.split_index
+        if split_index is None and split is None:
+            return None
+
+        if split_index is not None and split is not None:
+            if split <= 0:
+                raise VerifierError("--split must be greater than 0.")
+            if not (0 <= split_index < split):
+                raise VerifierError(
+                    "--split-index must be greater than 0 and less than --split."
+                )
+            return SplitState(size=split, index=split_index)
+
+        if split is not None:
+            raise VerifierError("--split argument requires --split-index argument.")
+
+        if split_index is not None:
+            raise VerifierError("--split-index argument requires --split argument.")
+
+        raise VerifierError("invalid state.")
+
+    @classmethod
+    def add_parser(cls, parser: ArgumentParser):
+        super().add_parser(parser)
+        parser.add_argument(
+            "--timeout",
+            type=float,
+            default=math.inf,
+            help="Timeout seconds. if value is zero, it is same to math.inf.",
+        )
+        parser.add_argument(
+            "--tle",
+            dest="default_tle",
+            type=float,
+            default=None,
+            help="Threshold seconds to be TLE",
+        )
+        parser.add_argument(
+            "--mle",
+            dest="default_mle",
+            type=float,
+            default=None,
+            help="Threshold memory usage (MB) to be MLE",
+        )
+        parser.add_argument(
+            "--prev-result",
+            type=pathlib.Path,
+            required=False,
+            help="Previous result json file",
+        )
+
+        parser.add_argument(
+            "--no-download",
+            action="store_false",
+            dest="download",
+            help="Suppress `oj download`",
+        )
+        parser.add_argument(
+            "--output",
+            "-o",
+            type=pathlib.Path,
+            required=False,
+            help="The output file for which verifier saves the result json.",
+        )
+        parallel_group = parser.add_argument_group("parallel")
+        parallel_group.add_argument(
+            "--split",
+            type=int,
+            help="Parallel job size",
+            required=False,
+        )
+        parallel_group.add_argument(
+            "--split-index",
+            type=int,
+            help="Parallel job index",
+            required=False,
+        )
+
+    def _run(self) -> bool:
+        logger.debug("arguments:%s", self)
+        logger.info("verify_files_json=%s", str(self.verify_files_json))
+        verifications = VerificationInput.parse_file_relative(self.verify_files_json)
+        prev_result = None
+        if self.prev_result:
+            try:
+                prev_result = VerifyCommandResult.parse_file_relative(self.prev_result)
+            except Exception:
+                logger.warning("Failed to parse prev_result: %s", self.prev_result)
+
+        verifier = Verifier(
+            verifications,
+            use_git_timestamp=github.env.is_in_github_actions(),
+            timeout=self.timeout,
+            default_tle=self.default_tle,
+            default_mle=self.default_mle,
+            prev_result=prev_result,
+            split_state=self.split_state,
+        )
+        result = verifier.verify(download=self.download)
+        self.write_result(result)
+
+        result_json = result.model_dump_json(exclude_none=True)
+        print(result_json)
+
+        if self.output:
+            self.output.parent.mkdir(parents=True, exist_ok=True)
+            self.output.write_text(result_json, encoding="utf-8")
+
+        is_success = result.is_success()
+
+        if is_success:
+            logger.info("success!")
         else:
-            logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
+            logger.warning("not success!")
 
-    print(result_json)
-
-    if output_path:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(result_json, encoding="utf-8")
-
-    is_success = result.is_success()
-
-    if is_success:
-        logger.info("success!")
-    else:
-        logger.warning("not success!")
-
-    return is_success or ignore_error
-
-
-def run(args: argparse.Namespace) -> bool:
-    default_level = logging.INFO
-    if args.verbose:
-        default_level = logging.DEBUG
-    configure_stderr_logging(default_level)
-
-    logger.debug("arguments=%s", vars(args))
-    logger.info("verify_files_json=%s", str(args.verify_files_json))
-    parsed_args = VerificationInput.parse_file_relative(args.verify_files_json)
-    prev_result = None
-    if args.prev_result:
-        try:
-            prev_result = VerifyCommandResult.parse_file_relative(args.prev_result)
-        except Exception:
-            logger.warning("Failed to parse prev_result: %s", args.prev_result)
-
-    return run_impl(
-        parsed_args,
-        timeout=args.timeout,
-        default_tle=args.default_tle,
-        default_mle=args.default_mle,
-        prev_result=prev_result,
-        download=args.download,
-        split=args.split,
-        split_index=args.split_index,
-        output_path=args.output,
-        write_summary=args.write_summary,
-        ignore_error=args.ignore_error,
-    )
-
-
-def argument(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    add_verbose_argument(parser)
-    add_verify_files_json_argument(parser)
-    add_ignore_error_argument(parser)
-    add_write_summary_argument(parser)
-    parser.add_argument(
-        "--timeout",
-        type=float,
-        default=math.inf,
-        help="Timeout seconds. if value is zero, it is same to math.inf.",
-    )
-    parser.add_argument(
-        "--tle",
-        dest="default_tle",
-        type=float,
-        default=None,
-        help="Threshold seconds to be TLE",
-    )
-    parser.add_argument(
-        "--mle",
-        dest="default_mle",
-        type=float,
-        default=None,
-        help="Threshold memory usage (MB) to be MLE",
-    )
-    parser.add_argument(
-        "--prev-result",
-        type=pathlib.Path,
-        required=False,
-        help="Previous result json file",
-    )
-
-    parser.add_argument(
-        "--no-download",
-        action="store_false",
-        dest="download",
-        help="Suppress `oj download`",
-    )
-    parser.add_argument(
-        "--output",
-        "-o",
-        type=pathlib.Path,
-        required=False,
-        help="The output file for which verifier saves the result json.",
-    )
-    parser.add_argument_group()
-    parallel_group = parser.add_argument_group("parallel")
-    parallel_group.add_argument(
-        "--split",
-        type=int,
-        help="Parallel job size",
-        required=False,
-    )
-    parallel_group.add_argument(
-        "--split-index",
-        type=int,
-        help="Parallel job index",
-        required=False,
-    )
-
-    return parser
-
-
-def get_split_state(
-    split: int | None = None,
-    split_index: int | None = None,
-) -> SplitState | None:
-    if split_index is None and split is None:
-        return None
-
-    if split_index is not None and split is not None:
-        if split <= 0:
-            raise VerifierError("--split must be greater than 0.")
-        if not (0 <= split_index < split):
-            raise VerifierError(
-                "--split-index must be greater than 0 and less than --split."
-            )
-        return SplitState(size=split, index=split_index)
-
-    if split is not None:
-        raise VerifierError("--split argument requires --split-index argument.")
-
-    if split_index is not None:
-        raise VerifierError("--split-index argument requires --split argument.")
-
-    raise VerifierError("invalid state.")
+        return is_success or self.ignore_error
