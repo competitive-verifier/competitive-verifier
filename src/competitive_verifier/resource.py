@@ -13,7 +13,7 @@ def ulimit_stack() -> None:
         resource.setrlimit(resource.RLIMIT_STACK, (hard, hard))
 
 
-def try_ulimit_stack() -> None:
+def try_ulimit_stack() -> None:  # pragma: no cover
     """Run `ulimit -s unlimited` and ignore any errors."""
     try:
         ulimit_stack()
