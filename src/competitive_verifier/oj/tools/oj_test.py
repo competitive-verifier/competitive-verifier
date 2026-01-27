@@ -6,7 +6,7 @@ import time
 from collections.abc import Callable
 from logging import getLogger
 from subprocess import Popen
-from typing import Annotated, Any
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 from pydantic.functional_validators import BeforeValidator
@@ -325,7 +325,7 @@ def test_single_case(
     test_output_path: pathlib.Path | None,
     *,
     args: OjTestArguments,
-) -> dict[str, Any]:
+) -> OjTestcaseResult:
     logger.info("%s", test_name)
 
     # run the binary
@@ -372,20 +372,17 @@ def test_single_case(
     )
 
     # return the result
-    testcase = {
-        "name": test_name,
-        "input": str(test_input_path.resolve()),
-    }
-    if test_output_path:
-        testcase["output"] = str(test_output_path.resolve())
-    return {
-        "status": status.value,
-        "testcase": testcase,
-        "output": answer,
-        "exitcode": proc.returncode,
-        "elapsed": elapsed,
-        "memory": memory,
-    }
+    return OjTestcaseResult(
+        status=status,
+        testcase=TestCase(
+            name=test_name,
+            input=test_input_path.resolve(),
+            output=test_output_path,
+        ),
+        exitcode=proc.returncode,
+        elapsed=elapsed,
+        memory=memory,
+    )
 
 
 def run(args: OjTestArguments) -> OjTestResult:
@@ -421,9 +418,7 @@ def run(args: OjTestArguments) -> OjTestResult:
             raise VerifcationTimeoutError
 
         history.append(
-            OjTestcaseResult.model_validate(
-                test_single_case(name, paths["in"], paths.get("out"), args=args),
-            )
+            test_single_case(name, paths["in"], paths.get("out"), args=args),
         )
 
     # summarize

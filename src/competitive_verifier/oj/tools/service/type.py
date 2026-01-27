@@ -1,17 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import (
-    NamedTuple,
-    Optional,
-)
+from typing import NamedTuple, Optional
 
 
 class NotLoggedInError(RuntimeError):
-    def __init__(self, message: str = "login required"):
-        super().__init__(message)
-
-
-class Language(NamedTuple):
-    name: str
+    pass
 
 
 class TestCase(NamedTuple):

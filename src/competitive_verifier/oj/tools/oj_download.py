@@ -10,11 +10,7 @@ import requests.exceptions
 
 from competitive_verifier import log
 
-from .func import (
-    get_checker_path,
-    get_directory,
-    is_yukicoder,
-)
+from .func import get_checker_path, get_directory
 from .service import (
     AOJArenaProblem,
     AOJProblem,
@@ -144,20 +140,17 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
     test_directory = directory / "test"
 
     logger.info("download[Start]: %s into %s", url, test_directory)
-    if not (test_directory).exists() or list((test_directory).iterdir()) == []:
+    if not test_directory.exists() or list(test_directory.iterdir()) == []:
         logger.info("download[Run]: %s", url)
 
         with log.group(f"download[Run]: {url}") if group_log else nullcontext():
             directory.mkdir(parents=True, exist_ok=True)
 
             try:
-                run(
-                    url=url,
-                    directory=directory,
-                )
+                run(url=url, directory=directory)
             except Exception as e:
-                if isinstance(e, NotLoggedInError) and is_yukicoder(url):
-                    logger.exception("Required: $YUKICODER_TOKEN environment variable")
+                if isinstance(e, NotLoggedInError):
+                    logger.exception(*e.args)
                 else:
                     logger.exception("Failed to download")
                 return False

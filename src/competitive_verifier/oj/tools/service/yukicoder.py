@@ -45,7 +45,7 @@ class YukicoderProblem(Problem):
             NotLoggedInError: If the `cargo metadata` command fails
         """
         if not self._is_logged_in(headers=headers):
-            raise NotLoggedInError
+            raise NotLoggedInError("Required: $YUKICODER_TOKEN environment variable")
         url = f"{self.get_url()}/testcase.zip"
         resp = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
         fmt = "test_%e/%s"
