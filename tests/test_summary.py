@@ -390,4 +390,4 @@ def test_summary(
             verify_command_result
         )
 
-        assert tmp.read_text() == expected.replace("\r\n", "\n")
+        assert tmp.read_text(encoding="utf-8") == expected.replace("\r\n", "\n")

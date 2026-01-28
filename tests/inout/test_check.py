@@ -181,7 +181,7 @@ def test_check(
         p = tempdir / k
         file_list.append(p)
         j = v.model_dump_json()
-        p.write_text(j.replace(r"{base}", str(tempdir)))
+        p.write_text(j.replace(r"{base}", tempdir.as_posix()))
 
     assert Check(result_json=file_list).run() == expected
     out, err = capsys.readouterr()
@@ -192,12 +192,16 @@ def test_check(
 def test_check_error():
     with tempfile.TemporaryDirectory() as tmpdir_s:
         tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "ok.json").write_text(r"""{
+        (tmpdir / "ok.json").write_text(
+            r"""{
     "files":{}
-}""")
-        (tmpdir / "ng.json").write_text(r"""{
+}"""
+        )
+        (tmpdir / "ng.json").write_text(
+            r"""{
     "files":[]
-}""")
+}"""
+        )
         with pytest.raises(
             ValidationError, match=r"validation error for VerifyCommandResult"
         ):
@@ -208,7 +212,8 @@ def test_log(caplog: pytest.LogCaptureFixture):
     caplog.at_level(logging.NOTSET)
     with tempfile.TemporaryDirectory() as tmpdir_s:
         tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "success.json").write_text(r"""
+        (tmpdir / "success.json").write_text(
+            r"""
 {
     "total_seconds": 1.25,
     "files": {
@@ -235,8 +240,10 @@ def test_log(caplog: pytest.LogCaptureFixture):
             ]
         }
     }
-}""")
-        (tmpdir / "failure.json").write_text(r"""
+}"""
+        )
+        (tmpdir / "failure.json").write_text(
+            r"""
 {
     "total_seconds": 1.25,
     "files": {
@@ -263,7 +270,8 @@ def test_log(caplog: pytest.LogCaptureFixture):
             ]
         }
     }
-}""")
+}"""
+        )
         assert Check(verbose=True, result_json=[tmpdir / "success.json"]).run()
         assert caplog.record_tuples == []
 

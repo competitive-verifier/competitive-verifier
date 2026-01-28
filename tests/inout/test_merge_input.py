@@ -117,7 +117,7 @@ def test_merge_input(
         p = tempdir / k
         file_list.append(p)
         j = v.model_dump_json()
-        p.write_text(j.replace(r"{base}", str(tempdir)))
+        p.write_text(j.replace(r"{base}", tempdir.as_posix()), encoding="utf-8")
 
     assert MergeInput(verify_files_json=file_list).run()
     out, err = capsys.readouterr()
@@ -128,12 +128,16 @@ def test_merge_input(
 def test_merge_input_error():
     with tempfile.TemporaryDirectory() as tmpdir_s:
         tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "ok.json").write_text(r"""{
+        (tmpdir / "ok.json").write_text(
+            r"""{
     "files":{}
-}""")
-        (tmpdir / "ng.json").write_text(r"""{
+}"""
+        )
+        (tmpdir / "ng.json").write_text(
+            r"""{
     "files":[]
-}""")
+}"""
+        )
         with pytest.raises(
             ValidationError, match=r"validation error for VerificationInput"
         ):

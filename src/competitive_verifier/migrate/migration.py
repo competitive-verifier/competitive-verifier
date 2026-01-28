@@ -195,7 +195,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
 
     workflow_path = pathlib.Path(".github/workflows/verify.yml")
     if workflow_path.exists():
-        workflow = workflow_path.read_text()
+        workflow = workflow_path.read_text(encoding="utf-8")
         if _yukicoder_pattern.search(workflow):
             d["tokens"] = "yuki"
 
