@@ -14,7 +14,7 @@ def mock_repo_make(integration_test_data_dir: pathlib.Path):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         subprocess.run(["git", "clone", str(bundle), tmpdir], check=True)  # noqa: S607
-        yield pathlib.Path(tmpdir)
+        yield pathlib.Path(tmpdir).resolve()
 
 
 @pytest.fixture
