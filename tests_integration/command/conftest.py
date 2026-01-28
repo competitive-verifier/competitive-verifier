@@ -1,6 +1,7 @@
 import inspect
 import os
 import pathlib
+import platform
 import shutil
 
 import pytest
@@ -17,6 +18,11 @@ from .data.user_defined_and_python import UserDefinedAndPythonData
 from .mock import MockVerifyCommandResult, update_cloned_repository
 from .types import ConfigDirSetter, FilePaths
 from .utils import dummy_commit_time
+
+
+def pytest_runtest_setup(item: pytest.Function):
+    if item.get_closest_marker(name="integration") and platform.system() != "Linux":
+        pytest.skip(reason="Integration tests are only available on Linux")
 
 
 @pytest.fixture(scope="session")
