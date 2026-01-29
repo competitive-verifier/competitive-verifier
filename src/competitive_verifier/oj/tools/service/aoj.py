@@ -16,13 +16,11 @@ class AOJProblem(Problem):
     def __init__(self, *, problem_id: str):
         self.problem_id = problem_id
 
-    def download_system_cases(
-        self, *, headers: dict[str, str] | None = None
-    ) -> list[TestCase]:
+    def download_system_cases(self) -> list[TestCase]:
         # get header
         # reference: http://developers.u-aizu.ac.jp/api?key=judgedat%2Ftestcases%2F%7BproblemId%7D%2Fheader_GET
         url = f"https://judgedat.u-aizu.ac.jp/testcases/{self.problem_id}/header"
-        resp = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
+        resp = requests.get(url, allow_redirects=True, timeout=10)
         resp.raise_for_status()
         header_res = json.loads(resp.text)
 
@@ -122,12 +120,8 @@ class AOJArenaProblem(Problem):
             raise ValueError("Problem is not found.")
         return self._problem_id
 
-    def download_system_cases(
-        self, *, headers: dict[str, str] | None = None
-    ) -> list[TestCase]:
-        return AOJProblem(problem_id=self.get_problem_id()).download_system_cases(
-            headers=headers
-        )
+    def download_system_cases(self) -> list[TestCase]:
+        return AOJProblem(problem_id=self.get_problem_id()).download_system_cases()
 
     def get_url(self) -> str:
         return f"https://onlinejudge.u-aizu.ac.jp/services/room.html#{self.arena_id}/problems/{self.alphabet}"

@@ -19,9 +19,7 @@ class Problem(ABC):
         return f"{self.__class__.__name__}.from_url({self.get_url()!r})"  # pragma: no cover
 
     @abstractmethod
-    def download_system_cases(
-        self, *, headers: dict[str, str] | None = None
-    ) -> list[TestCase]:
+    def download_system_cases(self) -> list[TestCase]:
         raise NotImplementedError
 
     @abstractmethod

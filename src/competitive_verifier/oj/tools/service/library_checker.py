@@ -20,9 +20,7 @@ class LibraryCheckerProblem(Problem):
     def __init__(self, *, problem_id: str):
         self.problem_id = problem_id
 
-    def download_system_cases(
-        self, *, headers: dict[str, str] | None = None
-    ) -> list[TestCase]:
+    def download_system_cases(self) -> list[TestCase]:
         self.generate_test_cases_in_cloned_repository()
         path = self.get_problem_directory_path()
         files: list[tuple[str, bytes]] = []

@@ -1,3 +1,4 @@
+import os
 import posixpath
 import urllib.parse
 from logging import getLogger
@@ -36,14 +37,16 @@ class YukicoderProblem(Problem):
         else:
             raise ValueError("Needs problem_no or problem_id")
 
-    def download_system_cases(
-        self, *, headers: dict[str, str] | None = None
-    ) -> list[TestCase]:
+    def download_system_cases(self) -> list[TestCase]:
         """Download yukicoder problem.
 
         Raises:
             NotLoggedInError: If the `cargo metadata` command fails
         """
+        headers: dict[str, str] | None = None
+        if yukicoder_token := os.environ.get("YUKICODER_TOKEN"):
+            headers = {"Authorization": f"Bearer {yukicoder_token}"}
+
         if not self._is_logged_in(headers=headers):
             raise NotLoggedInError("Required: $YUKICODER_TOKEN environment variable")
         url = f"{self.get_url()}/testcase.zip"

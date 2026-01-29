@@ -82,7 +82,4 @@ def test_oj_download(
     mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
 
     mock_yuki_coder = mock_problem[service.YukicoderProblem]
-    mock_yuki_coder.download_system_cases.assert_called_once()
-    assert mock_yuki_coder.download_system_cases.call_args[1]["headers"] == {
-        "Authorization": "Bearer YKTK"
-    }
+    mock_yuki_coder.download_system_cases.assert_called_once_with()

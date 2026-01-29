@@ -1,4 +1,3 @@
-import os
 import pathlib
 import shutil
 from collections.abc import Iterator
@@ -53,13 +52,8 @@ def _run_library_checker(
 
 
 def _run_services(problem: Problem):
-    headers: dict[str, str] | None = None
-    if isinstance(problem, YukicoderProblem):
-        yukicoder_token = os.environ.get("YUKICODER_TOKEN")
-        if yukicoder_token:
-            headers = {"Authorization": f"Bearer {yukicoder_token}"}
     try:
-        return problem.download_system_cases(headers=headers)
+        return problem.download_system_cases()
     except requests.exceptions.RequestException:
         logger.exception("Failed to download samples from the server")
         return None
