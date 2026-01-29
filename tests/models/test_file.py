@@ -288,27 +288,28 @@ def test_is_verification(
 
 def test_parse_file_relative(mocker: MockerFixture):
     mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path("/foo/rootdir"))
-    with tempfile.NamedTemporaryFile("w+") as tmp:
-        json.dump(
-            {
-                "files": {
-                    "/foo/rootdir/libfile.py": {
-                        "dependencies": [
-                            "/foo/rootdir/libfile2.py",
-                        ]
-                    },
-                    "/foo/rootdir/libfile2.py": {"dependencies": []},
-                    "/foo/other/libfile.py": {"dependencies": []},
-                    "/foo/rootdir/test/test.py": {
-                        "dependencies": ["/foo/other/libfile.py", "../libfile.py"]
-                    },
-                }
-            },
-            tmp,
-        )
-        tmp.flush()
+    with tempfile.TemporaryDirectory() as td:
+        tmp = pathlib.Path(td) / "verify.json"
+        with tmp.open("w") as fp:
+            json.dump(
+                {
+                    "files": {
+                        "/foo/rootdir/libfile.py": {
+                            "dependencies": [
+                                "/foo/rootdir/libfile2.py",
+                            ]
+                        },
+                        "/foo/rootdir/libfile2.py": {"dependencies": []},
+                        "/foo/other/libfile.py": {"dependencies": []},
+                        "/foo/rootdir/test/test.py": {
+                            "dependencies": ["/foo/other/libfile.py", "../libfile.py"]
+                        },
+                    }
+                },
+                fp,
+            )
         assert (
-            VerificationInput.parse_file_relative(tmp.name).model_dump()
+            VerificationInput.parse_file_relative(tmp).model_dump()
             == VerificationInput(
                 files={
                     pathlib.Path("libfile.py"): VerificationFile(

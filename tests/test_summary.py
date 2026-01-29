@@ -379,15 +379,15 @@ def test_summary(
     expected: str,
     mocker: MockerFixture,
 ):
-    with tempfile.NamedTemporaryFile("w+") as tmp:
+    with tempfile.TemporaryDirectory() as td:
+        tmp = pathlib.Path(td) / "summary.md"
         mocker.patch.dict(
             os.environ,
-            {"GITHUB_STEP_SUMMARY": tmp.name},
+            {"GITHUB_STEP_SUMMARY": str(tmp)},
             clear=True,
         )
         MockWriteSummaryArguments(write_summary=True).write_result(
             verify_command_result
         )
-        tmp.seek(0)
 
-        assert tmp.read() == expected.replace("\r\n", "\n")
+        assert tmp.read_text() == expected.replace("\r\n", "\n")

@@ -766,22 +766,23 @@ def test_merge(
 
 def test_parse_file_relative(mocker: MockerFixture):
     mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path("/foo/rootdir"))
-    with tempfile.NamedTemporaryFile("w+") as tmp:
-        json.dump(
-            {
-                "files": {
-                    "/foo/rootdir/libfile.py": {},
-                    "/foo/rootdir/libfile2.py": {},
-                    "/foo/other/libfile.py": {},
-                    "/foo/rootdir/test/test.py": {},
+    with tempfile.TemporaryDirectory() as td:
+        tmp = pathlib.Path(td) / "verify.json"
+        with tmp.open("w") as fp:
+            json.dump(
+                {
+                    "files": {
+                        "/foo/rootdir/libfile.py": {},
+                        "/foo/rootdir/libfile2.py": {},
+                        "/foo/other/libfile.py": {},
+                        "/foo/rootdir/test/test.py": {},
+                    },
+                    "total_seconds": 2.5,
                 },
-                "total_seconds": 2.5,
-            },
-            tmp,
-        )
-        tmp.flush()
+                fp,
+            )
         assert (
-            VerifyCommandResult.parse_file_relative(tmp.name).model_dump()
+            VerifyCommandResult.parse_file_relative(tmp).model_dump()
             == VerifyCommandResult(
                 files={
                     pathlib.Path("libfile.py"): FileResult(),
