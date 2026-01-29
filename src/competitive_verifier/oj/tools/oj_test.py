@@ -1,6 +1,5 @@
 import pathlib
 import platform
-import subprocess
 import tempfile
 import time
 from collections.abc import Callable
@@ -19,7 +18,7 @@ from competitive_verifier.models import (
     VerificationResult,
 )
 
-from . import output_comparators, pretty_printers, utils
+from . import gnu, output_comparators, pretty_printers, utils
 from .func import checker_exe_name, get_directory
 from .service import format_utils as fmtutils
 
@@ -42,7 +41,6 @@ class OjTestArguments(BaseModel):
     print_input: bool = True
     format: str = "%s.%e"
     test: list[pathlib.Path] = Field(default_factory=list[pathlib.Path])
-    gnu_time: str | None = None
     silent: bool = False
     ignore_backup: bool = True
     deadline: float = float("inf")
@@ -168,33 +166,6 @@ class OjTestResult(BaseModel):
     """
 
     testcases: list[OjTestcaseResult]
-
-
-def get_gnu_time_command() -> str:
-    if platform.system() == "Darwin":
-        return "gtime"
-    return "time"
-
-
-def check_gnu_time(gnu_time: str | None = None) -> bool:
-    if not gnu_time:
-        gnu_time = get_gnu_time_command()
-    try:
-        with tempfile.NamedTemporaryFile(delete=True) as fh:
-            subprocess.check_call(
-                [gnu_time, "-f", "%M KB", "-o", fh.name, "--", "true"]
-            )
-            with pathlib.Path(fh.name).open() as fh1:
-                data = fh1.read()
-            int(data.rstrip().splitlines()[-1].removesuffix(" KB"))
-            return True
-    except NameError:
-        raise  # NameError is not a runtime error caused by the environment, but a coding mistake
-    except AttributeError:
-        raise  # AttributeError is also a mistake
-    except Exception:  # noqa: BLE001
-        logger.debug("Failed to check gnu_time", exc_info=True)
-    return False
 
 
 class SpecialJudge:
@@ -335,7 +306,7 @@ def test_single_case(
             env=args.env,
             stdin=inf,
             timeout=args.tle,
-            gnu_time=args.gnu_time,
+            gnu_time=True,
         )
         answer = info.answer or b""
         elapsed: float = info.elapsed
@@ -396,20 +367,13 @@ def run(args: OjTestArguments) -> OjTestResult:
     )
 
     # check wheather GNU time is available
-    if args.gnu_time is None:
+    if gnu.time_command() is None:
         if platform.system() == "Darwin":
-            args.gnu_time = "gtime"
-        else:
-            args.gnu_time = "time"
-    if not check_gnu_time(args.gnu_time):
-        logger.warning("GNU time is not available: %s", args.gnu_time)
-        if True:
             logger.info(
                 "%sYou can install GNU time with: $ brew install gnu-time", utils.HINT
             )
-        args.gnu_time = None
-    if args.mle is not None and args.gnu_time is None:
-        raise RuntimeError("--mle is used but GNU time does not exist")
+        if args.mle is not None:
+            raise RuntimeError("--mle is used but GNU time does not exist")
 
     # run tests
     history: list[OjTestcaseResult] = []

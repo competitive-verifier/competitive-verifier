@@ -5,7 +5,7 @@ from charset_normalizer import from_bytes
 
 def to_relative(path: pathlib.Path) -> pathlib.Path | None:
     try:
-        return path.resolve().relative_to(pathlib.Path.cwd())
+        return path.resolve().relative_to(pathlib.Path.cwd().resolve())
     except ValueError:
         return None
 

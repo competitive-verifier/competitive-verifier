@@ -287,21 +287,22 @@ def test_is_verification(
 
 
 def test_parse_file_relative(mocker: MockerFixture):
-    mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path("/foo/rootdir"))
     with tempfile.TemporaryDirectory() as td:
+        mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path(td))
+        tdp = pathlib.Path(td)
         tmp = pathlib.Path(td) / "verify.json"
         with tmp.open("w") as fp:
             json.dump(
                 {
                     "files": {
-                        "/foo/rootdir/libfile.py": {
+                        (tdp / "libfile.py").as_posix(): {
                             "dependencies": [
-                                "/foo/rootdir/libfile2.py",
+                                (tdp / "libfile2.py").as_posix(),
                             ]
                         },
-                        "/foo/rootdir/libfile2.py": {"dependencies": []},
+                        (tdp / "libfile2.py").as_posix(): {"dependencies": []},
                         "/foo/other/libfile.py": {"dependencies": []},
-                        "/foo/rootdir/test/test.py": {
+                        (tdp / "test/test.py").as_posix(): {
                             "dependencies": ["/foo/other/libfile.py", "../libfile.py"]
                         },
                     }

@@ -1,7 +1,7 @@
 import pathlib
 from typing import Any
 
-from competitive_verifier.oj.tools.oj_test import check_gnu_time
+from competitive_verifier.oj.tools.gnu import time_command
 
 from .integration_data import IntegrationData
 
@@ -549,7 +549,7 @@ class UserDefinedAndPythonData(IntegrationData):
                                         },
                                     ],
                                 }
-                                if check_gnu_time()
+                                if time_command()
                                 else {}
                             ),
                         }
