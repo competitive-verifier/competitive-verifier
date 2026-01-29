@@ -135,10 +135,9 @@ class VerificationInput(BaseModel):
     def merge(self, other: "VerificationInput") -> "VerificationInput":
         return VerificationInput(files=self.files | other.files)
 
-    @staticmethod
-    def parse_file_relative(path: "StrPath") -> "VerificationInput":
-        with pathlib.Path(path).open("rb") as rp:
-            impl = VerificationInput.model_validate_json(rp.read())
+    @classmethod
+    def parse_file_relative(cls, path: "StrPath") -> "VerificationInput":
+        impl = cls.model_validate_json(pathlib.Path(path).read_bytes())
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
             rp = to_relative(p)

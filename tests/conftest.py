@@ -1,5 +1,7 @@
 import logging
 import os
+import pathlib
+import tempfile
 
 import pytest
 from pytest_mock import MockerFixture, MockType
@@ -27,3 +29,9 @@ def mock_perf_counter(mocker: MockerFixture):
 @pytest.fixture
 def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
     mocker.patch.dict(os.environ, request.param or {}, clear=True)
+
+
+@pytest.fixture
+def tempdir():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield pathlib.Path(tmpdir)

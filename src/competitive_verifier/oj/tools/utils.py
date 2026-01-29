@@ -5,13 +5,14 @@ import shlex
 import signal
 import subprocess
 import sys
-import tempfile
 import time
 from logging import getLogger
 from typing import BinaryIO
 
 import colorama
 from pydantic import BaseModel, Field
+
+from . import gnu
 
 logger = getLogger(__name__)
 
@@ -40,7 +41,7 @@ def measure_command(
     stdin: BinaryIO | int | None = None,
     input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
-    gnu_time: str | None = None,
+    gnu_time: bool = False,
 ) -> tuple[OjExecInfo, subprocess.Popen[bytes]]:
     if input is not None:
         if stdin is not None:
@@ -51,19 +52,12 @@ def measure_command(
 
     if isinstance(command, str):
         command = shlex.split(command)
-    with (
-        contextlib.nullcontext()
-        if gnu_time is None
-        else tempfile.NamedTemporaryFile(delete=True)
-    ) as fh:
-        if fh is not None:
-            if gnu_time is None:
-                raise ValueError("invalid state: gnu_time is None")
-            command = [gnu_time, "-f", "%M", "-o", fh.name, "--", *command]
+    with gnu.GnuTimeWrapper(enabled=gnu_time) as gw:
+        command = gw.get_command(command)
         begin = time.perf_counter()
 
         # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
-        start_new_session = gnu_time is not None and os.name == "posix"
+        start_new_session = gnu.time_command() is not None and os.name == "posix"
 
         try:
             if env:
@@ -96,11 +90,11 @@ def measure_command(
 
         end = time.perf_counter()
         memory: float | None = None
-        if fh is not None:
-            reported = fh.read().strip()
-            logger.debug("GNU time says:\n%s", reported)
-            if reported.strip() and reported.splitlines()[-1].isdigit():
-                memory = int(reported.splitlines()[-1]) / 1000
+        report = gw.get_report()
+        if report:
+            logger.debug("GNU time says:\n%s", report)
+            if report.splitlines()[-1].isdigit():
+                memory = int(report.splitlines()[-1]) / 1000
         return OjExecInfo(
             answer=answer,
             elapsed=end - begin,

@@ -18,8 +18,6 @@ class _PrettyTokenType(enum.Enum):
     WHITESPACE = "WHITESPACE"
     NEWLINE = "NEWLINE"
     HINT = "HINT"
-    LINENO = "LINENO"
-    OTHERS = "OTHERS"
 
 
 class _PrettyToken(NamedTuple):
@@ -163,12 +161,6 @@ def _render_tokens(*, tokens: list[_PrettyToken]) -> str:
     def font_red(s: str) -> str:
         return colorama.Fore.RED + s + colorama.Style.RESET_ALL
 
-    def font_blue(s: str) -> str:
-        return colorama.Fore.CYAN + s + colorama.Style.RESET_ALL
-
-    def font_normal(s: str) -> str:
-        return s
-
     result: list[str] = []
     for key, value in tokens:
         match key:
@@ -184,13 +176,9 @@ def _render_tokens(*, tokens: list[_PrettyToken]) -> str:
                 v = font_dim(_replace_whitespace(value))
             case _PrettyTokenType.HINT:
                 v = font_dim(value)
-            case _PrettyTokenType.LINENO:
-                v = font_blue(value)
-            case _PrettyTokenType.OTHERS:
-                v = font_normal(value)
             case _:
                 msg = f"Invalid token type: {key!r}"
-                raise ValueError(msg)
+                raise NotImplementedError(msg)
         result.append(v)
     return "".join(result)
 

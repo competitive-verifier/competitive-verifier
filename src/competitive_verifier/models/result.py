@@ -144,8 +144,7 @@ class VerifyCommandResult(BaseModel):
 
     @classmethod
     def parse_file_relative(cls, path: "StrPath") -> "VerifyCommandResult":
-        with pathlib.Path(path).open("rb") as p:
-            impl = cls.model_validate_json(p.read())
+        impl = cls.model_validate_json(pathlib.Path(path).read_bytes())
         new_files: dict[pathlib.Path, FileResult] = {}
         for p, f in impl.files.items():
             rp = to_relative(p)
