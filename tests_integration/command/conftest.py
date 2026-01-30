@@ -7,7 +7,7 @@ import shutil
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.tools import service
+from competitive_verifier.oj.tools import problem
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
@@ -130,7 +130,7 @@ def mock_verification(mocker: MockerFixture):
     )
 
     mocker.patch.object(
-        service.LibraryCheckerProblem,
+        problem.LibraryCheckerProblem,
         "update_cloned_repository",
         side_effect=update_cloned_repository,
     )

@@ -10,14 +10,11 @@ import requests.exceptions
 from competitive_verifier import log
 
 from .func import get_checker_path, get_directory
-from .service import (
-    AOJArenaProblem,
-    AOJProblem,
+from .problem import (
     LibraryCheckerProblem,
     NotLoggedInError,
     Problem,
     TestCase,
-    YukicoderProblem,
 )
 
 logger = getLogger(__name__)
@@ -74,19 +71,6 @@ def _iterate_files_to_write(
         yield ext, path, data
 
 
-def problem_from_url(url: str) -> Problem | None:
-    """Try getting problem.
-
-    Examples:
-        url: https://atcoder.jp/contests/abc077/tasks/arc084_b
-    """
-    for cls in (LibraryCheckerProblem, YukicoderProblem, AOJProblem, AOJArenaProblem):
-        problem = cls.from_url(url)
-        if problem is not None:
-            return problem
-    return None
-
-
 def run(
     *,
     url: str,
@@ -94,7 +78,7 @@ def run(
     dry_run: bool = False,
 ) -> bool:
     # prepare values
-    problem = problem_from_url(url)
+    problem = Problem.from_url(url)
     if problem is None:
         logger.error('The URL "%s" is not supported', url)
         return False

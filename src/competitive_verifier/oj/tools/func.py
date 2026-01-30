@@ -5,7 +5,7 @@ import urllib.parse
 
 from competitive_verifier import config
 
-from .service import LibraryCheckerProblem
+from .problem import LibraryCheckerProblem
 
 checker_exe_name = "checker.exe" if sys.platform == "win32" else "checker"
 
