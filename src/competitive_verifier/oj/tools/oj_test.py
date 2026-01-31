@@ -136,20 +136,20 @@ def display_result(
     return status
 
 
-class TestCase(BaseModel):
-    name: str
-    input: pathlib.Path
-    output: pathlib.Path | None = None
-
-
 class OjTestcaseResult(BaseModel):
+    name: str
+    """A name of test case."""
+    input: pathlib.Path
+    """A input of test case."""
+    output: pathlib.Path | None = None
+    """A output of test case."""
+
     status: JudgeStatus
     elapsed: float
     memory: float | None = None
     exitcode: Annotated[
         int | None, BeforeValidator(lambda v: v if isinstance(v, int) else None)
     ]
-    testcase: TestCase
 
 
 class OjTestResult(BaseModel):
@@ -344,12 +344,10 @@ def test_single_case(
 
     # return the result
     return OjTestcaseResult(
+        name=test_name,
+        input=test_input_path.resolve(),
+        output=test_output_path,
         status=status,
-        testcase=TestCase(
-            name=test_name,
-            input=test_input_path.resolve(),
-            output=test_output_path,
-        ),
         exitcode=proc.returncode,
         elapsed=elapsed,
         memory=memory,
@@ -398,10 +396,10 @@ def run(args: OjTestArguments) -> OjTestResult:
             ac_count += 1
         if slowest < result.elapsed:
             slowest = result.elapsed
-            slowest_name = result.testcase.name
+            slowest_name = result.name
         if result.memory is not None and heaviest < result.memory:
             heaviest = result.memory
-            heaviest_name = result.testcase.name
+            heaviest_name = result.name
 
     # print the summary
     logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
@@ -470,7 +468,7 @@ def run_wrapper(
         heaviest=result.heaviest,
         testcases=[
             TestcaseResult(
-                name=case.testcase.name,
+                name=case.name,
                 elapsed=case.elapsed,
                 memory=case.memory,
                 status=case.status,
