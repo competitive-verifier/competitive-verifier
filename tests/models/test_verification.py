@@ -387,7 +387,7 @@ def test_run_problem_command(
     patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "run")
 
     mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.get_directory",
+        "competitive_verifier.oj.tools.oj_test.problem_directory",
         return_value=pathlib.Path("/any/"),
     )
 

@@ -9,7 +9,7 @@ import requests.exceptions
 
 from competitive_verifier import log
 
-from .func import get_checker_path, get_directory
+from .func import get_checker_path, problem_directory
 from .problem import (
     LibraryCheckerProblem,
     NotLoggedInError,
@@ -114,7 +114,7 @@ def run(
 
 
 def run_wrapper(url: str, *, group_log: bool = False) -> bool:
-    directory = get_directory(url)
+    directory = problem_directory(url)
     test_directory = directory / "test"
 
     logger.info("download[Start]: %s into %s", url, test_directory)

@@ -19,7 +19,7 @@ from competitive_verifier.models import (
 )
 
 from . import gnu, output_comparators, pretty_printers, utils
-from .func import checker_exe_name, get_directory
+from .func import checker_exe_name, problem_directory
 from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
@@ -443,7 +443,7 @@ def run_wrapper(
     error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
-    directory = get_directory(url)
+    directory = problem_directory(url)
     test_directory = directory / "test"
 
     checker_path: pathlib.Path | None = directory / checker_exe_name

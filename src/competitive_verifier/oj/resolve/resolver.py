@@ -125,7 +125,7 @@ class OjResolver:
         url = attr.get("PROBLEM")
 
         if url:
-            tempdir = oj.get_directory(url)
+            tempdir = oj.problem_directory(url)
             yield ProblemVerification(
                 name=env.name,
                 command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
