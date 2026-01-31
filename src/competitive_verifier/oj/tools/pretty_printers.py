@@ -185,9 +185,10 @@ def _render_tokens(*, tokens: list[_PrettyToken]) -> str:
 
 def _get_terminal_size() -> int:
     char_in_line, _ = shutil.get_terminal_size()
-    return max(
-        char_in_line, 40
-    )  # shutil.get_terminal_size() may return too small values (e.g. (0, 0) on Circle CI) successfully (i.e. fallback is not used). see https://github.com/kmyk/online-judge-tools/pull/611
+    # shutil.get_terminal_size() may return too small
+    # values (e.g. (0, 0) on Circle CI) successfully (i.e. fallback is not used).
+    # see https://github.com/kmyk/online-judge-tools/pull/611
+    return max(char_in_line, 40)
 
 
 def make_pretty_large_file_content(
