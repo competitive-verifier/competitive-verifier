@@ -6,6 +6,7 @@ from .file import (
     VerificationInput,
 )
 from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
+from .problem import Problem, TestCase
 from .result import FileResult, TestcaseResult, VerificationResult, VerifyCommandResult
 from .result_status import JudgeStatus, ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -28,6 +29,7 @@ __all__ = [
     "FileResult",
     "ForcePosixPath",
     "JudgeStatus",
+    "Problem",
     "ProblemVerification",
     "RelativeDirectoryPath",
     "ResultStatus",
@@ -35,6 +37,7 @@ __all__ = [
     "ShellCommandLike",
     "SortedPathList",
     "SortedPathSet",
+    "TestCase",
     "TestcaseResult",
     "VerifcationTimeoutError",
     "Verification",

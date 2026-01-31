@@ -8,13 +8,12 @@ from logging import getLogger
 import requests.exceptions
 
 from competitive_verifier import log
+from competitive_verifier.models import Problem, TestCase
 
 from .func import get_checker_path, problem_directory
 from .problem import (
     LibraryCheckerProblem,
     NotLoggedInError,
-    Problem,
-    TestCase,
 )
 
 logger = getLogger(__name__)
