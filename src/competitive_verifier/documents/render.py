@@ -570,16 +570,15 @@ class PageRenderJob(RenderJob):
         verified_with = _paths_to_render_links(self.stat.verified_with, self.page_jobs)
 
         attributes = self.stat.file_input.document_attributes.copy()
-        problem = next(
+        if problem_url := next(
             (
                 v.problem
                 for v in self.stat.file_input.verification_list
                 if isinstance(v, ProblemVerification)
             ),
             None,
-        )
-        if problem:
-            attributes.setdefault("PROBLEM", problem)
+        ):
+            attributes.setdefault("PROBLEM", problem_url)
 
         code = read_text_normalized(self.source_path)
 

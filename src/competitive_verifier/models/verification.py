@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Annotated, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
 from .path import ForcePosixPath
+from .problem import Problem
 from .result import VerificationResult
 from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -152,6 +154,10 @@ class ProblemVerification(BaseVerification):
     )
     """The MLE memory size in megabytes.
     """
+
+    @cached_property
+    def problem_obj(self) -> Problem | None:
+        return Problem.from_url(self.problem)
 
     def run(
         self,
