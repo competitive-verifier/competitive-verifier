@@ -21,7 +21,9 @@ from .utils import dummy_commit_time
 
 
 def pytest_runtest_setup(item: pytest.Function):
-    if item.get_closest_marker(name="integration") and platform.system() != "Linux":
+    if platform.system() != "Linux" and item.get_closest_marker(
+        name="integration"
+    ):  # pragma: no cover
         pytest.skip(reason="Integration tests are only available on Linux")
 
 

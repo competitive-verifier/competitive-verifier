@@ -23,7 +23,6 @@ def _run_library_checker(
     *,
     problem: LibraryCheckerProblem,
     directory: pathlib.Path,
-    dry_run: bool = False,
 ) -> bool:
     problem.generate_test_cases_in_cloned_repository()
     path = problem.get_problem_directory_path()
@@ -32,12 +31,11 @@ def _run_library_checker(
         if dst.exists():
             logger.error("Failed to download since file already exists: %s", str(dst))
             return False
-        if not dry_run:
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(file, dst)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(file, dst)
 
     checker_path = get_checker_path(problem)
-    if checker_path and checker_path.exists() and not dry_run:
+    if checker_path and checker_path.exists():
         try:
             shutil.move(checker_path, directory)
         except Exception:
@@ -70,12 +68,7 @@ def _iterate_files_to_write(
         yield ext, path, data
 
 
-def run(
-    *,
-    url: str,
-    directory: pathlib.Path,
-    dry_run: bool = False,
-) -> bool:
+def _run(*, url: str, directory: pathlib.Path) -> bool:
     # prepare values
     problem = Problem.from_url(url)
     if problem is None:
@@ -99,15 +92,12 @@ def run(
     # write samples to files
     for _i, sample in enumerate(samples):
         for _, path, data in _iterate_files_to_write(sample, directory=directory):
-            if not dry_run:
-                if path.exists():
-                    logger.error(
-                        "Failed to download since file already exists: %s", str(path)
-                    )
-                path.parent.mkdir(parents=True, exist_ok=True)
-                with path.open("wb") as fh:
-                    fh.write(data)
-                logger.debug("saved to: %s", path)
+            if path.exists():
+                logger.error("Failed to download since file already exists: %s", path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("wb") as fh:
+                fh.write(data)
+            logger.debug("saved to: %s", path)
 
     return True
 
@@ -124,7 +114,7 @@ def run_wrapper(url: str, *, group_log: bool = False) -> bool:
             directory.mkdir(parents=True, exist_ok=True)
 
             try:
-                run(url=url, directory=directory)
+                _run(url=url, directory=directory)
             except Exception as e:
                 if isinstance(e, NotLoggedInError):
                     logger.exception(*e.args)
