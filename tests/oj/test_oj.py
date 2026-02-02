@@ -24,7 +24,6 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
         OjTestArguments(
             command="ls .",
             tle=2,
-            print_input=True,
             mle=128,
             error=None,
             directory=pathlib.Path(
@@ -47,7 +46,6 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
         OjTestArguments(
             command=["ls", "."],
             tle=30,
-            print_input=True,
             mle=256,
             error=None,
             directory=pathlib.Path(

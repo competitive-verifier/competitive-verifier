@@ -376,8 +376,8 @@ test_parse_args_params: list[
     ids=(f"{' '.join(t[1])}:{t[0]}" for t in test_parse_args_params),
     indirect=["mockenv"],
 )
+@pytest.mark.usefixtures("mockenv")
 def test_parse_args(
-    mockenv: Any,
     args: list[str],
     expected: dict[str, Any],
     mocker: MockerFixture,
@@ -426,8 +426,8 @@ class ParseError(Exception):
     ids=(f"{' '.join(t[1])}:{t[0]}" for t in test_parse_args_error_params),
     indirect=["mockenv"],
 )
+@pytest.mark.usefixtures("mockenv")
 def test_parse_args_error(
-    mockenv: Any,
     args: list[str],
     expected_message: str,
     mocker: MockerFixture,
