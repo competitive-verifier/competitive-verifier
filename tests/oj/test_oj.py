@@ -6,11 +6,15 @@ from pytest_mock import MockerFixture
 
 from competitive_verifier import oj
 from competitive_verifier.oj.tools.oj_test import OjTestArguments
+from competitive_verifier.oj.tools.problem import (
+    LibraryCheckerProblem,
+    YukicoderProblem,
+)
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
     "default": (
         {
-            "url": "http://example.com",
+            "problem": LibraryCheckerProblem(problem_id="example"),
             "command": "ls .",
             "tle": 2,
             "error": None,
@@ -24,14 +28,16 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
             mle=128,
             error=None,
             directory=pathlib.Path(
-                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+                ".competitive-verifier/cache/problems/f8e4a4fdd296c1bdd2cc4f91475a6204/test"
             ),
-            judge=None,
+            judge=pathlib.Path(
+                ".competitive-verifier/cache/problems/f8e4a4fdd296c1bdd2cc4f91475a6204/mockcheck"
+            ),
         ),
     ),
     "with_env": (
         {
-            "url": "http://example.com",
+            "problem": YukicoderProblem(problem_no=10),
             "command": ["ls", "."],
             "tle": 30,
             "error": None,
@@ -45,7 +51,7 @@ test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
             mle=256,
             error=None,
             directory=pathlib.Path(
-                ".competitive-verifier/cache/problems/a9b9f04336ce0181a08e774e01113b31/test"
+                ".competitive-verifier/cache/problems/83bab2909b81aa308aac28580826a6d9/test"
             ),
             judge=None,
             env={"TOKEN": "Dummy"},
@@ -64,7 +70,11 @@ def test_oj_test(
     args: dict[str, Any],
     expected: OjTestArguments,
 ):
-    run = mocker.patch("competitive_verifier.oj.tools.oj_test.run")
+    mocker.patch(
+        "competitive_verifier.oj.tools.problem.LibraryCheckerProblem.checker_exe_name",
+        "mockcheck",
+    )
+    run = mocker.patch("competitive_verifier.oj.tools.oj_test._run")
 
     oj.test(**args)
 

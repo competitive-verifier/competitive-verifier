@@ -12,6 +12,7 @@ from pydantic.functional_validators import BeforeValidator
 
 from competitive_verifier.models import (
     JudgeStatus,
+    Problem,
     ResultStatus,
     TestcaseResult,
     VerifcationTimeoutError,
@@ -19,7 +20,6 @@ from competitive_verifier.models import (
 )
 
 from . import gnu, output_comparators, pretty_printers, utils
-from .func import checker_exe_name, problem_directory
 from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
@@ -354,7 +354,7 @@ def test_single_case(
     )
 
 
-def run(args: OjTestArguments) -> OjTestResult:
+def _run(args: OjTestArguments) -> OjTestResult:
     # list tests
     if not args.test:
         args.test = fmtutils.glob_with_format(args.directory, args.format)  # by default
@@ -433,7 +433,7 @@ def run(args: OjTestArguments) -> OjTestResult:
 
 def run_wrapper(
     *,
-    url: str,
+    problem: Problem,
     command: str | list[str],
     env: dict[str, str] | None,
     tle: float | None,
@@ -441,12 +441,8 @@ def run_wrapper(
     error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
-    directory = problem_directory(url)
+    directory = problem.problem_directory
     test_directory = directory / "test"
-
-    checker_path: pathlib.Path | None = directory / checker_exe_name
-    if not checker_path.exists():
-        checker_path = None
 
     args = OjTestArguments(
         command=command,
@@ -456,10 +452,10 @@ def run_wrapper(
         mle=mle,
         error=error,
         print_input=True,
-        judge=checker_path,
+        judge=problem.checker,
         deadline=deadline,
     )
-    result = run(args)
+    result = _run(args)
 
     return VerificationResult(
         status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,

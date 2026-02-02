@@ -164,15 +164,18 @@ class ProblemVerification(BaseVerification):
         params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
-    ) -> VerificationResult:
+    ) -> VerificationResult | ResultStatus:
         from competitive_verifier import oj  # noqa: PLC0415
 
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 
+        if not self.problem_obj:
+            return ResultStatus.FAILURE
+
         c = ShellCommand.parse_command_like(self.command)
         result = oj.test(
-            url=self.problem,
+            problem=self.problem_obj,
             command=c.command,
             env=c.env,
             tle=self.tle or params.default_tle,

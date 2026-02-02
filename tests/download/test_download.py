@@ -1,6 +1,5 @@
 import os
 import pathlib
-from dataclasses import dataclass
 
 import pytest
 from pytest_mock import MockerFixture
@@ -10,46 +9,27 @@ from competitive_verifier.download import download_files as download
 from competitive_verifier.oj.tools import problem
 
 
-@dataclass
-class MockProblem:
-    download_system_cases: MockType
-    generate_test_cases_in_cloned_repository: MockType | None = None
-
-
 @pytest.fixture
 def mock_problem(mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(pathlib.Path(__file__).parent)
     mocker.patch.dict(os.environ, {"YUKICODER_TOKEN": "YKTK"}, clear=True)
-    mocker.patch(
-        "competitive_verifier.oj.tools.oj_download.get_checker_path",
-        return_value=None,
-    )
 
     return {
-        problem.YukicoderProblem: MockProblem(
-            download_system_cases=mocker.patch.object(
-                problem.YukicoderProblem,
-                "download_system_cases",
-                return_value=[],
-            ),
+        problem.YukicoderProblem: mocker.patch.object(
+            problem.YukicoderProblem,
+            "download_system_cases",
+            return_value=[],
         ),
-        problem.LibraryCheckerProblem: MockProblem(
-            download_system_cases=mocker.patch.object(
-                problem.LibraryCheckerProblem,
-                "download_system_cases",
-                return_value=[],
-            ),
-            generate_test_cases_in_cloned_repository=mocker.patch.object(
-                problem.LibraryCheckerProblem,
-                "generate_test_cases_in_cloned_repository",
-                return_value=None,
-            ),
+        problem.LibraryCheckerProblem: mocker.patch.object(
+            problem.LibraryCheckerProblem,
+            "download_system_cases",
+            return_value=[],
         ),
     }
 
 
 def test_oj_download(
-    mocker: MockerFixture, mock_problem: dict[type[problem.Problem], MockProblem]
+    mocker: MockerFixture, mock_problem: dict[type[problem.Problem], MockType]
 ):
     mkdir = mocker.patch.object(pathlib.Path, "mkdir", autospec=True)
 
@@ -77,9 +57,7 @@ def test_oj_download(
     }
 
     mock_library_checker = mock_problem[problem.LibraryCheckerProblem]
-    mock_library_checker.download_system_cases.assert_not_called()
-    assert mock_library_checker.generate_test_cases_in_cloned_repository
-    mock_library_checker.generate_test_cases_in_cloned_repository.assert_called_once()
+    mock_library_checker.assert_called_once_with()
 
     mock_yuki_coder = mock_problem[problem.YukicoderProblem]
-    mock_yuki_coder.download_system_cases.assert_called_once_with()
+    mock_yuki_coder.assert_called_once_with()

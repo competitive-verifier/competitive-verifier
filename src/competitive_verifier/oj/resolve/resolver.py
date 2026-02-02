@@ -12,12 +12,13 @@ from typing import Any, Literal
 
 from pydantic import Field, ValidationError
 
-from competitive_verifier import config, git, oj
+from competitive_verifier import config, git
 from competitive_verifier.arg import IncludeExcludeArguments, VerboseArguments
 from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
     ConstVerification,
+    Problem,
     ProblemVerification,
     ResultStatus,
     Verification,
@@ -122,10 +123,45 @@ class OjResolver:
         mle_str = attr.get("MLE")
         mle = float(mle_str) if mle_str else None
 
+        yield from OjResolver._env_to_problem_verification(
+            env,
+            attr=attr,
+            path=path,
+            basedir=basedir,
+            error=error,
+            tle=tle,
+            mle=mle,
+        )
+        yield from OjResolver._env_to_standalone_verification(
+            env,
+            attr=attr,
+            path=path,
+            basedir=basedir,
+        )
+        yield from OjResolver._env_to_unittest_verification(attr=attr)
+
+    @staticmethod
+    def _env_to_problem_verification(
+        env: LanguageEnvironment,
+        *,
+        attr: dict[str, Any],
+        path: pathlib.Path,
+        basedir: pathlib.Path,
+        error: float | None,
+        tle: float | None,
+        mle: float | None,
+    ) -> Generator[Verification, None, None]:
         url = attr.get("PROBLEM")
 
-        if url:
-            tempdir = oj.problem_directory(url)
+        if not url:
+            return
+
+        problem = Problem.from_url(url)
+        if problem is None:
+            logger.error('The URL "%s" is not supported', url)
+            yield ConstVerification(status=ResultStatus.FAILURE)
+        else:
+            tempdir = problem.problem_directory
             yield ProblemVerification(
                 name=env.name,
                 command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
@@ -136,6 +172,14 @@ class OjResolver:
                 mle=mle,
             )
 
+    @staticmethod
+    def _env_to_standalone_verification(
+        env: LanguageEnvironment,
+        *,
+        attr: dict[str, Any],
+        path: pathlib.Path,
+        basedir: pathlib.Path,
+    ) -> Generator[Verification, None, None]:
         if attr.get("STANDALONE") is not None:
             tempdir = (
                 config.get_cache_dir()
@@ -151,29 +195,24 @@ class OjResolver:
                 tempdir=tempdir,
             )
 
+    @staticmethod
+    def _env_to_unittest_verification(
+        *,
+        attr: dict[str, Any],
+    ) -> Generator[Verification, None, None]:
         unit_test_envvar = attr.get("UNITTEST")
-        if unit_test_envvar:
-            var = os.getenv(unit_test_envvar)
-            if var is None:
-                logger.warning(
-                    "UNITTEST envvar %s is not defined.",
-                    unit_test_envvar,
-                )
-                yield ConstVerification(status=ResultStatus.FAILURE)
-            elif var.lower() == "false" or var == "0":
-                logger.info(
-                    "UNITTEST envvar %s=%s is falsy.",
-                    unit_test_envvar,
-                    var,
-                )
-                yield ConstVerification(status=ResultStatus.FAILURE)
-            else:
-                logger.info(
-                    "UNITTEST envvar %s=%s is truthy.",
-                    unit_test_envvar,
-                    var,
-                )
-                yield ConstVerification(status=ResultStatus.SUCCESS)
+        if not unit_test_envvar:
+            return
+        var = os.getenv(unit_test_envvar)
+        if var is None:
+            logger.warning("UNITTEST envvar %s is not defined.", unit_test_envvar)
+            yield ConstVerification(status=ResultStatus.FAILURE)
+        elif var.lower() == "false" or var == "0":
+            logger.info("UNITTEST envvar %s=%s is falsy.", unit_test_envvar, var)
+            yield ConstVerification(status=ResultStatus.FAILURE)
+        else:
+            logger.info("UNITTEST envvar %s=%s is truthy.", unit_test_envvar, var)
+            yield ConstVerification(status=ResultStatus.SUCCESS)
 
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}

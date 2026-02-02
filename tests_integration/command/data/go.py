@@ -138,8 +138,8 @@ class GoWithConfigData(GoWithoutConfigData):
                     },
                     "verification": [
                         {
-                            "command": f"{self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go",
-                            "compile": f"env GO111MODULE=off go build -o {self.config_dir_path / 'cache/problems/fbdb181defb159dce09f4dc9338a6728'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
+                            "command": f"{self.config_dir_path / 'cache/problems/e128a4d2859247e106283caaf0d12563'}/helloworld.aoj.go",
+                            "compile": f"env GO111MODULE=off go build -o {self.config_dir_path / 'cache/problems/e128a4d2859247e106283caaf0d12563'}/helloworld.aoj.go {self.targets_path}/helloworld.aoj.go",
                             "name": "go",
                             "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                             "type": "problem",

@@ -4,11 +4,13 @@ import os
 import pathlib
 import posixpath
 import re
+import shutil
 import subprocess
 import sys
 import urllib.parse
+from itertools import chain
 from logging import getLogger
-from typing import Optional
+from typing import ClassVar, Optional
 
 import requests
 
@@ -25,23 +27,51 @@ class NotLoggedInError(RuntimeError):
 
 
 class LibraryCheckerProblem(Problem):
+    checker_exe_name: ClassVar[str] = (
+        "checker.exe" if sys.platform == "win32" else "checker"
+    )
+
     def __init__(self, *, problem_id: str):
         self.problem_id = problem_id
 
-    def download_system_cases(self) -> list[TestCase]:
+    def download_system_cases(self) -> bool:
         self.generate_test_cases_in_cloned_repository()
-        path = self.get_problem_directory_path()
-        files: list[tuple[str, bytes]] = []
-        files += [(file.name, file.read_bytes()) for file in path.glob("in/*.in")]
-        files += [(file.name, file.read_bytes()) for file in path.glob("out/*.out")]
-        return testcase_zipper.extract_from_files(iter(files))
+        path = self.get_source_directory()
+
+        for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
+            dst = self.problem_directory / "test" / file.name
+            if dst.exists():
+                logger.error(
+                    "Failed to download since file already exists: %s", str(dst)
+                )
+                return False
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(file, dst)
+
+        checker_path = self.get_source_checker_path()
+        if checker_path and checker_path.exists():
+            try:
+                shutil.move(checker_path, self.problem_directory)
+            except Exception:
+                logger.exception("Failed to copy checker")
+                shutil.rmtree(self.problem_directory)
+                return False
+        return True
+
+    def get_source_checker_path(self) -> pathlib.Path | None:
+        path = self.get_source_directory()
+        return path / self.checker_exe_name
+
+    @property
+    def checker(self) -> pathlib.Path | None:
+        return self.problem_directory / self.checker_exe_name
 
     def generate_test_cases_in_cloned_repository(self) -> None:
         self.update_cloned_repository()
         path = self.get_cloned_repository_path()
 
-        problem_spec = str(self.get_problem_directory_path() / "info.toml")
-        command = [sys.executable, str(path / "generate.py"), problem_spec]
+        spec = str(self.get_source_directory() / "info.toml")
+        command = [sys.executable, str(path / "generate.py"), spec]
         logger.info("$ %s", " ".join(command))
         try:
             subprocess.check_call(command, stdout=sys.stderr, stderr=sys.stderr)
@@ -51,7 +81,7 @@ class LibraryCheckerProblem(Problem):
             )
             raise
 
-    def get_problem_directory_path(self) -> pathlib.Path:
+    def get_source_directory(self) -> pathlib.Path:
         path = self.get_cloned_repository_path()
         info_tomls = list(path.glob(f"**/{glob.escape(self.problem_id)}/info.toml"))
         if len(info_tomls) != 1:
@@ -78,17 +108,17 @@ class LibraryCheckerProblem(Problem):
 
     def download_checker_binary(self) -> pathlib.Path:
         self.generate_test_cases_in_cloned_repository()
-        return self.get_problem_directory_path() / "checker"
+        return self.get_source_directory() / "checker"
 
     @classmethod
     def get_cloned_repository_path(cls) -> pathlib.Path:
         return config.get_cache_dir() / "library-checker-problems"
 
-    is_repository_updated = False
+    _is_repository_updated = False
 
     @classmethod
     def update_cloned_repository(cls) -> None:
-        if cls.is_repository_updated:
+        if cls._is_repository_updated:
             return
 
         try:
@@ -120,10 +150,10 @@ class LibraryCheckerProblem(Problem):
                 stderr=sys.stderr,
             )
 
-        cls.is_repository_updated = True
+        cls._is_repository_updated = True
 
 
-class YukicoderProblemNo(int):
+class _YukicoderProblemNo(int):
     def __new__(cls, value: int):
         return super().__new__(cls, value)
 
@@ -131,19 +161,19 @@ class YukicoderProblemNo(int):
         return "no/" + super().__str__()
 
 
-class YukicoderProblemId(int):
+class _YukicoderProblemId(int):
     def __new__(cls, value: int):
         return super().__new__(cls, value)
 
 
 class YukicoderProblem(Problem):
-    problem: YukicoderProblemNo | YukicoderProblemId
+    problem: _YukicoderProblemNo | _YukicoderProblemId
 
     def __init__(self, *, problem_no: int | None = None, problem_id: int | None = None):
         if problem_no is not None:
-            self.problem = YukicoderProblemNo(problem_no)
+            self.problem = _YukicoderProblemNo(problem_no)
         elif problem_id is not None:
-            self.problem = YukicoderProblemId(problem_id)
+            self.problem = _YukicoderProblemId(problem_id)
         else:
             raise ValueError("Needs problem_no or problem_id")
 

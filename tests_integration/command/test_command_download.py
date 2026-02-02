@@ -6,6 +6,7 @@ import subprocess
 import pytest
 
 from competitive_verifier import oj
+from competitive_verifier.models import Problem
 
 from .types import ConfigDirSetter
 
@@ -21,7 +22,10 @@ class TestCommandDownload:
     def test_library_checker(self, set_config_dir: ConfigDirSetter):
         url = "https://judge.yosupo.jp/problem/aplusb"
         dst_path = set_config_dir("download/library_checker")
-        promlem_path = oj.problem_directory(url)
+        problem = Problem.from_url(url)
+        assert problem is not None
+
+        promlem_path = problem.problem_directory
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert promlem_path.is_relative_to(dst_path)
         oj.download(url)
@@ -56,7 +60,10 @@ class TestCommandDownload:
     def test_yukicoder(self, url: str, set_config_dir: ConfigDirSetter):
         dst_path = set_config_dir("download/yukicoder")
 
-        promlem_path = oj.problem_directory(url)
+        problem = Problem.from_url(url)
+        assert problem is not None
+
+        promlem_path = problem.problem_directory
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert promlem_path.is_relative_to(dst_path)
 
@@ -93,7 +100,10 @@ class TestCommandDownload:
     def test_aizu_onlinejudge(self, url: str, set_config_dir: ConfigDirSetter):
         dst_path = set_config_dir("download/aoj")
 
-        promlem_path = oj.problem_directory(url)
+        problem = Problem.from_url(url)
+        assert problem is not None
+
+        promlem_path = problem.problem_directory
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert promlem_path.is_relative_to(dst_path)
 
@@ -112,7 +122,10 @@ class TestCommandDownload:
         url = "https://onlinejudge.u-aizu.ac.jp/services/room.html#RitsCamp19Day2/problems/A"
         dst_path = set_config_dir("download/aoj")
 
-        promlem_path = oj.problem_directory(url)
+        problem = Problem.from_url(url)
+        assert problem is not None
+
+        promlem_path = problem.problem_directory
         assert dst_path.absolute().is_relative_to(pathlib.Path.cwd())
         assert promlem_path.is_relative_to(dst_path)
 
