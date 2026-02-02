@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Annotated, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
 from .path import ForcePosixPath
+from .problem import Problem
 from .result import VerificationResult
 from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -153,20 +155,27 @@ class ProblemVerification(BaseVerification):
     """The MLE memory size in megabytes.
     """
 
+    @cached_property
+    def problem_obj(self) -> Problem | None:
+        return Problem.from_url(self.problem)
+
     def run(
         self,
         params: VerificationParams | None = None,
         *,
         deadline: float = float("inf"),
-    ) -> VerificationResult:
+    ) -> VerificationResult | ResultStatus:
         from competitive_verifier import oj  # noqa: PLC0415
 
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 
+        if not self.problem_obj:
+            return ResultStatus.FAILURE
+
         c = ShellCommand.parse_command_like(self.command)
         result = oj.test(
-            url=self.problem,
+            problem=self.problem_obj,
             command=c.command,
             env=c.env,
             tle=self.tle or params.default_tle,

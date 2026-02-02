@@ -24,24 +24,22 @@ logger = getLogger(__name__)
 UrlOrVerificationFile = str | VerificationFile
 
 
+def _parse_single_url(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
+    if isinstance(url_or_file, str):
+        yield url_or_file
+    else:
+        for v in url_or_file.verification_list:
+            if isinstance(v, ProblemVerification):
+                yield v.problem
+
+
 def parse_urls(
     url_or_file: UrlOrVerificationFile | Iterable[UrlOrVerificationFile],
 ) -> set[str]:
-    def parse_single(url_or_file: UrlOrVerificationFile) -> Iterable[str]:
-        if isinstance(url_or_file, str):
-            return (url_or_file,)
-        return enumerate_urls(url_or_file)
-
     if isinstance(url_or_file, (str, VerificationFile)):
-        return set(parse_single(url_or_file))
+        return set(_parse_single_url(url_or_file))
 
-    return set(chain.from_iterable(map(parse_single, url_or_file)))
-
-
-def enumerate_urls(file: VerificationFile) -> Iterable[str]:
-    for v in file.verification_list:
-        if isinstance(v, ProblemVerification):
-            yield v.problem
+    return set(chain.from_iterable(map(_parse_single_url, url_or_file)))
 
 
 def download_files(

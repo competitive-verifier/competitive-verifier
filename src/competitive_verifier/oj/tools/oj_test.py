@@ -12,6 +12,7 @@ from pydantic.functional_validators import BeforeValidator
 
 from competitive_verifier.models import (
     JudgeStatus,
+    Problem,
     ResultStatus,
     TestcaseResult,
     VerifcationTimeoutError,
@@ -19,7 +20,6 @@ from competitive_verifier.models import (
 )
 
 from . import gnu, output_comparators, pretty_printers, utils
-from .func import checker_exe_name, get_directory
 from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
@@ -136,20 +136,20 @@ def display_result(
     return status
 
 
-class TestCase(BaseModel):
-    name: str
-    input: pathlib.Path
-    output: pathlib.Path | None = None
-
-
 class OjTestcaseResult(BaseModel):
+    name: str
+    """A name of test case."""
+    input: pathlib.Path
+    """A input of test case."""
+    output: pathlib.Path | None = None
+    """A output of test case."""
+
     status: JudgeStatus
     elapsed: float
     memory: float | None = None
     exitcode: Annotated[
         int | None, BeforeValidator(lambda v: v if isinstance(v, int) else None)
     ]
-    testcase: TestCase
 
 
 class OjTestResult(BaseModel):
@@ -344,19 +344,17 @@ def test_single_case(
 
     # return the result
     return OjTestcaseResult(
+        name=test_name,
+        input=test_input_path.resolve(),
+        output=test_output_path,
         status=status,
-        testcase=TestCase(
-            name=test_name,
-            input=test_input_path.resolve(),
-            output=test_output_path,
-        ),
         exitcode=proc.returncode,
         elapsed=elapsed,
         memory=memory,
     )
 
 
-def run(args: OjTestArguments) -> OjTestResult:
+def _run(args: OjTestArguments) -> OjTestResult:
     # list tests
     if not args.test:
         args.test = fmtutils.glob_with_format(args.directory, args.format)  # by default
@@ -398,10 +396,10 @@ def run(args: OjTestArguments) -> OjTestResult:
             ac_count += 1
         if slowest < result.elapsed:
             slowest = result.elapsed
-            slowest_name = result.testcase.name
+            slowest_name = result.name
         if result.memory is not None and heaviest < result.memory:
             heaviest = result.memory
-            heaviest_name = result.testcase.name
+            heaviest_name = result.name
 
     # print the summary
     logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
@@ -435,7 +433,7 @@ def run(args: OjTestArguments) -> OjTestResult:
 
 def run_wrapper(
     *,
-    url: str,
+    problem: Problem,
     command: str | list[str],
     env: dict[str, str] | None,
     tle: float | None,
@@ -443,12 +441,8 @@ def run_wrapper(
     error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
-    directory = get_directory(url)
+    directory = problem.problem_directory
     test_directory = directory / "test"
-
-    checker_path: pathlib.Path | None = directory / checker_exe_name
-    if not checker_path.exists():
-        checker_path = None
 
     args = OjTestArguments(
         command=command,
@@ -458,10 +452,10 @@ def run_wrapper(
         mle=mle,
         error=error,
         print_input=True,
-        judge=checker_path,
+        judge=problem.checker,
         deadline=deadline,
     )
-    result = run(args)
+    result = _run(args)
 
     return VerificationResult(
         status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,
@@ -470,7 +464,7 @@ def run_wrapper(
         heaviest=result.heaviest,
         testcases=[
             TestcaseResult(
-                name=case.testcase.name,
+                name=case.name,
                 elapsed=case.elapsed,
                 memory=case.memory,
                 status=case.status,

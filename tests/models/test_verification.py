@@ -4,6 +4,7 @@ import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, NamedTuple
+from unittest.mock import PropertyMock
 
 import pytest
 from pydantic import TypeAdapter
@@ -13,6 +14,7 @@ import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
+    Problem,
     ProblemVerification,
     ResultStatus,
     ShellCommand,
@@ -291,20 +293,9 @@ def test_run_with_env(
 
 test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments]] = [
     (
-        ProblemVerification(command="ls ~", problem="https://example.com"),
-        OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
-            command="ls ~",
-            tle=22.0,
-            error=None,
-            mle=128,
-            env=None,
-        ),
-    ),
-    (
         ProblemVerification(
-            compile="cat LICENSE", command="ls ~", problem="https://example.com"
+            command="ls ~",
+            problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
         ),
         OjTestArguments(
             directory=pathlib.Path("/any/test"),
@@ -320,7 +311,23 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
         ProblemVerification(
             compile="cat LICENSE",
             command="ls ~",
-            problem="https://example.com",
+            problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
+        ),
+        OjTestArguments(
+            directory=pathlib.Path("/any/test"),
+            judge=None,
+            command="ls ~",
+            tle=22.0,
+            error=None,
+            mle=128,
+            env=None,
+        ),
+    ),
+    (
+        ProblemVerification(
+            compile="cat LICENSE",
+            command="ls ~",
+            problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
             error=1e-6,
             tle=2,
             mle=1.2,
@@ -345,7 +352,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
         ),
         OjTestArguments(
             directory=pathlib.Path("/any/test"),
-            judge=None,
+            judge=pathlib.Path("/any/mockcheck"),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -363,7 +370,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
         ),
         OjTestArguments(
             directory=pathlib.Path("/any/test"),
-            judge=None,
+            judge=pathlib.Path("/any/mockcheck"),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -384,10 +391,16 @@ def test_run_problem_command(
     args: OjTestArguments,
     mocker: MockerFixture,
 ):
-    patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "run")
-
     mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.get_directory",
+        "competitive_verifier.oj.tools.problem.LibraryCheckerProblem.checker_exe_name",
+        "mockcheck",
+    )
+    patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "_run")
+
+    mocker.patch.object(
+        Problem,
+        "problem_directory",
+        new_callable=PropertyMock,
         return_value=pathlib.Path("/any/"),
     )
 

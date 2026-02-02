@@ -4,8 +4,9 @@ import zipfile
 from collections.abc import Iterator
 from logging import getLogger
 
+from competitive_verifier.models import TestCase
+
 from . import format_utils as fmtutils
-from .type import TestCase
 
 logger = getLogger(__name__)
 

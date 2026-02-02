@@ -7,7 +7,7 @@ import shutil
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.tools import service
+from competitive_verifier.oj.tools import problem
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
@@ -21,7 +21,9 @@ from .utils import dummy_commit_time
 
 
 def pytest_runtest_setup(item: pytest.Function):
-    if item.get_closest_marker(name="integration") and platform.system() != "Linux":
+    if platform.system() != "Linux" and item.get_closest_marker(
+        name="integration"
+    ):  # pragma: no cover
         pytest.skip(reason="Integration tests are only available on Linux")
 
 
@@ -130,7 +132,7 @@ def mock_verification(mocker: MockerFixture):
     )
 
     mocker.patch.object(
-        service.LibraryCheckerProblem,
+        problem.LibraryCheckerProblem,
         "update_cloned_repository",
         side_effect=update_cloned_repository,
     )

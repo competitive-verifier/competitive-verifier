@@ -1,68 +1,16 @@
-import os
 import pathlib
-import shutil
 from collections.abc import Iterator
 from contextlib import nullcontext
-from itertools import chain
 from logging import getLogger
 
 import requests.exceptions
 
 from competitive_verifier import log
+from competitive_verifier.models import Problem, TestCase
 
-from .func import get_checker_path, get_directory
-from .service import (
-    AOJArenaProblem,
-    AOJProblem,
-    LibraryCheckerProblem,
-    NotLoggedInError,
-    Problem,
-    TestCase,
-    YukicoderProblem,
-)
+from .problem import NotLoggedInError
 
 logger = getLogger(__name__)
-
-
-def _run_library_checker(
-    *,
-    problem: LibraryCheckerProblem,
-    directory: pathlib.Path,
-    dry_run: bool = False,
-) -> bool:
-    problem.generate_test_cases_in_cloned_repository()
-    path = problem.get_problem_directory_path()
-    for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
-        dst = directory / "test" / file.name
-        if dst.exists():
-            logger.error("Failed to download since file already exists: %s", str(dst))
-            return False
-        if not dry_run:
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(file, dst)
-
-    checker_path = get_checker_path(problem)
-    if checker_path and checker_path.exists() and not dry_run:
-        try:
-            shutil.move(checker_path, directory)
-        except Exception:
-            logger.exception("Failed to copy checker")
-            shutil.rmtree(directory)
-            return False
-    return True
-
-
-def _run_services(problem: Problem):
-    headers: dict[str, str] | None = None
-    if isinstance(problem, YukicoderProblem):
-        yukicoder_token = os.environ.get("YUKICODER_TOKEN")
-        if yukicoder_token:
-            headers = {"Authorization": f"Bearer {yukicoder_token}"}
-    try:
-        return problem.download_system_cases(headers=headers)
-    except requests.exceptions.RequestException:
-        logger.exception("Failed to download samples from the server")
-        return None
 
 
 # prepare files to write
@@ -80,80 +28,62 @@ def _iterate_files_to_write(
         yield ext, path, data
 
 
-def problem_from_url(url: str) -> Problem | None:
-    """Try getting problem.
+def _run(*, problem: Problem) -> bool:
+    directory = problem.problem_directory
+    test_directory = directory / "test"
 
-    Examples:
-        url: https://atcoder.jp/contests/abc077/tasks/arc084_b
-    """
-    for cls in (LibraryCheckerProblem, YukicoderProblem, AOJProblem, AOJArenaProblem):
-        problem = cls.from_url(url)
-        if problem is not None:
-            return problem
-    return None
+    if test_directory.exists() and any(test_directory.iterdir()):
+        logger.info("download:already exists: %s", problem.url)
 
+    directory.mkdir(parents=True, exist_ok=True)
 
-def run(
-    *,
-    url: str,
-    directory: pathlib.Path,
-    dry_run: bool = False,
-) -> bool:
-    # prepare values
-    problem = problem_from_url(url)
-    if problem is None:
-        logger.error('The URL "%s" is not supported', url)
+    # Get samples from the server
+    try:
+        samples = problem.download_system_cases()
+    except requests.exceptions.RequestException:
+        logger.exception("Failed to download samples from the server")
         return False
 
-    if isinstance(problem, LibraryCheckerProblem):
-        return _run_library_checker(
-            problem=problem,
-            directory=directory,
-        )
-
-    # get samples from the server
-    samples = _run_services(problem)
-
+    # Check samples
     if not samples:
-        if samples is not None:
+        if samples is not False:
             logger.error("Sample not found")
         return False
 
+    if samples is True:
+        return True
+
     # write samples to files
-    for _i, sample in enumerate(samples):
+    for sample in samples:
         for _, path, data in _iterate_files_to_write(sample, directory=directory):
-            if not dry_run:
-                if path.exists():
-                    logger.error(
-                        "Failed to download since file already exists: %s", str(path)
-                    )
-                path.parent.mkdir(parents=True, exist_ok=True)
-                with path.open("wb") as fh:
-                    fh.write(data)
-                logger.debug("saved to: %s", path)
+            if path.exists():
+                logger.error("Failed to download since file already exists: %s", path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("wb") as fh:
+                fh.write(data)
+            logger.debug("saved to: %s", path)
 
     return True
 
 
 def run_wrapper(url: str, *, group_log: bool = False) -> bool:
-    directory = get_directory(url)
-    test_directory = directory / "test"
+    # prepare values
+    problem = Problem.from_url(url)
+    if problem is None:
+        logger.error('The URL "%s" is not supported', url)
+        return False
 
-    logger.info("download[Start]: %s into %s", url, test_directory)
-    if not test_directory.exists() or list(test_directory.iterdir()) == []:
-        logger.info("download[Run]: %s", url)
-
-        with log.group(f"download[Run]: {url}") if group_log else nullcontext():
-            directory.mkdir(parents=True, exist_ok=True)
-
-            try:
-                run(url=url, directory=directory)
-            except Exception as e:
-                if isinstance(e, NotLoggedInError):
-                    logger.exception(*e.args)
-                else:
-                    logger.exception("Failed to download")
-                return False
-    else:
-        logger.info("download:already exists: %s", url)
+    with (
+        log.group(f"download[Run]: {url}")
+        if group_log
+        else nullcontext(logger.info("download[Run]: %s", url))
+    ):
+        try:
+            _run(problem=problem)
+        except Exception as e:
+            if isinstance(e, NotLoggedInError):
+                logger.exception(*e.args)
+            else:
+                logger.exception("Failed to download")
+            return False
     return True
