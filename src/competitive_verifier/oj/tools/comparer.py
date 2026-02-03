@@ -1,7 +1,6 @@
 """This module collects helper classes to compare outputs for `test` subcommand."""
 
 import abc
-import enum
 import math
 from logging import getLogger
 
@@ -96,10 +95,3 @@ class CRLFInsensitiveComparator(OutputComparator):
         return self.file_comparator(
             actual.replace(b"\r\n", b"\n"), expected.replace(b"\r\n", b"\n")
         )
-
-
-class CompareMode(enum.Enum):
-    EXACT_MATCH = "exact-match"
-    CRLF_INSENSITIVE_EXACT_MATCH = "crlf-insensitive-exact-match"
-    IGNORE_SPACES = "ignore-spaces"
-    IGNORE_SPACES_AND_NEWLINES = "ignore-spaces-and-newlines"
