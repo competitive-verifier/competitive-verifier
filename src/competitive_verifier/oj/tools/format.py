@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
+from collections import Counter
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
-from typing import TypeAlias
+from typing import IO, TypeAlias
 
 from colorama import Fore, Style
+
+from competitive_verifier.models import JudgeStatus
 
 _whitespace_table = str.maketrans(
     {
@@ -97,7 +100,9 @@ def _tokenize_line(line: str) -> list[_PrettyToken]:
     return tokens
 
 
-def _decode_with_recovery(content: bytes) -> tuple[list[_PrettyToken], str]:
+def _load_content(content: str | bytes) -> tuple[list[_PrettyToken], str]:
+    if isinstance(content, str):
+        return [], content
     try:
         return [], content.decode()
     except UnicodeDecodeError as e:
@@ -122,9 +127,18 @@ def _merge_token(tokens: list[_PrettyToken]) -> Iterable[_PrettyToken]:
         yield _HintToken("(no trailing newline)")
 
 
+class StatusCounter(Counter[JudgeStatus]):
+    def __str__(self) -> str:
+        return ", ".join(
+            f"{cnt} {name}"
+            for name, cnt in ((st.name, self.get(st)) for st in JudgeStatus)
+            if cnt
+        )
+
+
 @dataclass
 class Printer:
-    content: str | bytes
+    content: str | bytes | IO[bytes]
     limit: int = 60
     head: int = 20
     tail: int = 20
@@ -137,14 +151,11 @@ class Printer:
         return "".join(token.render() for token in tokens)
 
     def _tokenize_file_content(self) -> Iterable[_PrettyToken]:
-        content = self.content
+        if not isinstance(self.content, (str, bytes)):
+            self.content = self.content.read()
 
         # Choose the shortest one from the three candidates.
-        tokens, text = (
-            _decode_with_recovery(content)
-            if isinstance(content, bytes)
-            else ([], content)
-        )
+        tokens, text = _load_content(self.content)
         if text:
             tokens.extend(self._token(text))
         return _merge_token(tokens)
