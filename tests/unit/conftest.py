@@ -1,14 +1,7 @@
-import logging
 import os
 
 import pytest
-from pytest_mock import MockerFixture, MockType
-
-
-@pytest.fixture
-def mock_logger(mocker: MockerFixture) -> MockType:
-    mocker.patch.object(logging.Logger, "isEnabledFor", return_value=True)
-    return mocker.patch.object(logging.Logger, "_log")
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture
