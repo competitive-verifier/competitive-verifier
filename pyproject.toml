@@ -158,7 +158,6 @@ exclude = [
     "examples",
     "src/competitive_verifier_resources/jekyll",
     "integration_test_data",
-    "src/porting_oj",
 ]
 
 [tool.ruff.lint]
@@ -247,7 +246,7 @@ reportMissingImports = true
 reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
-testpaths = ["tests/", "tests_integration/"]
+testpaths = ["tests"]
 markers = ["integration", "each_language_integration"]
 
 [tool.coverage.report]

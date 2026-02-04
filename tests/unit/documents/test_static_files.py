@@ -1,14 +1,16 @@
 import pathlib
 
+import competitive_verifier_resources
 from competitive_verifier.documents.static_files import default_resource_files
 
 
 def test_jekyll_staic_files():
     resources = list(default_resource_files())
+
     src_resources_jekyll_root = (
-        pathlib.Path(__file__).parent.parent.parent
-        / "src/competitive_verifier_resources/jekyll"
+        pathlib.Path(competitive_verifier_resources.__file__).parent / "jekyll"
     )
+
     src_resources_path = list(src_resources_jekyll_root.glob("**/*"))
     src_resources = [
         (p.relative_to(src_resources_jekyll_root).as_posix(), p.read_bytes())
