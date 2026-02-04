@@ -23,6 +23,7 @@ def mock_repo(mock_repo_make: pathlib.Path, monkeypatch: pytest.MonkeyPatch):
     return mock_repo_make
 
 
+@pytest.mark.usefixtures("mock_repo")
 @pytest.mark.parametrize(
     ("files", "expected"),
     [
@@ -48,14 +49,11 @@ def mock_repo(mock_repo_make: pathlib.Path, monkeypatch: pytest.MonkeyPatch):
         ),
     ],
 )
-def test_get_commit_time(
-    files: list[pathlib.Path],
-    expected: datetime,
-    mock_repo: pathlib.Path,
-):
+def test_get_commit_time(files: list[pathlib.Path], expected: datetime):
     assert git.get_commit_time(files) == expected
 
 
+@pytest.mark.usefixtures("mock_repo")
 @pytest.mark.parametrize(
     ("files", "expected"),
     [
@@ -91,7 +89,6 @@ def test_get_commit_time(
 def test_ls_files(
     files: list[str],
     expected: set[pathlib.Path],
-    mock_repo: pathlib.Path,
 ):
     assert git.ls_files(*files) == expected
 

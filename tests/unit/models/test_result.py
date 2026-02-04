@@ -1,6 +1,5 @@
 import json
 import pathlib
-import tempfile
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -764,32 +763,30 @@ def test_merge(
     assert obj1.merge(obj2) == expected
 
 
-def test_parse_file_relative(mocker: MockerFixture):
-    with tempfile.TemporaryDirectory() as td:
-        mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path(td))
-        tdp = pathlib.Path(td)
-        tmp = pathlib.Path(td) / "verify.json"
-        with tmp.open("w") as fp:
-            json.dump(
-                {
-                    "files": {
-                        (tdp / "libfile.py").as_posix(): {},
-                        (tdp / "libfile2.py").as_posix(): {},
-                        "/foo/other/libfile.py": {},
-                        (tdp / "test/test.py").as_posix(): {},
-                    },
-                    "total_seconds": 2.5,
+def test_parse_file_relative(testtemp: pathlib.Path, mocker: MockerFixture):
+    mocker.patch.object(pathlib.Path, "cwd", return_value=testtemp)
+    tmp = testtemp / "verify.json"
+    with tmp.open("w") as fp:
+        json.dump(
+            {
+                "files": {
+                    (testtemp / "libfile.py").as_posix(): {},
+                    (testtemp / "libfile2.py").as_posix(): {},
+                    "/foo/other/libfile.py": {},
+                    (testtemp / "test/test.py").as_posix(): {},
                 },
-                fp,
-            )
-        assert (
-            VerifyCommandResult.parse_file_relative(tmp).model_dump()
-            == VerifyCommandResult(
-                files={
-                    pathlib.Path("libfile.py"): FileResult(),
-                    pathlib.Path("libfile2.py"): FileResult(),
-                    pathlib.Path("test/test.py"): FileResult(),
-                },
-                total_seconds=2.5,
-            ).model_dump()
+                "total_seconds": 2.5,
+            },
+            fp,
         )
+    assert (
+        VerifyCommandResult.parse_file_relative(tmp).model_dump()
+        == VerifyCommandResult(
+            files={
+                pathlib.Path("libfile.py"): FileResult(),
+                pathlib.Path("libfile2.py"): FileResult(),
+                pathlib.Path("test/test.py"): FileResult(),
+            },
+            total_seconds=2.5,
+        ).model_dump()
+    )

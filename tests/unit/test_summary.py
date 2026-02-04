@@ -1,11 +1,10 @@
 import logging
 import os
 import pathlib
-import tempfile
 from datetime import datetime, timedelta
 
 import pytest
-from pytest_mock import MockerFixture, MockType
+from pytest_mock import MockerFixture
 
 from competitive_verifier import summary
 from competitive_verifier.arg import WriteSummaryArguments
@@ -75,16 +74,22 @@ def test_no_summary(mocker: MockerFixture):
     mock_summary.assert_not_called()
 
 
-def test_summary_not_exist(mocker: MockerFixture, mock_logger: MockType):
+def test_summary_not_exist(mocker: MockerFixture, caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.NOTSET)
     mocker.patch.dict(os.environ, {}, clear=True)
     mock_summary = mocker.patch.object(summary, "write_summary")
+
     MockWriteSummaryArguments(write_summary=True).write_result(
         VerifyCommandResult(files={}, total_seconds=1)
     )
     mock_summary.assert_not_called()
-    mock_logger.assert_called_once_with(
-        logging.WARNING, "write_summary=True but not found $GITHUB_STEP_SUMMARY", ()
-    )
+    assert caplog.record_tuples == [
+        (
+            "competitive_verifier.arg",
+            logging.WARNING,
+            "write_summary=True but not found $GITHUB_STEP_SUMMARY",
+        )
+    ]
 
 
 test_summary_params = [
@@ -378,16 +383,14 @@ def test_summary(
     verify_command_result: VerifyCommandResult,
     expected: str,
     mocker: MockerFixture,
+    testtemp: pathlib.Path,
 ):
-    with tempfile.TemporaryDirectory() as td:
-        tmp = pathlib.Path(td) / "summary.md"
-        mocker.patch.dict(
-            os.environ,
-            {"GITHUB_STEP_SUMMARY": str(tmp)},
-            clear=True,
-        )
-        MockWriteSummaryArguments(write_summary=True).write_result(
-            verify_command_result
-        )
+    tmp = testtemp / "summary.md"
+    mocker.patch.dict(
+        os.environ,
+        {"GITHUB_STEP_SUMMARY": str(tmp)},
+        clear=True,
+    )
+    MockWriteSummaryArguments(write_summary=True).write_result(verify_command_result)
 
-        assert tmp.read_text(encoding="utf-8") == expected.replace("\r\n", "\n")
+    assert tmp.read_text(encoding="utf-8") == expected.replace("\r\n", "\n")

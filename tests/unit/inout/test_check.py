@@ -1,6 +1,5 @@
 import logging
 import pathlib
-import tempfile
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -170,18 +169,18 @@ def test_check(
     files: dict[str, VerifyCommandResult],
     expected_out: str,
     expected: bool,
-    tempdir: pathlib.Path,
+    testtemp: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ):
-    monkeypatch.chdir(tempdir)
+    monkeypatch.chdir(testtemp)
 
     file_list: list[pathlib.Path] = []
     for k, v in files.items():
-        p = tempdir / k
+        p = testtemp / k
         file_list.append(p)
         j = v.model_dump_json()
-        p.write_text(j.replace(r"{base}", tempdir.as_posix()))
+        p.write_text(j.replace(r"{base}", testtemp.as_posix()))
 
     assert Check(result_json=file_list).run() == expected
     out, err = capsys.readouterr()
@@ -189,31 +188,27 @@ def test_check(
     assert out == expected_out
 
 
-def test_check_error():
-    with tempfile.TemporaryDirectory() as tmpdir_s:
-        tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "ok.json").write_text(
-            r"""{
+def test_check_error(testtemp: pathlib.Path):
+    (testtemp / "ok.json").write_text(
+        r"""{
     "files":{}
 }"""
-        )
-        (tmpdir / "ng.json").write_text(
-            r"""{
+    )
+    (testtemp / "ng.json").write_text(
+        r"""{
     "files":[]
 }"""
-        )
-        with pytest.raises(
-            ValidationError, match=r"validation error for VerifyCommandResult"
-        ):
-            Check(result_json=[tmpdir / "ok.json", tmpdir / "ng.json"]).run()
+    )
+    with pytest.raises(
+        ValidationError, match=r"validation error for VerifyCommandResult"
+    ):
+        Check(result_json=[testtemp / "ok.json", testtemp / "ng.json"]).run()
 
 
-def test_log(caplog: pytest.LogCaptureFixture):
+def test_log(testtemp: pathlib.Path, caplog: pytest.LogCaptureFixture):
     caplog.at_level(logging.NOTSET)
-    with tempfile.TemporaryDirectory() as tmpdir_s:
-        tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "success.json").write_text(
-            r"""
+    (testtemp / "success.json").write_text(
+        r"""
 {
     "total_seconds": 1.25,
     "files": {
@@ -241,9 +236,9 @@ def test_log(caplog: pytest.LogCaptureFixture):
         }
     }
 }"""
-        )
-        (tmpdir / "failure.json").write_text(
-            r"""
+    )
+    (testtemp / "failure.json").write_text(
+        r"""
 {
     "total_seconds": 1.25,
     "files": {
@@ -271,13 +266,14 @@ def test_log(caplog: pytest.LogCaptureFixture):
         }
     }
 }"""
-        )
-        assert Check(verbose=True, result_json=[tmpdir / "success.json"]).run()
-        assert caplog.record_tuples == []
+    )
+    assert Check(verbose=True, result_json=[testtemp / "success.json"]).run()
+    assert caplog.record_tuples == []
 
-        assert not Check(
-            verbose=True, result_json=[tmpdir / "success.json", tmpdir / "failure.json"]
-        ).run()
-        assert caplog.record_tuples == [
-            ("competitive_verifier.inout.main", logging.ERROR, "Failure test count: 1")
-        ]
+    assert not Check(
+        verbose=True,
+        result_json=[testtemp / "success.json", testtemp / "failure.json"],
+    ).run()
+    assert caplog.record_tuples == [
+        ("competitive_verifier.inout.main", logging.ERROR, "Failure test count: 1")
+    ]

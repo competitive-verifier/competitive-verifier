@@ -1,7 +1,6 @@
 import logging
 import os
 import pathlib
-import tempfile
 from typing import Any, NamedTuple, TypedDict
 
 import pytest
@@ -66,7 +65,7 @@ class SingleCaseParams(NamedTuple):
     outbytes: bytes | None = None
     error: float | None = None
     mle: float | None = None
-    judge: bool | None = None
+    mock_judge: bool | None = None
 
 
 def log_output(msg: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO):
@@ -207,7 +206,7 @@ test_single_case_params: list[SingleCaseParams] = [
         name="judge-AC",
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
-        judge=True,
+        mock_judge=True,
         mock_measure=OjExecInfo(
             answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
@@ -228,7 +227,7 @@ test_single_case_params: list[SingleCaseParams] = [
         name="judge-WA",
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
-        judge=False,
+        mock_judge=False,
         mock_measure=OjExecInfo(
             answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
@@ -251,7 +250,7 @@ test_single_case_params: list[SingleCaseParams] = [
     SingleCaseParams(
         name="judge-WA-no-expected-out",
         inbytes=b"abc\n",
-        judge=False,
+        mock_judge=False,
         mock_measure=OjExecInfo(
             answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
@@ -1022,17 +1021,7 @@ test_single_case_params: list[SingleCaseParams] = [
 
 @pytest.mark.usefixtures("mock_measure", "mock_terminal_size")
 @pytest.mark.parametrize(
-    (
-        "name",
-        "inbytes",
-        "mock_measure",
-        "expected",
-        "expected_log",
-        "outbytes",
-        "error",
-        "mle",
-        "mock_judge",
-    ),
+    SingleCaseParams._fields,
     test_single_case_params,
     ids=[f"{i}:{t.name}" for i, t in enumerate(test_single_case_params)],
     indirect=["mock_measure", "mock_judge"],
@@ -1047,34 +1036,33 @@ def test_single_case(
     expected_log: list[tuple[str, int, str]],
     caplog: pytest.LogCaptureFixture,
     mock_judge: bool,
+    testtemp: pathlib.Path,
 ):
     caplog.set_level(logging.NOTSET)
-    with tempfile.TemporaryDirectory() as td:
-        tmpdir = pathlib.Path(td)
-        input_path = tmpdir / "infile"
-        input_path.write_bytes(inbytes)
+    input_path = testtemp / "infile"
+    input_path.write_bytes(inbytes)
 
-        if outbytes is None:
-            output_path = None
-        else:
-            output_path = tmpdir / "outfile"
-            output_path.write_bytes(outbytes)
+    if outbytes is None:
+        output_path = None
+    else:
+        output_path = testtemp / "outfile"
+        output_path.write_bytes(outbytes)
 
-        result = single_case(
-            name,
-            test_input_path=input_path,
-            test_output_path=output_path,
-            args=OjTestArguments(
-                command="ls ~",
-                directory=tmpdir,
-                error=error,
-                mle=mle,
-                judge=pathlib.Path("echo 1") if mock_judge else None,
-                tle=None,
-            ),
-        )
+    result = single_case(
+        name,
+        test_input_path=input_path,
+        test_output_path=output_path,
+        args=OjTestArguments(
+            command="ls ~",
+            directory=testtemp,
+            error=error,
+            mle=mle,
+            judge=pathlib.Path("echo 1") if mock_judge else None,
+            tle=None,
+        ),
+    )
 
-        expected["input"] = input_path
-        expected["output"] = output_path
-        assert result.model_dump() == expected
+    expected["input"] = input_path
+    expected["output"] = output_path
+    assert result.model_dump() == expected
     assert caplog.record_tuples == expected_log
