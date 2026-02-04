@@ -1,7 +1,6 @@
 import logging
 import os
 import pathlib
-import tempfile
 from datetime import datetime, timedelta
 
 import pytest
@@ -378,16 +377,14 @@ def test_summary(
     verify_command_result: VerifyCommandResult,
     expected: str,
     mocker: MockerFixture,
+    testtemp: pathlib.Path,
 ):
-    with tempfile.TemporaryDirectory() as td:
-        tmp = pathlib.Path(td) / "summary.md"
-        mocker.patch.dict(
-            os.environ,
-            {"GITHUB_STEP_SUMMARY": str(tmp)},
-            clear=True,
-        )
-        MockWriteSummaryArguments(write_summary=True).write_result(
-            verify_command_result
-        )
+    tmp = testtemp / "summary.md"
+    mocker.patch.dict(
+        os.environ,
+        {"GITHUB_STEP_SUMMARY": str(tmp)},
+        clear=True,
+    )
+    MockWriteSummaryArguments(write_summary=True).write_result(verify_command_result)
 
-        assert tmp.read_text(encoding="utf-8") == expected.replace("\r\n", "\n")
+    assert tmp.read_text(encoding="utf-8") == expected.replace("\r\n", "\n")

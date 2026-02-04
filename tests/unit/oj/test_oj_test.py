@@ -1,7 +1,6 @@
 import logging
 import os
 import pathlib
-import tempfile
 from typing import Any, NamedTuple, TypedDict
 
 import pytest
@@ -1047,34 +1046,33 @@ def test_single_case(
     expected_log: list[tuple[str, int, str]],
     caplog: pytest.LogCaptureFixture,
     mock_judge: bool,
+    testtemp: pathlib.Path,
 ):
     caplog.set_level(logging.NOTSET)
-    with tempfile.TemporaryDirectory() as td:
-        tmpdir = pathlib.Path(td)
-        input_path = tmpdir / "infile"
-        input_path.write_bytes(inbytes)
+    input_path = testtemp / "infile"
+    input_path.write_bytes(inbytes)
 
-        if outbytes is None:
-            output_path = None
-        else:
-            output_path = tmpdir / "outfile"
-            output_path.write_bytes(outbytes)
+    if outbytes is None:
+        output_path = None
+    else:
+        output_path = testtemp / "outfile"
+        output_path.write_bytes(outbytes)
 
-        result = single_case(
-            name,
-            test_input_path=input_path,
-            test_output_path=output_path,
-            args=OjTestArguments(
-                command="ls ~",
-                directory=tmpdir,
-                error=error,
-                mle=mle,
-                judge=pathlib.Path("echo 1") if mock_judge else None,
-                tle=None,
-            ),
-        )
+    result = single_case(
+        name,
+        test_input_path=input_path,
+        test_output_path=output_path,
+        args=OjTestArguments(
+            command="ls ~",
+            directory=testtemp,
+            error=error,
+            mle=mle,
+            judge=pathlib.Path("echo 1") if mock_judge else None,
+            tle=None,
+        ),
+    )
 
-        expected["input"] = input_path
-        expected["output"] = output_path
-        assert result.model_dump() == expected
+    expected["input"] = input_path
+    expected["output"] = output_path
+    assert result.model_dump() == expected
     assert caplog.record_tuples == expected_log

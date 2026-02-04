@@ -1,6 +1,5 @@
 import json
 import pathlib
-import tempfile
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -222,18 +221,18 @@ test_merge_result_params: list[
 def test_merge_result(
     files: dict[str, VerifyCommandResult],
     expected: dict[str, Any],
-    tempdir: pathlib.Path,
+    testtemp: pathlib.Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ):
-    monkeypatch.chdir(tempdir)
+    monkeypatch.chdir(testtemp)
 
     file_list: list[pathlib.Path] = []
     for k, v in files.items():
-        p = tempdir / k
+        p = testtemp / k
         file_list.append(p)
         j = v.model_dump_json()
-        p.write_text(j.replace(r"{base}", tempdir.as_posix()))
+        p.write_text(j.replace(r"{base}", testtemp.as_posix()))
 
     assert MergeResult(result_json=file_list).run()
     out, err = capsys.readouterr()
@@ -241,20 +240,18 @@ def test_merge_result(
     assert json.loads(out) == expected
 
 
-def test_merge_result_error():
-    with tempfile.TemporaryDirectory() as tmpdir_s:
-        tmpdir = pathlib.Path(tmpdir_s)
-        (tmpdir / "ok.json").write_text(
-            r"""{
+def test_merge_result_error(testtemp: pathlib.Path):
+    (testtemp / "ok.json").write_text(
+        r"""{
     "files":{}
 }"""
-        )
-        (tmpdir / "ng.json").write_text(
-            r"""{
+    )
+    (testtemp / "ng.json").write_text(
+        r"""{
     "files":[]
 }"""
-        )
-        with pytest.raises(
-            ValidationError, match=r"validation error for VerifyCommandResult"
-        ):
-            MergeResult(result_json=[tmpdir / "ok.json", tmpdir / "ng.json"]).run()
+    )
+    with pytest.raises(
+        ValidationError, match=r"validation error for VerifyCommandResult"
+    ):
+        MergeResult(result_json=[testtemp / "ok.json", testtemp / "ng.json"]).run()

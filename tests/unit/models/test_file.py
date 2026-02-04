@@ -1,6 +1,5 @@
 import json
 import pathlib
-import tempfile
 from typing import Any
 
 import pytest
@@ -286,41 +285,39 @@ def test_is_verification(
     assert obj.is_lightweight_verification() == is_lightweight_verification
 
 
-def test_parse_file_relative(mocker: MockerFixture):
-    with tempfile.TemporaryDirectory() as td:
-        mocker.patch.object(pathlib.Path, "cwd", return_value=pathlib.Path(td))
-        tdp = pathlib.Path(td)
-        tmp = pathlib.Path(td) / "verify.json"
-        with tmp.open("w") as fp:
-            json.dump(
-                {
-                    "files": {
-                        (tdp / "libfile.py").as_posix(): {
-                            "dependencies": [
-                                (tdp / "libfile2.py").as_posix(),
-                            ]
-                        },
-                        (tdp / "libfile2.py").as_posix(): {"dependencies": []},
-                        "/foo/other/libfile.py": {"dependencies": []},
-                        (tdp / "test/test.py").as_posix(): {
-                            "dependencies": ["/foo/other/libfile.py", "../libfile.py"]
-                        },
-                    }
-                },
-                fp,
-            )
-        assert (
-            VerificationInput.parse_file_relative(tmp).model_dump()
-            == VerificationInput(
-                files={
-                    pathlib.Path("libfile.py"): VerificationFile(
-                        dependencies={pathlib.Path("libfile2.py")}
-                    ),
-                    pathlib.Path("libfile2.py"): VerificationFile(),
-                    pathlib.Path("test/test.py"): VerificationFile(),
+def test_parse_file_relative(testtemp: pathlib.Path, mocker: MockerFixture):
+    mocker.patch.object(pathlib.Path, "cwd", return_value=testtemp)
+    tmp = testtemp / "verify.json"
+    with tmp.open("w") as fp:
+        json.dump(
+            {
+                "files": {
+                    (testtemp / "libfile.py").as_posix(): {
+                        "dependencies": [
+                            (testtemp / "libfile2.py").as_posix(),
+                        ]
+                    },
+                    (testtemp / "libfile2.py").as_posix(): {"dependencies": []},
+                    "/foo/other/libfile.py": {"dependencies": []},
+                    (testtemp / "test/test.py").as_posix(): {
+                        "dependencies": ["/foo/other/libfile.py", "../libfile.py"]
+                    },
                 }
-            ).model_dump()
+            },
+            fp,
         )
+    assert (
+        VerificationInput.parse_file_relative(tmp).model_dump()
+        == VerificationInput(
+            files={
+                pathlib.Path("libfile.py"): VerificationFile(
+                    dependencies={pathlib.Path("libfile2.py")}
+                ),
+                pathlib.Path("libfile2.py"): VerificationFile(),
+                pathlib.Path("test/test.py"): VerificationFile(),
+            }
+        ).model_dump()
+    )
 
 
 @pytest.mark.parametrize(
