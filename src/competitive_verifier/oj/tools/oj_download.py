@@ -34,6 +34,7 @@ def _run(*, problem: Problem) -> bool:
 
     if test_directory.exists() and any(test_directory.iterdir()):
         logger.info("download:already exists: %s", problem.url)
+        return True
 
     directory.mkdir(parents=True, exist_ok=True)
 
