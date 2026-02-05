@@ -129,7 +129,7 @@ additional-extra-property: "CDE"
 @pytest.mark.parametrize(
     ("content", "front_matter", "markdown_content"),
     test_markdown_params,
-    ids=range(len(test_markdown_params)),
+    ids=[t[0].decode()[:20] for t in test_markdown_params],
 )
 def test_markdown(
     content: bytes,
@@ -552,7 +552,7 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
 @pytest.mark.parametrize(
     ("front_matter", "expected"),
     test_front_matter_dump_yml_params,
-    ids=range(len(test_front_matter_dump_yml_params)),
+    ids=lambda s: f"len(expected)={len(s)}" if isinstance(s, bytes) else s,
 )
 def test_front_matter_dump_yml(front_matter: FrontMatter, expected: bytes):
     assert front_matter.model_dump_yml() == expected

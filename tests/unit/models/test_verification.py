@@ -97,7 +97,9 @@ test_command_union_json_params: list[tuple[Verification, str, str]] = [
 
 
 @pytest.mark.parametrize(
-    ("obj", "raw_json", "output_json"), test_command_union_json_params
+    ("obj", "raw_json", "output_json"),
+    test_command_union_json_params,
+    ids=lambda s: s[:20] if isinstance(s, str) else s,
 )
 def test_command_union_json(
     obj: Verification,
@@ -208,7 +210,6 @@ test_run_params: list[tuple[Verification, tuple[str | list[str]], dict[str, Any]
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs"),
     test_run_params,
-    ids=range(len(test_run_params)),
 )
 def test_run(
     obj: Verification,
@@ -265,7 +266,6 @@ test_run_with_env_params: list[
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs", "env"),
     test_run_with_env_params,
-    ids=range(len(test_run_with_env_params)),
 )
 def test_run_with_env(
     obj: Verification,
@@ -384,7 +384,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
 @pytest.mark.parametrize(
     ("obj", "args"),
     test_run_problem_command_params,
-    ids=range(len(test_run_problem_command_params)),
 )
 def test_run_problem_command(
     obj: ProblemVerification,
@@ -517,7 +516,6 @@ test_run_compile_params: list[
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs"),
     test_run_compile_params,
-    ids=range(len(test_run_compile_params)),
 )
 def test_run_compile(
     obj: Verification,
@@ -552,7 +550,6 @@ test_params_run_params: list[tuple[Verification, str | None]] = [
 @pytest.mark.parametrize(
     ("obj", "error_message"),
     test_params_run_params,
-    ids=range(len(test_params_run_params)),
 )
 def test_params_run(
     obj: Verification,

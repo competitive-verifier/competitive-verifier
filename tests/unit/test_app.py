@@ -423,7 +423,10 @@ class ParseError(Exception):
 @pytest.mark.parametrize(
     ("mockenv", "args", "expected_message"),
     test_parse_args_error_params,
-    ids=(f"{' '.join(t[1])}:{t[0]}" for t in test_parse_args_error_params),
+    ids=[
+        f"{' '.join(t[1])}:{' '.join((t[0] or {}).keys())}"
+        for t in test_parse_args_error_params
+    ],
     indirect=["mockenv"],
 )
 @pytest.mark.usefixtures("mockenv")

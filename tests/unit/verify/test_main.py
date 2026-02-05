@@ -20,7 +20,7 @@ test_get_split_state_params = [
 @pytest.mark.parametrize(
     ("size", "index", "expected"),
     test_get_split_state_params,
-    ids=range(len(test_get_split_state_params)),
+    ids=str,
 )
 def test_get_split_state(
     size: int | None,

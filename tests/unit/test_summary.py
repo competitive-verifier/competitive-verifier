@@ -377,7 +377,7 @@ test_summary_params = [
 @pytest.mark.parametrize(
     ("verify_command_result", "expected"),
     test_summary_params,
-    ids=range(len(test_summary_params)),
+    ids=lambda s: f"len(expected)={len(s)}" if isinstance(s, str) else s,
 )
 def test_summary(
     verify_command_result: VerifyCommandResult,
