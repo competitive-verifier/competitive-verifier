@@ -17,7 +17,7 @@ import requests
 from competitive_verifier import config
 from competitive_verifier.models import Problem, TestCase
 
-from .service import testcase_zipper
+from . import testcase_zipper
 
 logger = getLogger(__name__)
 

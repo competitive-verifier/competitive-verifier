@@ -24,9 +24,8 @@ from competitive_verifier.models import (
     VerificationResult,
 )
 
-from . import comparer, gnu
+from . import comparer, fmtutils, gnu
 from .format import Printer, StatusCounter, green, red
-from .service import format_utils as fmtutils
 
 logger = getLogger(__name__)
 

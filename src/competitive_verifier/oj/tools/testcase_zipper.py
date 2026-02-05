@@ -6,7 +6,7 @@ from logging import getLogger
 
 from competitive_verifier.models import TestCase
 
-from . import format_utils as fmtutils
+from . import fmtutils
 
 logger = getLogger(__name__)
 
