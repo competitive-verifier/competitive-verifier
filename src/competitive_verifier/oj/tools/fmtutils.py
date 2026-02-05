@@ -71,8 +71,8 @@ def match_with_format(
     if os.name == "nt":
         fmt = fmt.replace("/", "\\")
     table: dict[str, str] = {}
-    table["s"] = "(?P<name>.+)"
-    table["e"] = "(?P<ext>in|out)"
+    table["s"] = r"(?P<name>.+)"
+    table["e"] = r"(?P<ext>in|out)"
     pattern = re.compile(
         re.escape(str(directory.resolve()) + os.path.sep)
         + percentformat(re.escape(fmt).replace(re.escape("%"), "%"), table)

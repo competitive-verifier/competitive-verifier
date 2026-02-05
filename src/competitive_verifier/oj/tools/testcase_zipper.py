@@ -14,7 +14,6 @@ logger = getLogger(__name__)
 def extract_from_files(
     files: Iterator[tuple[str, bytes]],
     fmt: str = "%s.%e",
-    suffix: str = "out",
     *,
     ignore_unmatched_samples: bool = False,
 ) -> list[TestCase]:
@@ -28,7 +27,7 @@ def extract_from_files(
     """
     table = {
         "s": r"[^/]+",
-        "e": rf"(in|{suffix})",
+        "e": r"(in|out)",
     }
     names: dict[str, dict[str, tuple[str, bytes]]] = collections.defaultdict(dict)
     for filename, content in files:
@@ -39,19 +38,18 @@ def extract_from_files(
     testcases: list[TestCase] = []
     for name in sorted(names.keys()):
         data = names[name]
-        if "in" not in data or suffix not in data:
+        if "in" not in data or "out" not in data:
             logger.error("unmatched sample found: %s", str(data))
             if not ignore_unmatched_samples:
                 raise RuntimeError(f"unmatched sample found: {data}")
         else:
-            testcases += [TestCase(name, *data["in"], *data[suffix])]
+            testcases += [TestCase(name, *data["in"], *data["out"])]
     return testcases
 
 
 def extract_from_zip(
     zip_data: bytes,
     fmt: str,
-    out: str = "out",
     *,
     ignore_unmatched_samples: bool = False,
 ) -> list[TestCase]:
@@ -63,6 +61,5 @@ def extract_from_zip(
                 if not filename.endswith("/")
             ),
             fmt=fmt,
-            suffix=out,
             ignore_unmatched_samples=ignore_unmatched_samples,
         )
