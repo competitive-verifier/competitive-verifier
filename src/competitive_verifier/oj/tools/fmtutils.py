@@ -5,7 +5,7 @@ import os
 import pathlib
 import re
 import sys
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from logging import getLogger
 from re import Match
 
@@ -50,7 +50,7 @@ def percentparse(s: str, fmt: str, table: dict[str, str]) -> dict[str, str] | No
     return m.groupdict()
 
 
-def glob_with_format(directory: pathlib.Path, fmt: str) -> list[pathlib.Path]:
+def glob_with_format(directory: pathlib.Path, fmt: str) -> Iterable[pathlib.Path]:
     if os.name == "nt":
         fmt = fmt.replace("/", "\\")
     table: dict[str, str] = {}
@@ -59,10 +59,10 @@ def glob_with_format(directory: pathlib.Path, fmt: str) -> list[pathlib.Path]:
     pattern = glob.escape(str(directory) + os.path.sep) + percentformat(
         glob.escape(fmt).replace(glob.escape("%"), "%"), table
     )
-    paths = list(map(pathlib.Path, glob.glob(pattern)))
-    for path in paths:
+
+    for path in glob.glob(pattern):
         logger.debug("testcase globbed: %s", path)
-    return paths
+        yield pathlib.Path(path)
 
 
 def match_with_format(
@@ -98,18 +98,18 @@ def is_backup_or_hidden_file(path: pathlib.Path) -> bool:
     )
 
 
-def drop_backup_or_hidden_files(paths: list[pathlib.Path]) -> list[pathlib.Path]:
-    result: list[pathlib.Path] = []
+def drop_backup_or_hidden_files(
+    paths: Iterable[pathlib.Path],
+) -> Iterable[pathlib.Path]:
     for path in paths:
         if is_backup_or_hidden_file(path):
             logger.warning("ignore a backup file: %s", path)
         else:
-            result += [path]
-    return result
+            yield path
 
 
 def construct_relationship_of_files(
-    paths: list[pathlib.Path], directory: pathlib.Path, fmt: str
+    paths: Iterable[pathlib.Path], directory: pathlib.Path, fmt: str
 ) -> dict[str, dict[str, pathlib.Path]]:
     tests: dict[str, dict[str, pathlib.Path]] = collections.defaultdict(dict)
     for path in paths:

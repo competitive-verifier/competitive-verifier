@@ -477,7 +477,6 @@ def run_wrapper(
         deadline=deadline,
     )
     result = _run(args)
-
     return VerificationResult(
         status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,
         elapsed=result.elapsed,
