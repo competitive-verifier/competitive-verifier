@@ -60,12 +60,14 @@ class LibraryCheckerProblem(Problem):
         "checker.exe" if sys.platform == "win32" else "checker"
     )
 
-    def __init__(self, *, problem_id: str):
+    def __init__(self, *, problem_id: str, repo_path: pathlib.Path):
         self.problem_id = problem_id
+        self.repo_path = repo_path
+        self._source_directory = None
 
     def download_system_cases(self) -> bool:
         self.generate_test_cases_in_cloned_repository()
-        path = self.get_source_directory()
+        path = self.source_directory
 
         for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
             dst = self.problem_directory / "test" / file.name
@@ -88,8 +90,7 @@ class LibraryCheckerProblem(Problem):
         return True
 
     def get_source_checker_path(self) -> pathlib.Path | None:
-        path = self.get_source_directory()
-        return path / self.checker_exe_name
+        return self.source_directory / self.checker_exe_name
 
     @property
     def checker(self) -> pathlib.Path | None:
@@ -97,9 +98,9 @@ class LibraryCheckerProblem(Problem):
 
     def generate_test_cases_in_cloned_repository(self) -> None:
         self.update_cloned_repository()
-        path = self.get_cloned_repository_path()
+        path = self.repo_path
 
-        spec = str(self.get_source_directory() / "info.toml")
+        spec = str(self.source_directory / "info.toml")
         command = [sys.executable, str(path / "generate.py"), spec]
         logger.info("$ %s", " ".join(command))
         try:
@@ -110,13 +111,18 @@ class LibraryCheckerProblem(Problem):
             )
             raise
 
-    def get_source_directory(self) -> pathlib.Path:
-        path = self.get_cloned_repository_path()
-        info_tomls = list(path.glob(f"**/{glob.escape(self.problem_id)}/info.toml"))
-        if len(info_tomls) != 1:
-            logger.error("the problem %s not found or broken", self.problem_id)
-            raise RuntimeError
-        return info_tomls[0].parent
+    @property
+    def source_directory(self):
+        if self._source_directory is None:
+            problem_id = self.problem_id
+            info_tomls = list(
+                self.repo_path.glob(f"**/{glob.escape(problem_id)}/info.toml")
+            )
+            if len(info_tomls) != 1:
+                logger.error("the problem %s not found or broken", problem_id)
+                raise RuntimeError
+            self._source_directory = info_tomls[0].parent
+        return self._source_directory
 
     @property
     def url(self) -> str:
@@ -132,18 +138,16 @@ class LibraryCheckerProblem(Problem):
         ):
             m = re.match(r"/problem/(\w+)/?", result.path)
             if m:
-                return cls(problem_id=m.group(1))
+                return cls(
+                    problem_id=m.group(1),
+                    repo_path=config.get_cache_dir() / "library-checker-problems",
+                )
         return None
-
-    @classmethod
-    def get_cloned_repository_path(cls) -> pathlib.Path:
-        return config.get_cache_dir() / "library-checker-problems"
 
     _is_repository_updated = False
 
-    @classmethod
-    def update_cloned_repository(cls) -> None:
-        if cls._is_repository_updated:
+    def update_cloned_repository(self) -> None:
+        if self._is_repository_updated:
             return
 
         try:
@@ -156,7 +160,7 @@ class LibraryCheckerProblem(Problem):
             logger.exception("git command not found")
             raise
 
-        path = cls.get_cloned_repository_path()
+        path = self.repo_path
         if not path.exists():
             # init the problem repository
             url = "https://github.com/yosupo06/library-checker-problems"
@@ -175,7 +179,7 @@ class LibraryCheckerProblem(Problem):
                 stderr=sys.stderr,
             )
 
-        cls._is_repository_updated = True
+        self._is_repository_updated = True
 
 
 class _YukicoderProblemNo(int):
