@@ -130,8 +130,7 @@ def compile_failure_integration_data(
 
 @pytest.mark.integration
 @pytest.mark.order(-500)
-@pytest.mark.usefixtures("additional_path")
-@pytest.mark.usefixtures("mock_verification")
+@pytest.mark.usefixtures("additional_path", "mock_verification")
 def test_compile_failure(
     compile_failure_integration_data: IntegrationData,
 ):

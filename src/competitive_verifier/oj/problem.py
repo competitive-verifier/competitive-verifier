@@ -1,26 +1,26 @@
 import glob
+from io import BytesIO
 import json
 import os
 import pathlib
 import posixpath
 import re
-import shutil
 import subprocess
 import sys
 import urllib.parse
 from abc import abstractmethod
-from collections.abc import Iterable
-from itertools import chain
+from collections.abc import Iterable, Iterator
 from logging import getLogger
 from typing import ClassVar, Optional
+import zipfile
 
 import requests
 
 from competitive_verifier import config
-from competitive_verifier.models import Problem, TestCaseData
+from competitive_verifier.models import Problem, TestCaseData, TestCaseFile
 
 from . import testcase_zipper
-from .file import save_testcases
+from .file import iter_testcases, merge_testcase_files, save_testcases
 
 logger = getLogger(__name__)
 
@@ -30,6 +30,9 @@ class NotLoggedInError(RuntimeError):
 
 
 class _BaseProblem(Problem):
+    def iter_system_cases(self) -> Iterator[TestCaseFile]:
+        return iter_testcases(directory=self.test_directory)
+
     def download_system_cases(self) -> Iterable[TestCaseData] | bool:
         test_directory = self.test_directory
 
@@ -39,7 +42,7 @@ class _BaseProblem(Problem):
 
         self.problem_directory.mkdir(parents=True, exist_ok=True)
 
-        samples = self._download_cases()
+        samples = list(self._download_cases())
 
         # Check samples
         if not samples:
@@ -51,8 +54,7 @@ class _BaseProblem(Problem):
         return samples
 
     @abstractmethod
-    def _download_cases(self) -> Iterable[TestCaseData]:
-        pass
+    def _download_cases(self) -> Iterable[TestCaseData]: ...
 
 
 class LibraryCheckerProblem(Problem):
@@ -60,43 +62,41 @@ class LibraryCheckerProblem(Problem):
         "checker.exe" if sys.platform == "win32" else "checker"
     )
 
-    def __init__(self, *, problem_id: str, repo_path: pathlib.Path):
+    def __init__(self, *, problem_id: str):
         self.problem_id = problem_id
-        self.repo_path = repo_path
         self._source_directory = None
 
+    def __hash__(self) -> int:
+        return hash((self.problem_id, self.repo_path))
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, LibraryCheckerProblem):
+            return False
+        return self.problem_id == value.problem_id and self.repo_path == value.repo_path
+
+    @property
+    def repo_path(self):
+        return config.get_cache_dir() / "library-checker-problems"
+
+    def iter_system_cases(self) -> Iterator[TestCaseFile]:
+        inputs: dict[str, pathlib.Path] = {}
+        outputs: dict[str, pathlib.Path] = {}
+        for path in self.source_directory.glob("in/*.in"):
+            inputs[path.stem] = path
+        for path in self.source_directory.glob("out/*.out"):
+            outputs[path.stem] = path
+        return merge_testcase_files(inputs, outputs)
+
     def download_system_cases(self) -> bool:
-        self.generate_test_cases_in_cloned_repository()
-        path = self.source_directory
-
-        for file in chain(path.glob("in/*.in"), path.glob("out/*.out")):
-            dst = self.problem_directory / "test" / file.name
-            if dst.exists():
-                logger.error(
-                    "Failed to download since file already exists: %s", str(dst)
-                )
-                return False
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(file, dst)
-
-        checker_path = self.get_source_checker_path()
-        if checker_path and checker_path.exists():
-            try:
-                shutil.move(checker_path, self.problem_directory)
-            except Exception:
-                logger.exception("Failed to copy checker")
-                shutil.rmtree(self.problem_directory)
-                return False
+        self.problem_directory.mkdir(parents=True, exist_ok=True)
+        self.generate_test_cases()
         return True
-
-    def get_source_checker_path(self) -> pathlib.Path | None:
-        return self.source_directory / self.checker_exe_name
 
     @property
     def checker(self) -> pathlib.Path | None:
-        return self.problem_directory / self.checker_exe_name
+        return self.source_directory / self.checker_exe_name
 
-    def generate_test_cases_in_cloned_repository(self) -> None:
+    def generate_test_cases(self) -> None:
         self.update_cloned_repository()
         path = self.repo_path
 
@@ -119,8 +119,7 @@ class LibraryCheckerProblem(Problem):
                 self.repo_path.glob(f"**/{glob.escape(problem_id)}/info.toml")
             )
             if len(info_tomls) != 1:
-                logger.error("the problem %s not found or broken", problem_id)
-                raise RuntimeError
+                raise RuntimeError(f"the problem {problem_id!r} not found or broken")
             self._source_directory = info_tomls[0].parent
         return self._source_directory
 
@@ -138,10 +137,7 @@ class LibraryCheckerProblem(Problem):
         ):
             m = re.match(r"/problem/(\w+)/?", result.path)
             if m:
-                return cls(
-                    problem_id=m.group(1),
-                    repo_path=config.get_cache_dir() / "library-checker-problems",
-                )
+                return cls(problem_id=m.group(1))
         return None
 
     _is_repository_updated = False
@@ -222,7 +218,6 @@ class YukicoderProblem(_BaseProblem):
         resp = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
         fmt = "test_%e/%s"
 
-        # NOTE: yukicoder's test sets sometimes contain garbages. The owner insists that this is an intended behavior, so we need to ignore them.
         return testcase_zipper.extract_from_zip(
             resp.content, fmt, ignore_unmatched_samples=True
         )

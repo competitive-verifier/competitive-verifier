@@ -91,6 +91,8 @@ def test_problem_repr(url: str, expected: str):
 
 def test_problem_from_url_invalid_class():
     class DummyProblem(Problem):
+        def iter_system_cases(self): ...  # pyright: ignore[reportIncompatibleMethodOverride]
+
         @property
         def url(self) -> str:
             raise NotImplementedError

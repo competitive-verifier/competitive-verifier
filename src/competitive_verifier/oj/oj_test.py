@@ -9,11 +9,9 @@ import sys
 import tempfile
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from logging import getLogger
-from typing import Annotated, BinaryIO
-
-from pydantic import BaseModel
-from pydantic.functional_validators import BeforeValidator
+from typing import BinaryIO
 
 from competitive_verifier.models import (
     JudgeStatus,
@@ -24,7 +22,7 @@ from competitive_verifier.models import (
     VerificationResult,
 )
 
-from . import comparer, fmtutils, gnu
+from . import comparer, gnu
 from .format import Printer, StatusCounter, green, red
 
 logger = getLogger(__name__)
@@ -34,7 +32,8 @@ class _ExecError(Exception):
     pass
 
 
-class OjExecInfo(BaseModel):
+@dataclass
+class OjExecInfo:
     answer: bytes | None
     """The standard output of the executed command"""
     elapsed: float
@@ -114,38 +113,42 @@ def measure_command(
         )
 
 
-class OjTestArguments(BaseModel):
+@dataclass
+class OjTestArguments:
     """Parameters for oj-test command.
 
     Port of onlinejudge_command.subcommand.test.add_subparser.
     """
 
     command: str | list[str]
-    directory: pathlib.Path
+    problem: Problem
     tle: float | None
     mle: float | None
     error: float | None
-    judge: pathlib.Path | None
     env: dict[str, str] | None = None
     deadline: float = float("inf")
 
 
-class OjTestcaseResult(BaseModel):
+@dataclass
+class OjTestcaseResult:
     name: str
     """A name of the test case."""
     input: pathlib.Path
     """A input of the test case."""
-    expected: pathlib.Path | None = None
-    """A expected output of the test case."""
     answer: bytes
     """A output of the test case."""
 
     status: JudgeStatus
     elapsed: float
+    exitcode: int | None
+
     memory: float | None = None
-    exitcode: Annotated[
-        int | None, BeforeValidator(lambda v: v if isinstance(v, int) else None)
-    ]
+    expected: pathlib.Path | None = None
+    """A expected output of the test case."""
+
+    def __post_init__(self):
+        if not isinstance(self.exitcode, int):
+            self.exitcode = None
 
     def __str__(self) -> str:
         p = [
@@ -188,7 +191,8 @@ class OjTestcaseResult(BaseModel):
         logger.info("%s:answer:\n%s", self.name, Printer(self.answer))
 
 
-class OjTestResult(BaseModel):
+@dataclass
+class OjTestResult:
     is_success: bool
 
     elapsed: float
@@ -357,7 +361,7 @@ def single_case(
             error=args.error,
             test_input_path=test_input_path,
             test_output_path=test_output_path,
-            judge_command=str(args.judge) if args.judge else None,
+            judge_command=str(args.problem.checker) if args.problem.checker else None,
         )
         status = determine_status(
             exitcode=info.returncode,
@@ -393,11 +397,6 @@ def single_case(
 
 
 def _run(args: OjTestArguments) -> OjTestResult:
-    # list tests
-    test = fmtutils.glob_with_format(args.directory, "%s.%e")  # by default
-    test = fmtutils.drop_backup_or_hidden_files(test)
-    tests = fmtutils.construct_relationship_of_files(test, args.directory, "%s.%e")
-
     # check wheather GNU time is available
     if gnu.time_command() is None:
         if platform.system() == "Darwin":
@@ -407,13 +406,15 @@ def _run(args: OjTestArguments) -> OjTestResult:
         if args.mle is not None:
             raise RuntimeError("--mle is used but GNU time does not exist")
 
+    tests = list(args.problem.iter_system_cases())
+
     # run tests
     history: list[OjTestcaseResult] = []
-    for name, paths in sorted(tests.items()):
+    for t in tests:
         if time.perf_counter() > args.deadline:
             raise VerifcationTimeoutError
 
-        history.append(single_case(name, paths["in"], paths.get("out"), args=args))
+        history.append(single_case(t.name, t.input_path, t.output_path, args=args))
 
     # summarize
     elapsed: float = 0.0
@@ -463,17 +464,13 @@ def run_wrapper(
     error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
-    directory = problem.problem_directory
-    test_directory = directory / "test"
-
     args = OjTestArguments(
         command=command,
+        problem=problem,
         env=env,
-        directory=test_directory,
         tle=tle,
         mle=mle,
         error=error,
-        judge=problem.checker,
         deadline=deadline,
     )
     result = _run(args)

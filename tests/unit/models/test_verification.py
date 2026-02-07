@@ -20,6 +20,13 @@ from competitive_verifier.models import (
     Verification,
 )
 from competitive_verifier.oj.oj_test import OjTestArguments
+from competitive_verifier.oj.problem import problem_from_url
+
+
+def from_url_force(url: str):
+    p = problem_from_url(url)
+    assert p
+    return p
 
 
 @dataclass
@@ -297,8 +304,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=22.0,
             error=None,
@@ -313,8 +321,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=22.0,
             error=None,
@@ -332,8 +341,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             mle=1.2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -350,8 +360,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=pathlib.Path("/any/mockcheck"),
+            problem=from_url_force("https://judge.yosupo.jp/problem/aplusb"),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -368,8 +377,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=pathlib.Path("/any/mockcheck"),
+            problem=from_url_force("https://judge.yosupo.jp/problem/aplusb"),
             command="ls ~",
             tle=2.0,
             error=1e-06,

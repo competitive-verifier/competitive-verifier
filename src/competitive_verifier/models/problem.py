@@ -2,9 +2,15 @@ import hashlib
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, cast
 
 from competitive_verifier import config
+
+
+class TestCaseFile(NamedTuple):
+    name: str
+    input_path: pathlib.Path
+    output_path: pathlib.Path
 
 
 class TestCaseData(NamedTuple):
@@ -17,8 +23,19 @@ class Problem(ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}.from_url({self.url!r})"  # pragma: no cover
 
+    def __hash__(self) -> int:
+        return self.url.__hash__()
+
+    def __eq__(self, value: object) -> bool:
+        if type(self) is not type(value):
+            return False
+        return self.url == cast("Problem", value).url
+
     @abstractmethod
     def download_system_cases(self) -> Iterable[TestCaseData] | bool: ...
+
+    @abstractmethod
+    def iter_system_cases(self) -> Iterable[TestCaseFile]: ...
 
     @property
     @abstractmethod

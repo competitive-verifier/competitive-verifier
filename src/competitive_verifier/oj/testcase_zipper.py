@@ -1,14 +1,34 @@
 import collections
 import io
+import re
 import zipfile
 from collections.abc import Iterable, Iterator
 from logging import getLogger
 
 from competitive_verifier.models import TestCaseData
 
-from . import fmtutils
-
 logger = getLogger(__name__)
+
+
+def percentparse(s: str, fmt: str, table: dict[str, str]) -> dict[str, str] | None:
+    table = {key: f"(?P<{key}>{value})" for key, value in table.items()}
+    used: set[str] = set()
+    pattern = ""
+    for m in re.finditer("[^%]|%(.)", re.escape(fmt).replace("\\%", "%")):
+        token = m.group(0)
+        if token.startswith("%"):
+            c = token[1]
+            if c not in used:
+                pattern += table[c]
+                used.add(c)
+            else:
+                pattern += rf"(?P={c})"
+        else:
+            pattern += token
+    m = re.match(pattern, s)
+    if not m:
+        return None
+    return m.groupdict()
 
 
 def extract_from_files(
@@ -30,7 +50,7 @@ def extract_from_files(
     }
     names: dict[str, dict[str, bytes]] = collections.defaultdict(dict)
     for filename, content in files:
-        m = fmtutils.percentparse(filename, fmt, table)
+        m = percentparse(filename, fmt, table)
         if not m or m["e"] in names[m["s"]]:
             raise ValueError
         names[m["s"]][m["e"]] = content
