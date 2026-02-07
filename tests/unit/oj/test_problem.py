@@ -2,7 +2,11 @@ import gc
 
 import pytest
 
-from competitive_verifier.oj.tools.problem import Problem, normpath
+from competitive_verifier.oj.problem import (
+    Problem,
+    _normpath,  # pyright: ignore[reportPrivateUsage]
+    problem_from_url,
+)
 
 test_normpath_params: list[tuple[str, str]] = [
     ("hoge/foo/bar", "hoge/foo/bar"),
@@ -17,7 +21,7 @@ test_normpath_params: list[tuple[str, str]] = [
     ids=[t[0] for t in test_normpath_params],
 )
 def test_normpath(path: str, expected: str):
-    assert normpath(path) == expected
+    assert _normpath(path) == expected
 
 
 test_problem_repr_params = [
@@ -82,16 +86,28 @@ test_problem_repr_params = [
     ids=[t[0] for t in test_problem_repr_params],
 )
 def test_problem_repr(url: str, expected: str):
-    assert repr(Problem.from_url(url)) == expected
+    assert repr(problem_from_url(url)) == expected
 
 
 def test_problem_from_url_invalid_class():
     class DummyProblem(Problem):
-        pass
+        @property
+        def url(self) -> str:
+            raise NotImplementedError
 
-    with pytest.raises(RuntimeError, match=r"^from_url must be overriden$"):
-        Problem.from_url("")
+        def download_system_cases(self) -> bool:
+            raise NotImplementedError
+
+        @classmethod
+        def from_url(cls, url: str):
+            if url == "dummy":
+                return cls()
+            return None
+
+    assert problem_from_url("") is None
+    assert type(problem_from_url("dummy")) is DummyProblem
+
     del DummyProblem
 
     gc.collect()
-    assert Problem.from_url("") is None
+    assert problem_from_url("dummy") is None

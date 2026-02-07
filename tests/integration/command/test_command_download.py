@@ -6,7 +6,7 @@ import subprocess
 import pytest
 
 from competitive_verifier import oj
-from competitive_verifier.models import Problem
+from competitive_verifier.oj.problem import problem_from_url
 
 from .types import ConfigDirSetter
 
@@ -22,7 +22,7 @@ class TestCommandDownload:
     def test_library_checker(self, set_config_dir: ConfigDirSetter):
         url = "https://judge.yosupo.jp/problem/aplusb"
         dst_path = set_config_dir("download/library_checker")
-        problem = Problem.from_url(url)
+        problem = problem_from_url(url)
         assert problem is not None
 
         promlem_path = problem.problem_directory
@@ -60,7 +60,7 @@ class TestCommandDownload:
     def test_yukicoder(self, url: str, set_config_dir: ConfigDirSetter):
         dst_path = set_config_dir("download/yukicoder")
 
-        problem = Problem.from_url(url)
+        problem = problem_from_url(url)
         assert problem is not None
 
         promlem_path = problem.problem_directory
@@ -100,7 +100,7 @@ class TestCommandDownload:
     def test_aizu_onlinejudge(self, url: str, set_config_dir: ConfigDirSetter):
         dst_path = set_config_dir("download/aoj")
 
-        problem = Problem.from_url(url)
+        problem = problem_from_url(url)
         assert problem is not None
 
         promlem_path = problem.problem_directory
@@ -122,7 +122,7 @@ class TestCommandDownload:
         url = "https://onlinejudge.u-aizu.ac.jp/services/room.html#RitsCamp19Day2/problems/A"
         dst_path = set_config_dir("download/aoj")
 
-        problem = Problem.from_url(url)
+        problem = problem_from_url(url)
         assert problem is not None
 
         promlem_path = problem.problem_directory

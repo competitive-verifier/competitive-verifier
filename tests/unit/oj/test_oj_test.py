@@ -7,14 +7,14 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier.models import JudgeStatus
-from competitive_verifier.oj.tools.oj_test import (
+from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
     SpecialJudge,
     single_case,
 )
 
-OJ_TEST_MODULE = "competitive_verifier.oj.tools.oj_test"
+OJ_TEST_MODULE = "competitive_verifier.oj.oj_test"
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def mock_measure(
     assert isinstance(request.param, OjExecInfo)
 
     mocker.patch(
-        "competitive_verifier.oj.tools.oj_test.measure_command",
+        "competitive_verifier.oj.oj_test.measure_command",
         return_value=request.param,
     )
     return request.param

@@ -5,8 +5,8 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import oj
-from competitive_verifier.oj.tools.oj_test import OjTestArguments
-from competitive_verifier.oj.tools.problem import (
+from competitive_verifier.oj.oj_test import OjTestArguments
+from competitive_verifier.oj.problem import (
     LibraryCheckerProblem,
     YukicoderProblem,
 )
@@ -69,10 +69,10 @@ def test_oj_test(
     expected: OjTestArguments,
 ):
     mocker.patch(
-        "competitive_verifier.oj.tools.problem.LibraryCheckerProblem.checker_exe_name",
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
         "mockcheck",
     )
-    run = mocker.patch("competitive_verifier.oj.tools.oj_test._run")
+    run = mocker.patch("competitive_verifier.oj.oj_test._run")
 
     oj.test(**args)
 

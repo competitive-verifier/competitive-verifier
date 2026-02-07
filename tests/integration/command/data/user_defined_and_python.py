@@ -1,7 +1,7 @@
 import pathlib
 from typing import Any
 
-from competitive_verifier.oj.tools.gnu import time_command
+from competitive_verifier.oj.gnu import time_command
 
 from .integration_data import IntegrationData
 

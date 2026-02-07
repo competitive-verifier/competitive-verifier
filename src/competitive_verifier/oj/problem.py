@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+from abc import abstractmethod
+from collections.abc import Iterable
 from itertools import chain
 from logging import getLogger
 from typing import ClassVar, Optional
@@ -15,15 +17,42 @@ from typing import ClassVar, Optional
 import requests
 
 from competitive_verifier import config
-from competitive_verifier.models import Problem, TestCase
+from competitive_verifier.models import Problem, TestCaseData
 
 from . import testcase_zipper
+from .file import save_testcases
 
 logger = getLogger(__name__)
 
 
 class NotLoggedInError(RuntimeError):
     pass
+
+
+class _BaseProblem(Problem):
+    def download_system_cases(self) -> Iterable[TestCaseData] | bool:
+        test_directory = self.test_directory
+
+        if test_directory.exists() and any(test_directory.iterdir()):
+            logger.info("download:already exists: %s", self.url)
+            return True
+
+        self.problem_directory.mkdir(parents=True, exist_ok=True)
+
+        samples = self._download_cases()
+
+        # Check samples
+        if not samples:
+            logger.error("Sample not found")
+            return False
+
+        # write samples to files
+        save_testcases(samples, directory=test_directory)
+        return samples
+
+    @abstractmethod
+    def _download_cases(self) -> Iterable[TestCaseData]:
+        pass
 
 
 class LibraryCheckerProblem(Problem):
@@ -106,10 +135,6 @@ class LibraryCheckerProblem(Problem):
                 return cls(problem_id=m.group(1))
         return None
 
-    def download_checker_binary(self) -> pathlib.Path:
-        self.generate_test_cases_in_cloned_repository()
-        return self.get_source_directory() / "checker"
-
     @classmethod
     def get_cloned_repository_path(cls) -> pathlib.Path:
         return config.get_cache_dir() / "library-checker-problems"
@@ -166,7 +191,7 @@ class _YukicoderProblemId(int):
         return super().__new__(cls, value)
 
 
-class YukicoderProblem(Problem):
+class YukicoderProblem(_BaseProblem):
     problem: _YukicoderProblemNo | _YukicoderProblemId
 
     def __init__(self, *, problem_no: int | None = None, problem_id: int | None = None):
@@ -177,7 +202,7 @@ class YukicoderProblem(Problem):
         else:
             raise ValueError("Needs problem_no or problem_id")
 
-    def download_system_cases(self) -> list[TestCase]:
+    def _download_cases(self) -> list[TestCaseData]:
         """Download yukicoder problem.
 
         Raises:
@@ -192,9 +217,11 @@ class YukicoderProblem(Problem):
         url = f"{self.url}/testcase.zip"
         resp = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
         fmt = "test_%e/%s"
+
+        # NOTE: yukicoder's test sets sometimes contain garbages. The owner insists that this is an intended behavior, so we need to ignore them.
         return testcase_zipper.extract_from_zip(
             resp.content, fmt, ignore_unmatched_samples=True
-        )  # NOTE: yukicoder's test sets sometimes contain garbages. The owner insists that this is an intended behavior, so we need to ignore them.
+        )
 
     @property
     def url(self) -> str:
@@ -205,7 +232,7 @@ class YukicoderProblem(Problem):
         # example: https://yukicoder.me/problems/no/499
         # example: http://yukicoder.me/problems/1476
         result = urllib.parse.urlparse(url)
-        dirname, basename = posixpath.split(normpath(result.path))
+        dirname, basename = posixpath.split(_normpath(result.path))
         if result.scheme in ("", "http", "https") and result.netloc == "yukicoder.me":
             try:
                 n = int(basename)
@@ -225,41 +252,39 @@ class YukicoderProblem(Problem):
         return "login-btn" not in str(resp.content)
 
 
-class AOJProblem(Problem):
+class AOJProblem(_BaseProblem):
     def __init__(self, *, problem_id: str):
         self.problem_id = problem_id
 
-    def download_system_cases(self) -> list[TestCase]:
+    def _download_cases(self) -> Iterable[TestCaseData]:
+        return AOJProblem.download_cases(self.problem_id)
+
+    @staticmethod
+    def download_cases(problem_id: str) -> Iterable[TestCaseData]:
         # get header
         # reference: http://developers.u-aizu.ac.jp/api?key=judgedat%2Ftestcases%2F%7BproblemId%7D%2Fheader_GET
-        url = f"https://judgedat.u-aizu.ac.jp/testcases/{self.problem_id}/header"
+        url = f"https://judgedat.u-aizu.ac.jp/testcases/{problem_id}/header"
         resp = requests.get(url, allow_redirects=True, timeout=10)
         resp.raise_for_status()
         header_res = json.loads(resp.text)
 
         # get testcases via the official API
-        testcases: list[TestCase] = []
         for header in header_res["headers"]:
             # NOTE: the endpoints are not same to http://developers.u-aizu.ac.jp/api?key=judgedat%2Ftestcases%2F%7BproblemId%7D%2F%7Bserial%7D_GET since the json API often says "..... (terminated because of the limitation)"
             # NOTE: even when using https://judgedat.u-aizu.ac.jp/testcases/PROBLEM_ID/SERIAL, there is the 1G limit (see https://twitter.com/beet_aizu/status/1194947611100188672)
             serial = header["serial"]
-            url = f"https://judgedat.u-aizu.ac.jp/testcases/{self.problem_id}/{serial}"
+            url = f"https://judgedat.u-aizu.ac.jp/testcases/{problem_id}/{serial}"
 
             resp_in = requests.get(url + "/in", allow_redirects=True, timeout=10)
             resp_in.raise_for_status()
             resp_out = requests.get(url + "/out", allow_redirects=True, timeout=10)
             resp_out.raise_for_status()
 
-            testcases += [
-                TestCase(
-                    header["name"],
-                    header["name"],
-                    resp_in.content,
-                    header["name"],
-                    resp_out.content,
-                )
-            ]
-        return testcases
+            yield TestCaseData(
+                header["name"],
+                resp_in.content,
+                resp_out.content,
+            )
 
     @property
     def url(self) -> str:
@@ -275,7 +300,7 @@ class AOJProblem(Problem):
         if (
             result.scheme in ("", "http", "https")
             and result.netloc == "judge.u-aizu.ac.jp"
-            and normpath(result.path) == "/onlinejudge/description.jsp"
+            and _normpath(result.path) == "/onlinejudge/description.jsp"
             and querystring.get("id")
             and len(querystring["id"]) == 1
         ):
@@ -286,7 +311,7 @@ class AOJProblem(Problem):
         # example: https://onlinejudge.u-aizu.ac.jp/courses/library/4/CGL/3/CGL_3_B
         m = re.match(
             r"^/(challenges|courses)/(sources|library/\d+|lesson/\d+)/(\w+)/(\w+)/(\w+)$",
-            normpath(result.path),
+            _normpath(result.path),
         )
         if (
             result.scheme in ("", "http", "https")
@@ -298,7 +323,7 @@ class AOJProblem(Problem):
 
         # example: https://onlinejudge.u-aizu.ac.jp/problems/0423
         # example: https://onlinejudge.u-aizu.ac.jp/problems/CGL_3_B
-        m = re.match(r"^/problems/(\w+)$", normpath(result.path))
+        m = re.match(r"^/problems/(\w+)$", _normpath(result.path))
         if (
             result.scheme in ("", "http", "https")
             and result.netloc == "onlinejudge.u-aizu.ac.jp"
@@ -310,7 +335,7 @@ class AOJProblem(Problem):
         return None
 
 
-class AOJArenaProblem(Problem):
+class AOJArenaProblem(_BaseProblem):
     def __init__(self, *, arena_id: str, alphabet: str):
         if len(alphabet) != 1 or not alphabet.isupper():
             raise ValueError(arena_id, alphabet)
@@ -334,8 +359,8 @@ class AOJArenaProblem(Problem):
             raise ValueError("Problem is not found.")
         return self._problem_id
 
-    def download_system_cases(self) -> list[TestCase]:
-        return AOJProblem(problem_id=self.get_problem_id()).download_system_cases()
+    def _download_cases(self) -> Iterable[TestCaseData]:
+        return AOJProblem.download_cases(self.get_problem_id())
 
     @property
     def url(self) -> str:
@@ -348,7 +373,7 @@ class AOJArenaProblem(Problem):
         if (
             result.scheme in ("", "http", "https")
             and result.netloc == "onlinejudge.u-aizu.ac.jp"
-            and normpath(result.path) == "/services/room.html"
+            and _normpath(result.path) == "/services/room.html"
         ):
             fragment = result.fragment.split("/")
             if len(fragment) == 3 and fragment[1] == "problems":  # noqa: PLR2004
@@ -356,7 +381,7 @@ class AOJArenaProblem(Problem):
         return None
 
 
-def normpath(path: str) -> str:
+def _normpath(path: str) -> str:
     """A wrapper of posixpath.normpath.
 
     posixpath.normpath doesn't collapse a leading duplicated slashes.
@@ -365,3 +390,16 @@ def normpath(path: str) -> str:
     if path.startswith("//"):
         path = "/" + path.lstrip("/")
     return path
+
+
+def _subclasses_recursive(cls: type[Problem]) -> Iterable[type[Problem]]:
+    yield from (children := cls.__subclasses__())
+    for ch in children:
+        yield from _subclasses_recursive(ch)
+
+
+def problem_from_url(url: str) -> Problem | None:
+    for ch in set(_subclasses_recursive(Problem)):
+        if (problem := ch.from_url(url)) is not None:
+            return problem
+    return None

@@ -10,7 +10,6 @@ import pytest
 from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
 
-import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
@@ -20,7 +19,7 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
-from competitive_verifier.oj.tools.oj_test import OjTestArguments
+from competitive_verifier.oj.oj_test import OjTestArguments
 
 
 @dataclass
@@ -391,10 +390,10 @@ def test_run_problem_command(
     mocker: MockerFixture,
 ):
     mocker.patch(
-        "competitive_verifier.oj.tools.problem.LibraryCheckerProblem.checker_exe_name",
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
         "mockcheck",
     )
-    patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "_run")
+    patch = mocker.patch("competitive_verifier.oj.oj_test._run")
 
     mocker.patch.object(
         Problem,

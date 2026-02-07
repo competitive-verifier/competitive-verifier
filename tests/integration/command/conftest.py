@@ -7,7 +7,7 @@ import shutil
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.tools import problem
+from competitive_verifier.oj import problem
 
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
