@@ -1,6 +1,7 @@
 import pathlib
 from collections.abc import Iterable, Iterator
 from logging import getLogger
+from typing import TypeVar
 
 from competitive_verifier.models import TestCaseData, TestCaseFile
 
@@ -27,10 +28,13 @@ def save_testcase(sample: TestCaseData, *, directory: pathlib.Path):
         logger.debug("saved to: %s", path)
 
 
-def merge_testcase_files(
-    inputs: dict[str, pathlib.Path],
-    outputs: dict[str, pathlib.Path],
-) -> Iterator[TestCaseFile]:
+_InOut = TypeVar("_InOut")
+
+
+def enumerate_inouts(
+    inputs: dict[str, _InOut],
+    outputs: dict[str, _InOut],
+) -> Iterator[tuple[str, _InOut, _InOut]]:
     common_keys = inputs.keys() & outputs.keys()
     if len(inputs) != len(common_keys) or len(outputs) != len(common_keys):
         logger.warning("dangling output case")
@@ -39,11 +43,15 @@ def merge_testcase_files(
         logger.warning("no cases found")
 
     for key in sorted(common_keys):
-        yield TestCaseFile(
-            name=key,
-            input_path=inputs[key],
-            output_path=outputs[key],
-        )
+        yield (key, inputs[key], outputs[key])
+
+
+def merge_testcase_files(
+    inputs: dict[str, pathlib.Path],
+    outputs: dict[str, pathlib.Path],
+) -> Iterator[TestCaseFile]:
+    for name, i, o in enumerate_inouts(inputs, outputs):
+        yield TestCaseFile(name=name, input_path=i, output_path=o)
 
 
 def iter_testcases(*, directory: pathlib.Path) -> Iterator[TestCaseFile]:

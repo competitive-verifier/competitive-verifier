@@ -1,5 +1,4 @@
 import glob
-from io import BytesIO
 import json
 import os
 import pathlib
@@ -8,19 +7,19 @@ import re
 import subprocess
 import sys
 import urllib.parse
+import zipfile
 from abc import abstractmethod
 from collections.abc import Iterable, Iterator
+from io import BytesIO
 from logging import getLogger
 from typing import ClassVar, Optional
-import zipfile
 
 import requests
 
 from competitive_verifier import config
 from competitive_verifier.models import Problem, TestCaseData, TestCaseFile
 
-from . import testcase_zipper
-from .file import iter_testcases, merge_testcase_files, save_testcases
+from .file import enumerate_inouts, iter_testcases, merge_testcase_files, save_testcases
 
 logger = getLogger(__name__)
 
@@ -216,11 +215,23 @@ class YukicoderProblem(_BaseProblem):
             raise NotLoggedInError("Required: $YUKICODER_TOKEN environment variable")
         url = f"{self.url}/testcase.zip"
         resp = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
-        fmt = "test_%e/%s"
 
-        return testcase_zipper.extract_from_zip(
-            resp.content, fmt, ignore_unmatched_samples=True
-        )
+        with zipfile.ZipFile(BytesIO(resp.content)) as fh:
+            inputs: dict[str, bytes] = {}
+            outputs: dict[str, bytes] = {}
+            for filename in fh.namelist():
+                if filename.endswith("/"):
+                    continue
+                file = fh.read(filename)
+                path = pathlib.Path(filename)
+                if filename.startswith("test_in/"):
+                    inputs[path.stem] = file
+                elif filename.startswith("test_out/"):
+                    outputs[path.stem] = file
+            return [
+                TestCaseData(name=name, input_data=i, output_data=o)
+                for name, i, o in enumerate_inouts(inputs, outputs)
+            ]
 
     @property
     def url(self) -> str:
