@@ -19,7 +19,7 @@ def _run(*, problem: Problem) -> bool:
         return False
 
 
-def run_wrapper(url: str, *, group_log: bool = False) -> bool:
+def main(url: str, *, group_log: bool = False) -> bool:
     # prepare values
     problem = problem_from_url(url)
     if problem is None:

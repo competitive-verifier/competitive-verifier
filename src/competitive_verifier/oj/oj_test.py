@@ -454,7 +454,7 @@ def _run(args: OjTestArguments) -> OjTestResult:
     )
 
 
-def run_wrapper(
+def main(
     *,
     problem: Problem,
     command: str | list[str],

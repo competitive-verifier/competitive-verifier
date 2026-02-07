@@ -19,8 +19,8 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
+from competitive_verifier.oj import problem_from_url
 from competitive_verifier.oj.oj_test import OjTestArguments
-from competitive_verifier.oj.problem import problem_from_url
 
 
 def from_url_force(url: str):
