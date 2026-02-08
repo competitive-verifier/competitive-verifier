@@ -10,6 +10,7 @@ from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
     OjTestcaseResult,
+    Problem,
     SpecialJudge,
     single_case,
 )
@@ -44,13 +45,19 @@ def mock_generate_test_cases(mocker: MockerFixture):
 def mock_judge(
     mocker: MockerFixture,
     request: pytest.FixtureRequest,
-) -> bool:
+) -> Problem:
     assert request.param is None or isinstance(request.param, bool)
 
     if request.param is not None:
         mocker.patch.object(SpecialJudge, "run", return_value=request.param)
-        return True
-    return False
+        mocker.patch.object(
+            LibraryCheckerProblem,
+            "checker",
+            return_value=pathlib.Path("/anywhere/mockcheck"),
+            new_callable=mocker.PropertyMock,
+        )
+        return LibraryCheckerProblem(problem_id="aplusb")
+    return AOJProblem(problem_id="1")
 
 
 class SingleCaseParams(NamedTuple):
@@ -1029,7 +1036,7 @@ def test_single_case(
     expected: OjTestcaseResult,
     expected_log: list[tuple[str, int, str]],
     caplog: pytest.LogCaptureFixture,
-    mock_judge: bool,
+    mock_judge: Problem,
     mock_measure: OjExecInfo,
     testtemp: pathlib.Path,
 ):
@@ -1049,9 +1056,7 @@ def test_single_case(
         test_output_path=output_path,
         args=OjTestArguments(
             command="ls ~",
-            problem=LibraryCheckerProblem(problem_id="aplusb")
-            if mock_judge
-            else AOJProblem(problem_id="1"),
+            problem=mock_judge,
             error=error,
             mle=mle,
             tle=None,
