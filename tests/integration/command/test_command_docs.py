@@ -17,7 +17,7 @@ from pytest_subtests import SubTests
 from competitive_verifier import app
 from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
 from competitive_verifier.documents.front_matter import split_front_matter_raw
-from competitive_verifier.oj.tools.gnu import time_command
+from competitive_verifier.oj.gnu import time_command
 
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import FilePaths

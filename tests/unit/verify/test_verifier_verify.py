@@ -420,7 +420,6 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
 @pytest.mark.parametrize(
     ("verifier", "expected"),
     test_verify_params,
-    ids=range(len(test_verify_params)),
 )
 def test_verify(
     verifier: MockVerifier,
@@ -636,7 +635,6 @@ test_verify_timeout_params: list[
 @pytest.mark.parametrize(
     ("verifier", "perf_counter_sequence", "expected"),
     test_verify_timeout_params,
-    ids=range(len(test_verify_timeout_params)),
 )
 def test_verify_timeout(
     mocker: MockerFixture,

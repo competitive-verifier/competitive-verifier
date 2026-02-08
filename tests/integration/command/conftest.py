@@ -7,8 +7,6 @@ import shutil
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier.oj.tools import problem
-
 from .data.cpp import CppWithConfigData, CppWithoutConfigData
 from .data.go import GoWithConfigData, GoWithoutConfigData
 from .data.integration_data import IntegrationData
@@ -125,16 +123,18 @@ def user_defined_and_python_data(
 
 
 @pytest.fixture
-def mock_verification(mocker: MockerFixture):
+def mock_clone_library_checker(mocker: MockerFixture):
+    mocker.patch(
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.update_cloned_repository",
+        side_effect=update_cloned_repository,
+    )
+
+
+@pytest.fixture
+def mock_verification(mock_clone_library_checker: None, mocker: MockerFixture):
     mocker.patch(
         "competitive_verifier.verify.verifier.VerifyCommandResult",
         side_effect=MockVerifyCommandResult,
-    )
-
-    mocker.patch.object(
-        problem.LibraryCheckerProblem,
-        "update_cloned_repository",
-        side_effect=update_cloned_repository,
     )
 
 

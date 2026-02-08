@@ -1,7 +1,11 @@
-from .tools.oj_download import run_wrapper as download
-from .tools.oj_test import run_wrapper as test
+from .oj_download import main as download
+from .oj_test import main as test
+from .problem import problem_from_url
+from .resolver import OjResolve
 
 __all__ = [
+    "OjResolve",
     "download",
+    "problem_from_url",
     "test",
 ]

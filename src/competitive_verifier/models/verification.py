@@ -157,7 +157,10 @@ class ProblemVerification(BaseVerification):
 
     @cached_property
     def problem_obj(self) -> Problem | None:
-        return Problem.from_url(self.problem)
+        # circular dependency
+        from competitive_verifier.oj import problem_from_url  # noqa: PLC0415
+
+        return problem_from_url(self.problem)
 
     def run(
         self,

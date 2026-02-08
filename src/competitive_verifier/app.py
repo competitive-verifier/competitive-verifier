@@ -10,7 +10,7 @@ from competitive_verifier.documents import Docs
 from competitive_verifier.download import Download
 from competitive_verifier.inout import Check, MergeInput, MergeResult
 from competitive_verifier.migrate import Migration
-from competitive_verifier.oj.resolve import OjResolve
+from competitive_verifier.oj import OjResolve
 from competitive_verifier.verify import Verify
 
 logger = getLogger(__name__)

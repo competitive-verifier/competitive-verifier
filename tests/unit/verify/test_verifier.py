@@ -136,7 +136,6 @@ test_verification_files_params: list[
 @pytest.mark.parametrize(
     ("resolver", "expected"),
     test_verification_files_params,
-    ids=range(len(test_verification_files_params)),
 )
 def test_verification_files(
     resolver: InputContainer,
@@ -268,7 +267,6 @@ test_file_need_verification_params: list[
 @pytest.mark.parametrize(
     ("resolver", "path", "file_result", "expected"),
     test_file_need_verification_params,
-    ids=range(len(test_file_need_verification_params)),
 )
 def test_file_need_verification(
     resolver: InputContainer,
@@ -380,7 +378,6 @@ test_remaining_verification_files_params: list[
 @pytest.mark.parametrize(
     ("resolver", "expected"),
     test_remaining_verification_files_params,
-    ids=range(len(test_remaining_verification_files_params)),
 )
 def test_remaining_verification_files(
     resolver: InputContainer,
@@ -458,7 +455,6 @@ test_current_verification_files_params: list[
 @pytest.mark.parametrize(
     ("index", "expected"),
     test_current_verification_files_params,
-    ids=range(len(test_current_verification_files_params)),
 )
 def test_current_verification_files(index: int, expected: dict[Path, VerificationFile]):
     command_verification = {"verification": {"type": "command", "command": "true"}}

@@ -9,11 +9,9 @@ import sys
 import tempfile
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from logging import getLogger
-from typing import Annotated, BinaryIO
-
-from pydantic import BaseModel
-from pydantic.functional_validators import BeforeValidator
+from typing import BinaryIO
 
 from competitive_verifier.models import (
     JudgeStatus,
@@ -25,22 +23,17 @@ from competitive_verifier.models import (
 )
 
 from . import comparer, gnu
-from .format import Printer, green, red
-from .service import format_utils as fmtutils
+from .format import Printer, StatusCounter, green, red
 
 logger = getLogger(__name__)
-
-# logging output.
-HINT = "HINT"
-SUCCESS = "SUCCESS"
-FAILURE = "FAILURE"
 
 
 class _ExecError(Exception):
     pass
 
 
-class OjExecInfo(BaseModel):
+@dataclass
+class OjExecInfo:
     answer: bytes | None
     """The standard output of the executed command"""
     elapsed: float
@@ -88,10 +81,10 @@ def measure_command(
                 start_new_session=start_new_session,
             )
         except FileNotFoundError as e:
-            logger.exception("No such file or directory: %s", command)
+            logger.exception("exec:No such file or directory: %s", command)
             raise _ExecError from e
         except PermissionError as e:
-            logger.exception("Permission denied: %s", command)
+            logger.exception("exec:Permission denied: %s", command)
             raise _ExecError from e
         answer: bytes | None = None
         try:
@@ -120,101 +113,86 @@ def measure_command(
         )
 
 
-class OjTestArguments(BaseModel):
+@dataclass
+class OjTestArguments:
     """Parameters for oj-test command.
 
     Port of onlinejudge_command.subcommand.test.add_subparser.
     """
 
     command: str | list[str]
-    directory: pathlib.Path
+    problem: Problem
     tle: float | None
     mle: float | None
     error: float | None
-    judge: pathlib.Path | None
     env: dict[str, str] | None = None
     deadline: float = float("inf")
 
 
-def display_result(
-    exitcode: int | None,
-    answer: bytes,
-    memory: float | None,
-    test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
-    *,
-    mle: float | None,
-    match_result: bool | None,
-) -> JudgeStatus:
-    """display_result prints the result of the test and its statistics.
-
-    This function prints many logs and does some I/O.
-    """
-    # prepare the function to print the input
-    is_input_printed = False
-
-    def print_input() -> None:
-        nonlocal is_input_printed
-        if not is_input_printed:
-            is_input_printed = True
-            with test_input_path.open("rb") as inf:
-                logger.info("input:\n%s", Printer(inf.read()))
-
-    # check TLE, RE or not
-    status = JudgeStatus.AC
-    if exitcode is None:
-        logger.info("%s: %s", FAILURE, red("TLE"))
-        status = JudgeStatus.TLE
-        print_input()
-    elif memory is not None and mle is not None and memory > mle:
-        logger.info("%s: %s", FAILURE, red("MLE"))
-        status = JudgeStatus.MLE
-        print_input()
-    elif exitcode != 0:
-        logger.info("%s: %s: return code %d", FAILURE, red("RE"), exitcode)
-        status = JudgeStatus.RE
-        print_input()
-
-    # check WA or not
-    # 元の実装では TLE や RE でもこっちに来てしまうので elif に変更
-    elif match_result is not None and not match_result:
-        if status == JudgeStatus.AC:
-            logger.info("%s: %s", FAILURE, red("WA"))
-        status = JudgeStatus.WA
-        print_input()
-        if test_output_path is not None:
-            with test_output_path.open("rb") as outf:
-                expected = outf.read()
-        else:
-            expected = ""
-        logger.info("output:\n%s", Printer(answer))
-        logger.info("expected:\n%s", Printer(expected))
-    if match_result is None:
-        print_input()
-        logger.info("output:\n%s", Printer(answer))
-    if status == JudgeStatus.AC:
-        logger.info("%s: %s", SUCCESS, green("AC"))
-
-    return status
-
-
-class OjTestcaseResult(BaseModel):
+@dataclass
+class OjTestcaseResult:
     name: str
-    """A name of test case."""
+    """A name of the test case."""
     input: pathlib.Path
-    """A input of test case."""
-    output: pathlib.Path | None = None
-    """A output of test case."""
+    """A input of the test case."""
+    answer: bytes
+    """A output of the test case."""
 
     status: JudgeStatus
     elapsed: float
+    exitcode: int | None
+
     memory: float | None = None
-    exitcode: Annotated[
-        int | None, BeforeValidator(lambda v: v if isinstance(v, int) else None)
-    ]
+    expected: pathlib.Path | None = None
+    """A expected output of the test case."""
+
+    def __post_init__(self):
+        if not isinstance(self.exitcode, int):
+            self.exitcode = None
+
+    def __str__(self) -> str:
+        p = [
+            f"{self.name}: {green('AC')}"
+            if self.status == JudgeStatus.AC
+            else f"{self.name}: {red(self.status.name)}",
+            f"time: {self.elapsed:f} sec",
+            f"memory: {self.memory:f} MB" if self.memory is not None else None,
+            f"return code: {self.exitcode}" if self.exitcode else None,
+        ]
+
+        return ", ".join(filter(None, p))
+
+    def log(self):
+        match self.status:
+            case JudgeStatus.AC:
+                if self.expected is None and self.answer:
+                    self._log_answer()
+            case JudgeStatus.RE | JudgeStatus.TLE:
+                self._log_input()
+                self._log_expected()
+            case _:
+                self._log_input()
+                self._log_answer()
+                self._log_expected()
+        logger.info(self)
+
+    def _log_input(self) -> None:
+        with self.input.open("rb") as fp:
+            logger.info("%s:input:\n%s", self.name, Printer(fp))
+
+    def _log_expected(self) -> None:
+        if self.expected:
+            with self.expected.open("rb") as fp:
+                logger.info("%s:expected:\n%s", self.name, Printer(fp))
+        else:
+            logger.info("%s:expected:\n%s", self.name, Printer(""))
+
+    def _log_answer(self) -> None:
+        logger.info("%s:answer:\n%s", self.name, Printer(self.answer))
 
 
-class OjTestResult(BaseModel):
+@dataclass
+class OjTestResult:
     is_success: bool
 
     elapsed: float
@@ -312,18 +290,15 @@ def build_match_function(
     return compare_outputs
 
 
-def run_checking_output(
+def check_output(
     *,
     answer: bytes,
+    error: float | None,
+    test_input_path: pathlib.Path,
     test_output_path: pathlib.Path | None,
-    is_special_judge: bool,
-    match_function: Callable[[bytes, bytes], bool],
+    judge_command: str | None,
 ) -> bool | None:
-    """run_checking_output executes matching of the actual output and the expected output.
-
-    This function has file I/O including the execution of the judge command.
-    """
-    if test_output_path is None and not is_special_judge:
+    if test_output_path is None and not judge_command:
         return None
     if test_output_path is not None:
         with test_output_path.open("rb") as outf:
@@ -332,7 +307,30 @@ def run_checking_output(
         # only if --judge option
         expected = b""
         logger.warning("expected output is not found")
-    return match_function(answer, expected)
+    return build_match_function(
+        error=error,
+        judge_command=judge_command,
+        test_input_path=test_input_path,
+        test_output_path=test_output_path,
+    )(answer, expected)
+
+
+def determine_status(
+    *,
+    exitcode: int | None,
+    memory: float | None,
+    mle: float | None,
+    match_result: bool | None,
+) -> JudgeStatus:
+    if exitcode is None:
+        return JudgeStatus.TLE
+    if memory is not None and mle is not None and memory > mle:
+        return JudgeStatus.MLE
+    if exitcode != 0:
+        return JudgeStatus.RE
+    if match_result is not None and not match_result:
+        return JudgeStatus.WA
+    return JudgeStatus.AC
 
 
 def single_case(
@@ -343,7 +341,7 @@ def single_case(
     args: OjTestArguments,
 ) -> OjTestcaseResult:
     try:
-        logger.info("%s", test_name)
+        logger.info("%s: start", test_name)
 
         # run the binary
         with test_input_path.open("rb") as infp:
@@ -358,38 +356,25 @@ def single_case(
             elapsed: float = info.elapsed
             memory: float | None = info.memory
 
-        if memory:
-            logger.info("time: %f sec, memory: %f MB", elapsed, memory)
-        else:
-            logger.info("time: %f sec", elapsed)
-
-        match_function = build_match_function(
+        match_result = check_output(
+            answer=answer,
             error=args.error,
-            judge_command=str(args.judge) if args.judge else None,
             test_input_path=test_input_path,
             test_output_path=test_output_path,
+            judge_command=str(args.problem.checker) if args.problem.checker else None,
         )
-        match_result = run_checking_output(
-            answer=answer,
-            test_output_path=test_output_path,
-            is_special_judge=args.judge is not None,
-            match_function=match_function,
-        )
-        status = display_result(
-            info.returncode,
-            answer,
-            memory,
-            test_input_path,
-            test_output_path,
+        status = determine_status(
+            exitcode=info.returncode,
+            memory=memory,
             mle=args.mle,
             match_result=match_result,
         )
 
-        # return the result
-        return OjTestcaseResult(
+        result = OjTestcaseResult(
             name=test_name,
             input=test_input_path,
-            output=test_output_path,
+            expected=test_output_path,
+            answer=answer,
             status=status,
             exitcode=info.returncode,
             elapsed=elapsed,
@@ -399,20 +384,19 @@ def single_case(
         return OjTestcaseResult(
             name=test_name,
             input=test_input_path,
-            output=test_output_path,
+            expected=test_output_path,
+            answer=b"",
             status=JudgeStatus.RE,
             exitcode=255,
             elapsed=0,
             memory=None,
         )
+    else:
+        result.log()
+        return result
 
 
 def _run(args: OjTestArguments) -> OjTestResult:
-    # list tests
-    test = fmtutils.glob_with_format(args.directory, "%s.%e")  # by default
-    test = fmtutils.drop_backup_or_hidden_files(test)
-    tests = fmtutils.construct_relationship_of_files(test, args.directory, "%s.%e")
-
     # check wheather GNU time is available
     if gnu.time_command() is None:
         if platform.system() == "Darwin":
@@ -422,15 +406,15 @@ def _run(args: OjTestArguments) -> OjTestResult:
         if args.mle is not None:
             raise RuntimeError("--mle is used but GNU time does not exist")
 
+    tests = list(args.problem.iter_system_cases())
+
     # run tests
     history: list[OjTestcaseResult] = []
-    for name, paths in sorted(tests.items()):
+    for t in tests:
         if time.perf_counter() > args.deadline:
             raise VerifcationTimeoutError
 
-        history.append(
-            single_case(name, paths["in"], paths.get("out"), args=args),
-        )
+        history.append(single_case(t.name, t.input_path, t.output_path, args=args))
 
     # summarize
     elapsed: float = 0.0
@@ -438,11 +422,10 @@ def _run(args: OjTestArguments) -> OjTestResult:
     slowest_name = ""
     heaviest: float = -1.0
     heaviest_name = ""
-    ac_count = 0
+    counter = StatusCounter()
     for result in history:
+        counter[result.status] += 1
         elapsed += result.elapsed
-        if result.status == JudgeStatus.AC:
-            ac_count += 1
         if slowest < result.elapsed:
             slowest = result.elapsed
             slowest_name = result.name
@@ -454,25 +437,16 @@ def _run(args: OjTestArguments) -> OjTestResult:
     logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
     if heaviest >= 0:
         logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
-    if ac_count == len(tests):
-        logger.info(
-            "%s: test %s: %d cases",
-            SUCCESS,
-            green("success"),
-            len(tests),
-        )
+
+    is_success = counter[JudgeStatus.AC] == len(tests)
+    if is_success:
+        logger.info("%s %d cases", green("SUCCESS"), len(tests))
     else:
-        logger.info(
-            "%s: test %s: %d AC / %d cases",
-            FAILURE,
-            red("failed"),
-            ac_count,
-            len(tests),
-        )
+        logger.info("%s %s / %d cases", red("FAILURE"), counter, len(tests))
 
     # return the result
     return OjTestResult(
-        is_success=ac_count == len(tests),
+        is_success=is_success,
         slowest=slowest,
         elapsed=elapsed,
         heaviest=heaviest,
@@ -480,7 +454,7 @@ def _run(args: OjTestArguments) -> OjTestResult:
     )
 
 
-def run_wrapper(
+def main(
     *,
     problem: Problem,
     command: str | list[str],
@@ -490,21 +464,16 @@ def run_wrapper(
     error: float | None,
     deadline: float = float("inf"),
 ) -> VerificationResult:
-    directory = problem.problem_directory
-    test_directory = directory / "test"
-
     args = OjTestArguments(
         command=command,
+        problem=problem,
         env=env,
-        directory=test_directory,
         tle=tle,
         mle=mle,
         error=error,
-        judge=problem.checker,
         deadline=deadline,
     )
     result = _run(args)
-
     return VerificationResult(
         status=ResultStatus.SUCCESS if result.is_success else ResultStatus.FAILURE,
         elapsed=result.elapsed,

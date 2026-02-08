@@ -18,15 +18,16 @@ from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
     ConstVerification,
-    Problem,
     ProblemVerification,
     ResultStatus,
     Verification,
     VerificationFile,
     VerificationInput,
 )
-from competitive_verifier.oj.verify.list import OjVerifyConfig
-from competitive_verifier.oj.verify.models import LanguageEnvironment
+
+from .problem import problem_from_url
+from .verify.list import OjVerifyConfig
+from .verify.models import LanguageEnvironment
 
 logger = getLogger(__name__)
 
@@ -156,7 +157,7 @@ class OjResolver:
         if not url:
             return
 
-        problem = Problem.from_url(url)
+        problem = problem_from_url(url)
         if problem is None:
             logger.error('The URL "%s" is not supported', url)
             yield ConstVerification(status=ResultStatus.FAILURE)

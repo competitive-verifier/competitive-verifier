@@ -20,3 +20,8 @@ def mock_perf_counter(mocker: MockerFixture):
 @pytest.fixture
 def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
     mocker.patch.dict(os.environ, request.param or {}, clear=True)
+
+
+@pytest.fixture(autouse=True)
+def mock_mkdir(mocker: MockerFixture):
+    mocker.patch("pathlib.Path.mkdir", side_effect=RuntimeError("mkdir is not allowed"))

@@ -10,7 +10,6 @@ import pytest
 from pydantic import TypeAdapter
 from pytest_mock import MockerFixture
 
-import competitive_verifier.oj.tools.oj_test
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
@@ -20,7 +19,14 @@ from competitive_verifier.models import (
     ShellCommand,
     Verification,
 )
-from competitive_verifier.oj.tools.oj_test import OjTestArguments
+from competitive_verifier.oj import problem_from_url
+from competitive_verifier.oj.oj_test import OjTestArguments
+
+
+def from_url_force(url: str):
+    p = problem_from_url(url)
+    assert p
+    return p
 
 
 @dataclass
@@ -97,7 +103,9 @@ test_command_union_json_params: list[tuple[Verification, str, str]] = [
 
 
 @pytest.mark.parametrize(
-    ("obj", "raw_json", "output_json"), test_command_union_json_params
+    ("obj", "raw_json", "output_json"),
+    test_command_union_json_params,
+    ids=lambda s: s[:20] if isinstance(s, str) else s,
 )
 def test_command_union_json(
     obj: Verification,
@@ -208,7 +216,6 @@ test_run_params: list[tuple[Verification, tuple[str | list[str]], dict[str, Any]
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs"),
     test_run_params,
-    ids=range(len(test_run_params)),
 )
 def test_run(
     obj: Verification,
@@ -265,7 +272,6 @@ test_run_with_env_params: list[
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs", "env"),
     test_run_with_env_params,
-    ids=range(len(test_run_with_env_params)),
 )
 def test_run_with_env(
     obj: Verification,
@@ -298,8 +304,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=22.0,
             error=None,
@@ -314,8 +321,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             problem="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169",
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=22.0,
             error=None,
@@ -333,8 +341,9 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             mle=1.2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=None,
+            problem=from_url_force(
+                "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1169"
+            ),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -351,8 +360,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=pathlib.Path("/any/mockcheck"),
+            problem=from_url_force("https://judge.yosupo.jp/problem/aplusb"),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -369,8 +377,7 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
             tle=2,
         ),
         OjTestArguments(
-            directory=pathlib.Path("/any/test"),
-            judge=pathlib.Path("/any/mockcheck"),
+            problem=from_url_force("https://judge.yosupo.jp/problem/aplusb"),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -384,7 +391,6 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
 @pytest.mark.parametrize(
     ("obj", "args"),
     test_run_problem_command_params,
-    ids=range(len(test_run_problem_command_params)),
 )
 def test_run_problem_command(
     obj: ProblemVerification,
@@ -392,10 +398,10 @@ def test_run_problem_command(
     mocker: MockerFixture,
 ):
     mocker.patch(
-        "competitive_verifier.oj.tools.problem.LibraryCheckerProblem.checker_exe_name",
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
         "mockcheck",
     )
-    patch = mocker.patch.object(competitive_verifier.oj.tools.oj_test, "_run")
+    patch = mocker.patch("competitive_verifier.oj.oj_test._run")
 
     mocker.patch.object(
         Problem,
@@ -517,7 +523,6 @@ test_run_compile_params: list[
 @pytest.mark.parametrize(
     ("obj", "args", "kwargs"),
     test_run_compile_params,
-    ids=range(len(test_run_compile_params)),
 )
 def test_run_compile(
     obj: Verification,
@@ -552,7 +557,6 @@ test_params_run_params: list[tuple[Verification, str | None]] = [
 @pytest.mark.parametrize(
     ("obj", "error_message"),
     test_params_run_params,
-    ids=range(len(test_params_run_params)),
 )
 def test_params_run(
     obj: Verification,
