@@ -16,7 +16,6 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
     VerificationResult,
-    VerifierError,
     VerifyCommandResult,
 )
 from competitive_verifier.resource import try_ulimit_stack
@@ -155,7 +154,7 @@ class BaseVerifier(InputContainer):
     @property
     def force_result(self) -> VerifyCommandResult:
         if self._result is None:
-            raise VerifierError("Not verified yet.")
+            raise RuntimeError("Not verified yet.")
         return self._result
 
     @property
@@ -222,11 +221,8 @@ class BaseVerifier(InputContainer):
                         name=ve.name,
                     )
                 )
-            except BaseException as e:
-                message = (
-                    e.message if isinstance(e, VerifierError) else "Failed to verify"
-                )
-                logger.exception("%s: %s, %s", message, p, repr(ve))
+            except BaseException:
+                logger.exception("Failed to verify: %s, %s", p, repr(ve))
                 traceback.print_exc()
                 verifications.append(
                     self.create_command_result(

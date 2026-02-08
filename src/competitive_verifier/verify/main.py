@@ -14,11 +14,7 @@ from competitive_verifier.arg import (
     VerifyFilesJsonArguments,
     WriteSummaryArguments,
 )
-from competitive_verifier.models import (
-    VerificationInput,
-    VerifierError,
-    VerifyCommandResult,
-)
+from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .verifier import SplitState, Verifier
 
@@ -64,20 +60,20 @@ class Verify(
 
         if split_index is not None and split is not None:
             if split <= 0:
-                raise VerifierError("--split must be greater than 0.")
+                raise ValueError("--split must be greater than 0.")
             if not (0 <= split_index < split):
-                raise VerifierError(
+                raise ValueError(
                     "--split-index must be greater than 0 and less than --split."
                 )
             return SplitState(size=split, index=split_index)
 
         if split is not None:
-            raise VerifierError("--split argument requires --split-index argument.")
+            raise ValueError("--split argument requires --split-index argument.")
 
         if split_index is not None:
-            raise VerifierError("--split-index argument requires --split argument.")
+            raise ValueError("--split-index argument requires --split argument.")
 
-        raise VerifierError("invalid state.")
+        raise ValueError("invalid state.")
 
     @classmethod
     def add_parser(cls, parser: ArgumentParser):

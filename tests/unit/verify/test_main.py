@@ -1,9 +1,9 @@
 import pathlib
+import re
 
 import pytest
 
 from competitive_verifier import app
-from competitive_verifier.models.error import VerifierError
 from competitive_verifier.verify import Verify
 from competitive_verifier.verify.verifier import SplitState
 
@@ -36,7 +36,7 @@ def test_get_split_state(
     assert v.split_state == expected
 
 
-get_split_state_error_params = {
+test_get_split_state_error_params = {
     "No split index": (
         ["--verify-json", "verify.json", "--split", "2"],
         "--split argument requires --split-index argument.",
@@ -62,15 +62,13 @@ get_split_state_error_params = {
 
 @pytest.mark.parametrize(
     ("args", "message"),
-    get_split_state_error_params.values(),
-    ids=get_split_state_error_params.keys(),
+    test_get_split_state_error_params.values(),
+    ids=test_get_split_state_error_params.keys(),
 )
 def test_get_split_state_error(args: list[str], message: str):
     parsed = app.ArgumentParser().parse(["verify", *args])
 
     assert isinstance(parsed, app.Verify)
 
-    with pytest.raises(VerifierError) as e:
+    with pytest.raises(ValueError, match=rf"^{re.escape(message)}$"):
         _ = parsed.split_state
-
-    assert e.value.message == message

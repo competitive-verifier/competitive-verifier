@@ -15,7 +15,6 @@ from competitive_verifier.models import (
     ProblemVerification,
     VerificationFile,
     VerificationInput,
-    VerifierError,
 )
 from competitive_verifier.resource import try_ulimit_stack
 
@@ -56,7 +55,7 @@ def download_files(
             result = False
 
     if check and not result:
-        raise VerifierError("Failed to download")
+        raise RuntimeError("Failed to download")
     return result
 
 
