@@ -1,23 +1,18 @@
-import importlib.resources
 import pathlib
 import shutil
 from logging import getLogger
 
 from pydantic import BaseModel
 
+import competitive_verifier_resources
 from competitive_verifier import git, github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .config import ConfigYaml, load_config_yml
 from .front_matter import Markdown
 from .render import RenderJob
-from .static_files import default_resource_files
 
 logger = getLogger(__name__)
-
-
-_RESOURCE_PACKAGE = "competitive_verifier_resources"
-_DOC_USAGE_PATH = "doc_usage.txt"
 
 
 class DocumentBuilder(BaseModel):
@@ -41,12 +36,9 @@ class DocumentBuilder(BaseModel):
 
         logger.info("Generated.")
         logger.info(
-            (importlib.resources.files(_RESOURCE_PACKAGE) / _DOC_USAGE_PATH)
-            .read_text(encoding="utf-8")
-            .replace("{{{{{markdown_dir_path}}}}}", self.destination_dir.as_posix())
-            .replace(
-                "{{{{{repository}}}}}",
-                github.env.get_repository()
+            competitive_verifier_resources.doc_usage(
+                markdown_dir_path=self.destination_dir,
+                repo_name=github.env.get_repository()
                 or "competitive-verifier/competitive-verifier",
             )
         )
@@ -78,11 +70,10 @@ class DocumentBuilder(BaseModel):
 
     def copy_static_files(self, *, static_dir: pathlib.Path):
         logger.info("Copy library static files...")
-        for path, content in default_resource_files():
+        for path, content in competitive_verifier_resources.jekyll_files().items():
             file_dst = self.destination_dir / path
             logger.debug("Writing to %s", file_dst.as_posix())
-            if not file_dst.exists():
-                file_dst.parent.mkdir(parents=True, exist_ok=True)
+            file_dst.parent.mkdir(parents=True, exist_ok=True)
             file_dst.write_bytes(content)
 
         logger.info("Copy user static files...")

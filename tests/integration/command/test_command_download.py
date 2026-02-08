@@ -17,7 +17,7 @@ from .types import FilePaths
 def clean_download_dir(file_paths: FilePaths) -> pathlib.Path:
     d = file_paths.dest_root / "download"
 
-    if d.exists():
+    if d.exists():  # pragma: no cover
         shutil.rmtree(d)
 
     return d
