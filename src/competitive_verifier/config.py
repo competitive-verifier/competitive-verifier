@@ -10,12 +10,8 @@ def get_config_dir():
     )
 
 
-def _get_cache_dir(config_dir: pathlib.Path):
-    return config_dir / "cache"
-
-
 def get_cache_dir():
-    return _get_cache_dir(get_config_dir())
+    return get_config_dir() / "cache"
 
 
 def get_problem_cache_dir() -> pathlib.Path:

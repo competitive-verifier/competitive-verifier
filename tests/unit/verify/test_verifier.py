@@ -1,7 +1,7 @@
 import datetime
 import pathlib
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple, cast
 
 import pytest
 from pytest_mock import MockerFixture
@@ -16,9 +16,93 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.verify.verifier import InputContainer, SplitState
+from competitive_verifier.verify.verifier import (
+    InputContainer,
+    SplitState,
+    Verifier,
+    _now,  # pyright: ignore[reportPrivateUsage]
+)
 
 SUCCESS = ResultStatus.SUCCESS
+
+
+def test_now():
+    assert _now().tzinfo is not None
+
+
+def test_get_file_timestamp_git_timestamp(mocker: MockerFixture):
+    verifier = Verifier(
+        VerificationInput(),
+        timeout=1,
+        default_tle=None,
+        default_mle=None,
+        prev_result=None,
+        split_state=None,
+        use_git_timestamp=True,
+    )
+    mocker.patch.dict(
+        verifier.verifications.transitive_depends_on,
+        {pathlib.Path("foo"): {pathlib.Path("foo"), pathlib.Path("bar")}},
+    )
+
+    get_commit_time = mocker.patch(
+        "competitive_verifier.git.get_commit_time",
+        return_value=datetime.datetime.max,
+    )
+
+    assert verifier.get_file_timestamp(pathlib.Path("foo")) == datetime.datetime.max
+    get_commit_time.assert_called_once_with({pathlib.Path("foo"), pathlib.Path("bar")})
+
+
+def test_get_file_timestamp_local(mocker: MockerFixture):
+    class MockPath(NamedTuple):
+        name: str
+        time: datetime.datetime
+
+        @property
+        def st_mtime(self) -> float:
+            assert self.time.tzinfo == datetime.timezone.utc
+            return self.time.timestamp()
+
+        def stat(self):
+            return self
+
+    verifier = Verifier(
+        VerificationInput(),
+        timeout=1,
+        default_tle=None,
+        default_mle=None,
+        prev_result=None,
+        split_state=None,
+        use_git_timestamp=False,
+    )
+
+    foo_path = MockPath(
+        "foo",
+        datetime.datetime.fromisoformat("2001-02-03T04:05:05.789789+00:00"),
+    )
+    bar_path = MockPath(
+        "bar",
+        datetime.datetime.fromisoformat("2001-02-03T04:05:06.789789+00:00"),
+    )
+
+    mocker.patch(
+        "competitive_verifier.verify.verifier._now",
+        return_value=datetime.datetime.fromisoformat(
+            "2010-08-31T15:26:56.456797+06:30"
+        ),
+    )
+    mocker.patch.dict(
+        verifier.verifications.transitive_depends_on,
+        {foo_path: {foo_path, bar_path}},
+    )
+
+    get_commit_time = mocker.patch("competitive_verifier.git.get_commit_time")
+
+    assert verifier.get_file_timestamp(
+        cast("pathlib.Path", foo_path)
+    ) == datetime.datetime.fromisoformat("2001-02-03T10:35:06+06:30")
+    get_commit_time.assert_not_called()
 
 
 class MockInputContainer(InputContainer):
@@ -264,24 +348,6 @@ test_file_need_verification_params: list[
 ]
 
 
-@pytest.mark.parametrize(
-    ("resolver", "path", "file_result", "expected"),
-    test_file_need_verification_params,
-)
-def test_file_need_verification(
-    resolver: InputContainer,
-    path: Path,
-    file_result: FileResult,
-    expected: bool,
-    mocker: MockerFixture,
-):
-    mocker.patch.object(pathlib.Path, "exists", return_value=True)
-    assert resolver.file_need_verification(path, file_result) == expected
-
-    mocker.patch.object(pathlib.Path, "exists", return_value=False)
-    assert not resolver.file_need_verification(path, file_result)
-
-
 test_remaining_verification_files_params: list[
     tuple[InputContainer, dict[Path, VerificationFile]]
 ] = [
@@ -450,6 +516,24 @@ test_current_verification_files_params: list[
         {},
     ),
 ]
+
+
+@pytest.mark.parametrize(
+    ("resolver", "path", "file_result", "expected"),
+    test_file_need_verification_params,
+)
+def test_file_need_verification(
+    resolver: InputContainer,
+    path: Path,
+    file_result: FileResult,
+    expected: bool,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(pathlib.Path, "exists", return_value=True)
+    assert resolver.file_need_verification(path, file_result) == expected
+
+    mocker.patch.object(pathlib.Path, "exists", return_value=False)
+    assert not resolver.file_need_verification(path, file_result)
 
 
 @pytest.mark.parametrize(

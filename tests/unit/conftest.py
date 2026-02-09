@@ -5,16 +5,14 @@ from pytest_mock import MockerFixture
 
 
 @pytest.fixture
-def mock_perf_counter(mocker: MockerFixture):
-    pc = 0.0
+def mock_perf_counter(mocker: MockerFixture, request: pytest.FixtureRequest):
+    if not hasattr(request, "param") or not request.param:
+        values = [float(i) for i in range(1000)]
+    else:
+        assert isinstance(request.param, list)
+        values = request.param  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
 
-    def _perf_counter() -> float:
-        nonlocal pc
-        ppc = pc
-        pc += 1.0
-        return ppc
-
-    mocker.patch("time.perf_counter", side_effect=_perf_counter)
+    mocker.patch("time.perf_counter", side_effect=values)
 
 
 @pytest.fixture

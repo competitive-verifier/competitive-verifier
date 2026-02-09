@@ -59,20 +59,20 @@ def _print_github(
         force: If True, print the message even outside GitHub Actions
         stream: Output stream
     """
-    annotation = ",".join(
-        f"{tup[0]}={tup[1]}"
-        for tup in (
-            ("title", title),
-            ("file", file),
-            ("col", col),
-            ("endColumn", end_column),
-            ("line", line),
-            ("endLine", end_line),
-        )
-        if tup[1] is not None
-    )
-
     if force or env.is_in_github_actions():
+        annotation = ",".join(
+            f"{name}={value}"
+            for name, value in (
+                ("title", title),
+                ("file", file),
+                ("col", col),
+                ("endColumn", end_column),
+                ("line", line),
+                ("endLine", end_line),
+            )
+            if value is not None
+        )
+
         print(f"::{command} {annotation}::{message}", file=stream)
 
 

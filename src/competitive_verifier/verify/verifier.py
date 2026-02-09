@@ -1,7 +1,6 @@
 import datetime
 import pathlib
 import time
-import traceback
 from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
@@ -22,6 +21,10 @@ from competitive_verifier.resource import try_ulimit_stack
 from competitive_verifier.verify.split_state import SplitState
 
 logger = getLogger(__name__)
+
+
+def _now() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc).astimezone()
 
 
 class InputContainer(ABC):
@@ -141,7 +144,7 @@ class BaseVerifier(InputContainer):
     ) -> None:
         super().__init__(
             verifications=verifications,
-            verification_time=verification_time or self.now().astimezone(),
+            verification_time=verification_time or _now(),
             prev_result=prev_result,
             split_state=split_state,
         )
@@ -152,19 +155,10 @@ class BaseVerifier(InputContainer):
         self._result = None
 
     @property
-    def force_result(self) -> VerifyCommandResult:
-        if self._result is None:
-            raise RuntimeError("Not verified yet.")
-        return self._result
-
-    @property
     def is_first(self) -> bool:
         if not self.split_state:
             return True
         return self.split_state.index == 0
-
-    def now(self) -> datetime.datetime:
-        return datetime.datetime.now(datetime.timezone.utc)
 
     def _enumerate_verifications(
         self,
@@ -179,8 +173,8 @@ class BaseVerifier(InputContainer):
         try:
             if time.perf_counter() > deadline:
                 raise VerifcationTimeoutError  # noqa: TRY301
-            if download and not run_download(f, check=True, group_log=False):
-                raise ValueError("Failed to download")  # noqa: TRY301
+            if download:
+                run_download(f, check=True, group_log=False)
         except VerifcationTimeoutError:
             verifications.append(
                 self.create_command_result(ResultStatus.SKIPPED, time.perf_counter())
@@ -204,11 +198,10 @@ class BaseVerifier(InputContainer):
                 rs, error_message = self.run_verification(ve, deadline=deadline)
                 if error_message:
                     logger.error("%s: %s, %s", error_message, p, repr(ve))
-                    if github.env.is_in_github_actions():
-                        github.print_error(
-                            message=f"{error_message} {p.as_posix()}",
-                            file=str(p.resolve()),
-                        )
+                    github.print_error(
+                        message=f"{error_message} {p.as_posix()}",
+                        file=str(p.resolve()),
+                    )
                 verifications.append(
                     self.create_command_result(rs, prev_time, name=ve.name)
                 )
@@ -223,7 +216,6 @@ class BaseVerifier(InputContainer):
                 )
             except BaseException:
                 logger.exception("Failed to verify: %s, %s", p, repr(ve))
-                traceback.print_exc()
                 verifications.append(
                     self.create_command_result(
                         ResultStatus.FAILURE,
@@ -239,10 +231,10 @@ class BaseVerifier(InputContainer):
 
         with log.group("current_verification_files"):
             current_verification_files = self.current_verification_files
-        logger.info(
-            "current_verification_files: %s",
-            " ".join(p.as_posix() for p in current_verification_files),
-        )
+            logger.info(
+                "current_verification_files: %s",
+                " ".join(p.as_posix() for p in current_verification_files),
+            )
         try_ulimit_stack()
 
         file_results: dict[pathlib.Path, FileResult] = (
@@ -352,7 +344,7 @@ class Verifier(BaseVerifier):
     ) -> None:
         super().__init__(
             verifications=verifications,
-            verification_time=verification_time or self.now().astimezone(),
+            verification_time=verification_time or _now(),
             prev_result=prev_result,
             split_state=split_state,
             timeout=timeout,
@@ -362,14 +354,15 @@ class Verifier(BaseVerifier):
         self.use_git_timestamp = use_git_timestamp
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
-        if self.use_git_timestamp:
-            return git.get_commit_time(self.verifications.transitive_depends_on[path])
         dependicies = self.verifications.transitive_depends_on[path]
 
+        if self.use_git_timestamp:
+            return git.get_commit_time(dependicies)
+
         timestamp = max(x.stat().st_mtime for x in dependicies)
-        system_local_timezone = self.now().astimezone().tzinfo
+        system_local_timezone = _now().tzinfo
+
+        # microsecond=0 is required because it's erased in git commit
         return datetime.datetime.fromtimestamp(
             timestamp, tz=system_local_timezone
-        ).replace(
-            microsecond=0
-        )  # microsecond=0 is required because it's erased in git commit
+        ).replace(microsecond=0)
