@@ -7,7 +7,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import oj
-from competitive_verifier.models.problem import TestCaseFile
+from competitive_verifier.models.problem import TestCaseFile as Case
 from competitive_verifier.oj.problem import LibraryCheckerProblem, problem_from_url
 
 from .types import FilePaths
@@ -63,7 +63,7 @@ class TestCommandDownload:
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [
-            TestCaseFile(
+            Case(
                 name=name,
                 input_path=problem.source_directory / f"in/{name}.in",
                 output_path=problem.source_directory / f"out/{name}.out",
@@ -139,7 +139,7 @@ class TestCommandDownload:
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [
-            TestCaseFile(
+            Case(
                 name=name,
                 input_path=problem_path / f"test/{name}.in",
                 output_path=problem_path / f"test/{name}.out",
@@ -199,7 +199,7 @@ class TestCommandDownload:
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [
-            TestCaseFile(
+            Case(
                 name="judge_data",
                 input_path=problem_path / "test/judge_data.in",
                 output_path=problem_path / "test/judge_data.out",
@@ -226,7 +226,7 @@ class TestCommandDownload:
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [
-            TestCaseFile(
+            Case(
                 name=name,
                 input_path=problem_path / f"test/{name}.in",
                 output_path=problem_path / f"test/{name}.out",
