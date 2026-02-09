@@ -77,3 +77,7 @@ def main(args: list[str] | None = None) -> int | None:
     except HelpError:
         parser.print_help()
         return 2
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()

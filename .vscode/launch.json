@@ -5,15 +5,40 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "download",
+            "name": "app.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/competitive_verifier/download/main.py",
+            "program": "${workspaceFolder}/src/competitive_verifier/app.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "oj-resolve",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/competitive_verifier/app.py",
             "args": [
-                "downloads/verify_files.json"
+                "oj-resolve",
+                "--include",
+                "examples",
+                "--config",
+                "examples/config.toml"
             ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "verify",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/competitive_verifier/app.py",
+            "args": [
+                "verify",
+                "--output",
+                ".competitive-verifier/tmp/all-result.json"
+            ],
+            "env": {
+                "COMPETITIVE_VERIFY_FILES_PATH": ".competitive-verifier/tmp/all-verify_files.json"
+            },
+            "console": "integratedTerminal"
+        },
     ]
 }
