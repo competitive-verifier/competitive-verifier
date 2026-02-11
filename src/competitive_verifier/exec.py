@@ -84,3 +84,39 @@ def exec_command(
             capture_output=capture_output,
             encoding=encoding,
         )
+
+
+@overload
+def command_stdout(
+    command: "_StrOrListStr",
+    *,
+    text: Literal[True] = True,
+    check: bool = True,
+    cwd: Optional["StrOrBytesPath"] = None,
+) -> str: ...
+
+
+@overload
+def command_stdout(
+    command: "_StrOrListStr",
+    *,
+    text: Literal[False],
+    check: bool = True,
+    cwd: Optional["StrOrBytesPath"] = None,
+) -> bytes: ...
+
+
+def command_stdout(
+    command: "_StrOrListStr",
+    *,
+    text: bool = True,
+    check: bool = True,
+    cwd: Optional["StrOrBytesPath"] = None,
+) -> str | bytes:
+    return exec_command(
+        command,
+        text=text,
+        cwd=cwd,
+        check=check,
+        capture_output=True,
+    ).stdout

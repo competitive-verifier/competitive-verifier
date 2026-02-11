@@ -3,7 +3,7 @@ import pathlib
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
-from .exec import exec_command
+from .exec import command_stdout
 
 if TYPE_CHECKING:
     from _typeshed import StrPath
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
     code = ["git", "log", "-1", "--date=iso", "--pretty=%ad", "--", *map(str, files)]
-    stdout = exec_command(code, text=True, capture_output=True).stdout
+    stdout = command_stdout(code)
     timestamp = stdout.strip()
     if not timestamp:
         return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
@@ -19,16 +19,10 @@ def get_commit_time(files: Iterable[pathlib.Path]) -> datetime.datetime:
 
 
 def ls_files(*args: "StrPath") -> set[pathlib.Path]:
-    stdout = exec_command(
-        ["git", "ls-files", "-z", *[str(p) for p in (args or [])]],
-        text=True,
-        capture_output=True,
-    ).stdout
+    stdout = command_stdout(["git", "ls-files", "-z", *[str(p) for p in (args or [])]])
     return set(map(pathlib.Path, filter(lambda p: p, stdout.split("\0"))))
 
 
 def get_root_directory() -> pathlib.Path:
-    stdout = exec_command(
-        ["git", "rev-parse", "--show-toplevel"], text=True, capture_output=True
-    ).stdout
+    stdout = command_stdout(["git", "rev-parse", "--show-toplevel"])
     return pathlib.Path(stdout.strip())

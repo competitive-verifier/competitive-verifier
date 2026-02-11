@@ -10,12 +10,12 @@ from typing import Any
 from pydantic import BaseModel
 
 import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.exec import command_stdout
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import exec_command
 
 from . import special_comments
 from .cplusplus_bundle import Bundler
@@ -83,7 +83,7 @@ def _cplusplus_list_depending_files(
     is_windows = platform.uname().system == "Windows"
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
     try:
-        data = exec_command(command).stdout
+        data = command_stdout(command)
     except Exception:
         logger.error(  # noqa: TRY400
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
@@ -94,7 +94,7 @@ def _cplusplus_list_depending_files(
         raise
     logger.debug("dependencies of %s: %s", str(path), repr(data))
     makefile_rule = shlex.split(
-        data.decode().strip().replace("\\\n", "").replace("\\\r\n", ""),
+        data.strip().replace("\\\n", "").replace("\\\r\n", ""),
         posix=not is_windows,
     )
     return [pathlib.Path(path).resolve() for path in makefile_rule[1:]]
@@ -105,9 +105,9 @@ def _cplusplus_list_defined_macros(
     path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
 ) -> dict[str, str]:
     command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-dM", "-E", str(path)]
-    data = exec_command(command).stdout
+    data = command_stdout(command)
     define: dict[str, str] = {}
-    for line in data.decode().splitlines():
+    for line in data.splitlines():
         assert line.startswith("#define ")
         a, _, b = line[len("#define ") :].partition(" ")
         if (b.startswith('"') and b.endswith('"')) or (
