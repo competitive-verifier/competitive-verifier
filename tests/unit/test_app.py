@@ -55,6 +55,33 @@ test_parse_args_params: list[
         },
     ),
     (
+        None,
+        [
+            "verify",
+            "--verify-json",
+            ".competitive-verifier/verify_files.json",
+            "--timeout",
+            "0",
+        ],
+        {
+            "subcommand": "verify",
+            "default_mle": None,
+            "default_tle": None,
+            "download": True,
+            "ignore_error": True,
+            "output": None,
+            "prev_result": None,
+            "split": None,
+            "split_index": None,
+            "timeout": math.inf,
+            "verbose": False,
+            "verify_files_json": pathlib.Path(
+                ".competitive-verifier/verify_files.json"
+            ),
+            "write_summary": False,
+        },
+    ),
+    (
         {COMPETITIVE_VERIFY_FILES_PATH: ".competitive-verifier/verify_files.json"},
         ["verify"],
         {
