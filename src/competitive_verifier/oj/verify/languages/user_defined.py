@@ -1,4 +1,5 @@
 # Python Version: 3.x
+import glob
 import pathlib
 from collections.abc import Sequence
 from logging import getLogger
@@ -7,7 +8,6 @@ from tempfile import TemporaryDirectory
 from pydantic import BaseModel
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
-from competitive_verifier.oj.verify import utils
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
@@ -129,11 +129,11 @@ class UserDefinedLanguage(Language):
                 "The functionality to list dependencies of .%s file is not implemented yet.",
                 self.extension,
             )
-            return list(
-                utils.glob_with_predicate(
-                    lambda path: path.suffix == "." + self.extension
-                )
-            )
+            return [
+                path
+                for path in map(pathlib.Path, glob.glob("**", recursive=True))
+                if path.suffix == "." + self.extension
+            ]
 
         with TemporaryDirectory() as tempdir:
             text = (
