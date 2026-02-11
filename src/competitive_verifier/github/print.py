@@ -12,7 +12,6 @@ def print_error(
     end_column: int | None = None,
     line: int | None = None,
     end_line: int | None = None,
-    force: bool = False,
     stream: TextIO | None = None,
 ) -> None:
     _print_github(
@@ -24,7 +23,6 @@ def print_error(
         end_column=end_column,
         line=line,
         end_line=end_line,
-        force=force,
         stream=stream,
     )
 
@@ -39,7 +37,6 @@ def _print_github(
     end_column: int | None = None,
     line: int | None = None,
     end_line: int | None = None,
-    force: bool = False,
     stream: TextIO | None = None,
 ) -> None:
     """Print Github Actions style message.
@@ -56,10 +53,9 @@ def _print_github(
         end_column: End column number
         line: Line number, starting at 1
         end_line: End line number
-        force: If True, print the message even outside GitHub Actions
         stream: Output stream
     """
-    if force or env.is_in_github_actions():
+    if env.is_in_github_actions():
         annotation = ",".join(
             f"{name}={value}"
             for name, value in (

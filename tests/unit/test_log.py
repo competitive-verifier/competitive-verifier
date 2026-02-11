@@ -21,7 +21,8 @@ class TestGitHubPrint:
         assert out == ""
         assert err == ""
 
-        github.print_error("simple_message", force=True)
+        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}, clear=True)
+        github.print_error("simple_message")
         out, err = capsys.readouterr()
         assert out == "::error ::simple_message\n"
         assert err == ""
@@ -41,7 +42,6 @@ class TestGitHubPrint:
             line=100,
             end_line=101,
             stream=sys.stderr,
-            force=True,
         )
         out, err = capsys.readouterr()
         assert out == ""

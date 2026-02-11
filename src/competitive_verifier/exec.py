@@ -65,17 +65,15 @@ def exec_command(
     cwd: Optional["StrOrBytesPath"] = None,
     group_log: bool = False,
 ) -> subprocess.CompletedProcess[str] | subprocess.CompletedProcess[bytes]:
-    if group_log:
-        cm = log.group(f"subprocess.run: {command}")
-    else:
-        logger.info("subprocess.run: %s", command)
-        cm = nullcontext()
-
     encoding = sys.stdout.encoding if text else None
     if env:
         env = os.environ | env
 
-    with cm:
+    with (
+        log.group(f"subprocess.run: {command}")
+        if group_log
+        else nullcontext(logger.info("subprocess.run: %s", command))
+    ):
         return subprocess.run(
             command,
             shell=isinstance(command, str),
