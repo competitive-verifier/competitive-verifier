@@ -13,8 +13,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.shlex2 as shlex
 from competitive_verifier.exec import command_stdout
+from competitive_verifier.models import ShellCommand
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
@@ -369,12 +369,13 @@ class RustLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str | None:
+    ) -> ShellCommand:
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)
-        return f"cd {path.parent.resolve()!s} && " + shlex.join(
-            ["cargo", "build", "--release", *_target_option(target)]
+        return ShellCommand(
+            command=["cargo", "build", "--release", *_target_option(target)],
+            cwd=path.parent,
         )
 
     def get_execute_command(

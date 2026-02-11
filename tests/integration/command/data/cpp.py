@@ -48,26 +48,36 @@ class CppWithoutConfigData(IntegrationData):
                     "verification": [
                         {
                             "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                            "compile": "/usr/bin/g++ "
-                            "--std=c++17 -O2 "
-                            "-Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                            "aplusb.main.cpp",
+                            "compile": [
+                                "/usr/bin/g++",
+                                "--std=c++17",
+                                "-O2",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "aplusb.main.cpp",
+                            ],
                             "name": "g++",
                             "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                             "type": "command",
                         },
                         {
                             "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                            "compile": "/usr/bin/clang++ "
-                            "--std=c++17 -O2 "
-                            "-Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                            "aplusb.main.cpp",
+                            "compile": [
+                                "/usr/bin/clang++",
+                                "--std=c++17",
+                                "-O2",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "aplusb.main.cpp",
+                            ],
                             "name": "clang++",
                             "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                             "type": "command",
@@ -92,24 +102,36 @@ class CppWithoutConfigData(IntegrationData):
                     "verification": [
                         {
                             "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                            "compile": "/usr/bin/g++ "
-                            "--std=c++17 -O2 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                            "aplusb.test.cpp",
+                            "compile": [
+                                "/usr/bin/g++",
+                                "--std=c++17",
+                                "-O2",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                                "aplusb.test.cpp",
+                            ],
                             "name": "g++",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "type": "problem",
                         },
                         {
                             "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                            "compile": "/usr/bin/clang++ "
-                            "--std=c++17 -O2 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                            "aplusb.test.cpp",
+                            "compile": [
+                                "/usr/bin/clang++",
+                                "--std=c++17",
+                                "-O2",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                                "aplusb.test.cpp",
+                            ],
                             "name": "clang++",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "type": "problem",
@@ -373,24 +395,34 @@ class CppWithConfigData(CppWithoutConfigData):
                     "verification": [
                         {
                             "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                            "compile": "g++ "
-                            "--std=c++17 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                            "aplusb.main.cpp",
+                            "compile": [
+                                "g++",
+                                "--std=c++17",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "aplusb.main.cpp",
+                            ],
                             "name": "g++",
                             "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                             "type": "command",
                         },
                         {
                             "command": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
-                            "compile": "clang++ "
-                            "--std=c++17 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'} "
-                            "aplusb.main.cpp",
+                            "compile": [
+                                "clang++",
+                                "--std=c++17",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
+                                "aplusb.main.cpp",
+                            ],
                             "name": "clang++",
                             "tempdir": f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc'}",
                             "type": "command",
@@ -415,24 +447,34 @@ class CppWithConfigData(CppWithoutConfigData):
                     "verification": [
                         {
                             "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                            "compile": "g++ "
-                            "--std=c++17 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                            "aplusb.test.cpp",
+                            "compile": [
+                                "g++",
+                                "--std=c++17",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                                "aplusb.test.cpp",
+                            ],
                             "name": "g++",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "type": "problem",
                         },
                         {
                             "command": f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
-                            "compile": "clang++ "
-                            "--std=c++17 -Wall -g -I "
-                            f"{self.targets_path} "
-                            "-o "
-                            f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'} "
-                            "aplusb.test.cpp",
+                            "compile": [
+                                "clang++",
+                                "--std=c++17",
+                                "-Wall",
+                                "-g",
+                                "-I",
+                                str(self.targets_path),
+                                "-o",
+                                f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
+                                "aplusb.test.cpp",
+                            ],
                             "name": "clang++",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "type": "problem",
