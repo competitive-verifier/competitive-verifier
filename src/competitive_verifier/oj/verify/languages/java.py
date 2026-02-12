@@ -5,7 +5,6 @@ from typing import Any
 
 from pydantic import ValidationInfo, field_validator
 
-import competitive_verifier.oj.verify.shlex2 as shlex
 from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
     OjVerifyUserDefinedConfig,
@@ -34,15 +33,15 @@ class JavaLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return shlex.join(["javac", str(basedir / path)])
+    ) -> list[str]:
+        return ["javac", str(basedir / path)]
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
+    ) -> list[str]:
         relative_path = (basedir / path).relative_to(basedir)
         class_path = ".".join([*relative_path.parent.parts, relative_path.stem])
-        return shlex.join(["java", class_path])
+        return ["java", class_path]
 
 
 class JavaLanguage(UserDefinedLanguage):

@@ -1,10 +1,11 @@
 import logging
 import pathlib
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import pytest
 from pytest_mock import MockerFixture
 
+from competitive_verifier import oj
 from competitive_verifier.models import JudgeStatus
 from competitive_verifier.oj.oj_test import (
     OjExecInfo,
@@ -14,7 +15,11 @@ from competitive_verifier.oj.oj_test import (
     SpecialJudge,
     single_case,
 )
-from competitive_verifier.oj.problem import AOJProblem, LibraryCheckerProblem
+from competitive_verifier.oj.problem import (
+    AOJProblem,
+    LibraryCheckerProblem,
+    YukicoderProblem,
+)
 
 OJ_TEST_MODULE = "competitive_verifier.oj.oj_test"
 
@@ -1068,3 +1073,63 @@ def test_single_case(
     expected.expected = output_path
     assert result == expected
     assert caplog.record_tuples == expected_log
+
+
+test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
+    "default": (
+        {
+            "problem": LibraryCheckerProblem(problem_id="example"),
+            "command": "ls .",
+            "tle": 2,
+            "error": None,
+            "mle": 128,
+            "env": None,
+        },
+        OjTestArguments(
+            command="ls .",
+            tle=2,
+            mle=128,
+            error=None,
+            problem=LibraryCheckerProblem(problem_id="example"),
+        ),
+    ),
+    "with_env": (
+        {
+            "problem": YukicoderProblem(problem_no=10),
+            "command": ["ls", "."],
+            "tle": 30,
+            "error": None,
+            "mle": 256,
+            "env": {"TOKEN": "Dummy"},
+        },
+        OjTestArguments(
+            command=["ls", "."],
+            tle=30,
+            mle=256,
+            error=None,
+            problem=YukicoderProblem(problem_no=10),
+            env={"TOKEN": "Dummy"},
+        ),
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    test_oj_test_params.values(),
+    ids=test_oj_test_params.keys(),
+)
+def test_oj_test(
+    mocker: MockerFixture,
+    args: dict[str, Any],
+    expected: OjTestArguments,
+):
+    mocker.patch(
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
+        "mockcheck",
+    )
+    run = mocker.patch("competitive_verifier.oj.oj_test._run")
+
+    oj.test(**args)
+
+    run.assert_called_once_with(expected)

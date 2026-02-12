@@ -13,13 +13,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.exec import command_stdout
+from competitive_verifier.models import ShellCommand
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import exec_command
 from competitive_verifier.util import read_text_normalized
 
 # ruff: noqa: PLR2004
@@ -162,11 +162,7 @@ def _list_dependencies_by_crate(
             *_target_option(main_target),
         ]
         unused_deps = json.loads(
-            exec_command(
-                args,
-                cwd=metadata["workspace_root"],
-                check=False,
-            ).stdout.decode()
+            command_stdout(args, cwd=metadata["workspace_root"], check=False)
         )["unused_deps"].values()
         unused_dep = next(
             (
@@ -262,7 +258,7 @@ def _related_source_files(
 
     # Runs `cargo check` to generate `$target_directory/debug/deps/*.d`.
     if pathlib.Path(metadata["workspace_root"]) not in _cargo_checked_workspaces:
-        exec_command(
+        command_stdout(
             [
                 "cargo",
                 "check",
@@ -272,7 +268,6 @@ def _related_source_files(
                 "--all-targets",
             ],
             cwd=metadata["workspace_root"],
-            check=True,
         )
         _cargo_checked_workspaces.add(pathlib.Path(metadata["workspace_root"]))
 
@@ -374,12 +369,13 @@ class RustLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str | None:
+    ) -> ShellCommand:
         path = basedir / path
         metadata = _cargo_metadata(cwd=path.parent)
         target = _ensure_target(metadata, path)
-        return f"cd {path.parent.resolve()!s} && " + shlex.join(
-            ["cargo", "build", "--release", *_target_option(target)]
+        return ShellCommand(
+            command=["cargo", "build", "--release", *_target_option(target)],
+            cwd=path.parent,
         )
 
     def get_execute_command(
@@ -503,7 +499,7 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
         RuntimeError: If the `cargo metadata` command fails
     """
     return json.loads(
-        exec_command(
+        command_stdout(
             [
                 "cargo",
                 "metadata",
@@ -513,8 +509,7 @@ def _run_cargo_metadata(manifest_path: pathlib.Path) -> dict[str, Any]:
                 str(manifest_path),
             ],
             cwd=manifest_path.parent,
-            check=True,
-        ).stdout.decode()
+        )
     )
 
 

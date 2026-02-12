@@ -13,7 +13,7 @@ from pydantic import Field
 from competitive_verifier import git
 from competitive_verifier.arg import VerboseArguments
 from competitive_verifier.documents.render import resolve_documentation_of
-from competitive_verifier.exec import exec_command
+from competitive_verifier.exec import command_stdout
 from competitive_verifier.oj.verify.languages import (
     CPlusPlusLanguage,
     GoLanguage,
@@ -185,11 +185,7 @@ def _get_action_query(languages: set[str]) -> dict[str, str]:
     }
     if not pathlib.Path(d["configToml"]).exists():
         del d["configToml"]
-    remote = exec_command(
-        ["git", "remote", "get-url", "origin"],
-        text=True,
-        capture_output=True,
-    ).stdout.strip()
+    remote = command_stdout(["git", "remote", "get-url", "origin"]).strip()
     if remote:
         d["repository"] = remote
 

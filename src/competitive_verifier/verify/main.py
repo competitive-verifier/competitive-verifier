@@ -14,11 +14,7 @@ from competitive_verifier.arg import (
     VerifyFilesJsonArguments,
     WriteSummaryArguments,
 )
-from competitive_verifier.models import (
-    VerificationInput,
-    VerifierError,
-    VerifyCommandResult,
-)
+from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .verifier import SplitState, Verifier
 
@@ -59,25 +55,21 @@ class Verify(
     def split_state(self) -> SplitState | None:
         split = self.split
         split_index = self.split_index
-        if split_index is None and split is None:
-            return None
-
-        if split_index is not None and split is not None:
-            if split <= 0:
-                raise VerifierError("--split must be greater than 0.")
-            if not (0 <= split_index < split):
-                raise VerifierError(
-                    "--split-index must be greater than 0 and less than --split."
-                )
-            return SplitState(size=split, index=split_index)
-
-        if split is not None:
-            raise VerifierError("--split argument requires --split-index argument.")
-
-        if split_index is not None:
-            raise VerifierError("--split-index argument requires --split argument.")
-
-        raise VerifierError("invalid state.")
+        match (split_index, split):
+            case (int(), int()):
+                if split <= 0:
+                    raise ValueError("--split must be greater than 0.")
+                if not (0 <= split_index < split):
+                    raise ValueError(
+                        "--split-index must be greater than 0 and less than --split."
+                    )
+                return SplitState(size=split, index=split_index)
+            case (None, int()):
+                raise ValueError("--split argument requires --split-index argument.")
+            case (int(), None):
+                raise ValueError("--split-index argument requires --split argument.")
+            case _:
+                return None
 
     @classmethod
     def add_parser(cls, parser: ArgumentParser):

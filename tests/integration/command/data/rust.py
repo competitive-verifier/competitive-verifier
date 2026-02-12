@@ -74,14 +74,16 @@ class RustWithoutConfigData(IntegrationData):
                                 self.targets_path
                                 / "target/release/aizu-online-judge-itp1-1-a"
                             ),
-                            "compile": "cd "
-                            f"{self.targets_path / 'verification/src/bin'} "
-                            "&& "
-                            "cargo "
-                            "build "
-                            "--release "
-                            "--bin "
-                            "aizu-online-judge-itp1-1-a",
+                            "compile": {
+                                "command": [
+                                    "cargo",
+                                    "build",
+                                    "--release",
+                                    "--bin",
+                                    "aizu-online-judge-itp1-1-a",
+                                ],
+                                "cwd": str(self.targets_path / "verification/src/bin"),
+                            },
                             "name": "Rust",
                             "problem": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
                             "type": "problem",
@@ -106,14 +108,16 @@ class RustWithoutConfigData(IntegrationData):
                                 self.targets_path
                                 / "target/release/library-checker-aplusb"
                             ),
-                            "compile": "cd "
-                            f"{self.targets_path / 'verification/src/bin'} "
-                            "&& "
-                            "cargo "
-                            "build "
-                            "--release "
-                            "--bin "
-                            "library-checker-aplusb",
+                            "compile": {
+                                "command": [
+                                    "cargo",
+                                    "build",
+                                    "--release",
+                                    "--bin",
+                                    "library-checker-aplusb",
+                                ],
+                                "cwd": str(self.targets_path / "verification/src/bin"),
+                            },
                             "name": "Rust",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "type": "problem",

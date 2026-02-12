@@ -6,7 +6,6 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field
 
-import competitive_verifier.oj.verify.shlex2 as shlex
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
@@ -45,18 +44,16 @@ class NimLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return shlex.join(
-            [
-                "nim",
-                self.compile_to,
-                "-p:.",
-                f"-o:{tempdir / 'a.out'!s}",
-                f"--nimcache:{tempdir!s}",
-                *self.nim_flags,
-                str(path),
-            ]
-        )
+    ) -> list[str]:
+        return [
+            "nim",
+            self.compile_to,
+            "-p:.",
+            f"-o:{tempdir / 'a.out'!s}",
+            f"--nimcache:{tempdir!s}",
+            *self.nim_flags,
+            str(path),
+        ]
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path

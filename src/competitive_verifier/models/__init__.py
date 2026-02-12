@@ -1,4 +1,3 @@
-from .error import VerifierError
 from .file import (
     AddtionalSource,
     DocumentOutputMode,
@@ -46,6 +45,5 @@ __all__ = [
     "VerificationInput",
     "VerificationParams",
     "VerificationResult",
-    "VerifierError",
     "VerifyCommandResult",
 ]

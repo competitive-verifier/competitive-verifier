@@ -1,21 +1,19 @@
-# Python Version: 3.x
-import functools
 import os
 import pathlib
 import platform
+import shlex
 import shutil
 from logging import getLogger
 from typing import Any
 
 from pydantic import BaseModel
 
-import competitive_verifier.oj.verify.shlex2 as shlex
+from competitive_verifier.exec import command_stdout
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
     OjVerifyLanguageConfig,
 )
-from competitive_verifier.oj.verify.utils import exec_command
 
 from . import special_comments
 from .cplusplus_bundle import Bundler
@@ -48,18 +46,16 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return shlex.join(
-            [
-                str(self.cxx),
-                *self.cxx_flags,
-                "-I",
-                str(basedir),
-                "-o",
-                str(tempdir / "a.out"),
-                str(path),
-            ]
-        )
+    ) -> list[str]:
+        return [
+            str(self.cxx),
+            *self.cxx_flags,
+            "-I",
+            str(basedir),
+            "-o",
+            str(tempdir / "a.out"),
+            str(path),
+        ]
 
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
@@ -73,17 +69,16 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
         return not self.is_clang() and "g++" in self.cxx.name
 
 
-@functools.cache
 def _cplusplus_list_depending_files(
     path: pathlib.Path,
     *,
     CXX: pathlib.Path,
-    joined_CXXFLAGS: str,
+    CXXFLAGS: list[str],
 ) -> list[pathlib.Path]:
     is_windows = platform.uname().system == "Windows"
-    command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-MM", str(path)]
+    command = [str(CXX), *CXXFLAGS, "-MM", str(path)]
     try:
-        data = exec_command(command).stdout
+        data = command_stdout(command)
     except Exception:
         logger.error(  # noqa: TRY400
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
@@ -94,20 +89,19 @@ def _cplusplus_list_depending_files(
         raise
     logger.debug("dependencies of %s: %s", str(path), repr(data))
     makefile_rule = shlex.split(
-        data.decode().strip().replace("\\\n", "").replace("\\\r\n", ""),
+        data.strip().replace("\\\n", "").replace("\\\r\n", ""),
         posix=not is_windows,
     )
     return [pathlib.Path(path).resolve() for path in makefile_rule[1:]]
 
 
-@functools.cache
 def _cplusplus_list_defined_macros(
-    path: pathlib.Path, *, CXX: pathlib.Path, joined_CXXFLAGS: str
+    path: pathlib.Path, *, CXX: pathlib.Path, CXXFLAGS: list[str]
 ) -> dict[str, str]:
-    command = [str(CXX), *shlex.split(joined_CXXFLAGS), "-dM", "-E", str(path)]
-    data = exec_command(command).stdout
+    command = [str(CXX), *CXXFLAGS, "-dM", "-E", str(path)]
+    data = command_stdout(command)
     define: dict[str, str] = {}
-    for line in data.decode().splitlines():
+    for line in data.splitlines():
         assert line.startswith("#define ")
         a, _, b = line[len("#define ") :].partition(" ")
         if (b.startswith('"') and b.endswith('"')) or (
@@ -202,11 +196,10 @@ class CPlusPlusLanguage(Language):
             attributes[_NOT_SPECIAL_COMMENTS] = ""
             all_ignored = True
             for env in self._list_environments():
-                joined_CXXFLAGS = " ".join(  # noqa: N806
-                    map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
-                )
                 macros = _cplusplus_list_defined_macros(
-                    path.resolve(), CXX=env.cxx, joined_CXXFLAGS=joined_CXXFLAGS
+                    path.resolve(),
+                    CXX=env.cxx,
+                    CXXFLAGS=[*env.cxx_flags, "-I", str(basedir)],
                 )
 
                 # convert macros to attributes
@@ -239,11 +232,10 @@ class CPlusPlusLanguage(Language):
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
         env = self._list_environments()[0]
-        joined_CXXFLAGS = " ".join(  # noqa: N806
-            map(shlex.quote, [*env.cxx_flags, "-I", str(basedir)])
-        )
         return _cplusplus_list_depending_files(
-            path.resolve(), CXX=env.cxx, joined_CXXFLAGS=joined_CXXFLAGS
+            path.resolve(),
+            CXX=env.cxx,
+            CXXFLAGS=[*env.cxx_flags, "-I", str(basedir)],
         )
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
