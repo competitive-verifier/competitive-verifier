@@ -705,8 +705,7 @@ def test_verify_compile_error(
     caplog: pytest.LogCaptureFixture,
     capsys: pytest.CaptureFixture[str],
 ):
-    if is_github_actions:
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": "TRUE"})
+    mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": str(is_github_actions)})
 
     mocker.patch.object(
         pathlib.Path, "resolve", return_value=pathlib.Path("/any/dir/test/mock.py")
@@ -803,6 +802,7 @@ def test_verify_compile_error(
 
 @pytest.mark.usefixtures("mock_perf_counter")
 def test_verify_error(
+    mocker: MockerFixture,
     caplog: pytest.LogCaptureFixture,
     capsys: pytest.CaptureFixture[str],
 ):
@@ -814,6 +814,7 @@ def test_verify_error(
         def run(self, *args: Any, **kwargs: Any):  # pyright: ignore[reportIncompatibleMethodOverride]
             raise RuntimeError("ErrorVerification")
 
+    mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": ""})
     verifier = MockVerifier(
         {
             "files": {
@@ -876,9 +877,7 @@ def test_verify_failure(
     caplog: pytest.LogCaptureFixture,
     capsys: pytest.CaptureFixture[str],
 ):
-    if is_github_actions:
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": "TRUE"})
-
+    mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": str(is_github_actions)})
     mocker.patch.object(
         pathlib.Path, "resolve", return_value=pathlib.Path("/any/dir/test/mock.py")
     )
