@@ -764,7 +764,7 @@ def test_verify_compile_error(
         (
             "competitive_verifier.verify.verifier",
             logging.ERROR,
-            "Failed to compile: test/foo.py, ProblemVerification(name='foo', "
+            f"Failed to compile: {pathlib.Path('test/foo.py')}, ProblemVerification(name='foo', "
             "type='problem', command='false', compile=None, "
             "problem='https://judge.yosupo.jp/problem/aplusb', error=None, "
             "tle=None, mle=None)",
@@ -772,7 +772,7 @@ def test_verify_compile_error(
         (
             "competitive_verifier.verify.verifier",
             logging.ERROR,
-            "Failed to compile: test/foo.py, ProblemVerification(name='bar', "
+            f"Failed to compile: {pathlib.Path('test/foo.py')}, ProblemVerification(name='bar', "
             "type='problem', command='false', compile=None, "
             "problem='https://judge.yosupo.jp/problem/aplusb', error=None, "
             "tle=None, mle=None)",
@@ -783,8 +783,8 @@ def test_verify_compile_error(
 
     if is_github_actions:
         assert out == (
-            "::error file=/any/dir/test/mock.py::Failed to compile test/foo.py\n"
-            "::error file=/any/dir/test/mock.py::Failed to compile test/foo.py\n"
+            f"::error file={pathlib.Path('/any/dir/test/mock.py')}::Failed to compile test/foo.py\n"
+            f"::error file={pathlib.Path('/any/dir/test/mock.py')}::Failed to compile test/foo.py\n"
         )
         assert err == (
             "::group::current_verification_files\n::endgroup::\n"
@@ -853,7 +853,7 @@ def test_verify_error(
         (
             "competitive_verifier.verify.verifier",
             logging.ERROR,
-            "Failed to verify: test/foo.py, "
+            f"Failed to verify: {pathlib.Path('test/foo.py')}, "
             "ErrorVerification(name='foo', type='const', status=<ResultStatus.FAILURE: 'failure'>)",
         ),
     ]
