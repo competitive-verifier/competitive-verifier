@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 
 def ulimit_stack() -> None:
     """Run `ulimit -s unlimited`."""
-    if sys.platform != "win32":  # pragma: no cover
+    if sys.platform not in ["win32", "darwin"]:  # pragma: no cover
         import resource  # noqa: PLC0415
 
         _, hard = resource.getrlimit(resource.RLIMIT_STACK)
