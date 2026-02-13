@@ -115,7 +115,7 @@
       "title": "ConstVerification",
       "type": "object"
     },
-    "ProblemVerification": {
+    "LocalProblemVerification": {
       "properties": {
         "name": {
           "anyOf": [
@@ -128,12 +128,6 @@
           ],
           "default": null,
           "title": "Name"
-        },
-        "type": {
-          "const": "problem",
-          "default": "problem",
-          "title": "Type",
-          "type": "string"
         },
         "command": {
           "$ref": "#/$defs/ShellCommandLike",
@@ -150,11 +144,6 @@
           ],
           "default": null,
           "description": "The shell command for compile."
-        },
-        "problem": {
-          "description": "The URL of problem.",
-          "title": "Problem",
-          "type": "string"
         },
         "error": {
           "anyOf": [
@@ -203,6 +192,129 @@
             64
           ],
           "title": "Mle"
+        },
+        "type": {
+          "const": "local",
+          "default": "local",
+          "title": "Type",
+          "type": "string"
+        },
+        "input": {
+          "description": "The file path of testcases.",
+          "format": "path",
+          "title": "Input",
+          "type": "string"
+        },
+        "tempdir": {
+          "anyOf": [
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The temporary directory for running verification.",
+          "title": "Tempdir"
+        }
+      },
+      "required": [
+        "command",
+        "input"
+      ],
+      "title": "LocalProblemVerification",
+      "type": "object"
+    },
+    "ProblemVerification": {
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "command": {
+          "$ref": "#/$defs/ShellCommandLike",
+          "description": "The shell command for verification."
+        },
+        "compile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShellCommandLike"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The shell command for compile."
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The absolute or relative error to be considered as correct.",
+          "examples": [
+            1e-09
+          ],
+          "title": "Error"
+        },
+        "tle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The TLE time in seconds.",
+          "examples": [
+            10
+          ],
+          "title": "Tle"
+        },
+        "mle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The MLE memory size in megabytes.",
+          "examples": [
+            64
+          ],
+          "title": "Mle"
+        },
+        "type": {
+          "const": "problem",
+          "default": "problem",
+          "title": "Type",
+          "type": "string"
+        },
+        "problem": {
+          "description": "The URL of problem.",
+          "title": "Problem",
+          "type": "string"
         }
       },
       "required": [
@@ -337,6 +449,7 @@
                   "mapping": {
                     "command": "#/$defs/CommandVerification",
                     "const": "#/$defs/ConstVerification",
+                    "local": "#/$defs/LocalProblemVerification",
                     "problem": "#/$defs/ProblemVerification"
                   },
                   "propertyName": "type"
@@ -350,6 +463,9 @@
                   },
                   {
                     "$ref": "#/$defs/ProblemVerification"
+                  },
+                  {
+                    "$ref": "#/$defs/LocalProblemVerification"
                   }
                 ]
               },
@@ -360,6 +476,7 @@
                 "mapping": {
                   "command": "#/$defs/CommandVerification",
                   "const": "#/$defs/ConstVerification",
+                  "local": "#/$defs/LocalProblemVerification",
                   "problem": "#/$defs/ProblemVerification"
                 },
                 "propertyName": "type"
@@ -373,6 +490,9 @@
                 },
                 {
                   "$ref": "#/$defs/ProblemVerification"
+                },
+                {
+                  "$ref": "#/$defs/LocalProblemVerification"
                 }
               ]
             },

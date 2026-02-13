@@ -18,6 +18,7 @@ from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
     ConstVerification,
+    LocalProblemVerification,
     ProblemVerification,
     ResultStatus,
     Verification,
@@ -174,6 +175,39 @@ class OjResolver:
             )
 
     @staticmethod
+    def _env_to_local_problem_verification(
+        env: LanguageEnvironment,
+        *,
+        attr: dict[str, Any],
+        path: pathlib.Path,
+        basedir: pathlib.Path,
+        error: float | None,
+        tle: float | None,
+        mle: float | None,
+    ) -> Generator[Verification, None, None]:
+        casedir = attr.get("LOCALCASE")
+        if casedir is None:
+            return
+
+        tempdir = (
+            config.get_cache_dir()
+            / "localcase"
+            / hashlib.md5(
+                path.as_posix().encode("utf-8"), usedforsecurity=False
+            ).hexdigest()
+        )
+        yield LocalProblemVerification(
+            name=env.name,
+            command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
+            compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
+            input=pathlib.Path(casedir),
+            error=error,
+            tle=tle,
+            mle=mle,
+            tempdir=tempdir,
+        )
+
+    @staticmethod
     def _env_to_standalone_verification(
         env: LanguageEnvironment,
         *,
@@ -181,20 +215,22 @@ class OjResolver:
         path: pathlib.Path,
         basedir: pathlib.Path,
     ) -> Generator[Verification, None, None]:
-        if attr.get("STANDALONE") is not None:
-            tempdir = (
-                config.get_cache_dir()
-                / "standalone"
-                / hashlib.md5(
-                    path.as_posix().encode("utf-8"), usedforsecurity=False
-                ).hexdigest()
-            )
-            yield CommandVerification(
-                name=env.name,
-                command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
-                compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
-                tempdir=tempdir,
-            )
+        if attr.get("STANDALONE") is None:
+            return
+
+        tempdir = (
+            config.get_cache_dir()
+            / "standalone"
+            / hashlib.md5(
+                path.as_posix().encode("utf-8"), usedforsecurity=False
+            ).hexdigest()
+        )
+        yield CommandVerification(
+            name=env.name,
+            command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
+            compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
+            tempdir=tempdir,
+        )
 
     @staticmethod
     def _env_to_unittest_verification(

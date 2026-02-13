@@ -15,8 +15,8 @@ from typing import BinaryIO
 
 from competitive_verifier.models import (
     JudgeStatus,
-    Problem,
     ResultStatus,
+    TestCaseProvider,
     TestcaseResult,
     VerifcationTimeoutError,
     VerificationResult,
@@ -121,7 +121,7 @@ class OjTestArguments:
     """
 
     command: str | list[str]
-    problem: Problem
+    problem: TestCaseProvider
     tle: float | None
     mle: float | None
     error: float | None
@@ -456,7 +456,7 @@ def _run(args: OjTestArguments) -> OjTestResult:
 
 def main(
     *,
-    problem: Problem,
+    problem: TestCaseProvider,
     command: str | list[str],
     env: dict[str, str] | None,
     tle: float | None,

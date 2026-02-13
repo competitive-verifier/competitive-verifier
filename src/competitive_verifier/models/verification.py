@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from functools import cached_property
 from typing import Annotated, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
 from .path import ForcePosixPath
-from .problem import Problem
+from .problem import TestCaseProvider
 from .result import VerificationResult
 from .result_status import ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -113,9 +112,7 @@ class CommandVerification(BaseVerification):
         return True
 
 
-class ProblemVerification(BaseVerification):
-    type: Literal["problem"] = "problem"
-
+class BaseProblemVerification(BaseVerification, ABC):
     command: ShellCommandLike = Field(description="The shell command for verification.")
     """The shell command for verification.
     """
@@ -124,13 +121,6 @@ class ProblemVerification(BaseVerification):
         description="The shell command for compile.",
     )
     """The shell command for compile.
-    """
-
-    problem: str = Field(
-        description="The URL of problem.",
-    )
-    """
-    problem: URL of problem
     """
 
     error: float | None = Field(
@@ -155,12 +145,8 @@ class ProblemVerification(BaseVerification):
     """The MLE memory size in megabytes.
     """
 
-    @cached_property
-    def problem_obj(self) -> Problem | None:
-        # circular dependency
-        from competitive_verifier.oj import problem_from_url  # noqa: PLC0415
-
-        return problem_from_url(self.problem)
+    @abstractmethod
+    def _problem(self) -> TestCaseProvider | None: ...
 
     def run(
         self,
@@ -173,12 +159,13 @@ class ProblemVerification(BaseVerification):
         if not params:
             raise ValueError("ProblemVerification.run requires VerificationParams")
 
-        if not self.problem_obj:
+        problem = self._problem()
+        if not problem:
             return ResultStatus.FAILURE
 
         c = ShellCommand.parse_command_like(self.command)
         result = oj.test(
-            problem=self.problem_obj,
+            problem=problem,
             command=c.command,
             env=c.env,
             tle=self.tle or params.default_tle,
@@ -199,7 +186,61 @@ class ProblemVerification(BaseVerification):
         return True
 
 
+class ProblemVerification(BaseProblemVerification):
+    type: Literal["problem"] = "problem"
+
+    problem: str = Field(
+        description="The URL of problem.",
+    )
+    """
+    problem: URL of problem
+    """
+
+    def _problem(self) -> TestCaseProvider | None:
+        # circular dependency
+        from competitive_verifier.oj import problem_from_url  # noqa: PLC0415
+
+        return problem_from_url(self.problem)
+
+
+class LocalProblemVerification(BaseProblemVerification):
+    type: Literal["local"] = "local"
+
+    input: ForcePosixPath = Field(
+        description="The file path of testcases.",
+    )
+    """
+    input: file path of testcases
+    """
+
+    tempdir: ForcePosixPath | None = Field(
+        default=None,
+        description="The temporary directory for running verification.",
+    )
+    """The temporary directory for running verification.
+    """
+
+    def _problem(self) -> TestCaseProvider | None:
+        # circular dependency
+        from competitive_verifier.oj import LocalProblem  # noqa: PLC0415
+
+        return LocalProblem(self.input)
+
+    def run(
+        self,
+        params: VerificationParams | None = None,
+        *,
+        deadline: float = float("inf"),
+    ) -> VerificationResult | ResultStatus:
+        if self.tempdir is not None:
+            self.tempdir.mkdir(parents=True, exist_ok=True)
+        return super().run(params, deadline=deadline)
+
+
 Verification = Annotated[
-    ConstVerification | CommandVerification | ProblemVerification,
+    ConstVerification
+    | CommandVerification
+    | ProblemVerification
+    | LocalProblemVerification,
     Field(discriminator="type"),
 ]

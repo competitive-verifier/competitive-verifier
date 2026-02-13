@@ -19,7 +19,19 @@ class TestCaseData(NamedTuple):
     output_data: bytes
 
 
-class Problem(ABC):
+class TestCaseProvider(ABC):
+    @abstractmethod
+    def download_system_cases(self) -> Iterable[TestCaseData] | bool: ...
+
+    @abstractmethod
+    def iter_system_cases(self) -> Iterable[TestCaseFile]: ...
+
+    @property
+    def checker(self) -> pathlib.Path | None:
+        return None
+
+
+class Problem(TestCaseProvider):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}.from_url({self.url!r})"  # pragma: no cover
 
@@ -31,19 +43,13 @@ class Problem(ABC):
             return False
         return self.url == cast("Problem", value).url
 
-    @abstractmethod
-    def download_system_cases(self) -> Iterable[TestCaseData] | bool: ...
-
-    @abstractmethod
-    def iter_system_cases(self) -> Iterable[TestCaseFile]: ...
-
     @property
     @abstractmethod
     def url(self) -> str: ...
 
-    @property
-    def checker(self) -> pathlib.Path | None:
-        return None
+    @classmethod
+    @abstractmethod
+    def from_url(cls, url: str) -> Optional["Problem"]: ...
 
     @property
     def hash_id(self):
@@ -56,7 +62,3 @@ class Problem(ABC):
     @property
     def test_directory(self):
         return self.problem_directory / "test"
-
-    @classmethod
-    @abstractmethod
-    def from_url(cls, url: str) -> Optional["Problem"]: ...
