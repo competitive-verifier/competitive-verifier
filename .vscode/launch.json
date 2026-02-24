@@ -40,5 +40,21 @@
             },
             "console": "integratedTerminal"
         },
+        {
+            "name": "docs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/competitive_verifier/app.py",
+            "args": [
+                "docs",
+                ".competitive-verifier/tmp/all-result.json",
+                "--include",
+                "examples/"
+            ],
+            "env": {
+                "COMPETITIVE_VERIFY_FILES_PATH": ".competitive-verifier/tmp/all-verify_files.json"
+            },
+            "console": "integratedTerminal"
+        },
     ]
 }

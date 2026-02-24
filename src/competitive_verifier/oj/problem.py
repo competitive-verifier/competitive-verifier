@@ -405,17 +405,7 @@ class LocalProblem(TestCaseProvider):
         return bool(any(self.iter_system_cases()))
 
     def iter_system_cases(self) -> Iterable[TestCaseFile]:
-        for infile in self.path.glob("**/*.in"):
-            outfile = infile.with_suffix(".out")
-            if outfile.is_file():
-                name = outfile.relative_to(self.path).with_suffix("").as_posix()
-                yield TestCaseFile(
-                    name=name,
-                    input_path=infile,
-                    output_path=outfile,
-                )
-            else:
-                logger.warning("no .out file: %s", infile)
+        return iter_testcases(directory=self.path, recursive=True)
 
 
 def _normpath(path: str) -> str:

@@ -9,10 +9,24 @@ from competitive_verifier.oj.problem import LocalProblem
 
 
 def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path):
+    NOT_FOUND_TUPLE = (
+        "competitive_verifier.oj.file",
+        logging.WARNING,
+        "no cases found",
+    )
+    DANGLING_OUTPUT_TUPLE = (
+        "competitive_verifier.oj.file",
+        logging.WARNING,
+        "dangling output case",
+    )
+
     problem = LocalProblem(testtemp)
     assert not problem.download_system_cases()
+    assert caplog.record_tuples == [NOT_FOUND_TUPLE]
+    caplog.clear()
     assert list(problem.iter_system_cases()) == []
-    assert caplog.record_tuples == []
+    assert caplog.record_tuples == [NOT_FOUND_TUPLE]
+    caplog.clear()
 
     (testtemp / "top.in").touch()
     (testtemp / "top.out").touch()
@@ -26,14 +40,14 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
     assert problem.download_system_cases()
     assert list(problem.iter_system_cases()) == [
         TestCaseFile(
-            name="top",
-            input_path=testtemp / "top.in",
-            output_path=testtemp / "top.out",
-        ),
-        TestCaseFile(
             name="subdir/ss",
             input_path=testtemp / "subdir/ss.in",
             output_path=testtemp / "subdir/ss.out",
+        ),
+        TestCaseFile(
+            name="top",
+            input_path=testtemp / "top.in",
+            output_path=testtemp / "top.out",
         ),
     ]
     assert caplog.record_tuples == []
@@ -43,20 +57,14 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
     assert problem.download_system_cases()
     assert list(problem.iter_system_cases()) == [
         TestCaseFile(
-            name="top",
-            input_path=testtemp / "top.in",
-            output_path=testtemp / "top.out",
-        ),
-        TestCaseFile(
             name="subdir/ss",
             input_path=testtemp / "subdir/ss.in",
             output_path=testtemp / "subdir/ss.out",
         ),
-    ]
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.oj.problem",
-            logging.WARNING,
-            "no .out file: " + (testtemp / "subdir" / "only_in.in").as_posix(),
+        TestCaseFile(
+            name="top",
+            input_path=testtemp / "top.in",
+            output_path=testtemp / "top.out",
         ),
     ]
+    assert caplog.record_tuples == [DANGLING_OUTPUT_TUPLE, DANGLING_OUTPUT_TUPLE]
