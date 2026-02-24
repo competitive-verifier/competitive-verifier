@@ -13,13 +13,15 @@ from pytest_mock import MockerFixture
 from competitive_verifier.models import (
     CommandVerification,
     ConstVerification,
+    LocalProblemVerification,
     Problem,
     ProblemVerification,
     ResultStatus,
     ShellCommand,
     Verification,
 )
-from competitive_verifier.oj import problem_from_url
+from competitive_verifier.models.verification import BaseProblemVerification
+from competitive_verifier.oj import LocalProblem, problem_from_url
 from competitive_verifier.oj.oj_test import OjTestArguments
 
 
@@ -74,19 +76,19 @@ test_command_union_json_params: list[tuple[Verification, str, str]] = [
     (
         ProblemVerification(command="ls ~", problem="https://example.com"),
         '{"type":"problem","problem":"https://example.com","command":"ls ~"}',
-        '{"type":"problem","command":"ls ~","problem":"https://example.com"}',
+        '{"command":"ls ~","type":"problem","problem":"https://example.com"}',
     ),
     (
         ProblemVerification(name="bar", command="ls ~", problem="https://example.com"),
         '{"type":"problem","name":"bar","problem":"https://example.com","command":"ls ~"}',
-        '{"name":"bar","type":"problem","command":"ls ~","problem":"https://example.com"}',
+        '{"name":"bar","command":"ls ~","type":"problem","problem":"https://example.com"}',
     ),
     (
         ProblemVerification(
             compile="cat LICENSE", command="ls ~", problem="https://example.com"
         ),
         '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "command": "ls ~"}',
-        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com"}',
+        '{"command":"ls ~","compile":"cat LICENSE","type":"problem","problem":"https://example.com"}',
     ),
     (
         ProblemVerification(
@@ -97,7 +99,18 @@ test_command_union_json_params: list[tuple[Verification, str, str]] = [
             tle=2,
         ),
         '{"type": "problem",  "problem":"https://example.com", "compile": "cat LICENSE", "error": 0.000001, "tle": 2, "command": "ls ~"}',
-        '{"type":"problem","command":"ls ~","compile":"cat LICENSE","problem":"https://example.com","error":1e-6,"tle":2.0}',
+        '{"command":"ls ~","compile":"cat LICENSE","error":1e-6,"tle":2.0,"type":"problem","problem":"https://example.com"}',
+    ),
+    (
+        LocalProblemVerification(
+            compile="cat LICENSE",
+            command="ls ~",
+            input=pathlib.Path("/root/cases-dir"),
+            error=1e-6,
+            tle=2,
+        ),
+        '{"type": "local",  "input":"/root/cases-dir", "compile": "cat LICENSE", "error": 0.000001, "tle": 2, "command": "ls ~"}',
+        '{"command":"ls ~","compile":"cat LICENSE","error":1e-6,"tle":2.0,"type":"local","input":"/root/cases-dir"}',
     ),
 ]
 
@@ -297,7 +310,9 @@ def test_run_with_env(
     assert call_kwargs == kwargs
 
 
-test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments]] = [
+test_run_problem_command_params: list[
+    tuple[BaseProblemVerification, OjTestArguments]
+] = [
     (
         ProblemVerification(
             command="ls ~",
@@ -378,6 +393,23 @@ test_run_problem_command_params: list[tuple[ProblemVerification, OjTestArguments
         ),
         OjTestArguments(
             problem=from_url_force("https://judge.yosupo.jp/problem/aplusb"),
+            command="ls ~",
+            tle=2.0,
+            error=1e-06,
+            mle=128,
+            env={"ARG": "VAR"},
+        ),
+    ),
+    (
+        LocalProblemVerification(
+            compile="cat LICENSE",
+            command=ShellCommand(command="ls ~", env={"ARG": "VAR"}),
+            input=pathlib.Path("/root/testcases"),
+            error=1e-6,
+            tle=2,
+        ),
+        OjTestArguments(
+            problem=LocalProblem(path=pathlib.Path("/root/testcases")),
             command="ls ~",
             tle=2.0,
             error=1e-06,
@@ -503,6 +535,28 @@ test_run_compile_params: list[
             ),
             command="ls ~",
             problem="https://example.com",
+            error=1e-6,
+            tle=2,
+        ),
+        ["cat", "LICENSE"],
+        {
+            "shell": False,
+            "text": True,
+            "check": False,
+            "env": None,
+            "cwd": pathlib.Path("~/foo"),
+            "capture_output": False,
+            "encoding": sys.stdout.encoding,
+        },
+    ),
+    (
+        LocalProblemVerification(
+            compile=ShellCommand(
+                command=["cat", "LICENSE"],
+                cwd=pathlib.Path("~/foo"),
+            ),
+            command="ls ~",
+            input=pathlib.Path("/root/testcases"),
             error=1e-6,
             tle=2,
         ),

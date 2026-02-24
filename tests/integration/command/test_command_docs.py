@@ -12,7 +12,6 @@ import pytest
 import yaml
 from pydantic import BaseModel, Field
 from pytest_mock import MockerFixture
-from pytest_subtests import SubTests
 
 from competitive_verifier import app
 from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
@@ -72,7 +71,22 @@ def data(
                                         "filename": "aplusb.test.awk",
                                         "icon": "TEST_ACCEPTED",
                                         "path": "awk/aplusb.test.awk",
-                                    }
+                                    },
+                                    {
+                                        "filename": "myaplusb1.test.awk",
+                                        "icon": "TEST_ACCEPTED",
+                                        "path": "awk/myaplusb1.test.awk",
+                                    },
+                                    {
+                                        "filename": "myaplusb2.test.awk",
+                                        "icon": "TEST_ACCEPTED",
+                                        "path": "awk/myaplusb2.test.awk",
+                                    },
+                                    {
+                                        "filename": "myaplusb3.test.awk",
+                                        "icon": "TEST_ACCEPTED",
+                                        "path": "awk/myaplusb3.test.awk",
+                                    },
                                 ],
                                 "type": "Verified with",
                             },
@@ -93,7 +107,12 @@ def data(
                         "requiredBy": [],
                         "timestamp": "1985-12-01 00:29:29.550000-07:00",
                         "verificationStatus": "LIBRARY_ALL_AC",
-                        "verifiedWith": ["awk/aplusb.test.awk"],
+                        "verifiedWith": [
+                            "awk/aplusb.test.awk",
+                            "awk/myaplusb1.test.awk",
+                            "awk/myaplusb2.test.awk",
+                            "awk/myaplusb3.test.awk",
+                        ],
                         "title": 'Calculate "A + B"',
                     },
                     "documentation_of": "awk/aplusb.awk",
@@ -348,6 +367,494 @@ def data(
                         "verifiedWith": [],
                     },
                     "documentation_of": "awk/aplusb_direct.awk",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
+                path="awk/myaplusb1.test.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "LOCALCASE": "./myaplusb",
+                        },
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "aplusb.awk",
+                                        "icon": "LIBRARY_ALL_AC",
+                                        "path": "awk/aplusb.awk",
+                                        "title": 'Calculate "A + B"',
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": ["awk/aplusb.awk"],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path(
+                                    "awk/myaplusb1.test.awk"
+                                ).read_text(encoding="utf-8"),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": True,
+                        "path": "awk/myaplusb1.test.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 7.09,
+                                "memory": 14.39,
+                                "name": "case01",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 3.17,
+                                "memory": 24.01,
+                                "name": "case02",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 4.29,
+                                "memory": 84.86,
+                                "name": "case03",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 9.16,
+                                "memory": 92.12,
+                                "name": "case04",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 0.19,
+                                "memory": 1.38,
+                                "name": "case05",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 6.13,
+                                "memory": 86.9,
+                                "name": "case06",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 2.61,
+                                "memory": 14.13,
+                                "name": "case07",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 3.15,
+                                "memory": 98.59,
+                                "name": "case08",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 4.15,
+                                "memory": 10.09,
+                                "name": "case09",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 2.4,
+                                "memory": 51.95,
+                                "name": "case10",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 7.63,
+                                "memory": 29.83,
+                                "name": "case11",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 8.35,
+                                "memory": 57.39,
+                                "name": "case12",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 3.25,
+                                "memory": 84.05,
+                                "name": "case13",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 6.78,
+                                "memory": 81.13,
+                                "name": "case14",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 2.82,
+                                "memory": 57.1,
+                                "name": "case15",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 0.74,
+                                "memory": 29.45,
+                                "name": "case16",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                        ],
+                        "timestamp": "2016-05-09 04:36:39.250000-12:00",
+                        "verificationStatus": "TEST_ACCEPTED",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/myaplusb1.test.awk",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
+                path="awk/myaplusb2.test.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "LOCALCASE": "awk/myaplusb",
+                        },
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "aplusb.awk",
+                                        "icon": "LIBRARY_ALL_AC",
+                                        "path": "awk/aplusb.awk",
+                                        "title": 'Calculate "A + B"',
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": ["awk/aplusb.awk"],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path(
+                                    "awk/myaplusb2.test.awk"
+                                ).read_text(encoding="utf-8"),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": True,
+                        "path": "awk/myaplusb2.test.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 4.48,
+                                "memory": 50.73,
+                                "name": "case01",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 4.68,
+                                "memory": 89.31,
+                                "name": "case02",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 5.85,
+                                "memory": 17.84,
+                                "name": "case03",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 1.89,
+                                "memory": 69.07,
+                                "name": "case04",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 1.94,
+                                "memory": 53.84,
+                                "name": "case05",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 5.31,
+                                "memory": 12.57,
+                                "name": "case06",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 2.39,
+                                "memory": 7.66,
+                                "name": "case07",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 8.78,
+                                "memory": 33.26,
+                                "name": "case08",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 1.84,
+                                "memory": 9.04,
+                                "name": "case09",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 4.09,
+                                "memory": 80.76,
+                                "name": "case10",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 0.87,
+                                "memory": 92.37,
+                                "name": "case11",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 9.23,
+                                "memory": 56.6,
+                                "name": "case12",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 4.58,
+                                "memory": 16.24,
+                                "name": "case13",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 9.98,
+                                "memory": 15.52,
+                                "name": "case14",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 8.81,
+                                "memory": 46.17,
+                                "name": "case15",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                            {
+                                "elapsed": 5.67,
+                                "memory": 79.41,
+                                "name": "case16",
+                                "status": "AC",
+                                "environment": "awk",
+                            },
+                        ],
+                        "timestamp": "1980-09-07 22:03:12.040000-08:00",
+                        "verificationStatus": "TEST_ACCEPTED",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/myaplusb2.test.awk",
+                    "layout": "document",
+                },
+            ),
+            MarkdownData(
+                path="awk/myaplusb3.test.awk.md",
+                front_matter={
+                    "data": {
+                        "attributes": {
+                            "LOCALCASE": "//awk/",
+                        },
+                        "dependencies": [
+                            {
+                                "files": [
+                                    {
+                                        "filename": "aplusb.awk",
+                                        "icon": "LIBRARY_ALL_AC",
+                                        "path": "awk/aplusb.awk",
+                                        "title": 'Calculate "A + B"',
+                                    }
+                                ],
+                                "type": "Depends on",
+                            },
+                            {"files": [], "type": "Required by"},
+                            {"files": [], "type": "Verified with"},
+                        ],
+                        "dependsOn": ["awk/aplusb.awk"],
+                        "embedded": [
+                            {
+                                "code": pathlib.Path(
+                                    "awk/myaplusb3.test.awk"
+                                ).read_text(encoding="utf-8"),
+                                "name": "default",
+                            }
+                        ],
+                        "isFailed": False,
+                        "isVerificationFile": True,
+                        "path": "awk/myaplusb3.test.awk",
+                        "pathExtension": "awk",
+                        "requiredBy": [],
+                        "testcases": [
+                            {
+                                "elapsed": 8.72,
+                                "environment": "awk",
+                                "memory": 11.97,
+                                "name": "myaplusb/case01",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 6.41,
+                                "environment": "awk",
+                                "memory": 72.27,
+                                "name": "myaplusb/case02",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 9.56,
+                                "environment": "awk",
+                                "memory": 7.92,
+                                "name": "myaplusb/case03",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.21,
+                                "environment": "awk",
+                                "memory": 1.09,
+                                "name": "myaplusb/case04",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 6.93,
+                                "environment": "awk",
+                                "memory": 88.37,
+                                "name": "myaplusb/case05",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.03,
+                                "environment": "awk",
+                                "memory": 78.99,
+                                "name": "myaplusb/case06",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 1.18,
+                                "environment": "awk",
+                                "memory": 20.07,
+                                "name": "myaplusb/case07",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 6.67,
+                                "environment": "awk",
+                                "memory": 42.73,
+                                "name": "myaplusb/case08",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.23,
+                                "environment": "awk",
+                                "memory": 14.55,
+                                "name": "myaplusb/case09",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 5.8,
+                                "environment": "awk",
+                                "memory": 41.07,
+                                "name": "myaplusb/case10",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 6.6,
+                                "environment": "awk",
+                                "memory": 29.74,
+                                "name": "myaplusb/case11",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.83,
+                                "environment": "awk",
+                                "memory": 32.3,
+                                "name": "myaplusb/case12",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 9.08,
+                                "environment": "awk",
+                                "memory": 70.73,
+                                "name": "myaplusb/case13",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 0.98,
+                                "environment": "awk",
+                                "memory": 60.18,
+                                "name": "myaplusb/case14",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 1.18,
+                                "environment": "awk",
+                                "memory": 1.79,
+                                "name": "myaplusb/case15",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.04,
+                                "environment": "awk",
+                                "memory": 2.71,
+                                "name": "myaplusb/case16",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 2.18,
+                                "environment": "awk",
+                                "memory": 44.71,
+                                "name": "myaplusb2/one_minus_one",
+                                "status": "AC",
+                            },
+                            {
+                                "elapsed": 8.41,
+                                "environment": "awk",
+                                "memory": 53.47,
+                                "name": "myaplusb2/zero",
+                                "status": "AC",
+                            },
+                        ],
+                        "timestamp": "2054-08-03 16:35:45.070000-05:00",
+                        "verificationStatus": "TEST_ACCEPTED",
+                        "verifiedWith": [],
+                    },
+                    "documentation_of": "awk/myaplusb3.test.awk",
                     "layout": "document",
                 },
             ),
@@ -1688,7 +2195,7 @@ def check_common(
     destination: pathlib.Path,
     *,
     data: DocsData,
-    subtests: SubTests,
+    subtests: pytest.Subtests,
 ):
     assert destination.is_dir()
 
@@ -1712,7 +2219,7 @@ def check_common(
             assert content == targets[path_str].content
             assert front_matter
             assert yaml.safe_load(front_matter) == targets[path_str].front_matter
-        del targets[path_str]
+            del targets[path_str]
 
     assert not list(targets.keys())
 
@@ -1727,7 +2234,7 @@ class TestCommandDocuments:
         user_defined_and_python_data: UserDefinedAndPythonData,
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
     ):
         destination = package_dst / inspect.stack()[0].function
         docs_settings_dir = user_defined_and_python_data.targets_path / "docs_settings"
@@ -1792,7 +2299,7 @@ class TestCommandDocuments:
         self,
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
     ):
         destination = package_dst / inspect.stack()[0].function
 
@@ -1853,7 +2360,7 @@ class TestCommandDocuments:
         self,
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
         caplog: pytest.LogCaptureFixture,
     ):
         caplog.set_level(logging.WARNING)
@@ -1879,7 +2386,7 @@ class TestCommandDocuments:
         self,
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
         caplog: pytest.LogCaptureFixture,
     ):
         caplog.set_level(logging.WARNING)
@@ -1918,7 +2425,7 @@ class TestCommandDocuments:
         exclude: list[str],
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
         caplog: pytest.LogCaptureFixture,
     ):
         caplog.set_level(logging.WARNING)
@@ -1946,7 +2453,7 @@ class TestCommandDocuments:
         self,
         package_dst: pathlib.Path,
         data: DocsData,
-        subtests: SubTests,
+        subtests: pytest.Subtests,
         caplog: pytest.LogCaptureFixture,
     ):
         caplog.set_level(logging.WARNING)
@@ -1984,7 +2491,7 @@ def test_hand_docs(
     monkeypatch: pytest.MonkeyPatch,
     file_paths: FilePaths,
     package_dst: pathlib.Path,
-    subtests: SubTests,
+    subtests: pytest.Subtests,
 ):
     targets = file_paths.root / "HandMadeDocs"
     monkeypatch.chdir(targets)

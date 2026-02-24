@@ -10,6 +10,7 @@ import urllib.parse
 import zipfile
 from abc import abstractmethod
 from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 from io import BytesIO
 from logging import getLogger
 from typing import ClassVar, Optional
@@ -17,7 +18,12 @@ from typing import ClassVar, Optional
 import requests
 
 from competitive_verifier import config
-from competitive_verifier.models import Problem, TestCaseData, TestCaseFile
+from competitive_verifier.models import (
+    Problem,
+    TestCaseData,
+    TestCaseFile,
+    TestCaseProvider,
+)
 
 from .file import enumerate_inouts, iter_testcases, merge_testcase_files, save_testcases
 
@@ -389,6 +395,17 @@ class AOJArenaProblem(_BaseProblem):
             if len(fragment) == 3 and fragment[1] == "problems":  # noqa: PLR2004
                 return cls(arena_id=fragment[0], alphabet=fragment[2].upper())
         return None
+
+
+@dataclass
+class LocalProblem(TestCaseProvider):
+    path: pathlib.Path
+
+    def download_system_cases(self) -> Iterable[TestCaseData] | bool:
+        return bool(any(self.iter_system_cases()))
+
+    def iter_system_cases(self) -> Iterable[TestCaseFile]:
+        return iter_testcases(directory=self.path, recursive=True)
 
 
 def _normpath(path: str) -> str:

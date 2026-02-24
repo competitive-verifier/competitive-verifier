@@ -24,7 +24,11 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.util import normalize_bytes_text, read_text_normalized
+from competitive_verifier.util import (
+    normalize_bytes_text,
+    read_text_normalized,
+    resolve_file_path,
+)
 
 from .config import ConfigYaml
 from .front_matter import FrontMatter, Markdown
@@ -43,40 +47,6 @@ from .render_data import (
 )
 
 logger = getLogger(__name__)
-
-
-def resolve_documentation_of(
-    documentation_of: str,
-    *,
-    basedir: pathlib.Path,
-) -> pathlib.Path | None:
-    def inner():
-        if documentation_of.startswith("."):
-            # a relative path
-            path = basedir / pathlib.Path(documentation_of)
-            if path.exists():
-                return path
-        elif documentation_of.startswith("//"):
-            # from the document root
-            path = pathlib.Path(documentation_of[2:])
-            if path.exists():
-                return path
-
-        path = pathlib.Path(documentation_of)
-        if path.exists():
-            return path
-
-        path = basedir / pathlib.Path(documentation_of)
-        if path.exists():
-            return path
-        return None
-
-    path = inner()
-    if path:
-        path = path.resolve()
-        if path.is_relative_to(pathlib.Path.cwd()):
-            return path.relative_to(pathlib.Path.cwd())
-    return None
 
 
 def _paths_to_render_links(
@@ -118,7 +88,7 @@ class UserMarkdowns:
                 continue
 
             if isinstance(md.front_matter.documentation_of, str):
-                source_path = resolve_documentation_of(
+                source_path = resolve_file_path(
                     md.front_matter.documentation_of,
                     basedir=md.path.parent,
                 )
@@ -134,7 +104,7 @@ class UserMarkdowns:
             else:
                 multi_documentation_of: list[pathlib.Path] = []
                 for d in md.front_matter.documentation_of:
-                    source_path = resolve_documentation_of(
+                    source_path = resolve_file_path(
                         d,
                         basedir=md.path.parent,
                     )

@@ -12,7 +12,6 @@ from pydantic import Field
 
 from competitive_verifier import git
 from competitive_verifier.arg import VerboseArguments
-from competitive_verifier.documents.render import resolve_documentation_of
 from competitive_verifier.exec import command_stdout
 from competitive_verifier.oj.verify.languages import (
     CPlusPlusLanguage,
@@ -26,6 +25,7 @@ from competitive_verifier.oj.verify.languages import (
 )
 from competitive_verifier.oj.verify.list import OjVerifyConfig
 from competitive_verifier.oj.verify.models import Language
+from competitive_verifier.util import resolve_file_path
 
 logger = getLogger(__name__)
 
@@ -89,7 +89,7 @@ def _get_docs_path(content: str, *, path: pathlib.Path) -> pathlib.Path | None:
     if docs_match:
         doc_path = docs_match.group(1)
         if isinstance(doc_path, str):
-            return resolve_documentation_of(
+            return resolve_file_path(
                 doc_path.strip(),
                 basedir=path.parent,
             )

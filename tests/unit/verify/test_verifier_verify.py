@@ -764,18 +764,14 @@ def test_verify_compile_error(
         (
             "competitive_verifier.verify.verifier",
             logging.ERROR,
-            f"Failed to compile: {pathlib.Path('test/foo.py')}, ProblemVerification(name='foo', "
-            "type='problem', command='false', compile=None, "
-            "problem='https://judge.yosupo.jp/problem/aplusb', error=None, "
-            "tle=None, mle=None)",
+            f"Failed to compile: {pathlib.Path('test/foo.py')}, "
+            'verification={"name":"foo","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
         ),
         (
             "competitive_verifier.verify.verifier",
             logging.ERROR,
-            f"Failed to compile: {pathlib.Path('test/foo.py')}, ProblemVerification(name='bar', "
-            "type='problem', command='false', compile=None, "
-            "problem='https://judge.yosupo.jp/problem/aplusb', error=None, "
-            "tle=None, mle=None)",
+            f"Failed to compile: {pathlib.Path('test/foo.py')}, verification="
+            '{"name":"bar","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
         ),
     ]
 

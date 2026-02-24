@@ -54,15 +54,22 @@ def merge_testcase_files(
         yield TestCaseFile(name=name, input_path=i, output_path=o)
 
 
-def iter_testcases(*, directory: pathlib.Path) -> Iterator[TestCaseFile]:
+def _casename(path: pathlib.Path, *, directory: pathlib.Path) -> str:
+    return path.relative_to(directory).with_suffix("").as_posix()
+
+
+def iter_testcases(
+    *, directory: pathlib.Path, recursive: bool = False
+) -> Iterator[TestCaseFile]:
     inputs: dict[str, pathlib.Path] = {}
     outputs: dict[str, pathlib.Path] = {}
-    for path in directory.iterdir():
-        match path.suffix:
-            case ".in":
-                inputs[path.stem] = path
-            case ".out":
-                outputs[path.stem] = path
-            case _:
-                ...
+    pre = "**/" if recursive else ""
+
+    for path in directory.glob(pre + "*.in"):
+        if path.is_file():
+            inputs[_casename(path, directory=directory)] = path
+    for path in directory.glob(pre + "*.out"):
+        if path.is_file():
+            outputs[_casename(path, directory=directory)] = path
+
     return merge_testcase_files(inputs, outputs)

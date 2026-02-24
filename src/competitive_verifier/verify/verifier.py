@@ -197,7 +197,12 @@ class BaseVerifier(InputContainer):
 
                 rs, error_message = self.run_verification(ve, deadline=deadline)
                 if error_message:
-                    logger.error("%s: %s, %s", error_message, p, repr(ve))
+                    logger.error(
+                        "%s: %s, verification=%s",
+                        error_message,
+                        p,
+                        ve.model_dump_json(exclude_unset=True),
+                    )
                     github.print_error(
                         message=f"{error_message} {p.as_posix()}",
                         file=str(p.resolve()),

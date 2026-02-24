@@ -5,7 +5,7 @@ from .file import (
     VerificationInput,
 )
 from .path import ForcePosixPath, RelativeDirectoryPath, SortedPathList, SortedPathSet
-from .problem import Problem, TestCaseData, TestCaseFile
+from .problem import Problem, TestCaseData, TestCaseFile, TestCaseProvider
 from .result import FileResult, TestcaseResult, VerificationResult, VerifyCommandResult
 from .result_status import JudgeStatus, ResultStatus
 from .shell import ShellCommand, ShellCommandLike
@@ -13,6 +13,7 @@ from .verification import (
     BaseVerification,
     CommandVerification,
     ConstVerification,
+    LocalProblemVerification,
     ProblemVerification,
     VerifcationTimeoutError,
     Verification,
@@ -28,6 +29,7 @@ __all__ = [
     "FileResult",
     "ForcePosixPath",
     "JudgeStatus",
+    "LocalProblemVerification",
     "Problem",
     "ProblemVerification",
     "RelativeDirectoryPath",
@@ -38,6 +40,7 @@ __all__ = [
     "SortedPathSet",
     "TestCaseData",
     "TestCaseFile",
+    "TestCaseProvider",
     "TestcaseResult",
     "VerifcationTimeoutError",
     "Verification",
