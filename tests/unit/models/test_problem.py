@@ -1,5 +1,4 @@
 import logging
-import os
 import pathlib
 
 import pytest
@@ -8,6 +7,7 @@ from competitive_verifier.models.problem import TestCaseFile as TstCaseFile
 from competitive_verifier.oj.problem import LocalProblem
 
 
+@pytest.mark.allow_mkdir
 def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path):
     NOT_FOUND_TUPLE = (
         "competitive_verifier.oj.file",
@@ -32,7 +32,7 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
     (testtemp / "top.out").touch()
     (testtemp / "other.tmp").touch()
 
-    os.mkdir(testtemp / "subdir")  # noqa: PTH102
+    (testtemp / "subdir").mkdir()
     (testtemp / "subdir" / "ss.in").touch()
     (testtemp / "subdir" / "ss.out").touch()
     (testtemp / "subdir" / "other.tmp").touch()

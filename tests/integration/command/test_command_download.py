@@ -7,7 +7,12 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import app
-from competitive_verifier.models.problem import TestCaseFile as Case
+from competitive_verifier.models import (
+    ProblemVerification,
+    VerificationFile,
+    VerificationInput,
+)
+from competitive_verifier.models import TestCaseFile as Case
 from competitive_verifier.oj.problem import LibraryCheckerProblem, problem_from_url
 
 from .types import FilePaths
@@ -48,8 +53,27 @@ class TestCommandDownload:
         not bool(shutil.which("g++") or os.getenv("CXX")),
         reason="g++ is not found",
     )
-    def test_library_checker(self, download_config_dir: pathlib.Path):
+    def test_library_checker(
+        self,
+        download_config_dir: pathlib.Path,
+        testtemp: pathlib.Path,
+    ):
         url = "https://judge.yosupo.jp/problem/aplusb"
+
+        (testtemp / "verify.json").write_text(
+            VerificationInput(
+                files={
+                    pathlib.Path("lib.txt"): VerificationFile(
+                        dependencies={pathlib.Path("test.txt")}
+                    ),
+                    pathlib.Path("test.txt"): VerificationFile(
+                        verification=ProblemVerification(
+                            name="aplusb", command="true", problem=url
+                        )
+                    ),
+                }
+            ).model_dump_json()
+        )
 
         problem = problem_from_url(url)
         assert problem is not None
@@ -59,7 +83,9 @@ class TestCommandDownload:
         assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(download_config_dir)
 
-        parsed = app.ArgumentParser().parse(["download", url])
+        parsed = app.ArgumentParser().parse(
+            ["download", "--verify-json", str(testtemp / "verify.json")]
+        )
         assert isinstance(parsed, app.Download)
         assert parsed.run()
         assert problem_path.exists()

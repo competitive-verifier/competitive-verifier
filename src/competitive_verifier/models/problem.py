@@ -36,10 +36,10 @@ class Problem(TestCaseProvider):
         return f"{self.__class__.__name__}.from_url({self.url!r})"  # pragma: no cover
 
     def __hash__(self) -> int:
-        return self.url.__hash__()
+        return self.url.__hash__()  # pragma: no cover
 
     def __eq__(self, value: object) -> bool:
-        if type(self) is not type(value):
+        if type(self) is not type(value):  # pragma: no cover
             return False
         return self.url == cast("Problem", value).url
 

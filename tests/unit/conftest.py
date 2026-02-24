@@ -21,5 +21,9 @@ def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
 
 
 @pytest.fixture(autouse=True)
-def mock_mkdir(mocker: MockerFixture):
-    mocker.patch("pathlib.Path.mkdir", side_effect=RuntimeError("mkdir is not allowed"))
+def mock_mkdir(mocker: MockerFixture, request: pytest.FixtureRequest):
+    if "allow_mkdir" in request.keywords:
+        return None
+    return mocker.patch(
+        "pathlib.Path.mkdir", side_effect=RuntimeError("mkdir is not allowed")
+    )

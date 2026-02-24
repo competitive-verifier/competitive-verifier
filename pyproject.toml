@@ -62,8 +62,9 @@ test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
 test-each-language-integration = "pytest -m each_language_integration"
 test-use-prev-dest = "poe test --use-prev-dest"
-test-cov = { cmd = "pytest -m 'not integration' --cov=${cov} --cov-branch --cov-report=html", args = [
+test-cov = { cmd = "pytest -m 'not integration' --cov=${cov} --cov-branch --cov-report=html ${FILE_PATHS}", args = [
     { name = "cov", default = "." },
+    { name = "FILE_PATHS", positional = true, multiple = true }
 ] }
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
