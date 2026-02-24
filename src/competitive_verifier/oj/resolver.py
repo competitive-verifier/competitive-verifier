@@ -25,6 +25,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
+from competitive_verifier.util import resolve_file_path
 
 from .problem import problem_from_url
 from .verify.list import OjVerifyConfig
@@ -125,6 +126,15 @@ class OjResolver:
         mle_str = attr.get("MLE")
         mle = float(mle_str) if mle_str else None
 
+        yield from OjResolver._env_to_local_problem_verification(
+            env,
+            attr=attr,
+            path=path,
+            basedir=basedir,
+            error=error,
+            tle=tle,
+            mle=mle,
+        )
         yield from OjResolver._env_to_problem_verification(
             env,
             attr=attr,
@@ -188,6 +198,9 @@ class OjResolver:
         casedir = attr.get("LOCALCASE")
         if casedir is None:
             return
+        casedir = resolve_file_path(casedir, basedir=path.parent)
+        if casedir is None:
+            return
 
         tempdir = (
             config.get_cache_dir()
@@ -200,7 +213,7 @@ class OjResolver:
             name=env.name,
             command=env.get_execute_command(path, basedir=basedir, tempdir=tempdir),
             compile=env.get_compile_command(path, basedir=basedir, tempdir=tempdir),
-            input=pathlib.Path(casedir),
+            input=casedir,
             error=error,
             tle=tle,
             mle=mle,

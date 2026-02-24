@@ -74,6 +74,81 @@ class UserDefinedAndPythonData(IntegrationData):
                         }
                     ],
                 },
+                "awk/myaplusb1.test.awk": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "awk/aplusb.awk",
+                        "awk/myaplusb1.test.awk",
+                    ],
+                    "document_attributes": {
+                        "LOCALCASE": "./myaplusb",
+                    },
+                    "verification": [
+                        {
+                            "command": {
+                                "command": "awk -f awk/myaplusb1.test.awk",
+                                "env": {
+                                    "AWKPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": f"ls {self.config_dir_path / 'cache/localcase/fe34e9ca8a1b0c7dc6064caa76df4ceb'}",
+                            "tempdir": f"{self.config_dir_path / 'cache/localcase/fe34e9ca8a1b0c7dc6064caa76df4ceb'}",
+                            "input": "awk/myaplusb",
+                            "name": "awk",
+                            "type": "local",
+                        },
+                    ],
+                },
+                "awk/myaplusb2.test.awk": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "awk/aplusb.awk",
+                        "awk/myaplusb2.test.awk",
+                    ],
+                    "document_attributes": {
+                        "LOCALCASE": "awk/myaplusb",
+                    },
+                    "verification": [
+                        {
+                            "command": {
+                                "command": "awk -f awk/myaplusb2.test.awk",
+                                "env": {
+                                    "AWKPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": f"ls {self.config_dir_path / 'cache/localcase/1ddebc75fd9eacc1b706e14eca475e9b'}",
+                            "tempdir": f"{self.config_dir_path / 'cache/localcase/1ddebc75fd9eacc1b706e14eca475e9b'}",
+                            "input": "awk/myaplusb",
+                            "name": "awk",
+                            "type": "local",
+                        },
+                    ],
+                },
+                "awk/myaplusb3.test.awk": {
+                    "additonal_sources": [],
+                    "dependencies": [
+                        "awk/aplusb.awk",
+                        "awk/myaplusb3.test.awk",
+                    ],
+                    "document_attributes": {
+                        "LOCALCASE": "//awk/",
+                    },
+                    "verification": [
+                        {
+                            "command": {
+                                "command": "awk -f awk/myaplusb3.test.awk",
+                                "env": {
+                                    "AWKPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": f"ls {self.config_dir_path / 'cache/localcase/1ae5fd5805b72f60d16a9c648d4fe262'}",
+                            "tempdir": f"{self.config_dir_path / 'cache/localcase/1ae5fd5805b72f60d16a9c648d4fe262'}",
+                            "input": "awk",
+                            "name": "awk",
+                            "type": "local",
+                        },
+                    ],
+                },
                 "encoding/EUC-KR.txt": {
                     "dependencies": ["encoding/cp932.txt", "encoding/EUC-KR.txt"],
                     "verification": [],
@@ -287,7 +362,7 @@ class UserDefinedAndPythonData(IntegrationData):
 
     def expected_verify_result(self) -> dict[str, Any]:
         return {
-            "total_seconds": 11189.039999999999,
+            "total_seconds": 14892.72,
             "files": {
                 "awk/aplusb.test.awk": {
                     "newest": True,
@@ -461,6 +536,351 @@ class UserDefinedAndPythonData(IntegrationData):
                             ],
                             "verification_name": "awk",
                         }
+                    ],
+                },
+                "awk/myaplusb1.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 1353.0,
+                            "heaviest": 498.0,
+                            "last_execution_time": "2062-01-30T15:09:06.330000-04:00",
+                            "slowest": 135.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 3.25,
+                                    "memory": 84.05,
+                                    "name": "case13",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.63,
+                                    "memory": 29.83,
+                                    "name": "case11",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.19,
+                                    "memory": 1.38,
+                                    "name": "case05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.15,
+                                    "memory": 10.09,
+                                    "name": "case09",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.4,
+                                    "memory": 51.95,
+                                    "name": "case10",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.61,
+                                    "memory": 14.13,
+                                    "name": "case07",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 3.17,
+                                    "memory": 24.01,
+                                    "name": "case02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.16,
+                                    "memory": 92.12,
+                                    "name": "case04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.74,
+                                    "memory": 29.45,
+                                    "name": "case16",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 3.15,
+                                    "memory": 98.59,
+                                    "name": "case08",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.35,
+                                    "memory": 57.39,
+                                    "name": "case12",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 7.09,
+                                    "memory": 14.39,
+                                    "name": "case01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.29,
+                                    "memory": 84.86,
+                                    "name": "case03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.78,
+                                    "memory": 81.13,
+                                    "name": "case14",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.82,
+                                    "memory": 57.1,
+                                    "name": "case15",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.13,
+                                    "memory": 86.9,
+                                    "name": "case06",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        },
+                    ],
+                },
+                "awk/myaplusb2.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 2888.0,
+                            "heaviest": 232.0,
+                            "last_execution_time": "2064-08-22T07:27:17.220000+10:00",
+                            "slowest": 288.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 4.58,
+                                    "memory": 16.24,
+                                    "name": "case13",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.87,
+                                    "memory": 92.37,
+                                    "name": "case11",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.94,
+                                    "memory": 53.84,
+                                    "name": "case05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.84,
+                                    "memory": 9.04,
+                                    "name": "case09",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.09,
+                                    "memory": 80.76,
+                                    "name": "case10",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.39,
+                                    "memory": 7.66,
+                                    "name": "case07",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.68,
+                                    "memory": 89.31,
+                                    "name": "case02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.89,
+                                    "memory": 69.07,
+                                    "name": "case04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 5.67,
+                                    "memory": 79.41,
+                                    "name": "case16",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.78,
+                                    "memory": 33.26,
+                                    "name": "case08",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.23,
+                                    "memory": 56.6,
+                                    "name": "case12",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 4.48,
+                                    "memory": 50.73,
+                                    "name": "case01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 5.85,
+                                    "memory": 17.84,
+                                    "name": "case03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.98,
+                                    "memory": 15.52,
+                                    "name": "case14",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.81,
+                                    "memory": 46.17,
+                                    "name": "case15",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 5.31,
+                                    "memory": 12.57,
+                                    "name": "case06",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        },
+                    ],
+                },
+                "awk/myaplusb3.test.awk": {
+                    "newest": True,
+                    "verifications": [
+                        {
+                            "elapsed": 8358.0,
+                            "heaviest": 728.0,
+                            "last_execution_time": "2042-11-05T02:21:05.270000-10:00",
+                            "slowest": 835.0,
+                            "status": "success",
+                            "testcases": [
+                                {
+                                    "elapsed": 2.18,
+                                    "memory": 44.71,
+                                    "name": "myaplusb2/one_minus_one",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.41,
+                                    "memory": 53.47,
+                                    "name": "myaplusb2/zero",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.08,
+                                    "memory": 70.73,
+                                    "name": "myaplusb/case13",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.6,
+                                    "memory": 29.74,
+                                    "name": "myaplusb/case11",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.93,
+                                    "memory": 88.37,
+                                    "name": "myaplusb/case05",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.23,
+                                    "memory": 14.55,
+                                    "name": "myaplusb/case09",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 5.8,
+                                    "memory": 41.07,
+                                    "name": "myaplusb/case10",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.18,
+                                    "memory": 20.07,
+                                    "name": "myaplusb/case07",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.41,
+                                    "memory": 72.27,
+                                    "name": "myaplusb/case02",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.21,
+                                    "memory": 1.09,
+                                    "name": "myaplusb/case04",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.04,
+                                    "memory": 2.71,
+                                    "name": "myaplusb/case16",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 6.67,
+                                    "memory": 42.73,
+                                    "name": "myaplusb/case08",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.83,
+                                    "memory": 32.3,
+                                    "name": "myaplusb/case12",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 8.72,
+                                    "memory": 11.97,
+                                    "name": "myaplusb/case01",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 9.56,
+                                    "memory": 7.92,
+                                    "name": "myaplusb/case03",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 0.98,
+                                    "memory": 60.18,
+                                    "name": "myaplusb/case14",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 1.18,
+                                    "memory": 1.79,
+                                    "name": "myaplusb/case15",
+                                    "status": "AC",
+                                },
+                                {
+                                    "elapsed": 2.03,
+                                    "memory": 78.99,
+                                    "name": "myaplusb/case06",
+                                    "status": "AC",
+                                },
+                            ],
+                            "verification_name": "awk",
+                        },
                     ],
                 },
                 "python/failure.mle.py": {

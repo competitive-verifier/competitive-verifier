@@ -6,12 +6,11 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import oj
-from competitive_verifier.models import JudgeStatus
+from competitive_verifier.models import JudgeStatus, Problem
 from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
     OjTestcaseResult,
-    Problem,
     SpecialJudge,
     single_case,
 )

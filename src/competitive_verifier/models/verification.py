@@ -226,15 +226,11 @@ class LocalProblemVerification(BaseProblemVerification):
 
         return LocalProblem(self.input)
 
-    def run(
-        self,
-        params: VerificationParams | None = None,
-        *,
-        deadline: float = float("inf"),
-    ) -> VerificationResult | ResultStatus:
+    def run_compile_command(self, params: VerificationParams | None = None) -> bool:
         if self.tempdir is not None:
             self.tempdir.mkdir(parents=True, exist_ok=True)
-        return super().run(params, deadline=deadline)
+
+        return super().run_compile_command(params)
 
 
 Verification = Annotated[

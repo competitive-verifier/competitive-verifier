@@ -10,6 +10,45 @@ def to_relative(path: pathlib.Path) -> pathlib.Path | None:
         return None
 
 
+def _resolve_file_path_inner(
+    target_path: str,
+    *,
+    basedir: pathlib.Path,
+):
+    if target_path.startswith(("./", "../")):
+        # a relative path
+        path = basedir / pathlib.Path(target_path)
+        if path.exists():
+            return path
+    elif target_path.startswith("//"):
+        # from the document root
+        path = pathlib.Path(target_path[2:])
+        if path.exists():
+            return path
+
+    path = pathlib.Path(target_path)
+    if path.exists():
+        return path
+
+    path = basedir / pathlib.Path(target_path)
+    if path.exists():
+        return path
+    return None
+
+
+def resolve_file_path(
+    target_path: str,
+    *,
+    basedir: pathlib.Path,
+) -> pathlib.Path | None:
+    path = _resolve_file_path_inner(target_path, basedir=basedir)
+    if path:
+        path = path.resolve()
+        if path.is_relative_to(pathlib.Path.cwd()):
+            return path.relative_to(pathlib.Path.cwd())
+    return None
+
+
 def read_text_normalized(path: pathlib.Path) -> str:
     return normalize_bytes_text(path.read_bytes())
 

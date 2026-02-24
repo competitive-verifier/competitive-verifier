@@ -218,6 +218,7 @@ Other judging platforms do not currently publish the test cases in usable forms,
 |Macro name|Description|Remarks|
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
+| `LOCALCASE` | specify the path of the test cases | [^localcase] [^relative_path] |
 | `STANDALONE` | specify in the unit test file executed by the main function | |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
 | `TLE` | specify the TLE time in seconds | |
@@ -234,7 +235,7 @@ When the `documentation_of` field in [Front Matter](https://jekyllrb-ja.github.i
 
 For example, to add description to a document of a file `path/to/segment_tree.hpp`, make a Markdown file like `foo/bar.md` and write as the following in the file.
 
-```
+```markdown
 ---
 title: Segment Tree
 documentation_of: ./path/to/segment_tree.hpp
@@ -243,11 +244,9 @@ documentation_of: ./path/to/segment_tree.hpp
 ## Description
 
 In this file, ...
-```markdown
+```
 
-The `documentation_of` string is recognized as a relative path from the Markdown file when the string starts with `./` or `..`.
-The `documentation_of` string is recognized as a absolute path from the git root directory when the string starts with `//`.
-The path should use `/` as directory separator be case-sensitive.
+The `documentation_of` accepts either a relative or an absolute path[^relative_path].
 
 
 ### Embedding Markdown to the top page
@@ -274,3 +273,8 @@ If you are using Ubuntu, you can install this with `sudo apt install ruby-bundle
 - The file `.competitive-verifier/docs/_config.yml` is copied into the target directory with some modification.
 - Files under the directory `.competitive-verifier/docs/static/` are copied into the target directory directly.
 - For compatibility, you can use `.verify-helper/` instead of `.competitive-verifier/`. (deprecated)
+
+## Footnote
+
+[^localcase]: Each test case consists of an input file named `{name}.in` and an output file named `{name}.out`. Subdirectories are searched recursively.
+[^relative_path]: Strings starting with `./` or `../` are treated as paths relative to the current file. Strings starting with `//` are treated as paths relative to the project’s root directory. The path should use `/` as directory separator be case-sensitive.
