@@ -25,7 +25,7 @@ from competitive_verifier.oj.verify.languages import (
 )
 from competitive_verifier.oj.verify.list import OjVerifyConfig
 from competitive_verifier.oj.verify.models import Language
-from competitive_verifier.util import resolve_file_path
+from competitive_verifier.util import resolve_relative_or_abs_path
 
 logger = getLogger(__name__)
 
@@ -89,7 +89,7 @@ def _get_docs_path(content: str, *, path: pathlib.Path) -> pathlib.Path | None:
     if docs_match:
         doc_path = docs_match.group(1)
         if isinstance(doc_path, str):
-            return resolve_file_path(
+            return resolve_relative_or_abs_path(
                 doc_path.strip(),
                 basedir=path.parent,
             )
