@@ -4,7 +4,7 @@ import pathlib
 
 import pytest
 
-from competitive_verifier.models.problem import TestCaseFile
+from competitive_verifier.models.problem import TestCaseFile as TstCaseFile
 from competitive_verifier.oj.problem import LocalProblem
 
 
@@ -39,12 +39,12 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
 
     assert problem.download_system_cases()
     assert list(problem.iter_system_cases()) == [
-        TestCaseFile(
+        TstCaseFile(
             name="subdir/ss",
             input_path=testtemp / "subdir/ss.in",
             output_path=testtemp / "subdir/ss.out",
         ),
-        TestCaseFile(
+        TstCaseFile(
             name="top",
             input_path=testtemp / "top.in",
             output_path=testtemp / "top.out",
@@ -56,12 +56,12 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
     (testtemp / "subdir" / "only_out.out").touch()
     assert problem.download_system_cases()
     assert list(problem.iter_system_cases()) == [
-        TestCaseFile(
+        TstCaseFile(
             name="subdir/ss",
             input_path=testtemp / "subdir/ss.in",
             output_path=testtemp / "subdir/ss.out",
         ),
-        TestCaseFile(
+        TstCaseFile(
             name="top",
             input_path=testtemp / "top.in",
             output_path=testtemp / "top.out",
