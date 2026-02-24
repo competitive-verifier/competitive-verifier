@@ -6,7 +6,7 @@ import subprocess
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier import oj
+from competitive_verifier import app
 from competitive_verifier.models.problem import TestCaseFile as Case
 from competitive_verifier.oj.problem import LibraryCheckerProblem, problem_from_url
 
@@ -58,7 +58,10 @@ class TestCommandDownload:
         problem_path = problem.problem_directory
         assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(download_config_dir)
-        oj.download(url)
+
+        parsed = app.ArgumentParser().parse(["download", url])
+        assert isinstance(parsed, app.Download)
+        assert parsed.run()
         assert problem_path.exists()
 
         testcases = list(problem.iter_system_cases())
@@ -135,7 +138,9 @@ class TestCommandDownload:
         assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(download_config_dir)
 
-        oj.download(url)
+        parsed = app.ArgumentParser().parse(["download", url])
+        assert isinstance(parsed, app.Download)
+        assert parsed.run()
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [
@@ -179,37 +184,37 @@ class TestCommandDownload:
         } == expected_outputs
 
     @pytest.mark.integration
-    @pytest.mark.parametrize(
-        "url",
-        [
+    def test_aizu_onlinejudge(self, download_config_dir: pathlib.Path):
+        urls = [
             "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
             "https://onlinejudge.u-aizu.ac.jp/problems/ITP1_1_A",
             "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A&lang=jp",
-        ],
-    )
-    def test_aizu_onlinejudge(self, url: str, download_config_dir: pathlib.Path):
-        problem = problem_from_url(url)
-        assert problem is not None
-
-        problem_path = problem.problem_directory
-        assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
-        assert problem_path.is_relative_to(download_config_dir)
-
-        oj.download(url)
-
-        testcases = list(problem.iter_system_cases())
-        assert testcases == [
-            Case(
-                name="judge_data",
-                input_path=problem_path / "test/judge_data.in",
-                output_path=problem_path / "test/judge_data.out",
-            )
         ]
+        parsed = app.ArgumentParser().parse(["download", *urls])
+        assert isinstance(parsed, app.Download)
+        assert parsed.run()
 
-        expected_outputs = {"judge_data": b"Hello World\n"}
-        assert {
-            t.name: t.output_path.read_bytes() for t in testcases
-        } == expected_outputs
+        for url in urls:
+            problem = problem_from_url(url)
+            assert problem is not None
+
+            problem_path = problem.problem_directory
+            assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
+            assert problem_path.is_relative_to(download_config_dir)
+
+            testcases = list(problem.iter_system_cases())
+            assert testcases == [
+                Case(
+                    name="judge_data",
+                    input_path=problem_path / "test/judge_data.in",
+                    output_path=problem_path / "test/judge_data.out",
+                )
+            ]
+
+            expected_outputs = {"judge_data": b"Hello World\n"}
+            assert {
+                t.name: t.output_path.read_bytes() for t in testcases
+            } == expected_outputs
 
     @pytest.mark.integration
     def test_aizu_onlinejudge_arena(self, download_config_dir: pathlib.Path):
@@ -222,7 +227,9 @@ class TestCommandDownload:
         assert download_config_dir.absolute().is_relative_to(pathlib.Path.cwd())
         assert problem_path.is_relative_to(download_config_dir)
 
-        oj.download(url)
+        parsed = app.ArgumentParser().parse(["download", url])
+        assert isinstance(parsed, app.Download)
+        assert parsed.run()
 
         testcases = list(problem.iter_system_cases())
         assert testcases == [

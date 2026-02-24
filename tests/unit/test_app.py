@@ -263,9 +263,7 @@ test_parse_args_params: list[
             "subcommand": "download",
             "verbose": True,
             "urls": ["https://example.com/ex1", "https://example.com/ex2"],
-            "verify_files_json": pathlib.Path(
-                ".competitive-verifier/verify_files.json"
-            ),
+            "verify_files_json": None,
         },
     ),
     (
