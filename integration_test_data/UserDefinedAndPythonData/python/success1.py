@@ -16,3 +16,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+# 'https://example.com/top_single
+# "https://example.com/top_double
+# `https://example.com/top_back
+# 'https://example.com/single'
+# "https://example.com/double"
+# `https://example.com/back`

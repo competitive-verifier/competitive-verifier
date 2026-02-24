@@ -27,14 +27,13 @@ def list_special_comments(path: pathlib.Path) -> Mapping[str, str]:
 
 
 def _unquote(s: str) -> str:
-    for quote in ("'", '"', "`"):
-        if s.startswith(quote):
-            end_quote_pos = s.rfind(quote)
-            if end_quote_pos == 0:
-                # Remove opening quote from the URL like `"https://atcoder.jp/`
-                return s[1:]
-            # Remove quotes and trailing superfluous chars around the URL
-            return s[1:end_quote_pos]
+    if s.startswith(("'", '"', "`")):
+        end_quote_pos = s.rfind(s[0])
+        if end_quote_pos == 0:
+            # Remove opening quote from the URL like `"https://atcoder.jp/`
+            return s[1:]
+        # Remove quotes and trailing superfluous chars around the URL
+        return s[1:end_quote_pos]
     return s
 
 

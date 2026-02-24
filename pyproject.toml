@@ -248,7 +248,7 @@ reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration", "each_language_integration"]
+markers = ["integration", "each_language_integration", "allow_mkdir"]
 
 [tool.coverage.report]
 exclude_also = ['raise NotImplementedError', 'class \w+\(Protocol\):']
