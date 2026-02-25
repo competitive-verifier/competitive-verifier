@@ -1,9 +1,19 @@
+import logging
+import os
 import pathlib
 import re
+from datetime import datetime, timedelta, timezone
 
 import pytest
+from pytest_mock import MockerFixture
 
 from competitive_verifier import app
+from competitive_verifier.models import (
+    FileResult,
+    ResultStatus,
+    VerificationResult,
+    VerifyCommandResult,
+)
 from competitive_verifier.verify import Verify
 from competitive_verifier.verify.verifier import SplitState
 
@@ -72,3 +82,102 @@ def test_get_split_state_error(args: list[str], message: str):
 
     with pytest.raises(ValueError, match=rf"^{re.escape(message)}$"):
         _ = parsed.split_state
+
+
+def test_invalid_prev_result(
+    monkeypatch: pytest.MonkeyPatch,
+    testtemp: pathlib.Path,
+    caplog: pytest.LogCaptureFixture,
+):
+    monkeypatch.chdir(testtemp)
+    (testtemp / "prev.json").write_bytes(b'[1,2,3,"invalid"]')
+    parsed = app.ArgumentParser().parse(
+        [
+            "verify",
+            "--verify-json",
+            "verify.json",
+            "--prev-result",
+            str(testtemp / "prev.json"),
+        ]
+    )
+    assert isinstance(parsed, app.Verify)
+
+    assert parsed.read_prev_result() is None
+
+    assert caplog.record_tuples == [
+        (
+            "competitive_verifier.verify.main",
+            logging.WARNING,
+            "Failed to parse prev_result: " + str(testtemp / "prev.json"),
+        )
+    ]
+
+
+@pytest.mark.allow_mkdir
+@pytest.mark.parametrize("output", [True, False])
+def test_write_result_output(
+    output: bool,
+    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
+    testtemp: pathlib.Path,
+    capsys: pytest.CaptureFixture[str],
+):
+    monkeypatch.chdir(testtemp)
+    mocker.patch.dict(
+        os.environ, {"GITHUB_STEP_SUMMARY": str(testtemp / "summary.md")}, clear=True
+    )
+    parsed = app.ArgumentParser().parse(
+        [
+            "verify",
+            "--write-summary",
+            "--verify-json",
+            "verify.json",
+            *(["--output", "result.json"] if output else []),
+        ]
+    )
+    assert isinstance(parsed, app.Verify)
+    parsed.write_result(
+        VerifyCommandResult(
+            total_seconds=5e-5,
+            files={
+                pathlib.Path("lib.c"): FileResult(
+                    verifications=[
+                        VerificationResult(
+                            status=ResultStatus.SKIPPED,
+                            elapsed=5e-6,
+                            last_execution_time=datetime(
+                                2021, 2, 28, 9, 17, tzinfo=timezone(timedelta(hours=9))
+                            ),
+                        )
+                    ],
+                )
+            },
+        )
+    )
+    expected = """{"total_seconds":0.00005,"files":{"lib.c":{"verifications":[{"status":"skipped","elapsed":5e-6,"last_execution_time":"2021-02-28T09:17:00+09:00"}],"newest":true}}}"""
+    out, err = capsys.readouterr()
+    assert out.strip() == expected
+    assert err == ""
+
+    if output:
+        assert (testtemp / "result.json").read_text() == expected
+    else:
+        assert not (testtemp / "result.json").exists()
+
+    assert (
+        (testtemp / "summary.md").read_text()
+        == """# ⚠ Verification result
+
+- ✔&nbsp;&nbsp;All test case results are `success`
+- ❌&nbsp;&nbsp;Test case results containts `failure`
+- ⚠&nbsp;&nbsp;Test case results containts `skipped`
+
+
+## Results
+|📝&nbsp;&nbsp;File|✔<br>Passed|❌<br>Failed|⚠<br>Skipped|∑<br>Total|⏳<br>Elapsed|🦥<br>Slowest|🐘<br>Heaviest|
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|_**Sum**_|-|-|1|1|0ms|-|-|
+|||||||||
+|⚠&nbsp;&nbsp;lib.c|-|-|1|1|0ms|-|-|
+"""
+    )

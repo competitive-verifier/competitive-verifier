@@ -32,3 +32,27 @@ def workflow_ref(mocker: MockerFixture, request: pytest.FixtureRequest):
 )
 def test_workflow_filename(expected: str | None):
     assert github.env.get_workflow_filename() == expected
+
+
+def test_github_envvar(mocker: MockerFixture):
+    mocker.patch.dict(
+        os.environ,
+        {},
+        clear=True,
+    )
+    assert github.env.get_ref_name() is None
+    assert github.env.get_repository() is None
+    assert github.env.get_workflow_name() is None
+
+    mocker.patch.dict(
+        os.environ,
+        {
+            "GITHUB_REF_NAME": "qwerty",
+            "GITHUB_REPOSITORY": "asdfgh",
+            "GITHUB_WORKFLOW": "zxcvbn",
+        },
+        clear=True,
+    )
+    assert github.env.get_ref_name() == "qwerty"
+    assert github.env.get_repository() == "asdfgh"
+    assert github.env.get_workflow_name() == "zxcvbn"
