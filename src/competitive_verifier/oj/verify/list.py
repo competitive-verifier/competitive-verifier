@@ -24,9 +24,9 @@ from competitive_verifier.oj.verify.languages import (
 )
 from competitive_verifier.oj.verify.models import Language, OjVerifyUserDefinedConfig
 
-if sys.version_info >= (3, 11):
+if sys.version_info >= (3, 11):  # pragma: no cover
     import tomllib as tomli
-else:
+else:  # pragma: no cover
     import tomli
 
 logger = getLogger(__name__)

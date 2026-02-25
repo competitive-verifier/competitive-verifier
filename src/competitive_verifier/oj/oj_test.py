@@ -1,4 +1,5 @@
 import contextlib
+import math
 import os
 import pathlib
 import platform
@@ -8,7 +9,6 @@ import subprocess
 import sys
 import tempfile
 import time
-from collections.abc import Callable
 from dataclasses import dataclass
 from logging import getLogger
 from typing import BinaryIO
@@ -22,7 +22,7 @@ from competitive_verifier.models import (
     VerificationResult,
 )
 
-from . import comparer, gnu
+from . import gnu
 from .format import Printer, StatusCounter, green, red
 
 logger = getLogger(__name__)
@@ -246,48 +246,73 @@ class SpecialJudge:
         return info.returncode == 0
 
 
-def build_match_function(
-    *,
-    error: float | None,
-    judge_command: str | None,
-    test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
-) -> Callable[[bytes, bytes], bool]:
-    """build_match_function builds the function to compare actual outputs and expected outputs.
+def _try_parse_float(value: bytes) -> float | None:
+    try:
+        return float(value)
+    except ValueError:
+        return None
 
-    This function doesn't any I/O.
+
+def _equal_or_closed_float(actual: bytes, expected: bytes, *, error: float) -> bool:
+    if actual == expected:
+        return True
+
+    x = _try_parse_float(actual)
+    y = _try_parse_float(expected)
+
+    return (
+        x is not None
+        and y is not None
+        and math.isclose(x, y, rel_tol=error, abs_tol=error)
+    )
+
+
+def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bool:
+    """Compare two byte strings.
+
+    Args:
+        actual (bytes): Actual output
+        expected (bytes): Expected output
+        error (float | None): Margin of error
+    Returns:
+        bool: True if they are considered equal
     """
-    if judge_command is not None:
-        return SpecialJudge(
-            judge_command,
-            input_path=test_input_path,
-            expected_output_path=test_output_path,
-        ).run
+    if error is not None and error > 1:
+        logger.warning("the tolerance is too large: relative = %s", error)
 
-    is_exact = False
+    actual = actual.replace(b"\r\n", b"\n")
+    expected = expected.replace(b"\r\n", b"\n")
+
+    # match
+    if actual == expected:
+        return True
+
     if error is None:
-        is_exact = True
-        file_comparator = comparer.CRLFInsensitiveComparator(comparer.ExactComparator())
-    else:
-        word_comparator: comparer.OutputComparator = (
-            comparer.FloatingPointNumberComparator(rel_tol=error, abs_tol=error)
-        )
-        file_comparator = comparer.SplitLinesComparator(
-            comparer.SplitComparator(word_comparator)
-        )
-        file_comparator = comparer.CRLFInsensitiveComparator(file_comparator)
+        actual_words = actual.split()
+        expected_words = expected.split()
+        if len(actual_words) == len(expected_words) and all(
+            x == y for x, y in zip(actual_words, expected_words, strict=False)
+        ):
+            logger.warning("This was AC if spaces and newlines were ignored.")
+        return False
 
-    def compare_outputs(actual: bytes, expected: bytes) -> bool:
-        result = file_comparator(actual, expected)
-        if not result and is_exact:
-            non_stcict_comparator = comparer.CRLFInsensitiveComparator(
-                comparer.SplitComparator(comparer.ExactComparator())
-            )
-            if non_stcict_comparator(actual, expected):
-                logger.warning("This was AC if spaces and newlines were ignored.")
-        return result
+    actual_lines = actual.rstrip(b"\n").split(b"\n")
+    expected_lines = expected.rstrip(b"\n").split(b"\n")
 
-    return compare_outputs
+    if len(actual_lines) != len(expected_lines):
+        return False
+
+    for actual_line, expected_line in zip(actual_lines, expected_lines, strict=False):
+        actual_words = actual_line.split()
+        expected_words = expected_line.split()
+
+        if len(actual_words) != len(expected_words):
+            return False
+
+        for x, y in zip(actual_words, expected_words, strict=False):
+            if not _equal_or_closed_float(x, y, error=error):
+                return False
+    return True
 
 
 def check_output(
@@ -307,12 +332,14 @@ def check_output(
         # only if --judge option
         expected = b""
         logger.warning("expected output is not found")
-    return build_match_function(
-        error=error,
-        judge_command=judge_command,
-        test_input_path=test_input_path,
-        test_output_path=test_output_path,
-    )(answer, expected)
+    if judge_command is not None:
+        return SpecialJudge(
+            judge_command,
+            input_path=test_input_path,
+            expected_output_path=test_output_path,
+        ).run(answer, expected)
+
+    return compare_answer(answer, expected, error=error)
 
 
 def determine_status(
