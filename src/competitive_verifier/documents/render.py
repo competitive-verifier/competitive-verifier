@@ -305,12 +305,6 @@ class SourceCodeStat(BaseModel):
 
 
 class RenderJob(ABC):
-    def render(self, dst: pathlib.Path):
-        file = dst / self.destination_name
-        file.mkdir(parents=True, exist_ok=True)
-        with file.open("rb") as fp:
-            self.write_to(fp)
-
     @property
     @abstractmethod
     def destination_name(self) -> pathlib.Path: ...
