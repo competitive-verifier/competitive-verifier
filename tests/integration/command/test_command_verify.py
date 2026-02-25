@@ -153,7 +153,6 @@ class TestCommandVerfy:
                 },
             }
 
-    @pytest.mark.each_language_integration
     @pytest.mark.usefixtures("mock_verification")
     def test_verify(
         self,

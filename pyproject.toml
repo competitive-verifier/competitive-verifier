@@ -258,7 +258,6 @@ testpaths = ["tests"]
 markers = [
     "integration: integresion test.",
     "allow_mkdir: indicates that pathlib.Path.mkdir, which is generally disallowed in tests, is being used.",
-    "download: download test.",
 ]
 
 [tool.coverage.report]
