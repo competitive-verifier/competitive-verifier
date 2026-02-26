@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "competitive-verifier"
-version = "4.0.0-alpha1"
+version = "4.0.0-alpha2"
 description = "Verifier for libraries of competitive programming"
 
 license = "MIT"
@@ -259,7 +259,11 @@ markers = [
     "integration: integresion test.",
     "allow_mkdir: indicates that pathlib.Path.mkdir, which is generally disallowed in tests, is being used.",
 ]
-filterwarnings = ["ignore:.*filter extracted tar archives and reject files or modify their metadata.*:DeprecationWarning"]
+filterwarnings = [
+    "ignore:.*filter extracted tar archives and reject files or modify their metadata.*:DeprecationWarning",
+]
 
+[tool.coverage.run]
+omit = ["tests/*", "src/competitive_verifier/migrate/migration.py"]
 [tool.coverage.report]
 exclude_also = ['raise NotImplementedError', 'class \w+\(Protocol\):']
