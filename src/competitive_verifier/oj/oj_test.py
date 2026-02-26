@@ -287,31 +287,29 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
     if actual == expected:
         return True
 
-    if error is None:
-        actual_words = actual.split()
-        expected_words = expected.split()
-        if len(actual_words) == len(expected_words) and all(
-            x == y for x, y in zip(actual_words, expected_words, strict=False)
-        ):
-            logger.warning("This was AC if spaces and newlines were ignored.")
-        return False
-
-    actual_lines = actual.rstrip(b"\n").split(b"\n")
-    expected_lines = expected.rstrip(b"\n").split(b"\n")
-
-    if len(actual_lines) != len(expected_lines):
-        return False
-
-    for actual_line, expected_line in zip(actual_lines, expected_lines, strict=False):
-        actual_words = actual_line.split()
-        expected_words = expected_line.split()
-
-        if len(actual_words) != len(expected_words):
+    try:
+        if error is None:
+            actual_words = actual.split()
+            expected_words = expected.split()
+            if all(x == y for x, y in zip(actual_words, expected_words, strict=True)):
+                logger.warning("This was AC if spaces and newlines were ignored.")
             return False
 
-        for x, y in zip(actual_words, expected_words, strict=False):
-            if not _equal_or_closed_float(x, y, error=error):
-                return False
+        actual_lines = actual.rstrip(b"\n").split(b"\n")
+        expected_lines = expected.rstrip(b"\n").split(b"\n")
+
+        for actual_line, expected_line in zip(
+            actual_lines, expected_lines, strict=True
+        ):
+            actual_words = actual_line.split()
+            expected_words = expected_line.split()
+
+            for x, y in zip(actual_words, expected_words, strict=True):
+                if not _equal_or_closed_float(x, y, error=error):
+                    return False
+    except ValueError:
+        return False
+
     return True
 
 
