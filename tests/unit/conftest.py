@@ -1,4 +1,7 @@
 import os
+import pathlib
+import tempfile
+from collections.abc import Generator
 
 import pytest
 from pytest_mock import MockerFixture
@@ -27,3 +30,11 @@ def mock_mkdir(mocker: MockerFixture, request: pytest.FixtureRequest):
     return mocker.patch(
         "pathlib.Path.mkdir", side_effect=RuntimeError("mkdir is not allowed")
     )
+
+
+@pytest.fixture
+def testtemp(monkeypatch: pytest.MonkeyPatch) -> Generator[pathlib.Path, None, None]:
+    with tempfile.TemporaryDirectory() as d:
+        monkeypatch.chdir(d)
+        yield pathlib.Path(d).resolve()
+        monkeypatch.undo()
