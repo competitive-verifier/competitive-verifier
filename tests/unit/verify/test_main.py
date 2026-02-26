@@ -160,12 +160,12 @@ def test_write_result_output(
     assert err == ""
 
     if output:
-        assert (testtemp / "result.json").read_text() == expected
+        assert (testtemp / "result.json").read_text("utf-8") == expected
     else:
         assert not (testtemp / "result.json").exists()
 
     assert (
-        (testtemp / "summary.md").read_text()
+        (testtemp / "summary.md").read_text("utf-8")
         == """# ⚠ Verification result
 
 - ✔&nbsp;&nbsp;All test case results are `success`

@@ -42,7 +42,7 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
         return [self.gnu_time, "-f", "%M", "-o", str(self.outfile), "--", *command]
 
     def get_report(self) -> str | None:
-        return self.outfile.read_text().strip()
+        return self.outfile.read_text("utf-8").strip()
 
     def clean(self) -> None:
         self.tmpdir.cleanup()
@@ -106,7 +106,7 @@ def _check_gnu_time(gnu_time: str) -> bool:
             if (
                 ret.returncode == 0
                 and ret.stdout.rstrip() == b"check_gnu_time"
-                and re.match(r"^\d+ KB$", tmp.read_text().strip())
+                and re.match(r"^\d+ KB$", tmp.read_text("utf-8").strip())
             ):
                 return True
     except NameError:
