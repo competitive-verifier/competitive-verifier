@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "competitive-verifier"
-version = "4.0.0-alpha1"
+version = "4.0.0-alpha2"
 description = "Verifier for libraries of competitive programming"
 
 license = "MIT"
@@ -42,7 +42,7 @@ pytest-order = "^1.3.0"
 pytest-cov = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
-poethepoet = "^0.41.0"
+poethepoet = "^0.42.0"
 ruff = "^0.14.10"
 pyright = "^1.1.407"
 
@@ -60,10 +60,19 @@ lint.parallel = ["lint:check", "lint:format", "pyright"]
 test = "pytest"
 test-quick = "pytest -m 'not integration'"
 test-integration = "pytest -m integration"
-test-each-language-integration = "pytest -m each_language_integration"
 test-use-prev-dest = "poe test --use-prev-dest"
-test-cov.cmd = "pytest -m 'not integration' --cov=${cov} --cov-branch --cov-report=html"
-test-cov.args = [{ name = "cov", default = "." }]
+
+test-cov = { cmd = 'pytest -m="${mark}" --cov=${cov} --cov-branch --cov-report=html ${FILE_PATHS}', args = [
+    { name = "mark", default = "not integration" },
+    { name = "cov", default = "." },
+    { name = "FILE_PATHS", positional = true, multiple = true },
+] }
+
+test-cov-watch = { shell = 'while true; do poe test-cov --mark="${mark}" --cov=${cov} ; sleep ${sleep}; done', args = [
+    { name = "mark", default = "not integration" },
+    { name = "cov", default = "." },
+    { name = "sleep", default = "2s" },
+] }
 
 "jekyll:serve" = { cmd = "bundle exec jekyll serve --incremental --livereload", cwd = ".competitive-verifier/_jekyll" }
 "jekyll:init" = { shell = "bundle config set --local path '.vendor/bundle'; bundle install", cwd = ".competitive-verifier/_jekyll" }
@@ -246,7 +255,15 @@ reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration", "each_language_integration"]
+markers = [
+    "integration: integresion test.",
+    "allow_mkdir: indicates that pathlib.Path.mkdir, which is generally disallowed in tests, is being used.",
+]
+filterwarnings = [
+    "ignore:.*filter extracted tar archives and reject files or modify their metadata.*:DeprecationWarning",
+]
 
+[tool.coverage.run]
+omit = ["tests/*", "src/competitive_verifier/migrate/migration.py"]
 [tool.coverage.report]
 exclude_also = ['raise NotImplementedError', 'class \w+\(Protocol\):']

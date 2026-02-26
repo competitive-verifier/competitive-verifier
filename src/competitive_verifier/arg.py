@@ -53,7 +53,7 @@ class VerifyFilesJsonArgumentsMixin(BaseArguments):
     def add_parser(cls, parser: ArgumentParser):
         super().add_parser(parser)
 
-        default = os.getenv(COMPETITIVE_VERIFY_FILES_PATH)
+        default = os.getenv(COMPETITIVE_VERIFY_FILES_PATH) if cls._required() else None
         parser.add_argument(
             "--verify-json",
             dest="verify_files_json",

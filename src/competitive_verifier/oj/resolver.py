@@ -25,7 +25,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
-from competitive_verifier.util import resolve_file_path
+from competitive_verifier.util import resolve_relative_or_abs_path
 
 from .problem import problem_from_url
 from .verify.list import OjVerifyConfig
@@ -198,7 +198,7 @@ class OjResolver:
         casedir = attr.get("LOCALCASE")
         if casedir is None:
             return
-        casedir = resolve_file_path(casedir, basedir=path.parent)
+        casedir = resolve_relative_or_abs_path(casedir, basedir=path.parent)
         if casedir is None:
             return
 

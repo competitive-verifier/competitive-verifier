@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from competitive_verifier.app import MergeResult
+from competitive_verifier import app
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
@@ -234,7 +234,7 @@ def test_merge_result(
         j = v.model_dump_json()
         p.write_text(j.replace(r"{base}", testtemp.as_posix()))
 
-    assert MergeResult(result_json=file_list).run()
+    assert app.MergeResult(result_json=file_list).run()
     out, err = capsys.readouterr()
     assert err == ""
     assert json.loads(out) == expected
@@ -254,4 +254,4 @@ def test_merge_result_error(testtemp: pathlib.Path):
     with pytest.raises(
         ValidationError, match=r"validation error for VerifyCommandResult"
     ):
-        MergeResult(result_json=[testtemp / "ok.json", testtemp / "ng.json"]).run()
+        app.MergeResult(result_json=[testtemp / "ok.json", testtemp / "ng.json"]).run()

@@ -94,11 +94,9 @@ def test_problem_from_url_invalid_class():
         def iter_system_cases(self): ...  # pyright: ignore[reportIncompatibleMethodOverride]
 
         @property
-        def url(self) -> str:
-            raise NotImplementedError
+        def url(self) -> str: ...
 
-        def download_system_cases(self) -> bool:
-            raise NotImplementedError
+        def download_system_cases(self) -> bool: ...
 
         @classmethod
         def from_url(cls, url: str):

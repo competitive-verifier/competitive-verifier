@@ -44,6 +44,24 @@ class Verify(
     split: int | None = None
     split_index: int | None = None
 
+    def read_prev_result(self) -> VerifyCommandResult | None:
+        if not self.prev_result:
+            return None
+        try:
+            return VerifyCommandResult.parse_file_relative(self.prev_result)
+        except Exception:
+            logger.warning("Failed to parse prev_result: %s", self.prev_result)
+
+    def write_result(self, result: VerifyCommandResult):
+        super().write_result(result)
+
+        result_json = result.model_dump_json(exclude_none=True)
+        print(result_json)
+
+        if self.output:
+            self.output.parent.mkdir(parents=True, exist_ok=True)
+            self.output.write_text(result_json, encoding="utf-8")
+
     @field_validator("timeout", mode="after")
     @classmethod
     def timeout_zero_equals_inf(cls, value: float) -> float:
@@ -132,12 +150,7 @@ class Verify(
         logger.debug("arguments:%s", self)
         logger.info("verify_files_json=%s", str(self.verify_files_json))
         verifications = VerificationInput.parse_file_relative(self.verify_files_json)
-        prev_result = None
-        if self.prev_result:
-            try:
-                prev_result = VerifyCommandResult.parse_file_relative(self.prev_result)
-            except Exception:
-                logger.warning("Failed to parse prev_result: %s", self.prev_result)
+        prev_result = self.read_prev_result()
 
         verifier = Verifier(
             verifications,
@@ -150,13 +163,6 @@ class Verify(
         )
         result = verifier.verify(download=self.download)
         self.write_result(result)
-
-        result_json = result.model_dump_json(exclude_none=True)
-        print(result_json)
-
-        if self.output:
-            self.output.parent.mkdir(parents=True, exist_ok=True)
-            self.output.write_text(result_json, encoding="utf-8")
 
         is_success = result.is_success()
 

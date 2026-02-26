@@ -46,8 +46,7 @@ class _ListDependenciesBackend:
     @abc.abstractmethod
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> list[pathlib.Path]:
-        raise NotImplementedError
+    ) -> list[pathlib.Path]: ...
 
 
 class _NoBackend(_ListDependenciesBackend):

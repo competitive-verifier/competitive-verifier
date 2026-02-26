@@ -13,8 +13,7 @@ from competitive_verifier.oj.verify.languages import special_comments
 class LanguageEnvironment(abc.ABC):
     @property
     @abc.abstractmethod
-    def name(self) -> str:
-        raise NotImplementedError
+    def name(self) -> str: ...
 
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
@@ -24,8 +23,7 @@ class LanguageEnvironment(abc.ABC):
     @abc.abstractmethod
     def get_execute_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> ShellCommandLike:
-        raise NotImplementedError
+    ) -> ShellCommandLike: ...
 
 
 class Language:
@@ -40,8 +38,7 @@ class Language:
     @abc.abstractmethod
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> list[pathlib.Path]:
-        raise NotImplementedError
+    ) -> list[pathlib.Path]: ...
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
         return None
@@ -49,8 +46,7 @@ class Language:
     @abc.abstractmethod
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path
-    ) -> Sequence[LanguageEnvironment]:
-        raise NotImplementedError
+    ) -> Sequence[LanguageEnvironment]: ...
 
 
 class OjVerifyLanguageConfig(BaseModel):

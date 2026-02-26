@@ -33,8 +33,8 @@ def from_url_force(url: str):
 
 @dataclass
 class DataVerificationParams:
-    default_tle: float | None
-    default_mle: float | None
+    default_tle: float | None = 22
+    default_mle: float | None = 128
 
 
 test_command_union_json_params: list[tuple[Verification, str, str]] = [
@@ -237,12 +237,7 @@ def test_run(
     mocker: MockerFixture,
 ):
     mock_exec_command = mocker.patch("subprocess.run")
-    obj.run(
-        DataVerificationParams(
-            default_tle=22,
-            default_mle=128,
-        ),
-    )
+    obj.run(DataVerificationParams())
     mock_exec_command.assert_called_once_with(*args, **kwargs)
 
 
@@ -294,12 +289,7 @@ def test_run_with_env(
     mocker: MockerFixture,
 ):
     mock_exec_command = mocker.patch("subprocess.run")
-    obj.run(
-        DataVerificationParams(
-            default_tle=22,
-            default_mle=128,
-        ),
-    )
+    obj.run(DataVerificationParams())
     mock_exec_command.assert_called_once()
     assert mock_exec_command.call_args[0] == args
 
@@ -442,9 +432,7 @@ def test_run_problem_command(
         return_value=pathlib.Path("/any/"),
     )
 
-    obj.run(
-        DataVerificationParams(default_tle=22, default_mle=128),
-    )
+    obj.run(DataVerificationParams())
     patch.assert_called_once_with(args)
 
 
@@ -585,12 +573,7 @@ def test_run_compile(
     mocker: MockerFixture,
 ):
     mock_exec_command = mocker.patch("subprocess.run")
-    obj.run_compile_command(
-        DataVerificationParams(
-            default_tle=22,
-            default_mle=128,
-        ),
-    )
+    obj.run_compile_command(DataVerificationParams())
     if args is None:
         mock_exec_command.assert_not_called()
     else:
@@ -756,3 +739,12 @@ class TestCommandVerification:
             shell=True,
             text=True,
         )
+
+
+def test_problem_verification_invalid_url():
+    assert (
+        ProblemVerification(
+            problem="https://example.com/notfound", command="false"
+        ).run(DataVerificationParams())
+        == ResultStatus.FAILURE
+    )

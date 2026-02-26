@@ -10,7 +10,7 @@ def to_relative(path: pathlib.Path) -> pathlib.Path | None:
         return None
 
 
-def _resolve_file_path_inner(
+def _resolve_relative_or_abs_path_inner(
     target_path: str,
     *,
     basedir: pathlib.Path,
@@ -36,12 +36,12 @@ def _resolve_file_path_inner(
     return None
 
 
-def resolve_file_path(
+def resolve_relative_or_abs_path(
     target_path: str,
     *,
     basedir: pathlib.Path,
 ) -> pathlib.Path | None:
-    path = _resolve_file_path_inner(target_path, basedir=basedir)
+    path = _resolve_relative_or_abs_path_inner(target_path, basedir=basedir)
     if path:
         path = path.resolve()
         if path.is_relative_to(pathlib.Path.cwd()):

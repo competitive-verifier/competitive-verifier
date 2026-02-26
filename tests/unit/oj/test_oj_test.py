@@ -12,6 +12,7 @@ from competitive_verifier.oj.oj_test import (
     OjTestArguments,
     OjTestcaseResult,
     SpecialJudge,
+    compare_answer,
     single_case,
 )
 from competitive_verifier.oj.problem import (
@@ -1072,6 +1073,20 @@ def test_single_case(
     expected.expected = output_path
     assert result == expected
     assert caplog.record_tuples == expected_log
+
+
+def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
+    assert compare_answer(b"1", b"2", error=1)
+    assert caplog.record_tuples == []
+
+    assert compare_answer(b"1", b"2", error=1.0001)
+    assert caplog.record_tuples == [
+        (
+            "competitive_verifier.oj.oj_test",
+            logging.WARNING,
+            "the tolerance is too large: relative = 1.0001",
+        ),
+    ]
 
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {

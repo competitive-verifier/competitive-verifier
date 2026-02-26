@@ -217,7 +217,15 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                     "document_attributes": {
                         "PROBLEM": "https://judge.yosupo.jp/problem/aplusb",
-                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                        "links": [
+                            "https://example.com/back",
+                            "https://example.com/double",
+                            "https://example.com/single",
+                            "https://example.com/top_back",
+                            "https://example.com/top_double",
+                            "https://example.com/top_single",
+                            "https://judge.yosupo.jp/problem/aplusb",
+                        ],
                     },
                     "additonal_sources": [],
                 },
