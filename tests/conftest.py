@@ -14,6 +14,8 @@ def pytest_addoption(parser: pytest.Parser):
 
 
 @pytest.fixture
-def testtemp() -> Generator[pathlib.Path, None, None]:
+def testtemp(monkeypatch: pytest.MonkeyPatch) -> Generator[pathlib.Path, None, None]:
     with tempfile.TemporaryDirectory() as d:
+        monkeypatch.chdir(d)
         yield pathlib.Path(d).resolve()
+        monkeypatch.undo()
