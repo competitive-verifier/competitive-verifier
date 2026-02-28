@@ -10,12 +10,12 @@ from competitive_verifier.oj.problem import LocalProblem
 @pytest.mark.allow_mkdir
 def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path):
     NOT_FOUND_TUPLE = (
-        "competitive_verifier.oj.file",
+        "competitive_verifier.oj.problem",
         logging.WARNING,
         "no cases found",
     )
     DANGLING_OUTPUT_TUPLE = (
-        "competitive_verifier.oj.file",
+        "competitive_verifier.oj.problem",
         logging.WARNING,
         "dangling output case",
     )
