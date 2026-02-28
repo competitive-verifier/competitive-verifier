@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections import Counter
 from dataclasses import dataclass
 from logging import getLogger
 from typing import BinaryIO
@@ -23,7 +24,7 @@ from competitive_verifier.models import (
 )
 
 from . import gnu
-from .format import Printer, StatusCounter, green, red
+from .format import Printer, green, red
 
 logger = getLogger(__name__)
 
@@ -447,7 +448,7 @@ def _run(args: OjTestArguments) -> OjTestResult:
     slowest_name = ""
     heaviest: float = -1.0
     heaviest_name = ""
-    counter = StatusCounter()
+    counter = Counter[JudgeStatus]()
     for result in history:
         counter[result.status] += 1
         elapsed += result.elapsed

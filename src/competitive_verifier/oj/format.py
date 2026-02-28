@@ -1,12 +1,9 @@
 from abc import ABC, abstractmethod
-from collections import Counter
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 from typing import IO, TypeAlias
 
 from colorama import Fore, Style
-
-from competitive_verifier.models import JudgeStatus
 
 _whitespace_table = str.maketrans(
     {
@@ -125,15 +122,6 @@ def _merge_token(tokens: list[_PrettyToken]) -> Iterable[_PrettyToken]:
 
     if isinstance(prev, _BodyToken):
         yield _HintToken("(no trailing newline)")
-
-
-class StatusCounter(Counter[JudgeStatus]):
-    def __str__(self) -> str:
-        return ", ".join(
-            f"{cnt} {name}"
-            for name, cnt in ((st.name, self.get(st)) for st in JudgeStatus)
-            if cnt
-        )
 
 
 @dataclass
