@@ -180,7 +180,7 @@ test_single_case_params: list[SingleCaseParams] = [
     ),
     SingleCaseParams(
         name="spaces",
-        inbytes=b"foo \t bar\nbaz \r\nhoge\nfuga\n",
+        inbytes=b"foo \t bar\nbaz\t \r\nhoge\r\nfuga\n",
         outbytes=b"1\n",
         mock_measure=OjExecInfo(answer=b"2\n", elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
@@ -195,8 +195,8 @@ test_single_case_params: list[SingleCaseParams] = [
             log_output(
                 "spaces:input:\n"
                 "\x1b[1mfoo\x1b[0m\x1b[2m_\\t_\x1b[0m\x1b[1mbar\x1b[0m\x1b[2m\\n"
-                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m_\\r\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\n"
-                "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
+                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m\\t_\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\r\\n"
+                "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\r\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
             log_output("spaces:answer:\n\x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
             log_output("spaces:expected:\n\x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),

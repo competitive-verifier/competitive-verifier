@@ -86,13 +86,11 @@ def _tokenize_line(line: str) -> list[_PrettyToken]:
         if newline in ("\n", "\r\n"):
             tokens.append(_NewlineToken(newline))
         else:
-            whitespace = newline.rstrip("\n")
+            whitespace = newline.rstrip("\r\n")
             newline = newline[len(whitespace) :]
-            if whitespace:
-                tokens.append(_WhitespaceToken(whitespace))
+            tokens.append(_WhitespaceToken(whitespace))
             tokens.append(_HintToken("(trailing whitespace)"))
-            if newline:
-                tokens.append(_NewlineToken(newline))
+            tokens.append(_NewlineToken(newline))
 
     return tokens
 
@@ -131,6 +129,10 @@ class Printer:
     head: int = 20
     tail: int = 20
 
+    def __post_init__(self):  # pragma: no cover
+        if self.head + self.tail >= self.limit:
+            raise ValueError
+
     def __str__(self) -> str:
         return self.render_file_content()
 
@@ -149,9 +151,6 @@ class Printer:
         return _merge_token(tokens)
 
     def _token(self, text: str) -> Generator[_PrettyToken, None, None]:
-        if self.head + self.tail >= self.limit:
-            raise ValueError
-
         if len(text) < self.limit:
             # short
             for line in text.splitlines(keepends=True):
