@@ -35,7 +35,7 @@ class _ExecError(Exception):
 
 @dataclass
 class OjExecInfo:
-    answer: bytes | None
+    answer: str | None
     """The standard output of the executed command"""
     elapsed: float
     """The elapsed time of the executed command in seconds"""
@@ -50,7 +50,7 @@ def measure_command(
     *,
     env: dict[str, str] | None = None,
     stdin: BinaryIO | int | None = None,
-    input: bytes | None = None,  # noqa: A002
+    input: str | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: bool = False,
 ) -> OjExecInfo:
@@ -79,6 +79,7 @@ def measure_command(
                 stdout=subprocess.PIPE,
                 env=env,
                 stderr=sys.stderr,
+                encoding="utf-8",
                 start_new_session=start_new_session,
             )
         except FileNotFoundError as e:
@@ -87,11 +88,10 @@ def measure_command(
         except PermissionError as e:
             logger.exception("exec:Permission denied: %s", command)
             raise _ExecError from e
-        answer: bytes | None = None
         try:
             answer, _ = proc.communicate(input=input, timeout=timeout)
         except subprocess.TimeoutExpired:
-            pass
+            answer = None
         finally:
             if start_new_session:
                 with contextlib.suppress(ProcessLookupError):
@@ -136,7 +136,7 @@ class OjTestcaseResult:
     """A name of the test case."""
     input: pathlib.Path
     """A input of the test case."""
-    answer: bytes
+    answer: str
     """A output of the test case."""
 
     status: JudgeStatus
@@ -178,13 +178,11 @@ class OjTestcaseResult:
         logger.info(self)
 
     def _log_input(self) -> None:
-        with self.input.open("rb") as fp:
-            logger.info("%s:input:\n%s", self.name, Printer(fp))
+        logger.info("%s:input:\n%s", self.name, Printer(self.input))
 
     def _log_expected(self) -> None:
         if self.expected:
-            with self.expected.open("rb") as fp:
-                logger.info("%s:expected:\n%s", self.name, Printer(fp))
+            logger.info("%s:expected:\n%s", self.name, Printer(self.expected))
         else:
             logger.info("%s:expected:\n%s", self.name, Printer(""))
 
@@ -209,52 +207,14 @@ class OjTestResult:
     testcases: list[OjTestcaseResult]
 
 
-class SpecialJudge:
-    def __init__(
-        self,
-        judge_command: str,
-        *,
-        input_path: pathlib.Path,
-        expected_output_path: pathlib.Path | None,
-    ):
-        self.judge_command = judge_command  # already quoted and joined command
-        self.input_path = input_path
-        self.expected_output_path = expected_output_path
-
-    def run(self, actual_output: bytes, _: bytes) -> bool:
-        with tempfile.TemporaryDirectory() as tempdir:
-            actual_output_path = pathlib.Path(tempdir) / "actual.out"
-            with actual_output_path.open("wb") as fh:
-                fh.write(actual_output)
-
-            # if you use shlex.quote, it fails on Windows. why?
-            command = " ".join(
-                [
-                    self.judge_command,  # already quoted and joined command
-                    str(self.input_path.resolve()),
-                    str(actual_output_path.resolve()),
-                    str(
-                        self.expected_output_path.resolve()
-                        if self.expected_output_path is not None
-                        else ""
-                    ),
-                ]
-            )
-
-            logger.debug("$ %s", command)
-            info = measure_command(command)
-        logger.debug("judge's output:\n%s", Printer(info.answer or ""))
-        return info.returncode == 0
-
-
-def _try_parse_float(value: bytes) -> float | None:
+def _try_parse_float(value: str) -> float | None:
     try:
         return float(value)
     except ValueError:
         return None
 
 
-def _equal_or_closed_float(actual: bytes, expected: bytes, *, error: float) -> bool:
+def _equal_or_closed_float(actual: str, expected: str, *, error: float) -> bool:
     if actual == expected:
         return True
 
@@ -268,7 +228,7 @@ def _equal_or_closed_float(actual: bytes, expected: bytes, *, error: float) -> b
     )
 
 
-def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bool:
+def compare_answer(actual: str, expected: str, *, error: float | None) -> bool:
     """Compare two byte strings.
 
     Args:
@@ -281,8 +241,8 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
     if error is not None and error > 1:
         logger.warning("the tolerance is too large: relative = %s", error)
 
-    actual = actual.replace(b"\r\n", b"\n")
-    expected = expected.replace(b"\r\n", b"\n")
+    actual = actual.replace("\r\n", "\n")
+    expected = expected.replace("\r\n", "\n")
 
     # match
     if actual == expected:
@@ -296,8 +256,8 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
                 logger.warning("This was AC if spaces and newlines were ignored.")
             return False
 
-        actual_lines = actual.rstrip(b"\n").split(b"\n")
-        expected_lines = expected.rstrip(b"\n").split(b"\n")
+        actual_lines = actual.rstrip("\n").split("\n")
+        expected_lines = expected.rstrip("\n").split("\n")
 
         for actual_line, expected_line in zip(
             actual_lines, expected_lines, strict=True
@@ -314,31 +274,35 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
     return True
 
 
-def check_output(
+def special_judge(
+    judge_command: str,
+    output: str,
     *,
-    answer: bytes,
-    error: float | None,
-    test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
-    judge_command: str | None,
-) -> bool | None:
-    if test_output_path is None and not judge_command:
-        return None
-    if test_output_path is not None:
-        with test_output_path.open("rb") as outf:
-            expected = outf.read()
-    else:
-        # only if --judge option
-        expected = b""
-        logger.warning("expected output is not found")
-    if judge_command is not None:
-        return SpecialJudge(
-            judge_command,
-            input_path=test_input_path,
-            expected_output_path=test_output_path,
-        ).run(answer, expected)
+    input_path: pathlib.Path,
+    expected_output_path: pathlib.Path | None,
+) -> bool:
+    with tempfile.TemporaryDirectory() as tempdir:
+        actual_output_path = pathlib.Path(tempdir) / "actual.out"
+        actual_output_path.write_text(output)
 
-    return compare_answer(answer, expected, error=error)
+        # if you use shlex.quote, it fails on Windows. why?
+        command = " ".join(
+            [
+                judge_command,  # already quoted and joined command
+                str(input_path.resolve()),
+                str(actual_output_path.resolve()),
+                str(
+                    expected_output_path.resolve()
+                    if expected_output_path is not None
+                    else ""
+                ),
+            ]
+        )
+
+        logger.debug("$ %s", command)
+        info = measure_command(command)
+    logger.debug("judge's output:\n%s", Printer(info.answer or ""))
+    return info.returncode == 0
 
 
 def determine_status(
@@ -362,7 +326,7 @@ def determine_status(
 def single_case(
     test_name: str,
     test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
+    test_output_path: pathlib.Path,
     *,
     args: OjTestArguments,
 ) -> OjTestcaseResult:
@@ -378,17 +342,21 @@ def single_case(
                 timeout=args.tle,
                 gnu_time=True,
             )
-            answer = info.answer or b""
+            answer = info.answer or ""
             elapsed: float = info.elapsed
             memory: float | None = info.memory
 
-        match_result = check_output(
-            answer=answer,
-            error=args.error,
-            test_input_path=test_input_path,
-            test_output_path=test_output_path,
-            judge_command=str(args.problem.checker) if args.problem.checker else None,
+        match_result = (
+            special_judge(
+                str(args.problem.checker),
+                answer,
+                input_path=test_input_path,
+                expected_output_path=test_output_path,
+            )
+            if args.problem.checker
+            else compare_answer(answer, test_output_path.read_text(), error=args.error)
         )
+
         status = determine_status(
             exitcode=info.returncode,
             memory=memory,
@@ -411,7 +379,7 @@ def single_case(
             name=test_name,
             input=test_input_path,
             expected=test_output_path,
-            answer=b"",
+            answer="",
             status=JudgeStatus.RE,
             exitcode=255,
             elapsed=0,

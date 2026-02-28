@@ -1,7 +1,8 @@
+import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
-from typing import IO, TypeAlias
+from typing import TypeAlias
 
 from colorama import Fore, Style
 
@@ -95,15 +96,6 @@ def _tokenize_line(line: str) -> list[_PrettyToken]:
     return tokens
 
 
-def _load_content(content: str | bytes) -> tuple[list[_PrettyToken], str]:
-    if isinstance(content, str):
-        return [], content
-    try:
-        return [], content.decode()
-    except UnicodeDecodeError as e:
-        return [_HintToken(str(e))], content.decode(errors="replace")
-
-
 def _merge_token(tokens: list[_PrettyToken]) -> Iterable[_PrettyToken]:
     if len(tokens) == 0:
         yield _HintToken("(empty)")
@@ -124,7 +116,7 @@ def _merge_token(tokens: list[_PrettyToken]) -> Iterable[_PrettyToken]:
 
 @dataclass
 class Printer:
-    content: str | bytes | IO[bytes]
+    content: str | pathlib.Path
     limit: int = 60
     head: int = 20
     tail: int = 20
@@ -141,14 +133,11 @@ class Printer:
         return "".join(token.render() for token in tokens)
 
     def _tokenize_file_content(self) -> Iterable[_PrettyToken]:
-        if not isinstance(self.content, (str, bytes)):
-            self.content = self.content.read()
+        if not isinstance(self.content, str):
+            self.content = self.content.read_text()
 
         # Choose the shortest one from the three candidates.
-        tokens, text = _load_content(self.content)
-        if text:
-            tokens.extend(self._token(text))
-        return _merge_token(tokens)
+        return _merge_token(list(self._token(self.content)))
 
     def _token(self, text: str) -> Generator[_PrettyToken, None, None]:
         if len(text) < self.limit:

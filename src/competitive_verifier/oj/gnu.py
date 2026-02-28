@@ -100,12 +100,13 @@ def _check_gnu_time(gnu_time: str) -> bool:
                     "echo",
                     "check_gnu_time",
                 ],
+                encoding="utf-8",
                 capture_output=True,
                 check=True,
             )
             if (
                 ret.returncode == 0
-                and ret.stdout.rstrip() == b"check_gnu_time"
+                and ret.stdout.rstrip() == "check_gnu_time"
                 and re.match(r"^\d+ KB$", tmp.read_text("utf-8").strip())
             ):
                 return True

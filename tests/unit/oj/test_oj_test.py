@@ -11,7 +11,6 @@ from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
     OjTestcaseResult,
-    SpecialJudge,
     compare_answer,
     single_case,
 )
@@ -54,7 +53,10 @@ def mock_judge(
     assert request.param is None or isinstance(request.param, bool)
 
     if request.param is not None:
-        mocker.patch.object(SpecialJudge, "run", return_value=request.param)
+        mocker.patch(
+            "competitive_verifier.oj.oj_test.special_judge",
+            return_value=request.param,
+        )
         mocker.patch.object(
             LibraryCheckerProblem,
             "checker",
@@ -71,7 +73,7 @@ class SingleCaseParams(NamedTuple):
     mock_measure: OjExecInfo
     expected: OjTestcaseResult
     expected_log: list[tuple[str, int, str]]
-    outbytes: bytes | None = None
+    outbytes: bytes
     error: float | None = None
     mle: float | None = None
     mock_judge: bool | None = None
@@ -91,7 +93,7 @@ def make_result(
         memory=memory,
         status=status,
         input=pathlib.Path(),
-        answer=b"",
+        answer="",
     )
 
 
@@ -105,7 +107,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="default",
@@ -120,27 +122,9 @@ test_single_case_params: list[SingleCaseParams] = [
         ],
     ),
     SingleCaseParams(
-        name="no_output",
-        inbytes=b"abc\n",
-        mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
-        ),
-        expected=make_result(
-            name="no_output",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
-            status=JudgeStatus.AC,
-        ),
-        expected_log=[
-            log_output("no_output: start"),
-            log_output("no_output:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("no_output: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
-        ],
-    ),
-    SingleCaseParams(
         name="Nones",
         inbytes=b"",
+        outbytes=b"",
         mock_measure=OjExecInfo(answer=None, elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="Nones",
@@ -157,8 +141,9 @@ test_single_case_params: list[SingleCaseParams] = [
     SingleCaseParams(
         name="memory",
         inbytes=b"",
+        outbytes=b"19\n20\n",
         mock_measure=OjExecInfo(
-            answer=b"19\n20", elapsed=1.25, memory=10.7, returncode=0
+            answer="19\n20\n", elapsed=1.25, memory=10.7, returncode=0
         ),
         expected=make_result(
             name="memory",
@@ -170,10 +155,6 @@ test_single_case_params: list[SingleCaseParams] = [
         expected_log=[
             log_output("memory: start"),
             log_output(
-                msg="memory:answer:\n"
-                "\x1b[1m19\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1m20\x1b[0m\x1b[2m(no trailing newline)\x1b[0m",
-            ),
-            log_output(
                 "memory: \x1b[32mAC\x1b[39m, time: 1.250000 sec, memory: 10.700000 MB"
             ),
         ],
@@ -182,7 +163,7 @@ test_single_case_params: list[SingleCaseParams] = [
         name="spaces",
         inbytes=b"foo \t bar\nbaz\t \r\nhoge\r\nfuga\n",
         outbytes=b"1\n",
-        mock_measure=OjExecInfo(answer=b"2\n", elapsed=1.25, memory=None, returncode=0),
+        mock_measure=OjExecInfo(answer="2\n", elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="spaces",
             elapsed=1.25,
@@ -195,8 +176,8 @@ test_single_case_params: list[SingleCaseParams] = [
             log_output(
                 "spaces:input:\n"
                 "\x1b[1mfoo\x1b[0m\x1b[2m_\\t_\x1b[0m\x1b[1mbar\x1b[0m\x1b[2m\\n"
-                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m\\t_\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\r\\n"
-                "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\r\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
+                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m\\t_\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\n"
+                "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
             log_output("spaces:answer:\n\x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
             log_output("spaces:expected:\n\x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),
@@ -207,7 +188,7 @@ test_single_case_params: list[SingleCaseParams] = [
         name="empty-lines",
         inbytes=b"\n\n\n\n",
         outbytes=b"1\n",
-        mock_measure=OjExecInfo(answer=b"2\n", elapsed=1.25, memory=None, returncode=0),
+        mock_measure=OjExecInfo(answer="2\n", elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="empty-lines",
             elapsed=1.25,
@@ -229,7 +210,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mock_judge=True,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-AC",
@@ -249,7 +230,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mock_judge=False,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-WA",
@@ -269,9 +250,10 @@ test_single_case_params: list[SingleCaseParams] = [
     SingleCaseParams(
         name="judge-WA-no-expected-out",
         inbytes=b"abc\n",
+        outbytes=b"",
         mock_judge=False,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-WA-no-expected-out",
@@ -282,7 +264,6 @@ test_single_case_params: list[SingleCaseParams] = [
         ),
         expected_log=[
             log_output("judge-WA-no-expected-out: start"),
-            log_output("expected output is not found", level=logging.WARNING),
             log_output(
                 "judge-WA-no-expected-out:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
@@ -300,7 +281,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="check_output-WA",
@@ -330,7 +311,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="check_output-AC",
@@ -350,7 +331,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.14159265358\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-equals",
@@ -370,7 +351,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.141592653589793238462643383279502884197169399375105820974944592307816406286\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-long",
@@ -390,7 +371,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.1415926536\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-short",
@@ -410,7 +391,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.0000000217640\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-AC-abs",
@@ -430,7 +411,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.000000021764\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-AC-abs-short",
@@ -452,7 +433,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.0000000217640\n",
         error=1e-13,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-WA-abs",
@@ -482,7 +463,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"141678400000000000000000000000000\n",
+            answer="141678400000000000000000000000000\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -505,7 +486,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"141678400000021987654321987654321\n",
+            answer="141678400000021987654321987654321\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -530,7 +511,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-13,
         mock_measure=OjExecInfo(
-            answer=b"141678400000021987654321987654321\n",
+            answer="141678400000021987654321987654321\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -562,7 +543,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDEF\nGH\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDEF\nGH\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-same",
@@ -581,7 +562,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\r\nDEF\r\nGH\r\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\r\nDEF\r\nGH\r\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-crlf",
@@ -600,7 +581,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDDF\nGH\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDDF\nGH\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-diff",
@@ -629,7 +610,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\nDEF\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDEF\n3.14159265\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDEF\n3.14159265\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-error-diff-len",
@@ -649,7 +630,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265\n3.14159265\n",
+            answer="ABC CD\nDEF 3.14159265\n3.14159265\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -672,7 +653,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265 3.14\n3.14159265\n",
+            answer="ABC CD\nDEF 3.14159265 3.14\n3.14159265\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -708,7 +689,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265 3.14\n3.14159265\nno\n",
+            answer="ABC CD\nDEF 3.14159265 3.14\n3.14159265\nno\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -746,7 +727,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         error=1e-3,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-str-same",
@@ -766,7 +747,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"DEF\n",
         error=1e-3,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-str-WA",
@@ -788,7 +769,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=None
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=None
         ),
         expected=make_result(
             name="TLE",
@@ -809,7 +790,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=1
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=1
         ),
         expected=make_result(
             name="RE",
@@ -831,7 +812,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mle=128,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="MLE-NotMeasure",
@@ -850,9 +831,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mle=128,
-        mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=128, returncode=0
-        ),
+        mock_measure=OjExecInfo(answer="ABC\n", elapsed=1.25, memory=128, returncode=0),
         expected=make_result(
             name="MLE-Safe",
             elapsed=1.25,
@@ -873,7 +852,7 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mle=128,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=128.1, returncode=1
+            answer="ABC\n", elapsed=1.25, memory=128.1, returncode=1
         ),
         expected=make_result(
             name="MLE",
@@ -894,37 +873,11 @@ test_single_case_params: list[SingleCaseParams] = [
         ],
     ),
     SingleCaseParams(
-        name="unicode-error",
-        inbytes=b"a\n",
-        outbytes=b"A\n",
-        mock_measure=OjExecInfo(
-            answer=b"\x82\xa0\n", elapsed=1.25, memory=None, returncode=0
-        ),
-        expected=make_result(
-            name="unicode-error",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
-            status=JudgeStatus.WA,
-        ),
-        expected_log=[
-            log_output("unicode-error: start"),
-            log_output("unicode-error:input:\n\x1b[1ma\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "unicode-error:answer:\n"
-                "\x1b[2m'utf-8' codec can't decode byte 0x82 in position 0: invalid "
-                "start byte\x1b[0m\x1b[1m\ufffd\ufffd\x1b[0m\x1b[2m\\n\x1b[0m"
-            ),
-            log_output("unicode-error:expected:\n\x1b[1mA\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("unicode-error: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
-        ],
-    ),
-    SingleCaseParams(
         name="long-lines",
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"""ea226088-3cc7-4d33-985c-00004dfcdccb
+            answer="""ea226088-3cc7-4d33-985c-00004dfcdccb
 6f791930-4b08-4618-a110-32be65332f08
 87f28765-03bb-4aa3-ad2c-5e781aa60ca0
 2c006877-aeae-4b24-88f1-29351ac40ad7
@@ -955,12 +908,12 @@ test_single_case_params: list[SingleCaseParams] = [
     ),
     SingleCaseParams(
         name="long-text",
-        inbytes=b"abc\n",
+        inbytes=b"abc\r\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ea226088-3cc7-4d33-985c-00004dfcdccb6f791930-4b08-4618-a110-32be65332f08"
-            b"87f28765-03bb-4aa3-ad2c-5e781aa60ca09b063b0f-7b48-4a1d-a49f-4e8524ace9174"
-            b"2e6d61b-9656-4cb6-be7a-1a5d80224390961bed54-a32d-47c7-bb82-ae4591ed8ccd\r\n",
+            answer="ea226088-3cc7-4d33-985c-00004dfcdccb6f791930-4b08-4618-a110-32be65332f08"
+            "87f28765-03bb-4aa3-ad2c-5e781aa60ca09b063b0f-7b48-4a1d-a49f-4e8524ace9174"
+            "2e6d61b-9656-4cb6-be7a-1a5d80224390961bed54-a32d-47c7-bb82-ae4591ed8ccd\r\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
@@ -991,7 +944,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"""ea226088-3cc7-4d33-\n985c-00004dfcdccb
+            answer="""ea226088-3cc7-4d33-\n985c-00004dfcdccb
 6f791930-4b08-4618-a110-32be65332f08
 87f28765-03bb-4aa3-ad2c-5e781aa60ca0
 2c006877-aeae-4b24-88f1-29351ac40ad7
@@ -1035,7 +988,7 @@ test_single_case_params: list[SingleCaseParams] = [
 def test_single_case(
     name: str,
     inbytes: bytes,
-    outbytes: bytes | None,
+    outbytes: bytes,
     error: float | None,
     mle: float | None,
     expected: OjTestcaseResult,
@@ -1049,11 +1002,8 @@ def test_single_case(
     input_path = testtemp / "infile"
     input_path.write_bytes(inbytes)
 
-    if outbytes is None:
-        output_path = None
-    else:
-        output_path = testtemp / "outfile"
-        output_path.write_bytes(outbytes)
+    output_path = testtemp / "outfile"
+    output_path.write_bytes(outbytes)
 
     result = single_case(
         name,
@@ -1068,7 +1018,7 @@ def test_single_case(
         ),
     )
 
-    expected.answer = mock_measure.answer or b""
+    expected.answer = mock_measure.answer or ""
     expected.input = input_path
     expected.expected = output_path
     assert result == expected
@@ -1076,10 +1026,10 @@ def test_single_case(
 
 
 def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
-    assert compare_answer(b"1", b"2", error=1)
+    assert compare_answer("1", "2", error=1)
     assert caplog.record_tuples == []
 
-    assert compare_answer(b"1", b"2", error=1.0001)
+    assert compare_answer("1", "2", error=1.0001)
     assert caplog.record_tuples == [
         (
             "competitive_verifier.oj.oj_test",
