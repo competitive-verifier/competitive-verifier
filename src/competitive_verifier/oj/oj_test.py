@@ -50,17 +50,9 @@ def measure_command(
     *,
     env: dict[str, str] | None = None,
     stdin: BinaryIO | int | None = None,
-    input: str | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: bool = False,
 ) -> OjExecInfo:
-    if input is not None:
-        if stdin is not None:
-            raise ValueError(
-                stdin, "stdin and input cannot be specified at the same time"
-            )
-        stdin = subprocess.PIPE
-
     if isinstance(command, str):
         command = shlex.split(command)
     with gnu.GnuTimeWrapper(enabled=gnu_time) as gw:
@@ -89,7 +81,7 @@ def measure_command(
             logger.exception("exec:Permission denied: %s", command)
             raise _ExecError from e
         try:
-            answer, _ = proc.communicate(input=input, timeout=timeout)
+            answer, _ = proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
             answer = None
         finally:
