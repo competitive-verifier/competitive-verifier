@@ -12,6 +12,7 @@ from competitive_verifier.oj.oj_test import (
     OjTestArguments,
     OjTestcaseResult,
     compare_answer,
+    gnu_time_message,
     single_case,
 )
 from competitive_verifier.oj.problem import (
@@ -50,9 +51,13 @@ def mock_judge(
     mocker: MockerFixture,
     request: pytest.FixtureRequest,
 ) -> Problem:
-    assert request.param is None or isinstance(request.param, bool)
+    assert (
+        not hasattr(request, "param")
+        or request.param is None
+        or isinstance(request.param, bool)
+    )
 
-    if request.param is not None:
+    if hasattr(request, "param") and request.param is not None:
         mocker.patch(
             "competitive_verifier.oj.oj_test.special_judge",
             return_value=request.param,
@@ -1097,3 +1102,88 @@ def test_oj_test(
     oj.test(**args)
 
     run.assert_called_once_with(expected)
+
+
+class GnuTimeMessageParam(NamedTuple):
+    has_gnu_time: bool
+    system: str
+    mle: float | None
+    expected: list[tuple[str, int, str]]
+
+
+test_gnu_time_message_params: list[GnuTimeMessageParam] = [
+    GnuTimeMessageParam(True, "Darwin", 5.5, []),
+    GnuTimeMessageParam(True, "Darwin", None, []),
+    GnuTimeMessageParam(True, "Windows", 2, []),
+    GnuTimeMessageParam(True, "Windows", None, []),
+    GnuTimeMessageParam(
+        False,
+        "Darwin",
+        5.5,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.INFO,
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
+            ),
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.WARNING,
+                "--mle is used but GNU time does not exist",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Darwin",
+        None,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.INFO,
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Windows",
+        2,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.WARNING,
+                "--mle is used but GNU time does not exist",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Windows",
+        None,
+        [],
+    ),
+]
+
+
+@pytest.mark.parametrize(GnuTimeMessageParam._fields, test_gnu_time_message_params)
+def test_gnu_time_message(
+    has_gnu_time: bool,
+    system: str,
+    mle: float | None,
+    expected: list[tuple[str, int, str]],
+    mock_judge: Problem,
+    mocker: MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+):
+    caplog.set_level(0)
+    mocker.patch(
+        "competitive_verifier.oj.gnu.time_command",
+        return_value="time" if has_gnu_time else None,
+    )
+    mocker.patch("platform.system", return_value=system)
+
+    gnu_time_message(
+        OjTestArguments("dummy", problem=mock_judge, tle=None, mle=mle, error=None)
+    )
+    assert caplog.record_tuples == expected

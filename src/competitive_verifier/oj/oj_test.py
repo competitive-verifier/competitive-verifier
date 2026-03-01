@@ -390,15 +390,22 @@ def single_case(
         return result
 
 
-def _run(args: OjTestArguments) -> OjTestResult:
-    # check wheather GNU time is available
+def gnu_time_message(args: OjTestArguments):
+    """Check wheather GNU time is available.
+
+    Show messages if GNU time is not available.
+    """
     if gnu.time_command() is None:
         if platform.system() == "Darwin":
             logger.info(
-                "%s: You can install GNU time with: $ brew install gnu-time",
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
             )
         if args.mle is not None:
-            raise RuntimeError("--mle is used but GNU time does not exist")
+            logger.warning("--mle is used but GNU time does not exist")
+
+
+def _run(args: OjTestArguments) -> OjTestResult:
+    gnu_time_message(args)
 
     tests = list(args.problem.iter_system_cases())
 
