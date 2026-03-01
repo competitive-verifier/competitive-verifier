@@ -3,10 +3,17 @@ import pathlib
 from typing import Any, NamedTuple
 
 import pytest
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 
 from competitive_verifier import oj
-from competitive_verifier.models import JudgeStatus, Problem
+from competitive_verifier.models import (
+    JudgeStatus,
+    Problem,
+    VerifcationTimeoutError,
+)
+from competitive_verifier.models import (
+    TestCaseFile as SystemTestCaseFile,
+)
 from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
@@ -1044,66 +1051,6 @@ def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
     ]
 
 
-test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
-    "default": (
-        {
-            "problem": LibraryCheckerProblem(problem_id="example"),
-            "command": "ls .",
-            "tle": 2,
-            "error": None,
-            "mle": 128,
-            "env": None,
-        },
-        OjTestArguments(
-            command="ls .",
-            tle=2,
-            mle=128,
-            error=None,
-            problem=LibraryCheckerProblem(problem_id="example"),
-        ),
-    ),
-    "with_env": (
-        {
-            "problem": YukicoderProblem(problem_no=10),
-            "command": ["ls", "."],
-            "tle": 30,
-            "error": None,
-            "mle": 256,
-            "env": {"TOKEN": "Dummy"},
-        },
-        OjTestArguments(
-            command=["ls", "."],
-            tle=30,
-            mle=256,
-            error=None,
-            problem=YukicoderProblem(problem_no=10),
-            env={"TOKEN": "Dummy"},
-        ),
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    ("args", "expected"),
-    test_oj_test_params.values(),
-    ids=test_oj_test_params.keys(),
-)
-def test_oj_test(
-    mocker: MockerFixture,
-    args: dict[str, Any],
-    expected: OjTestArguments,
-):
-    mocker.patch(
-        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
-        "mockcheck",
-    )
-    run = mocker.patch("competitive_verifier.oj.oj_test._run")
-
-    oj.test(**args)
-
-    run.assert_called_once_with(expected)
-
-
 class GnuTimeMessageParam(NamedTuple):
     has_gnu_time: bool
     system: str
@@ -1187,3 +1134,105 @@ def test_gnu_time_message(
         OjTestArguments("dummy", problem=mock_judge, tle=None, mle=mle, error=None)
     )
     assert caplog.record_tuples == expected
+
+
+def test_timeout(
+    mocker: MockerFixture,
+    mock_judge: Problem,
+    mock_perf_counter: MockType,
+):
+    single_case_mock = mocker.patch(
+        "competitive_verifier.oj.oj_test.single_case",
+        return_value=make_result(
+            name="default",
+            elapsed=1.25,
+            exitcode=0,
+            memory=None,
+            status=JudgeStatus.AC,
+        ),
+    )
+    mocker.patch.object(
+        mock_judge,
+        "iter_system_cases",
+        return_value=[
+            SystemTestCaseFile(
+                name=str(i),
+                input_path=pathlib.Path(str(i)),
+                output_path=pathlib.Path(str(i)),
+            )
+            for i in range(100)
+        ],
+    )
+
+    with pytest.raises(VerifcationTimeoutError):
+        oj.test(
+            problem=mock_judge,
+            command="dummy",
+            env=None,
+            tle=None,
+            mle=None,
+            error=None,
+            deadline=2.99,
+        )
+
+    assert single_case_mock.call_count == 3
+
+
+test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
+    "default": (
+        {
+            "problem": LibraryCheckerProblem(problem_id="example"),
+            "command": "ls .",
+            "tle": 2,
+            "error": None,
+            "mle": 128,
+            "env": None,
+        },
+        OjTestArguments(
+            command="ls .",
+            tle=2,
+            mle=128,
+            error=None,
+            problem=LibraryCheckerProblem(problem_id="example"),
+        ),
+    ),
+    "with_env": (
+        {
+            "problem": YukicoderProblem(problem_no=10),
+            "command": ["ls", "."],
+            "tle": 30,
+            "error": None,
+            "mle": 256,
+            "env": {"TOKEN": "Dummy"},
+        },
+        OjTestArguments(
+            command=["ls", "."],
+            tle=30,
+            mle=256,
+            error=None,
+            problem=YukicoderProblem(problem_no=10),
+            env={"TOKEN": "Dummy"},
+        ),
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    test_oj_test_params.values(),
+    ids=test_oj_test_params.keys(),
+)
+def test_oj_test(
+    mocker: MockerFixture,
+    args: dict[str, Any],
+    expected: OjTestArguments,
+):
+    mocker.patch(
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.checker_exe_name",
+        "mockcheck",
+    )
+    run = mocker.patch("competitive_verifier.oj.oj_test._run")
+
+    oj.test(**args)
+
+    run.assert_called_once_with(expected)

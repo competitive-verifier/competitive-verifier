@@ -9,13 +9,13 @@ from pytest_mock import MockerFixture
 
 @pytest.fixture
 def mock_perf_counter(mocker: MockerFixture, request: pytest.FixtureRequest):
-    if not hasattr(request, "param") or not request.param:
-        values = [float(i) for i in range(1000)]
-    else:
+    if hasattr(request, "param") and request.param:
         assert isinstance(request.param, list)
         values = request.param  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+    else:
+        values = [float(i) for i in range(1000)]
 
-    mocker.patch("time.perf_counter", side_effect=values)
+    return mocker.patch("time.perf_counter", side_effect=values)
 
 
 @pytest.fixture
