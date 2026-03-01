@@ -50,12 +50,12 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
 
 class GnuTimeWrapper(contextlib.AbstractContextManager["GnuTimeRunner"]):
     _gnu_time: str | None
-    _runner: GnuTimeRunner | None
+    _runner: GnuTimeRunner
 
     def __init__(self, *, enabled: bool = True) -> None:
         super().__init__()
         self._gnu_time = time_command() if enabled else None
-        self._runner = None
+        self._runner = _GnuTimeRunnerDummy()
 
     def __enter__(self):
         if self._gnu_time:
@@ -65,13 +65,10 @@ class GnuTimeWrapper(contextlib.AbstractContextManager["GnuTimeRunner"]):
                 tmpdir=tmpdir,
                 outfile=pathlib.Path(tmpdir.name) / "gnu_time_report.txt",
             )
-        else:
-            self._runner = _GnuTimeRunnerDummy()
         return self._runner
 
     def __exit__(self, *excinfo: object):
-        if self._runner:
-            self._runner.clean()
+        self._runner.clean()
 
 
 @cache
@@ -79,9 +76,13 @@ def time_command() -> str | None:
     cmds = ["time", "gtime"]
     if os.name == "posix":
         cmds += ["/bin/time", "/usr/bin/time"]
-    for cmd in cmds:
-        if _check_gnu_time(cmd):
-            return cmd
+    return _find_gnu_time(cmds)
+
+
+def _find_gnu_time(gnu_time_candidate: list[str]) -> str | None:
+    for gnu_time in gnu_time_candidate:
+        if _check_gnu_time(gnu_time):
+            return gnu_time
     return None
 
 
