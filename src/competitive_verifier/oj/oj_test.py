@@ -4,6 +4,7 @@ import os
 import pathlib
 import platform
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -29,7 +30,7 @@ from .format import Printer, green, red
 logger = getLogger(__name__)
 
 
-class _ExecError(Exception):
+class CaseExecutionError(Exception):
     pass
 
 
@@ -55,7 +56,14 @@ def measure_command(
 ) -> OjExecInfo:
     if isinstance(command, str):
         command = shlex.split(command)
+
+    if len(command) == 0:
+        raise CaseExecutionError
+
     with gnu.GnuTimeWrapper(enabled=gnu_time) as gw:
+        if shutil.which(command[0]) is None:
+            raise CaseExecutionError
+
         command = gw.get_command(command)
         begin = time.perf_counter()
 
@@ -74,17 +82,15 @@ def measure_command(
                 encoding="utf-8",
                 start_new_session=start_new_session,
             )
-        except FileNotFoundError as e:
-            logger.exception("exec:No such file or directory: %s", command)
-            raise _ExecError from e
-        except PermissionError as e:
-            logger.exception("exec:Permission denied: %s", command)
-            raise _ExecError from e
+        except Exception as e:
+            logger.exception("'%s' is not executable.", command)
+            raise CaseExecutionError from e
+
         try:
             answer, _ = proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
             answer = None
-        finally:
+        finally:  # pragma: no cover
             if start_new_session:
                 with contextlib.suppress(ProcessLookupError):
                     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
@@ -124,14 +130,14 @@ class OjTestcaseResult:
     """A input of the test case."""
     answer: str
     """A output of the test case."""
+    expected: pathlib.Path
+    """A expected output of the test case."""
 
     status: JudgeStatus
     elapsed: float
     exitcode: int | None
 
     memory: float | None = None
-    expected: pathlib.Path | None = None
-    """A expected output of the test case."""
 
     def __post_init__(self):
         if not isinstance(self.exitcode, int):
@@ -152,8 +158,7 @@ class OjTestcaseResult:
     def log(self):
         match self.status:
             case JudgeStatus.AC:
-                if self.expected is None and self.answer:
-                    self._log_answer()
+                pass
             case JudgeStatus.RE | JudgeStatus.TLE:
                 self._log_input()
                 self._log_expected()
@@ -167,10 +172,7 @@ class OjTestcaseResult:
         logger.info("%s:input:\n%s", self.name, Printer(self.input))
 
     def _log_expected(self) -> None:
-        if self.expected:
-            logger.info("%s:expected:\n%s", self.name, Printer(self.expected))
-        else:
-            logger.info("%s:expected:\n%s", self.name, Printer(""))
+        logger.info("%s:expected:\n%s", self.name, Printer(self.expected))
 
     def _log_answer(self) -> None:
         logger.info("%s:answer:\n%s", self.name, Printer(self.answer))
@@ -360,7 +362,8 @@ def single_case(
             elapsed=elapsed,
             memory=memory,
         )
-    except _ExecError:
+    except CaseExecutionError:
+        logger.exception("Failed to run: %s", args)
         return OjTestcaseResult(
             name=test_name,
             input=test_input_path,

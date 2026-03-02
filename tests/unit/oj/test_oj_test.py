@@ -105,6 +105,7 @@ def make_result(
         memory=memory,
         status=status,
         input=pathlib.Path(),
+        expected=pathlib.Path(),
         answer="",
     )
 
@@ -1035,6 +1036,87 @@ def test_single_case(
     expected.expected = output_path
     assert result == expected
     assert caplog.record_tuples == expected_log
+
+
+def test_single_case_error(
+    mocker: MockerFixture,
+    mock_judge: Problem,
+    caplog: pytest.LogCaptureFixture,
+    testtemp: pathlib.Path,
+    subtests: pytest.Subtests,
+):
+    caplog.set_level(logging.NOTSET)
+    input_path = testtemp / "infile"
+    input_path.write_bytes(b"ABC")
+
+    output_path = testtemp / "outfile"
+    output_path.write_bytes(b"abc")
+
+    expected = OjTestcaseResult(
+        name="error",
+        input=input_path,
+        answer="",
+        expected=output_path,
+        status=JudgeStatus.RE,
+        elapsed=0,
+        exitcode=255,
+    )
+
+    mocker.patch("competitive_verifier.oj.gnu.time_command", return_value="time")
+    for cmd in ["", ":no_exists:"]:
+        with subtests.test(msg=cmd if cmd else "<empty>"):
+            caplog.clear()
+            assert (
+                single_case(
+                    "error",
+                    test_input_path=input_path,
+                    test_output_path=output_path,
+                    args=OjTestArguments(
+                        command=cmd,
+                        problem=mock_judge,
+                        error=None,
+                        mle=None,
+                        tle=None,
+                    ),
+                )
+                == expected
+            )
+            assert caplog.record_tuples == [
+                log_output("error: start"),
+                log_output(
+                    "Failed to run: OjTestArguments(command='" + cmd + "', "
+                    "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
+                    "tle=None, mle=None, error=None, env=None, deadline=inf)",
+                    level=logging.ERROR,
+                ),
+            ]
+        with subtests.test(msg="Exception"):
+            caplog.clear()
+            mocker.patch("subprocess.Popen", side_effect=Exception)
+            assert (
+                single_case(
+                    "error",
+                    test_input_path=input_path,
+                    test_output_path=output_path,
+                    args=OjTestArguments(
+                        command="git",
+                        problem=mock_judge,
+                        error=None,
+                        mle=None,
+                        tle=None,
+                    ),
+                )
+                == expected
+            )
+            assert caplog.record_tuples[0] == log_output("error: start")
+            assert caplog.record_tuples[2] == log_output(
+                "Failed to run: OjTestArguments(command='git', "
+                "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
+                "tle=None, mle=None, error=None, env=None, deadline=inf)",
+                level=logging.ERROR,
+            )
+
+            assert caplog.record_tuples[1][2].endswith("is not executable.")
 
 
 def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
