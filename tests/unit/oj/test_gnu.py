@@ -142,12 +142,28 @@ def test_check_gnu_time_error(error: type[Exception], mocker: MockerFixture):
             gnu.time_command()
 
 
-def test_gnu_wrapper(mocker: MockerFixture):
+def test_gnu_wrapper_not_found(mocker: MockerFixture):
+    mocker.patch.object(gnu, "time_command", return_value=None)
+    with gnu.GnuTimeWrapper(enabled=True) as gw:
+        cmd = gw.get_command(["foo", "bar"])
+        assert cmd == ["foo", "bar"]
+        assert gw.get_memory() is None
+
+
+def test_gnu_wrapper(testtemp: pathlib.Path, mocker: MockerFixture):
     mocker.patch.object(gnu, "time_command", return_value="dummy_time")
     with gnu.GnuTimeWrapper(enabled=True) as gw:
         cmd = gw.get_command(["foo", "bar"])
-        assert cmd[:4] == ["dummy_time", "-f", "%M", "-o"]
-        assert cmd[5:] == ["--", "foo", "bar"]
+        assert cmd == [
+            "dummy_time",
+            "-f",
+            "%M",
+            "-o",
+            str(testtemp / "1" / "gnu_time_report.txt"),
+            "--",
+            "foo",
+            "bar",
+        ]
         outpath = cmd[4]
         assert gw.get_memory() is None
         pathlib.Path(outpath).write_text("2048")
@@ -155,4 +171,9 @@ def test_gnu_wrapper(mocker: MockerFixture):
         pathlib.Path(outpath).write_text("Other output\n123456\n\n")
         assert gw.get_memory() == 123.456
         pathlib.Path(outpath).write_text("abc")
+        assert gw.get_memory() is None
+
+    with gnu.GnuTimeWrapper(enabled=False) as gw:
+        cmd = gw.get_command(["foo", "bar"])
+        assert cmd == ["foo", "bar"]
         assert gw.get_memory() is None

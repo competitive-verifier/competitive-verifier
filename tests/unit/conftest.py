@@ -2,6 +2,7 @@ import os
 import pathlib
 import tempfile
 from collections.abc import Generator
+from contextlib import nullcontext
 
 import pytest
 from pytest_mock import MockerFixture
@@ -33,9 +34,32 @@ def prohibit_mkdir(mocker: MockerFixture, request: pytest.FixtureRequest):
     )
 
 
+class TempContext(nullcontext[pathlib.Path]):
+    def __init__(self, enter_result: pathlib.Path) -> None:
+        super().__init__(enter_result)
+        os.mkdir(enter_result)  # noqa: PTH102
+
+    @property
+    def name(self):
+        return self.enter_result
+
+    def cleanup(self): ...
+
+
 @pytest.fixture
-def testtemp(monkeypatch: pytest.MonkeyPatch) -> Generator[pathlib.Path, None, None]:
+def testtemp(
+    mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+) -> Generator[pathlib.Path, None, None]:
     with tempfile.TemporaryDirectory() as d:
         monkeypatch.chdir(d)
-        yield pathlib.Path(d).resolve()
+        tmp = pathlib.Path(d).resolve()
+
+        def temp_dir():
+            count = 0
+            while True:
+                count += 1
+                yield TempContext(tmp / str(count))
+
+        mocker.patch("tempfile.TemporaryDirectory", side_effect=temp_dir())
+        yield tmp
         monkeypatch.undo()

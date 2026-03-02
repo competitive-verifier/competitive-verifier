@@ -273,19 +273,16 @@ def special_judge(
         actual_output_path = pathlib.Path(tempdir) / "actual.out"
         actual_output_path.write_text(output)
 
-        # if you use shlex.quote, it fails on Windows. why?
-        command = " ".join(
-            [
-                judge_command,  # already quoted and joined command
-                str(input_path.resolve()),
-                str(actual_output_path.resolve()),
-                str(
-                    expected_output_path.resolve()
-                    if expected_output_path is not None
-                    else ""
-                ),
-            ]
-        )
+        command = [
+            *shlex.split(judge_command),
+            str(input_path.resolve()),
+            str(actual_output_path.resolve()),
+            str(
+                expected_output_path.resolve()
+                if expected_output_path is not None
+                else ""
+            ),
+        ]
 
         logger.debug("$ %s", command)
         info = measure_command(command)
@@ -393,6 +390,55 @@ def gnu_time_message(args: OjTestArguments):
             logger.warning("--mle is used but GNU time does not exist")
 
 
+class _StatusCounter(Counter[JudgeStatus]):
+    def __str__(self) -> str:
+        return ", ".join(
+            f"{cnt} {name}"
+            for name, cnt in ((st.name, self.get(st)) for st in JudgeStatus)
+            if cnt
+        )
+
+
+def summarize(history: list[OjTestcaseResult]):
+    elapsed: float = 0.0
+    slowest: float = -1.0
+    slowest_name: str | None = None
+    heaviest: float = -1.0
+    heaviest_name: str | None = None
+    counter = _StatusCounter()
+    for result in history:
+        counter[result.status] += 1
+        elapsed += result.elapsed
+        if slowest < result.elapsed:
+            slowest = result.elapsed
+            slowest_name = result.name
+        if result.memory is not None and heaviest < result.memory:
+            heaviest = result.memory
+            heaviest_name = result.name
+
+    # print the summary
+    if slowest_name is not None:
+        logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
+    if heaviest_name is not None:
+        logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
+
+    length = len(history)
+    is_success = counter[JudgeStatus.AC] == length
+    if is_success:
+        logger.info("%s %d cases", green("SUCCESS"), length)
+    else:
+        logger.info("%s %s / %d cases", red("FAILURE"), counter, length)
+
+    # return the result
+    return OjTestResult(
+        is_success=is_success,
+        slowest=slowest,
+        elapsed=elapsed,
+        heaviest=heaviest,
+        testcases=history,
+    )
+
+
 def _run(args: OjTestArguments) -> OjTestResult:
     gnu_time_message(args)
 
@@ -406,42 +452,7 @@ def _run(args: OjTestArguments) -> OjTestResult:
 
         history.append(single_case(t.name, t.input_path, t.output_path, args=args))
 
-    # summarize
-    elapsed: float = 0.0
-    slowest: float = -1.0
-    slowest_name = ""
-    heaviest: float = -1.0
-    heaviest_name = ""
-    counter = Counter[JudgeStatus]()
-    for result in history:
-        counter[result.status] += 1
-        elapsed += result.elapsed
-        if slowest < result.elapsed:
-            slowest = result.elapsed
-            slowest_name = result.name
-        if result.memory is not None and heaviest < result.memory:
-            heaviest = result.memory
-            heaviest_name = result.name
-
-    # print the summary
-    logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
-    if heaviest >= 0:
-        logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
-
-    is_success = counter[JudgeStatus.AC] == len(tests)
-    if is_success:
-        logger.info("%s %d cases", green("SUCCESS"), len(tests))
-    else:
-        logger.info("%s %s / %d cases", red("FAILURE"), counter, len(tests))
-
-    # return the result
-    return OjTestResult(
-        is_success=is_success,
-        slowest=slowest,
-        elapsed=elapsed,
-        heaviest=heaviest,
-        testcases=history,
-    )
+    return summarize(history)
 
 
 def main(
