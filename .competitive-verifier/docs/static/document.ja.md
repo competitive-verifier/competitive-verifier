@@ -1,3 +1,6 @@
+---
+lang: ja
+---
 # competitive-verifier の細かい仕様
 {:.no_toc}
 
