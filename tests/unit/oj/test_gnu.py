@@ -140,3 +140,19 @@ def test_check_gnu_time_error(error: type[Exception], mocker: MockerFixture):
         mocker.patch("subprocess.run", side_effect=subprocess_run1)
         with pytest.raises(error):
             gnu.time_command()
+
+
+def test_gnu_wrapper(mocker: MockerFixture):
+    mocker.patch.object(gnu, "time_command", return_value="dummy_time")
+    with gnu.GnuTimeWrapper(enabled=True) as gw:
+        cmd = gw.get_command(["foo", "bar"])
+        assert cmd[:4] == ["dummy_time", "-f", "%M", "-o"]
+        assert cmd[5:] == ["--", "foo", "bar"]
+        outpath = cmd[4]
+        assert gw.get_memory() is None
+        pathlib.Path(outpath).write_text("2048")
+        assert gw.get_memory() == 2.048
+        pathlib.Path(outpath).write_text("Other output\n123456\n\n")
+        assert gw.get_memory() == 123.456
+        pathlib.Path(outpath).write_text("abc")
+        assert gw.get_memory() is None

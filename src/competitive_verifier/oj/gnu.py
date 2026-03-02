@@ -16,7 +16,10 @@ class GnuTimeRunner(abc.ABC):
     @abc.abstractmethod
     def get_command(self, command: list[str]) -> list[str]: ...
     @abc.abstractmethod
-    def get_report(self) -> str | None: ...
+    def get_memory(self) -> float | None:
+        """Return the amount of memory used, in megabytes, if possible."""
+        ...
+
     @abc.abstractmethod
     def clean(self) -> None: ...
 
@@ -25,7 +28,7 @@ class _GnuTimeRunnerDummy(GnuTimeRunner):
     def get_command(self, command: list[str]) -> list[str]:
         return command
 
-    def get_report(self) -> str | None:
+    def get_memory(self) -> float | None:
         pass
 
     def clean(self) -> None:
@@ -41,8 +44,15 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
     def get_command(self, command: list[str]) -> list[str]:
         return [self.gnu_time, "-f", "%M", "-o", str(self.outfile), "--", *command]
 
-    def get_report(self) -> str | None:
-        return self.outfile.read_text("utf-8").strip()
+    def get_memory(self) -> float | None:
+        if self.outfile.exists() and (
+            report := self.outfile.read_text("utf-8").strip()
+        ):
+            logger.debug("GNU time says:\n%s", report)
+            tail = report.splitlines()[-1]
+            if tail.isdigit():
+                return int(tail) / 1000
+        return None
 
     def clean(self) -> None:
         self.tmpdir.cleanup()

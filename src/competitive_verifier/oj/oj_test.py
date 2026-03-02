@@ -92,16 +92,10 @@ def measure_command(
                 proc.terminate()
 
         end = time.perf_counter()
-        memory: float | None = None
-        report = gw.get_report()
-        if report:
-            logger.debug("GNU time says:\n%s", report)
-            if report.splitlines()[-1].isdigit():
-                memory = int(report.splitlines()[-1]) / 1000
         return OjExecInfo(
             answer=answer,
             elapsed=end - begin,
-            memory=memory,
+            memory=gw.get_memory(),
             returncode=proc.returncode,
         )
 
