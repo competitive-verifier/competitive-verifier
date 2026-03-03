@@ -1,34 +1,8 @@
 from typing import Literal, TextIO
 
-from . import env
 
-
-def print_error(
-    message: str,
-    *,
-    title: str | None = None,
-    file: str | None = None,
-    col: int | None = None,
-    end_column: int | None = None,
-    line: int | None = None,
-    end_line: int | None = None,
-    stream: TextIO | None = None,
-) -> None:
-    _print_github(
-        "error",
-        message,
-        title=title,
-        file=file,
-        col=col,
-        end_column=end_column,
-        line=line,
-        end_line=end_line,
-        stream=stream,
-    )
-
-
-def _print_github(
-    command: Literal["error", "warning", "debug"],
+def message(
+    command: Literal["error", "warning", "notice", "debug"],
     message: str,
     *,
     title: str | None = None,
@@ -55,21 +29,20 @@ def _print_github(
         end_line: End line number
         stream: Output stream
     """
-    if env.is_in_github_actions():
-        annotation = ",".join(
-            f"{name}={value}"
-            for name, value in (
-                ("title", title),
-                ("file", file),
-                ("col", col),
-                ("endColumn", end_column),
-                ("line", line),
-                ("endLine", end_line),
-            )
-            if value is not None
+    annotation = ",".join(
+        f"{name}={value}"
+        for name, value in (
+            ("title", title),
+            ("file", file),
+            ("col", col),
+            ("endColumn", end_column),
+            ("line", line),
+            ("endLine", end_line),
         )
+        if value is not None
+    )
 
-        print(f"::{command} {annotation}::{message}", file=stream)
+    print(f"::{command} {annotation}::{message}", file=stream)
 
 
 def begin_group(title: str, *, stream: TextIO | None = None):

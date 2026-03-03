@@ -10,30 +10,23 @@ from competitive_verifier.log import group
 
 
 class TestGitHubPrint:
-    def test_print_error(
+    def test_message(
         self,
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
     ):
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": ""}, clear=True)
-        github.print_error("simple_message")
+        github.message("debug", "simple_message")
         out, err = capsys.readouterr()
-        assert out == ""
+        assert out == "::debug ::simple_message\n"
         assert err == ""
 
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}, clear=True)
-        github.print_error("simple_message")
+        github.message("notice", "simple_message")
         out, err = capsys.readouterr()
-        assert out == "::error ::simple_message\n"
+        assert out == "::notice ::simple_message\n"
         assert err == ""
 
-    def test_print_error_github_actions(
-        self,
-        capsys: pytest.CaptureFixture[str],
-        mocker: MockerFixture,
-    ):
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}, clear=True)
-        github.print_error(
+        github.message(
+            "error",
             "many_message",
             title="TestTitle",
             file="foo.txt",

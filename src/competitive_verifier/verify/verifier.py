@@ -203,7 +203,8 @@ class BaseVerifier(InputContainer):
                         p,
                         ve.model_dump_json(exclude_unset=True),
                     )
-                    github.print_error(
+                    github.message(
+                        "error",
                         message=f"{error_message} {p.as_posix()}",
                         file=str(p.resolve()),
                     )
