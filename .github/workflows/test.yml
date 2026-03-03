@@ -1,12 +1,20 @@
 name: test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
-
+    inputs:
+      coverage:
+        required: false
+        default: false
+        type: boolean
+        description: coverage test
+  workflow_call:
+    inputs:
+      coverage:
+        required: false
+        default: false
+        type: boolean
+        description: coverage test
 jobs:
   test:
     strategy:
@@ -46,4 +54,13 @@ jobs:
         run: brew install gnu-time
 
       - name: Run test all
-        run: poetry run pytest -vv
+        run: poetry run pytest ${{ inputs.coverage && '-vv --cov=src/ --cov-branch --cov-report=html:coverage' || '' }}
+
+      - name: Upload coverage
+        if: inputs.coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-coverage-${{matrix.os}}-py${{matrix.python}}
+          path: |
+            coverage/
+          retention-days: 1

@@ -19,6 +19,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+    with:
+      coverage: true
   verify-external:
     runs-on: ubuntu-latest
     steps:
@@ -103,6 +107,13 @@ jobs:
           rm -rf .competitive-verifier/bundled
           mkdir -p .competitive-verifier/bundled
           cp -Tr .artifacts/Bundled-*/ .competitive-verifier/bundled/
+
+      - name: Add coverage result
+        shell: bash
+        run: |
+          mv .artifacts/pytest-coverage-ubuntu*-py${PYTHON_VERSION} .competitive-verifier/docs/static/coverage
+        env:
+          PYTHON_VERSION: "3.14"
 
       - name: Set up competitive-verifier
         uses: competitive-verifier/actions/setup@v2
