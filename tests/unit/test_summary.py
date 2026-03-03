@@ -16,6 +16,7 @@ from competitive_verifier.models import (
     VerifyCommandResult,
 )
 from competitive_verifier.models import TestcaseResult as CaseResult
+from tests import LogComparer
 
 test_to_human_str_seconds_params: list[tuple[timedelta, str]] = [
     (timedelta(hours=2, minutes=8, seconds=6, milliseconds=13), "2h 8m"),
@@ -82,11 +83,10 @@ def test_summary_not_exist(mocker: MockerFixture, caplog: pytest.LogCaptureFixtu
         VerifyCommandResult(files={}, total_seconds=1)
     )
     mock_summary.assert_not_called()
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.arg",
-            logging.WARNING,
+    assert caplog.records == [
+        LogComparer(
             "write_summary=True but not found $GITHUB_STEP_SUMMARY",
+            logging.WARNING,
         )
     ]
 

@@ -34,6 +34,7 @@ from competitive_verifier.oj.problem import (
     LibraryCheckerProblem,
     YukicoderProblem,
 )
+from tests import LogComparer
 
 OJ_TEST_MODULE = "competitive_verifier.oj.oj_test"
 
@@ -57,8 +58,10 @@ def make_result(
     )
 
 
-def log_output(msg: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO):
-    return (module, level, msg)
+def log_output(
+    message: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO
+):
+    return LogComparer(message, level=level, name=module)
 
 
 @pytest.fixture
@@ -111,7 +114,7 @@ class SingleCaseParams(NamedTuple):
     inbytes: bytes
     mock_measure: OjExecInfo
     expected: OjTestcaseResult
-    expected_log: list[tuple[str, int, str]]
+    expected_log: list[LogComparer]
     outbytes: bytes
     error: float | None = None
     mle: float | None = None
@@ -907,7 +910,7 @@ def test_single_case(
     error: float | None,
     mle: float | None,
     expected: OjTestcaseResult,
-    expected_log: list[tuple[str, int, str]],
+    expected_log: list[LogComparer],
     caplog: pytest.LogCaptureFixture,
     mock_judge: Problem,
     mock_measure: OjExecInfo,
@@ -937,7 +940,7 @@ def test_single_case(
     expected.input = input_path
     expected.expected = output_path
     assert result == expected
-    assert caplog.record_tuples == expected_log
+    assert caplog.records == expected_log
 
 
 def test_single_case_error(
@@ -983,7 +986,7 @@ def test_single_case_error(
                 )
                 == expected
             )
-            assert caplog.record_tuples == [
+            assert caplog.records == [
                 log_output("error: start"),
                 log_output(
                     "Failed to run: OjTestArguments(command='" + cmd + "', "
@@ -1010,28 +1013,24 @@ def test_single_case_error(
                 )
                 == expected
             )
-            assert caplog.record_tuples[0] == log_output("error: start")
-            assert caplog.record_tuples[2] == log_output(
+            assert caplog.records[0] == log_output("error: start")
+            assert caplog.records[2] == log_output(
                 "Failed to run: OjTestArguments(command='git', "
                 "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
                 "tle=None, mle=None, error=None, env=None, deadline=inf)",
                 level=logging.ERROR,
             )
 
-            assert caplog.record_tuples[1][2].endswith("is not executable.")
+            assert caplog.records[1].msg.endswith("is not executable.")
 
 
 def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
     assert compare_answer("1", "2", error=1)
-    assert caplog.record_tuples == []
+    assert caplog.records == []
 
     assert compare_answer("1", "2", error=1.0001)
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.oj.oj_test",
-            logging.WARNING,
-            "the tolerance is too large: relative = 1.0001",
-        ),
+    assert caplog.records == [
+        LogComparer("the tolerance is too large: relative = 1.0001", logging.WARNING),
     ]
 
 
@@ -1039,7 +1038,7 @@ class GnuTimeMessageParam(NamedTuple):
     has_gnu_time: bool
     system: str
     mle: float | None
-    expected: list[tuple[str, int, str]]
+    expected: list[LogComparer]
 
 
 test_gnu_time_message_params: list[GnuTimeMessageParam] = [
@@ -1052,15 +1051,13 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
         "Darwin",
         5.5,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                logging.INFO,
+            LogComparer(
                 "[HINT]: You can install GNU time with: $ brew install gnu-time",
+                logging.INFO,
             ),
-            (
-                "competitive_verifier.oj.oj_test",
-                logging.WARNING,
+            LogComparer(
                 "--mle is used but GNU time does not exist",
+                logging.WARNING,
             ),
         ],
     ),
@@ -1069,10 +1066,9 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
         "Darwin",
         None,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                logging.INFO,
+            LogComparer(
                 "[HINT]: You can install GNU time with: $ brew install gnu-time",
+                logging.INFO,
             ),
         ],
     ),
@@ -1081,10 +1077,9 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
         "Windows",
         2,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                logging.WARNING,
+            LogComparer(
                 "--mle is used but GNU time does not exist",
+                logging.WARNING,
             ),
         ],
     ),
@@ -1102,7 +1097,7 @@ def test_gnu_time_message(
     has_gnu_time: bool,
     system: str,
     mle: float | None,
-    expected: list[tuple[str, int, str]],
+    expected: list[LogComparer],
     mock_judge: Problem,
     mocker: MockerFixture,
     caplog: pytest.LogCaptureFixture,
@@ -1117,7 +1112,7 @@ def test_gnu_time_message(
     gnu_time_message(
         OjTestArguments("dummy", problem=mock_judge, tle=None, mle=mle, error=None)
     )
-    assert caplog.record_tuples == expected
+    assert caplog.records == expected
 
 
 def test_timeout(
@@ -1398,7 +1393,7 @@ def test_summarize(
     caplog.set_level(0)
     expected.testcases = history
     assert summarize(history) == expected
-    assert caplog.record_tuples == expected_log
+    assert caplog.records == expected_log
 
 
 test_special_judge_params = [
@@ -1407,10 +1402,9 @@ test_special_judge_params = [
         None,
         False,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                10,
+            LogComparer(
                 "judge's output:\n\x1b[2m(empty)\x1b[0m",
+                10,
             )
         ],
     ),
@@ -1419,12 +1413,11 @@ test_special_judge_params = [
         1,
         False,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                10,
+            LogComparer(
                 "judge's output:\n"
                 "\x1b[1ma\x1b[0m\x1b[2m_\x1b[0m\x1b[1mb\x1b[0m\x1b[2m_\x1b[0m\x1b[1mc\x1b[0m"
                 "\x1b[2m(no trailing newline)\x1b[0m",
+                10,
             )
         ],
     ),
@@ -1433,10 +1426,9 @@ test_special_judge_params = [
         0,
         True,
         [
-            (
-                "competitive_verifier.oj.oj_test",
-                10,
+            LogComparer(
                 "judge's output:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m",
+                10,
             )
         ],
     ),
@@ -1451,7 +1443,7 @@ def test_special_judge(
     answer: str | None,
     returncode: int | None,
     expected: bool,
-    expected_log: list[tuple[str, int, str]],
+    expected_log: list[LogComparer],
     mocker: MockerFixture,
     testtemp: pathlib.Path,
     caplog: pytest.LogCaptureFixture,
@@ -1480,9 +1472,8 @@ def test_special_judge(
         str(testtemp / "expected"),
     ]
     mock_measure.assert_called_once_with(check_cmd)
-    assert caplog.record_tuples[0] == (
-        "competitive_verifier.oj.oj_test",
-        10,
+    assert caplog.records[0] == LogComparer(
         f"$ {check_cmd!s}",
+        10,
     )
-    assert caplog.record_tuples[1:] == expected_log
+    assert caplog.records[1:] == expected_log

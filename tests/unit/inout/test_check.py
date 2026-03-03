@@ -12,6 +12,7 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
+from tests import LogComparer
 
 test_check_params: list[tuple[dict[str, VerifyCommandResult], str, bool]] = [
     (
@@ -268,12 +269,10 @@ def test_log(testtemp: pathlib.Path, caplog: pytest.LogCaptureFixture):
 }"""
     )
     assert Check(verbose=True, result_json=[testtemp / "success.json"]).run()
-    assert caplog.record_tuples == []
+    assert caplog.records == []
 
     assert not Check(
         verbose=True,
         result_json=[testtemp / "success.json", testtemp / "failure.json"],
     ).run()
-    assert caplog.record_tuples == [
-        ("competitive_verifier.inout.main", logging.ERROR, "Failure test count: 1")
-    ]
+    assert caplog.records == [LogComparer("Failure test count: 1", logging.ERROR)]

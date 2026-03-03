@@ -16,6 +16,7 @@ from competitive_verifier.models import (
 )
 from competitive_verifier.verify import Verify
 from competitive_verifier.verify.verifier import SplitState
+from tests import LogComparer
 
 test_get_split_state_params = [
     (None, None, None),
@@ -104,11 +105,10 @@ def test_invalid_prev_result(
 
     assert parsed.read_prev_result() is None
 
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.verify.main",
-            logging.WARNING,
+    assert caplog.records == [
+        LogComparer(
             "Failed to parse prev_result: " + str(testtemp / "prev.json"),
+            logging.WARNING,
         )
     ]
 

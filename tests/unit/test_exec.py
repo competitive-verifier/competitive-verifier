@@ -7,6 +7,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier.exec import exec_command
+from tests import LogComparer
 
 
 def test_exec_group_log(
@@ -22,7 +23,7 @@ def test_exec_group_log(
 
     exec_command("echo 1", group_log=True)
 
-    assert len(caplog.record_tuples) == 0
+    assert caplog.records == []
     out, err = capsys.readouterr()
     assert out == ""
     assert err == "::group::subprocess.run: echo 1\nmockrun\n::endgroup::\n"
@@ -42,9 +43,9 @@ def test_exec_not_group_log(
 
     exec_command("echo 1")
 
-    assert caplog.record_tuples == [
-        ("competitive_verifier.exec", logging.INFO, "subprocess.run: echo 1"),
-        ("test", logging.ERROR, "mockrun"),
+    assert caplog.records == [
+        LogComparer("subprocess.run: echo 1", logging.INFO),
+        LogComparer("mockrun", logging.ERROR),
     ]
     out, err = capsys.readouterr()
     assert out == ""

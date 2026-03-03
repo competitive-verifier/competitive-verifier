@@ -17,6 +17,7 @@ from competitive_verifier.models import (
     VerifyCommandResult,
 )
 from competitive_verifier.verify.verifier import BaseVerifier, SplitState
+from tests import LogComparer
 
 SUCCESS = ResultStatus.SUCCESS
 FAILURE = ResultStatus.FAILURE
@@ -688,11 +689,10 @@ def test_verify_download_error(
             }
         },
     }
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.verify.verifier",
-            logging.ERROR,
+    assert caplog.records == [
+        LogComparer(
             "Failed to download",
+            logging.ERROR,
         ),
     ]
 
@@ -760,18 +760,16 @@ def test_verify_compile_error(
             }
         },
     }
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.verify.verifier",
-            logging.ERROR,
+    assert caplog.records == [
+        LogComparer(
             f"Failed to compile: {pathlib.Path('test/foo.py')}, "
             'verification={"name":"foo","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
-        ),
-        (
-            "competitive_verifier.verify.verifier",
             logging.ERROR,
+        ),
+        LogComparer(
             f"Failed to compile: {pathlib.Path('test/foo.py')}, verification="
             '{"name":"bar","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
+            logging.ERROR,
         ),
     ]
 
@@ -845,12 +843,11 @@ def test_verify_error(
             }
         },
     }
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.verify.verifier",
-            logging.ERROR,
+    assert caplog.records == [
+        LogComparer(
             f"Failed to verify: {pathlib.Path('test/foo.py')}, "
             "ErrorVerification(name='foo', type='const', status=<ResultStatus.FAILURE: 'failure'>)",
+            logging.ERROR,
         ),
     ]
 
@@ -911,7 +908,7 @@ def test_verify_failure(
             }
         },
     }
-    assert caplog.record_tuples == []
+    assert caplog.records == []
 
     out, err = capsys.readouterr()
 
