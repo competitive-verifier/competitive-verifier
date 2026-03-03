@@ -91,12 +91,12 @@ def time_command() -> str | None:
 
 def _find_gnu_time(gnu_time_candidate: list[str]) -> str | None:
     for gnu_time in gnu_time_candidate:
-        if _check_gnu_time(gnu_time):
+        if check_gnu_time(gnu_time):
             return gnu_time
     return None
 
 
-def _check_gnu_time(gnu_time: str) -> bool:
+def check_gnu_time(gnu_time: str) -> bool:
     try:
         with tempfile.TemporaryDirectory() as td:
             tmp = pathlib.Path(td) / "out"
