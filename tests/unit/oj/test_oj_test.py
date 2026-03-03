@@ -88,16 +88,13 @@ def mock_judge(
     mocker: MockerFixture,
     request: pytest.FixtureRequest,
 ) -> Problem:
-    assert (
-        not hasattr(request, "param")
-        or request.param is None
-        or isinstance(request.param, bool)
-    )
+    judge = getattr(request, "param", None)
 
-    if hasattr(request, "param") and request.param is not None:
+    if judge is not None:
+        assert isinstance(judge, bool)
         mocker.patch(
             "competitive_verifier.oj.oj_test.special_judge",
-            return_value=request.param,
+            return_value=judge,
         )
         mocker.patch.object(
             LibraryCheckerProblem,
