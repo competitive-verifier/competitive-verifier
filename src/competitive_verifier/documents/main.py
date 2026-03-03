@@ -73,8 +73,10 @@ class Docs(
         result = MergeResult(
             subcommand="merge-result",
             result_json=self.result_json,
-            write_summary=self.write_summary,
         ).merge()
+
+        if self.write_summary:
+            self.write_result(result)
 
         logger.debug(
             "verifications=%s", verifications.model_dump_json(exclude_none=True)
