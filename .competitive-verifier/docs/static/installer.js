@@ -318,7 +318,7 @@ jobs:
         run: |
           echo "count=$(find .competitive-verifier/bundled/ -type f | wc -l)" >> $GITHUB_OUTPUT
       - name: Upload bundled
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: steps.test-bundled.outputs.count > 0
         with:
           name: Bundled-\${{ runner.os }}
@@ -389,7 +389,7 @@ jobs:
 
       actionYaml += `
       - name: Upload result artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Result-\${{ runner.os }}-\${{ matrix.index }}
           path: \${{runner.temp}}/result.json
