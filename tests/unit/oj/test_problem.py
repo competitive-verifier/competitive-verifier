@@ -1,9 +1,6 @@
-import gc
-
 import pytest
 
 from competitive_verifier.oj.problem import (
-    Problem,
     _normpath,  # pyright: ignore[reportPrivateUsage]
     problem_from_url,
 )
@@ -87,27 +84,3 @@ test_problem_repr_params = [
 )
 def test_problem_repr(url: str, expected: str):
     assert repr(problem_from_url(url)) == expected
-
-
-def test_problem_from_url_invalid_class():
-    class DummyProblem(Problem):
-        def iter_system_cases(self): ...  # pyright: ignore[reportIncompatibleMethodOverride]
-
-        @property
-        def url(self) -> str: ...
-
-        def download_system_cases(self) -> bool: ...
-
-        @classmethod
-        def from_url(cls, url: str):
-            if url == "dummy":
-                return cls()
-            return None
-
-    assert problem_from_url("") is None
-    assert type(problem_from_url("dummy")) is DummyProblem
-
-    del DummyProblem
-
-    gc.collect()
-    assert problem_from_url("dummy") is None

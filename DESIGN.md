@@ -1,3 +1,6 @@
+---
+lang: ja
+---
 # Design Doc
 
 ## 目的

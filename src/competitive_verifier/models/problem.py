@@ -33,13 +33,13 @@ class TestCaseProvider(ABC):
 
 class Problem(TestCaseProvider):
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}.from_url({self.url!r})"  # pragma: no cover
+        return f"{self.__class__.__name__}.from_url({self.url!r})"
 
-    def __hash__(self) -> int:
-        return self.url.__hash__()  # pragma: no cover
+    def __hash__(self) -> int:  # pragma: no cover
+        return hash(self.url) ^ hash(type(self))
 
     def __eq__(self, value: object) -> bool:
-        if type(self) is not type(value):  # pragma: no cover
+        if type(self) is not type(value):
             return False
         return self.url == cast("Problem", value).url
 

@@ -2,6 +2,7 @@ import os
 import pathlib
 import tempfile
 from collections.abc import Generator
+from contextlib import nullcontext
 
 import pytest
 from pytest_mock import MockerFixture
@@ -9,13 +10,13 @@ from pytest_mock import MockerFixture
 
 @pytest.fixture
 def mock_perf_counter(mocker: MockerFixture, request: pytest.FixtureRequest):
-    if not hasattr(request, "param") or not request.param:
-        values = [float(i) for i in range(1000)]
-    else:
+    if hasattr(request, "param") and request.param:
         assert isinstance(request.param, list)
         values = request.param  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+    else:
+        values = [float(i) for i in range(1000)]
 
-    mocker.patch("time.perf_counter", side_effect=values)
+    return mocker.patch("time.perf_counter", side_effect=values)
 
 
 @pytest.fixture
@@ -24,17 +25,41 @@ def mockenv(mocker: MockerFixture, request: pytest.FixtureRequest):
 
 
 @pytest.fixture(autouse=True)
-def mock_mkdir(mocker: MockerFixture, request: pytest.FixtureRequest):
+def prohibit_mkdir(mocker: MockerFixture, request: pytest.FixtureRequest):
     if "allow_mkdir" in request.keywords:
         return None
     return mocker.patch(
-        "pathlib.Path.mkdir", side_effect=RuntimeError("mkdir is not allowed")
+        "pathlib.Path.mkdir",
+        side_effect=RuntimeError("mkdir is not allowed"),
     )
 
 
+class TempContext(nullcontext[pathlib.Path]):
+    def __init__(self, enter_result: pathlib.Path) -> None:
+        super().__init__(enter_result)
+        os.mkdir(enter_result)  # noqa: PTH102
+
+    @property
+    def name(self):
+        return self.enter_result
+
+    def cleanup(self): ...
+
+
 @pytest.fixture
-def testtemp(monkeypatch: pytest.MonkeyPatch) -> Generator[pathlib.Path, None, None]:
+def testtemp(
+    mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+) -> Generator[pathlib.Path, None, None]:
     with tempfile.TemporaryDirectory() as d:
         monkeypatch.chdir(d)
-        yield pathlib.Path(d).resolve()
+        tmp = pathlib.Path(d).resolve()
+
+        def temp_dir():
+            count = 0
+            while True:
+                count += 1
+                yield TempContext(tmp / str(count))
+
+        mocker.patch("tempfile.TemporaryDirectory", side_effect=temp_dir())
+        yield tmp
         monkeypatch.undo()

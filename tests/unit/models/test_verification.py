@@ -748,3 +748,17 @@ def test_problem_verification_invalid_url():
         ).run(DataVerificationParams())
         == ResultStatus.FAILURE
     )
+
+
+@pytest.mark.allow_mkdir
+def test_local_problem_verification_tempdir(testtemp: pathlib.Path):
+    tempdir = testtemp / "foo/bar/baz"
+    assert not tempdir.is_dir()
+
+    LocalProblemVerification(
+        command="ls ~",
+        input=pathlib.Path("/root/cases-dir"),
+        tempdir=tempdir,
+    ).run_compile_command()
+
+    assert tempdir.is_dir()

@@ -28,7 +28,7 @@ jobs:
         id: create-hash
         run: |
           echo "hash=${{ hashFiles('**/*verify-files.json') }}" > $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: setup-${{ runner.os }}
           path: ${{ env.artifact-path }}
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: setup-${{ runner.os }}
           path: ${{ needs.setup.outputs.artifact-path }}
@@ -71,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: setup-${{ runner.os }}
           path: ${{ needs.setup.outputs.artifact-path }}

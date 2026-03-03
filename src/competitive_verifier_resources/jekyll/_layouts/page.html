@@ -2,4 +2,6 @@
 layout: default
 ---
 
+<div {%- if page.lang %} lang="{{page.lang}}"{%- endif -%}>
 {{- content -}}
+</div>

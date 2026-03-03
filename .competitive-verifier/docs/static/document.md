@@ -123,7 +123,8 @@ list_dependencies = "sed 's/^@include \"\\(.*\\)\"$/\\1/ ; t ; d' {path}"
 |`{dir}`| The relative path to `{basedir}` of the directory which contains file to execute. |
 |`{tempdir}`|The temporary directory.|
 
-#### Unit test
+#### Unit test settings
+{:#unittest-settings}
 
 If you have unit tests, you can use `UNITTEST` attribute. [helloworld_test.go]({{ "/examples/go/helloworld_test.go" | relative_url }})
 
@@ -203,7 +204,8 @@ Use [https://github.com/competitive-verifier/csharp-resolver](competitive-verifi
 
 ## Automating the verification
 
-### Available judging platforms
+### Supported judging platforms
+{:#supported-platforms}
 
 |Name|Remarks|
 |---|---|
@@ -218,13 +220,80 @@ Other judging platforms do not currently publish the test cases in usable forms,
 |Macro name|Description|Remarks|
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
-| `LOCALCASE` | specify the path of the test cases | [^localcase] [^relative_path] |
-| `STANDALONE` | specify in the unit test file executed by the main function | |
+| `LOCALCASE` | specify the path of the test cases | |
 | `ERROR` | specify the absolute or relative error to be considered as correct | |
 | `TLE` | specify the TLE time in seconds | |
+| `STANDALONE` | specify in the unit test file executed by the main function | |
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
 | `TITLE` | specify the title of source  | |
 | `DISPLAY` | specify the document output mode | `visible`, `no-index`, `hidden`, `never` |
+
+#### `PROBLEM`
+
+By specifying the URL of a [supported service](#supported-platforms), `oj-resolve` will collect this as a test executable file.
+
+```cpp
+// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+#### `LOCALCASE`
+
+By specifying a directory, `oj-resolve` will collect this as a test executable file.
+
+```cpp
+// competitive-verifier: LOCALCASE ./local_aplusb_cases
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+Each test case consists of an input file named `{name}.in` and an output file named `{name}.out`. Subdirectories are searched recursively [^relative_path].
+
+#### `ERROR`, `TLE`
+
+Specifies the tolerance and execution time limit values to be used when running `PROBLEM` or `LOCALCASE`.
+
+#### `STANDALONE`
+
+`oj-resolve` will collect this as a test executable file. Whether a test has succeeded is determined by checking if the exit status code is 0.
+This is useful in environments like C++, where unit tests are executed within the `main` function.
+
+#### `UNITTEST`
+
+When running `oj-resolve`, it is considered successful if the specified environment variable exists; otherwise, it is considered a failure.
+
+This is useful in environments like Go, where unit tests are executed outside of the `main` function.
+
+See: [#unittest-settings](#unittest-settings)
+
+#### `TITLE`
+Specify the title of source.
+
+#### `DISPLAY`
+Specify the document output mode.
+
+- `visible` (default): Generate and display the document.
+- `no-index`: Generate the document, but do not show it on the index page. It will still appear in dependency lists such as “Depends on”.
+- `hidden`: Generate the document, but do not show it on the index page or in dependency lists such as “Depends on”.
+- `never`: Do not generate the document.
+
 
 ## Generating Documentation
 
@@ -276,5 +345,4 @@ If you are using Ubuntu, you can install this with `sudo apt install ruby-bundle
 
 ## Footnote
 
-[^localcase]: Each test case consists of an input file named `{name}.in` and an output file named `{name}.out`. Subdirectories are searched recursively.
 [^relative_path]: Strings starting with `./` or `../` are treated as paths relative to the current file. Strings starting with `//` are treated as paths relative to the project’s root directory. The path should use `/` as directory separator be case-sensitive.

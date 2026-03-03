@@ -4,11 +4,13 @@ import os
 import pathlib
 import platform
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
 import tempfile
 import time
+from collections import Counter
 from dataclasses import dataclass
 from logging import getLogger
 from typing import BinaryIO
@@ -23,18 +25,18 @@ from competitive_verifier.models import (
 )
 
 from . import gnu
-from .format import Printer, StatusCounter, green, red
+from .format import Printer, green, red
 
 logger = getLogger(__name__)
 
 
-class _ExecError(Exception):
+class CaseExecutionError(Exception):
     pass
 
 
 @dataclass
 class OjExecInfo:
-    answer: bytes | None
+    answer: str | None
     """The standard output of the executed command"""
     elapsed: float
     """The elapsed time of the executed command in seconds"""
@@ -49,20 +51,19 @@ def measure_command(
     *,
     env: dict[str, str] | None = None,
     stdin: BinaryIO | int | None = None,
-    input: bytes | None = None,  # noqa: A002
     timeout: float | None = None,
     gnu_time: bool = False,
 ) -> OjExecInfo:
-    if input is not None:
-        if stdin is not None:
-            raise ValueError(
-                stdin, "stdin and input cannot be specified at the same time"
-            )
-        stdin = subprocess.PIPE
-
     if isinstance(command, str):
         command = shlex.split(command)
+
+    if len(command) == 0:
+        raise CaseExecutionError
+
     with gnu.GnuTimeWrapper(enabled=gnu_time) as gw:
+        if shutil.which(command[0]) is None:
+            raise CaseExecutionError
+
         command = gw.get_command(command)
         begin = time.perf_counter()
 
@@ -78,20 +79,18 @@ def measure_command(
                 stdout=subprocess.PIPE,
                 env=env,
                 stderr=sys.stderr,
+                encoding="utf-8",
                 start_new_session=start_new_session,
             )
-        except FileNotFoundError as e:
-            logger.exception("exec:No such file or directory: %s", command)
-            raise _ExecError from e
-        except PermissionError as e:
-            logger.exception("exec:Permission denied: %s", command)
-            raise _ExecError from e
-        answer: bytes | None = None
+        except Exception as e:
+            logger.exception("'%s' is not executable.", command)
+            raise CaseExecutionError from e
+
         try:
-            answer, _ = proc.communicate(input=input, timeout=timeout)
+            answer, _ = proc.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
-            pass
-        finally:
+            answer = None
+        finally:  # pragma: no cover
             if start_new_session:
                 with contextlib.suppress(ProcessLookupError):
                     os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
@@ -99,16 +98,10 @@ def measure_command(
                 proc.terminate()
 
         end = time.perf_counter()
-        memory: float | None = None
-        report = gw.get_report()
-        if report:
-            logger.debug("GNU time says:\n%s", report)
-            if report.splitlines()[-1].isdigit():
-                memory = int(report.splitlines()[-1]) / 1000
         return OjExecInfo(
             answer=answer,
             elapsed=end - begin,
-            memory=memory,
+            memory=gw.get_memory(),
             returncode=proc.returncode,
         )
 
@@ -135,16 +128,16 @@ class OjTestcaseResult:
     """A name of the test case."""
     input: pathlib.Path
     """A input of the test case."""
-    answer: bytes
+    answer: str
     """A output of the test case."""
+    expected: pathlib.Path
+    """A expected output of the test case."""
 
     status: JudgeStatus
     elapsed: float
     exitcode: int | None
 
     memory: float | None = None
-    expected: pathlib.Path | None = None
-    """A expected output of the test case."""
 
     def __post_init__(self):
         if not isinstance(self.exitcode, int):
@@ -165,8 +158,7 @@ class OjTestcaseResult:
     def log(self):
         match self.status:
             case JudgeStatus.AC:
-                if self.expected is None and self.answer:
-                    self._log_answer()
+                pass
             case JudgeStatus.RE | JudgeStatus.TLE:
                 self._log_input()
                 self._log_expected()
@@ -177,15 +169,10 @@ class OjTestcaseResult:
         logger.info(self)
 
     def _log_input(self) -> None:
-        with self.input.open("rb") as fp:
-            logger.info("%s:input:\n%s", self.name, Printer(fp))
+        logger.info("%s:input:\n%s", self.name, Printer(self.input))
 
     def _log_expected(self) -> None:
-        if self.expected:
-            with self.expected.open("rb") as fp:
-                logger.info("%s:expected:\n%s", self.name, Printer(fp))
-        else:
-            logger.info("%s:expected:\n%s", self.name, Printer(""))
+        logger.info("%s:expected:\n%s", self.name, Printer(self.expected))
 
     def _log_answer(self) -> None:
         logger.info("%s:answer:\n%s", self.name, Printer(self.answer))
@@ -208,52 +195,14 @@ class OjTestResult:
     testcases: list[OjTestcaseResult]
 
 
-class SpecialJudge:
-    def __init__(
-        self,
-        judge_command: str,
-        *,
-        input_path: pathlib.Path,
-        expected_output_path: pathlib.Path | None,
-    ):
-        self.judge_command = judge_command  # already quoted and joined command
-        self.input_path = input_path
-        self.expected_output_path = expected_output_path
-
-    def run(self, actual_output: bytes, _: bytes) -> bool:
-        with tempfile.TemporaryDirectory() as tempdir:
-            actual_output_path = pathlib.Path(tempdir) / "actual.out"
-            with actual_output_path.open("wb") as fh:
-                fh.write(actual_output)
-
-            # if you use shlex.quote, it fails on Windows. why?
-            command = " ".join(
-                [
-                    self.judge_command,  # already quoted and joined command
-                    str(self.input_path.resolve()),
-                    str(actual_output_path.resolve()),
-                    str(
-                        self.expected_output_path.resolve()
-                        if self.expected_output_path is not None
-                        else ""
-                    ),
-                ]
-            )
-
-            logger.debug("$ %s", command)
-            info = measure_command(command)
-        logger.debug("judge's output:\n%s", Printer(info.answer or ""))
-        return info.returncode == 0
-
-
-def _try_parse_float(value: bytes) -> float | None:
+def _try_parse_float(value: str) -> float | None:
     try:
         return float(value)
     except ValueError:
         return None
 
 
-def _equal_or_closed_float(actual: bytes, expected: bytes, *, error: float) -> bool:
+def _equal_or_closed_float(actual: str, expected: str, *, error: float) -> bool:
     if actual == expected:
         return True
 
@@ -267,7 +216,7 @@ def _equal_or_closed_float(actual: bytes, expected: bytes, *, error: float) -> b
     )
 
 
-def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bool:
+def compare_answer(actual: str, expected: str, *, error: float | None) -> bool:
     """Compare two byte strings.
 
     Args:
@@ -280,8 +229,8 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
     if error is not None and error > 1:
         logger.warning("the tolerance is too large: relative = %s", error)
 
-    actual = actual.replace(b"\r\n", b"\n")
-    expected = expected.replace(b"\r\n", b"\n")
+    actual = actual.replace("\r\n", "\n")
+    expected = expected.replace("\r\n", "\n")
 
     # match
     if actual == expected:
@@ -295,8 +244,8 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
                 logger.warning("This was AC if spaces and newlines were ignored.")
             return False
 
-        actual_lines = actual.rstrip(b"\n").split(b"\n")
-        expected_lines = expected.rstrip(b"\n").split(b"\n")
+        actual_lines = actual.rstrip("\n").split("\n")
+        expected_lines = expected.rstrip("\n").split("\n")
 
         for actual_line, expected_line in zip(
             actual_lines, expected_lines, strict=True
@@ -313,31 +262,32 @@ def compare_answer(actual: bytes, expected: bytes, *, error: float | None) -> bo
     return True
 
 
-def check_output(
+def special_judge(
+    judge_command: str,
+    output: str,
     *,
-    answer: bytes,
-    error: float | None,
-    test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
-    judge_command: str | None,
-) -> bool | None:
-    if test_output_path is None and not judge_command:
-        return None
-    if test_output_path is not None:
-        with test_output_path.open("rb") as outf:
-            expected = outf.read()
-    else:
-        # only if --judge option
-        expected = b""
-        logger.warning("expected output is not found")
-    if judge_command is not None:
-        return SpecialJudge(
-            judge_command,
-            input_path=test_input_path,
-            expected_output_path=test_output_path,
-        ).run(answer, expected)
+    input_path: pathlib.Path,
+    expected_output_path: pathlib.Path | None,
+) -> bool:
+    with tempfile.TemporaryDirectory() as tempdir:
+        actual_output_path = pathlib.Path(tempdir) / "actual.out"
+        actual_output_path.write_text(output)
 
-    return compare_answer(answer, expected, error=error)
+        command = [
+            *shlex.split(judge_command),
+            str(input_path.resolve()),
+            str(actual_output_path.resolve()),
+            str(
+                expected_output_path.resolve()
+                if expected_output_path is not None
+                else ""
+            ),
+        ]
+
+        logger.debug("$ %s", command)
+        info = measure_command(command)
+    logger.debug("judge's output:\n%s", Printer(info.answer or ""))
+    return info.returncode == 0
 
 
 def determine_status(
@@ -361,7 +311,7 @@ def determine_status(
 def single_case(
     test_name: str,
     test_input_path: pathlib.Path,
-    test_output_path: pathlib.Path | None,
+    test_output_path: pathlib.Path,
     *,
     args: OjTestArguments,
 ) -> OjTestcaseResult:
@@ -377,17 +327,21 @@ def single_case(
                 timeout=args.tle,
                 gnu_time=True,
             )
-            answer = info.answer or b""
+            answer = info.answer or ""
             elapsed: float = info.elapsed
             memory: float | None = info.memory
 
-        match_result = check_output(
-            answer=answer,
-            error=args.error,
-            test_input_path=test_input_path,
-            test_output_path=test_output_path,
-            judge_command=str(args.problem.checker) if args.problem.checker else None,
+        match_result = (
+            special_judge(
+                str(args.problem.checker),
+                answer,
+                input_path=test_input_path,
+                expected_output_path=test_output_path,
+            )
+            if args.problem.checker
+            else compare_answer(answer, test_output_path.read_text(), error=args.error)
         )
+
         status = determine_status(
             exitcode=info.returncode,
             memory=memory,
@@ -405,12 +359,13 @@ def single_case(
             elapsed=elapsed,
             memory=memory,
         )
-    except _ExecError:
+    except CaseExecutionError:
+        logger.exception("Failed to run: %s", args)
         return OjTestcaseResult(
             name=test_name,
             input=test_input_path,
             expected=test_output_path,
-            answer=b"",
+            answer="",
             status=JudgeStatus.RE,
             exitcode=255,
             elapsed=0,
@@ -421,33 +376,36 @@ def single_case(
         return result
 
 
-def _run(args: OjTestArguments) -> OjTestResult:
-    # check wheather GNU time is available
+def gnu_time_message(args: OjTestArguments):
+    """Check wheather GNU time is available.
+
+    Show messages if GNU time is not available.
+    """
     if gnu.time_command() is None:
         if platform.system() == "Darwin":
             logger.info(
-                "%s: You can install GNU time with: $ brew install gnu-time",
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
             )
         if args.mle is not None:
-            raise RuntimeError("--mle is used but GNU time does not exist")
+            logger.warning("--mle is used but GNU time does not exist")
 
-    tests = list(args.problem.iter_system_cases())
 
-    # run tests
-    history: list[OjTestcaseResult] = []
-    for t in tests:
-        if time.perf_counter() > args.deadline:
-            raise VerifcationTimeoutError
+class _StatusCounter(Counter[JudgeStatus]):
+    def __str__(self) -> str:
+        return ", ".join(
+            f"{cnt} {name}"
+            for name, cnt in ((st.name, self.get(st)) for st in JudgeStatus)
+            if cnt
+        )
 
-        history.append(single_case(t.name, t.input_path, t.output_path, args=args))
 
-    # summarize
+def summarize(history: list[OjTestcaseResult]):
     elapsed: float = 0.0
     slowest: float = -1.0
-    slowest_name = ""
+    slowest_name: str | None = None
     heaviest: float = -1.0
-    heaviest_name = ""
-    counter = StatusCounter()
+    heaviest_name: str | None = None
+    counter = _StatusCounter()
     for result in history:
         counter[result.status] += 1
         elapsed += result.elapsed
@@ -459,15 +417,17 @@ def _run(args: OjTestArguments) -> OjTestResult:
             heaviest_name = result.name
 
     # print the summary
-    logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
-    if heaviest >= 0:
+    if slowest_name is not None:
+        logger.info("slowest: %f sec  (for %s)", slowest, slowest_name)
+    if heaviest_name is not None:
         logger.info("max memory: %f MB  (for %s)", heaviest, heaviest_name)
 
-    is_success = counter[JudgeStatus.AC] == len(tests)
+    length = len(history)
+    is_success = counter[JudgeStatus.AC] == length
     if is_success:
-        logger.info("%s %d cases", green("SUCCESS"), len(tests))
+        logger.info("%s %d cases", green("SUCCESS"), length)
     else:
-        logger.info("%s %s / %d cases", red("FAILURE"), counter, len(tests))
+        logger.info("%s %s / %d cases", red("FAILURE"), counter, length)
 
     # return the result
     return OjTestResult(
@@ -477,6 +437,22 @@ def _run(args: OjTestArguments) -> OjTestResult:
         heaviest=heaviest,
         testcases=history,
     )
+
+
+def _run(args: OjTestArguments) -> OjTestResult:
+    gnu_time_message(args)
+
+    tests = list(args.problem.iter_system_cases())
+
+    # run tests
+    history: list[OjTestcaseResult] = []
+    for t in tests:
+        if time.perf_counter() > args.deadline:
+            raise VerifcationTimeoutError
+
+        history.append(single_case(t.name, t.input_path, t.output_path, args=args))
+
+    return summarize(history)
 
 
 def main(

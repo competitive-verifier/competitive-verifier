@@ -116,44 +116,41 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
 _library_checker_problems_tar_gz: bytes | None = None
 
 
-def update_cloned_repository() -> None:
+def update_cloned_repository():  # pragma: no cover
     global _library_checker_problems_tar_gz  # noqa: PLW0603
 
     gz_path = config.get_cache_dir() / "library-checker-problems.tar.gz"
-    gz_path = gz_path.resolve()
-    if not gz_path.exists():  # pragma: no cover
-        gz_path.parent.mkdir(parents=True, exist_ok=True)
+    repo_gz_path = config.get_cache_dir() / "repo.tar.gz"
+    repo_path = config.get_cache_dir() / "library-checker-problems"
+    if repo_path.is_dir():
+        return
 
-        if _library_checker_problems_tar_gz:
-            gz_path.write_bytes(_library_checker_problems_tar_gz)
-            shutil.unpack_archive(gz_path, config.get_cache_dir())
-        else:
-            res = requests.get(
-                "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.tar.gz",
-                timeout=180,  # 3 minutes
-            )
-            content = res.content
+    if not gz_path.exists() and _library_checker_problems_tar_gz:
+        gz_path.write_bytes(_library_checker_problems_tar_gz)
+    if gz_path.exists():
+        shutil.unpack_archive(gz_path, config.get_cache_dir())
+        return
 
-            with gz_path.open("wb") as fp:
-                fp.write(content)
+    config.get_cache_dir().mkdir(parents=True, exist_ok=True)
+    res = requests.get(
+        "https://github.com/yosupo06/library-checker-problems/archive/refs/heads/master.tar.gz",
+        timeout=60,
+    )
 
-            shutil.unpack_archive(gz_path, config.get_cache_dir())
-            master_dir = config.get_cache_dir() / "library-checker-problems-master"
+    repo_gz_path.write_bytes(res.content)
+    shutil.unpack_archive(repo_gz_path, config.get_cache_dir())
+    repo_gz_path.unlink(missing_ok=True)
 
-            subprocess.check_call(
-                [sys.executable, "generate.py", "sample/aplusb/info.toml"],
-                cwd=master_dir,
-            )
+    master_dir = config.get_cache_dir() / "library-checker-problems-master"
 
-            gz_path.unlink(missing_ok=True)
-            with tarfile.open(gz_path, "w:gz") as gzp:
-                gzp.add(master_dir, "library-checker-problems", filter=_match_aplusb)
-            _library_checker_problems_tar_gz = gz_path.read_bytes()
+    gen_cmd = [sys.executable, "generate.py", "sample/aplusb/info.toml"]
+    subprocess.check_call(gen_cmd, cwd=master_dir, timeout=60)
 
-            shutil.move(
-                master_dir,
-                config.get_cache_dir() / "library-checker-problems",
-            )
+    with tarfile.open(gz_path, "w:gz") as gzp:
+        gzp.add(master_dir, "library-checker-problems", filter=_match_aplusb)
+    _library_checker_problems_tar_gz = gz_path.read_bytes()
+
+    shutil.move(master_dir, repo_path)
 
 
 def _match_aplusb(t: tarfile.TarInfo) -> tarfile.TarInfo | None:

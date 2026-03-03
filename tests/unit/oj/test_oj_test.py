@@ -1,19 +1,33 @@
 import logging
 import pathlib
-from typing import Any, NamedTuple
+from itertools import chain
+from typing import Any, NamedTuple, cast
 
 import pytest
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 
 from competitive_verifier import oj
-from competitive_verifier.models import JudgeStatus, Problem
+from competitive_verifier.models import (
+    JudgeStatus,
+    Problem,
+    VerifcationTimeoutError,
+)
+from competitive_verifier.models import (
+    TestCaseFile as SystemTestCaseFile,
+)
+from competitive_verifier.models import (
+    TestCaseProvider as SystemTestCaseProvider,
+)
 from competitive_verifier.oj.oj_test import (
     OjExecInfo,
     OjTestArguments,
     OjTestcaseResult,
-    SpecialJudge,
+    OjTestResult,
     compare_answer,
+    gnu_time_message,
     single_case,
+    special_judge,
+    summarize,
 )
 from competitive_verifier.oj.problem import (
     AOJProblem,
@@ -22,6 +36,29 @@ from competitive_verifier.oj.problem import (
 )
 
 OJ_TEST_MODULE = "competitive_verifier.oj.oj_test"
+
+
+def make_result(
+    name: str,
+    status: JudgeStatus,
+    elapsed: float = 1.25,
+    memory: float | None = None,
+    exitcode: int | None = 0,
+) -> OjTestcaseResult:
+    return OjTestcaseResult(
+        name=name,
+        elapsed=elapsed,
+        exitcode=exitcode,
+        memory=memory,
+        status=status,
+        input=pathlib.Path(),
+        expected=pathlib.Path(),
+        answer="",
+    )
+
+
+def log_output(msg: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO):
+    return (module, level, msg)
 
 
 @pytest.fixture
@@ -51,10 +88,17 @@ def mock_judge(
     mocker: MockerFixture,
     request: pytest.FixtureRequest,
 ) -> Problem:
-    assert request.param is None or isinstance(request.param, bool)
+    assert (
+        not hasattr(request, "param")
+        or request.param is None
+        or isinstance(request.param, bool)
+    )
 
-    if request.param is not None:
-        mocker.patch.object(SpecialJudge, "run", return_value=request.param)
+    if hasattr(request, "param") and request.param is not None:
+        mocker.patch(
+            "competitive_verifier.oj.oj_test.special_judge",
+            return_value=request.param,
+        )
         mocker.patch.object(
             LibraryCheckerProblem,
             "checker",
@@ -71,32 +115,10 @@ class SingleCaseParams(NamedTuple):
     mock_measure: OjExecInfo
     expected: OjTestcaseResult
     expected_log: list[tuple[str, int, str]]
-    outbytes: bytes | None = None
+    outbytes: bytes
     error: float | None = None
     mle: float | None = None
     mock_judge: bool | None = None
-
-
-def make_result(
-    name: str,
-    elapsed: float,
-    exitcode: int | None,
-    memory: float | None,
-    status: JudgeStatus,
-) -> OjTestcaseResult:
-    return OjTestcaseResult(
-        name=name,
-        elapsed=elapsed,
-        exitcode=exitcode,
-        memory=memory,
-        status=status,
-        input=pathlib.Path(),
-        answer=b"",
-    )
-
-
-def log_output(msg: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO):
-    return (module, level, msg)
 
 
 test_single_case_params: list[SingleCaseParams] = [
@@ -105,13 +127,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="default",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -120,33 +139,12 @@ test_single_case_params: list[SingleCaseParams] = [
         ],
     ),
     SingleCaseParams(
-        name="no_output",
-        inbytes=b"abc\n",
-        mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
-        ),
-        expected=make_result(
-            name="no_output",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
-            status=JudgeStatus.AC,
-        ),
-        expected_log=[
-            log_output("no_output: start"),
-            log_output("no_output:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("no_output: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
-        ],
-    ),
-    SingleCaseParams(
         name="Nones",
         inbytes=b"",
+        outbytes=b"",
         mock_measure=OjExecInfo(answer=None, elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="Nones",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -157,22 +155,17 @@ test_single_case_params: list[SingleCaseParams] = [
     SingleCaseParams(
         name="memory",
         inbytes=b"",
+        outbytes=b"19\n20\n",
         mock_measure=OjExecInfo(
-            answer=b"19\n20", elapsed=1.25, memory=10.7, returncode=0
+            answer="19\n20\n", elapsed=1.25, memory=10.7, returncode=0
         ),
         expected=make_result(
             name="memory",
-            elapsed=1.25,
-            exitcode=0,
             memory=10.7,
             status=JudgeStatus.AC,
         ),
         expected_log=[
             log_output("memory: start"),
-            log_output(
-                msg="memory:answer:\n"
-                "\x1b[1m19\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1m20\x1b[0m\x1b[2m(no trailing newline)\x1b[0m",
-            ),
             log_output(
                 "memory: \x1b[32mAC\x1b[39m, time: 1.250000 sec, memory: 10.700000 MB"
             ),
@@ -180,14 +173,11 @@ test_single_case_params: list[SingleCaseParams] = [
     ),
     SingleCaseParams(
         name="spaces",
-        inbytes=b"foo \t bar\nbaz \r\nhoge\nfuga\n",
+        inbytes=b"foo \t bar\nbaz\t \r\nhoge\r\nfuga\n",
         outbytes=b"1\n",
-        mock_measure=OjExecInfo(answer=b"2\n", elapsed=1.25, memory=None, returncode=0),
+        mock_measure=OjExecInfo(answer="2\n", elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="spaces",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -195,7 +185,7 @@ test_single_case_params: list[SingleCaseParams] = [
             log_output(
                 "spaces:input:\n"
                 "\x1b[1mfoo\x1b[0m\x1b[2m_\\t_\x1b[0m\x1b[1mbar\x1b[0m\x1b[2m\\n"
-                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m_\\r\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\n"
+                "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m\\t_\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
             log_output("spaces:answer:\n\x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
@@ -207,12 +197,9 @@ test_single_case_params: list[SingleCaseParams] = [
         name="empty-lines",
         inbytes=b"\n\n\n\n",
         outbytes=b"1\n",
-        mock_measure=OjExecInfo(answer=b"2\n", elapsed=1.25, memory=None, returncode=0),
+        mock_measure=OjExecInfo(answer="2\n", elapsed=1.25, memory=None, returncode=0),
         expected=make_result(
             name="empty-lines",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -229,13 +216,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mock_judge=True,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-AC",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -249,13 +233,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mock_judge=False,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-WA",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -269,20 +250,17 @@ test_single_case_params: list[SingleCaseParams] = [
     SingleCaseParams(
         name="judge-WA-no-expected-out",
         inbytes=b"abc\n",
+        outbytes=b"",
         mock_judge=False,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="judge-WA-no-expected-out",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
             log_output("judge-WA-no-expected-out: start"),
-            log_output("expected output is not found", level=logging.WARNING),
             log_output(
                 "judge-WA-no-expected-out:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
@@ -300,13 +278,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="check_output-WA",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -330,13 +305,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="check_output-AC",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -350,13 +322,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.14159265358\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-equals",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -370,13 +339,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.141592653589793238462643383279502884197169399375105820974944592307816406286\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-long",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -390,13 +356,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"3.1415926536\n",
         error=1e-11,
         mock_measure=OjExecInfo(
-            answer=b"3.14159265358\n", elapsed=1.25, memory=None, returncode=0
+            answer="3.14159265358\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-AC-short",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -410,13 +373,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.0000000217640\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-AC-abs",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -430,13 +390,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.000000021764\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-AC-abs-short",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -452,13 +409,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"0.0000000217640\n",
         error=1e-13,
         mock_measure=OjExecInfo(
-            answer=b"0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
+            answer="0.0000000217647\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-small-WA-abs",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -482,16 +436,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"141678400000000000000000000000000\n",
+            answer="141678400000000000000000000000000\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="error-large-AC-rel",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -505,16 +456,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-12,
         mock_measure=OjExecInfo(
-            answer=b"141678400000021987654321987654321\n",
+            answer="141678400000021987654321987654321\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="error-large-AC-rel-diff",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -530,16 +478,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"141678400000000000000000000000000\n",
         error=1e-13,
         mock_measure=OjExecInfo(
-            answer=b"141678400000021987654321987654321\n",
+            answer="141678400000021987654321987654321\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="error-large-WA-rel",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -562,13 +507,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDEF\nGH\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDEF\nGH\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-same",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -581,13 +523,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\r\nDEF\r\nGH\r\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\r\nDEF\r\nGH\r\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-crlf",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -600,13 +539,10 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\nDEF\nGH\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDDF\nGH\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDDF\nGH\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-diff",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -629,13 +565,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\nDEF\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC\nDEF\n3.14159265\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\nDEF\n3.14159265\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="lines-error-diff-len",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -649,16 +582,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265\n3.14159265\n",
+            answer="ABC CD\nDEF 3.14159265\n3.14159265\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="lines-error-grid",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -672,16 +602,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265 3.14\n3.14159265\n",
+            answer="ABC CD\nDEF 3.14159265 3.14\n3.14159265\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="lines-grid-diff",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -708,16 +635,13 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC CD\nDEF 3.141592653589\n3.14159265358979\n",
         error=1e-5,
         mock_measure=OjExecInfo(
-            answer=b"ABC CD\nDEF 3.14159265 3.14\n3.14159265\nno\n",
+            answer="ABC CD\nDEF 3.14159265 3.14\n3.14159265\nno\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="lines-grid-diff-lines",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -746,13 +670,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         error=1e-3,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-str-same",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -766,13 +687,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"DEF\n",
         error=1e-3,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="error-str-WA",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -788,13 +706,11 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=None
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=None
         ),
         expected=make_result(
             name="TLE",
-            elapsed=1.25,
             exitcode=None,
-            memory=None,
             status=JudgeStatus.TLE,
         ),
         expected_log=[
@@ -809,13 +725,11 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=1
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=1
         ),
         expected=make_result(
             name="RE",
-            elapsed=1.25,
             exitcode=1,
-            memory=None,
             status=JudgeStatus.RE,
         ),
         expected_log=[
@@ -831,13 +745,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mle=128,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=None, returncode=0
+            answer="ABC\n", elapsed=1.25, memory=None, returncode=0
         ),
         expected=make_result(
             name="MLE-NotMeasure",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.AC,
         ),
         expected_log=[
@@ -850,13 +761,9 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mle=128,
-        mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=128, returncode=0
-        ),
+        mock_measure=OjExecInfo(answer="ABC\n", elapsed=1.25, memory=128, returncode=0),
         expected=make_result(
             name="MLE-Safe",
-            elapsed=1.25,
-            exitcode=0,
             memory=128,
             status=JudgeStatus.AC,
         ),
@@ -873,11 +780,10 @@ test_single_case_params: list[SingleCaseParams] = [
         outbytes=b"ABC\n",
         mle=128,
         mock_measure=OjExecInfo(
-            answer=b"ABC\n", elapsed=1.25, memory=128.1, returncode=1
+            answer="ABC\n", elapsed=1.25, memory=128.1, returncode=1
         ),
         expected=make_result(
             name="MLE",
-            elapsed=1.25,
             exitcode=1,
             memory=128.1,
             status=JudgeStatus.MLE,
@@ -894,37 +800,11 @@ test_single_case_params: list[SingleCaseParams] = [
         ],
     ),
     SingleCaseParams(
-        name="unicode-error",
-        inbytes=b"a\n",
-        outbytes=b"A\n",
-        mock_measure=OjExecInfo(
-            answer=b"\x82\xa0\n", elapsed=1.25, memory=None, returncode=0
-        ),
-        expected=make_result(
-            name="unicode-error",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
-            status=JudgeStatus.WA,
-        ),
-        expected_log=[
-            log_output("unicode-error: start"),
-            log_output("unicode-error:input:\n\x1b[1ma\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "unicode-error:answer:\n"
-                "\x1b[2m'utf-8' codec can't decode byte 0x82 in position 0: invalid "
-                "start byte\x1b[0m\x1b[1m\ufffd\ufffd\x1b[0m\x1b[2m\\n\x1b[0m"
-            ),
-            log_output("unicode-error:expected:\n\x1b[1mA\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("unicode-error: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
-        ],
-    ),
-    SingleCaseParams(
         name="long-lines",
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"""ea226088-3cc7-4d33-985c-00004dfcdccb
+            answer="""ea226088-3cc7-4d33-985c-00004dfcdccb
 6f791930-4b08-4618-a110-32be65332f08
 87f28765-03bb-4aa3-ad2c-5e781aa60ca0
 2c006877-aeae-4b24-88f1-29351ac40ad7
@@ -936,9 +816,6 @@ test_single_case_params: list[SingleCaseParams] = [
         ),
         expected=make_result(
             name="long-lines",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -955,21 +832,18 @@ test_single_case_params: list[SingleCaseParams] = [
     ),
     SingleCaseParams(
         name="long-text",
-        inbytes=b"abc\n",
+        inbytes=b"abc\r\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"ea226088-3cc7-4d33-985c-00004dfcdccb6f791930-4b08-4618-a110-32be65332f08"
-            b"87f28765-03bb-4aa3-ad2c-5e781aa60ca09b063b0f-7b48-4a1d-a49f-4e8524ace9174"
-            b"2e6d61b-9656-4cb6-be7a-1a5d80224390961bed54-a32d-47c7-bb82-ae4591ed8ccd\r\n",
+            answer="ea226088-3cc7-4d33-985c-00004dfcdccb6f791930-4b08-4618-a110-32be65332f08"
+            "87f28765-03bb-4aa3-ad2c-5e781aa60ca09b063b0f-7b48-4a1d-a49f-4e8524ace9174"
+            "2e6d61b-9656-4cb6-be7a-1a5d80224390961bed54-a32d-47c7-bb82-ae4591ed8ccd\r\n",
             elapsed=1.25,
             memory=None,
             returncode=0,
         ),
         expected=make_result(
             name="long-text",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -991,7 +865,7 @@ test_single_case_params: list[SingleCaseParams] = [
         inbytes=b"abc\n",
         outbytes=b"ABC\n",
         mock_measure=OjExecInfo(
-            answer=b"""ea226088-3cc7-4d33-\n985c-00004dfcdccb
+            answer="""ea226088-3cc7-4d33-\n985c-00004dfcdccb
 6f791930-4b08-4618-a110-32be65332f08
 87f28765-03bb-4aa3-ad2c-5e781aa60ca0
 2c006877-aeae-4b24-88f1-29351ac40ad7
@@ -1003,9 +877,6 @@ test_single_case_params: list[SingleCaseParams] = [
         ),
         expected=make_result(
             name="long-lines-break",
-            elapsed=1.25,
-            exitcode=0,
-            memory=None,
             status=JudgeStatus.WA,
         ),
         expected_log=[
@@ -1035,7 +906,7 @@ test_single_case_params: list[SingleCaseParams] = [
 def test_single_case(
     name: str,
     inbytes: bytes,
-    outbytes: bytes | None,
+    outbytes: bytes,
     error: float | None,
     mle: float | None,
     expected: OjTestcaseResult,
@@ -1049,11 +920,8 @@ def test_single_case(
     input_path = testtemp / "infile"
     input_path.write_bytes(inbytes)
 
-    if outbytes is None:
-        output_path = None
-    else:
-        output_path = testtemp / "outfile"
-        output_path.write_bytes(outbytes)
+    output_path = testtemp / "outfile"
+    output_path.write_bytes(outbytes)
 
     result = single_case(
         name,
@@ -1068,18 +936,99 @@ def test_single_case(
         ),
     )
 
-    expected.answer = mock_measure.answer or b""
+    expected.answer = mock_measure.answer or ""
     expected.input = input_path
     expected.expected = output_path
     assert result == expected
     assert caplog.record_tuples == expected_log
 
 
+def test_single_case_error(
+    mocker: MockerFixture,
+    mock_judge: Problem,
+    caplog: pytest.LogCaptureFixture,
+    testtemp: pathlib.Path,
+    subtests: pytest.Subtests,
+):
+    caplog.set_level(logging.NOTSET)
+    input_path = testtemp / "infile"
+    input_path.write_bytes(b"ABC")
+
+    output_path = testtemp / "outfile"
+    output_path.write_bytes(b"abc")
+
+    expected = OjTestcaseResult(
+        name="error",
+        input=input_path,
+        answer="",
+        expected=output_path,
+        status=JudgeStatus.RE,
+        elapsed=0,
+        exitcode=255,
+    )
+
+    mocker.patch("competitive_verifier.oj.gnu.time_command", return_value="time")
+    for cmd in ["", ":no_exists:"]:
+        with subtests.test(msg=cmd if cmd else "<empty>"):
+            caplog.clear()
+            assert (
+                single_case(
+                    "error",
+                    test_input_path=input_path,
+                    test_output_path=output_path,
+                    args=OjTestArguments(
+                        command=cmd,
+                        problem=mock_judge,
+                        error=None,
+                        mle=None,
+                        tle=None,
+                    ),
+                )
+                == expected
+            )
+            assert caplog.record_tuples == [
+                log_output("error: start"),
+                log_output(
+                    "Failed to run: OjTestArguments(command='" + cmd + "', "
+                    "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
+                    "tle=None, mle=None, error=None, env=None, deadline=inf)",
+                    level=logging.ERROR,
+                ),
+            ]
+        with subtests.test(msg="Exception"):
+            caplog.clear()
+            mocker.patch("subprocess.Popen", side_effect=Exception)
+            assert (
+                single_case(
+                    "error",
+                    test_input_path=input_path,
+                    test_output_path=output_path,
+                    args=OjTestArguments(
+                        command="git",
+                        problem=mock_judge,
+                        error=None,
+                        mle=None,
+                        tle=None,
+                    ),
+                )
+                == expected
+            )
+            assert caplog.record_tuples[0] == log_output("error: start")
+            assert caplog.record_tuples[2] == log_output(
+                "Failed to run: OjTestArguments(command='git', "
+                "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
+                "tle=None, mle=None, error=None, env=None, deadline=inf)",
+                level=logging.ERROR,
+            )
+
+            assert caplog.record_tuples[1][2].endswith("is not executable.")
+
+
 def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
-    assert compare_answer(b"1", b"2", error=1)
+    assert compare_answer("1", "2", error=1)
     assert caplog.record_tuples == []
 
-    assert compare_answer(b"1", b"2", error=1.0001)
+    assert compare_answer("1", "2", error=1.0001)
     assert caplog.record_tuples == [
         (
             "competitive_verifier.oj.oj_test",
@@ -1087,6 +1036,132 @@ def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
             "the tolerance is too large: relative = 1.0001",
         ),
     ]
+
+
+class GnuTimeMessageParam(NamedTuple):
+    has_gnu_time: bool
+    system: str
+    mle: float | None
+    expected: list[tuple[str, int, str]]
+
+
+test_gnu_time_message_params: list[GnuTimeMessageParam] = [
+    GnuTimeMessageParam(True, "Darwin", 5.5, []),
+    GnuTimeMessageParam(True, "Darwin", None, []),
+    GnuTimeMessageParam(True, "Windows", 2, []),
+    GnuTimeMessageParam(True, "Windows", None, []),
+    GnuTimeMessageParam(
+        False,
+        "Darwin",
+        5.5,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.INFO,
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
+            ),
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.WARNING,
+                "--mle is used but GNU time does not exist",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Darwin",
+        None,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.INFO,
+                "[HINT]: You can install GNU time with: $ brew install gnu-time",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Windows",
+        2,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                logging.WARNING,
+                "--mle is used but GNU time does not exist",
+            ),
+        ],
+    ),
+    GnuTimeMessageParam(
+        False,
+        "Windows",
+        None,
+        [],
+    ),
+]
+
+
+@pytest.mark.parametrize(GnuTimeMessageParam._fields, test_gnu_time_message_params)
+def test_gnu_time_message(
+    has_gnu_time: bool,
+    system: str,
+    mle: float | None,
+    expected: list[tuple[str, int, str]],
+    mock_judge: Problem,
+    mocker: MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+):
+    caplog.set_level(0)
+    mocker.patch(
+        "competitive_verifier.oj.gnu.time_command",
+        return_value="time" if has_gnu_time else None,
+    )
+    mocker.patch("platform.system", return_value=system)
+
+    gnu_time_message(
+        OjTestArguments("dummy", problem=mock_judge, tle=None, mle=mle, error=None)
+    )
+    assert caplog.record_tuples == expected
+
+
+def test_timeout(
+    mocker: MockerFixture,
+    mock_judge: Problem,
+    mock_perf_counter: MockType,
+):
+    single_case_mock = mocker.patch(
+        "competitive_verifier.oj.oj_test.single_case",
+        return_value=make_result(
+            name="default",
+            elapsed=1.25,
+            memory=None,
+            status=JudgeStatus.AC,
+        ),
+    )
+    mocker.patch.object(
+        mock_judge,
+        "iter_system_cases",
+        return_value=[
+            SystemTestCaseFile(
+                name=str(i),
+                input_path=pathlib.Path(str(i)),
+                output_path=pathlib.Path(str(i)),
+            )
+            for i in range(100)
+        ],
+    )
+
+    with pytest.raises(VerifcationTimeoutError):
+        oj.test(
+            problem=mock_judge,
+            command="dummy",
+            env=None,
+            tle=None,
+            mle=None,
+            error=None,
+            deadline=2.99,
+        )
+
+    assert single_case_mock.call_count == 3
 
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {
@@ -1147,3 +1222,270 @@ def test_oj_test(
     oj.test(**args)
 
     run.assert_called_once_with(expected)
+
+
+class MockCasesProblem(SystemTestCaseProvider):
+    cases: list[SystemTestCaseFile]
+
+    def __init__(self, cases: list[SystemTestCaseFile]) -> None:
+        self.cases = cases
+
+    def download_system_cases(self) -> Any:
+        raise NotImplementedError
+
+    def iter_system_cases(self) -> list[SystemTestCaseFile]:
+        return self.cases
+
+
+def test_oj_test_run(mocker: MockerFixture, subtests: pytest.Subtests):
+    case_count = 0
+
+    def infinite_case(*args: Any, **kwargs: Any):
+        nonlocal case_count
+        while True:
+            case_count += 1
+            return make_result(name=f"case{case_count}", status=JudgeStatus.AC)
+
+    mocker.patch(
+        "competitive_verifier.oj.oj_test.single_case",
+        side_effect=infinite_case,
+    )
+    mock_summarize = mocker.patch("competitive_verifier.oj.oj_test.summarize")
+
+    with subtests.test(msg="empty"):
+        oj.test(
+            problem=MockCasesProblem([]),
+            command="dummy",
+            env=None,
+            tle=None,
+            mle=None,
+            error=None,
+        )
+        mock_summarize.assert_called_once_with([])
+
+    with subtests.test(msg="three"):
+        mock_summarize.reset_mock()
+        oj.test(
+            problem=MockCasesProblem(
+                [
+                    SystemTestCaseFile(
+                        name=f"c{i}",
+                        input_path=pathlib.Path(),
+                        output_path=pathlib.Path(),
+                    )
+                    for i in range(3)
+                ]
+            ),
+            command="dummy",
+            env=None,
+            tle=None,
+            mle=None,
+            error=None,
+        )
+        mock_summarize.assert_called_once_with(
+            [
+                make_result(name="case1", status=JudgeStatus.AC),
+                make_result(name="case2", status=JudgeStatus.AC),
+                make_result(name="case3", status=JudgeStatus.AC),
+            ]
+        )
+
+
+EXPECTED_CASES = cast("list[OjTestcaseResult]", ...)
+test_summarize_params = [
+    pytest.param(
+        [],
+        OjTestResult(
+            is_success=True,
+            elapsed=0,
+            slowest=-1.0,
+            heaviest=-1.0,
+            testcases=EXPECTED_CASES,
+        ),
+        [
+            log_output("\x1b[32mSUCCESS\x1b[39m 0 cases"),
+        ],
+        id="empty",
+    ),
+    pytest.param(
+        [
+            make_result(
+                f"case{i}",
+                status=JudgeStatus.AC,
+                elapsed=i * 0.5,
+                memory=i * 1.5,
+            )
+            for i in [9, 6, 5, 8, 1, 2, 3, 4, 7, 0]
+        ],
+        OjTestResult(
+            is_success=True,
+            elapsed=45 / 2,
+            slowest=9 / 2,
+            heaviest=9 * 1.5,
+            testcases=EXPECTED_CASES,
+        ),
+        [
+            log_output("slowest: 4.500000 sec  (for case9)"),
+            log_output("max memory: 13.500000 MB  (for case9)"),
+            log_output("\x1b[32mSUCCESS\x1b[39m 10 cases"),
+        ],
+        id="shuffle",
+    ),
+    pytest.param(
+        [
+            make_result(
+                f"case{i}",
+                status=JudgeStatus.AC,
+                elapsed=i * 0.5,
+            )
+            for i in [9, 6, 5, 8, 1, 2, 3, 4, 7, 0]
+        ],
+        OjTestResult(
+            is_success=True,
+            elapsed=45 / 2,
+            slowest=9 / 2,
+            heaviest=-1.0,
+            testcases=EXPECTED_CASES,
+        ),
+        [
+            log_output("slowest: 4.500000 sec  (for case9)"),
+            log_output("\x1b[32mSUCCESS\x1b[39m 10 cases"),
+        ],
+        id="no_memory",
+    ),
+    pytest.param(
+        [
+            make_result(
+                f"case{i}",
+                status=st,
+                elapsed=i * 0.5,
+                memory=i * 1.5,
+            )
+            for i, st in enumerate(
+                chain(
+                    *(
+                        [st] * cnt
+                        for st, cnt in zip(
+                            list(JudgeStatus), range(1, 10000), strict=False
+                        )
+                    )
+                )
+            )
+        ],
+        OjTestResult(
+            is_success=False,
+            elapsed=(3 * len(JudgeStatus) - 1) * (3 * len(JudgeStatus)) / 2 / 2,
+            slowest=(3 * len(JudgeStatus) - 1) / 2,
+            heaviest=(3 * len(JudgeStatus) - 1) * 1.5,
+            testcases=EXPECTED_CASES,
+        ),
+        [
+            log_output("slowest: 7.000000 sec  (for case14)"),
+            log_output("max memory: 21.000000 MB  (for case14)"),
+            log_output(
+                "\x1b[31mFAILURE\x1b[39m 1 AC, 2 WA, 3 RE, 4 TLE, 5 MLE / 15 cases",
+            ),
+        ],
+        id="statuses",
+    ),
+]
+
+
+@pytest.mark.parametrize(("history", "expected", "expected_log"), test_summarize_params)
+def test_summarize(
+    history: list[OjTestcaseResult],
+    expected: OjTestResult,
+    expected_log: list[tuple[str, int, str]],
+    caplog: pytest.LogCaptureFixture,
+):
+    caplog.set_level(0)
+    expected.testcases = history
+    assert summarize(history) == expected
+    assert caplog.record_tuples == expected_log
+
+
+test_special_judge_params = [
+    (
+        None,
+        None,
+        False,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                10,
+                "judge's output:\n\x1b[2m(empty)\x1b[0m",
+            )
+        ],
+    ),
+    (
+        "a b c",
+        1,
+        False,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                10,
+                "judge's output:\n"
+                "\x1b[1ma\x1b[0m\x1b[2m_\x1b[0m\x1b[1mb\x1b[0m\x1b[2m_\x1b[0m\x1b[1mc\x1b[0m"
+                "\x1b[2m(no trailing newline)\x1b[0m",
+            )
+        ],
+    ),
+    (
+        "ABC\n",
+        0,
+        True,
+        [
+            (
+                "competitive_verifier.oj.oj_test",
+                10,
+                "judge's output:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m",
+            )
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("answer", "returncode", "expected", "expected_log"),
+    test_special_judge_params,
+)
+def test_special_judge(
+    answer: str | None,
+    returncode: int | None,
+    expected: bool,
+    expected_log: list[tuple[str, int, str]],
+    mocker: MockerFixture,
+    testtemp: pathlib.Path,
+    caplog: pytest.LogCaptureFixture,
+):
+    caplog.set_level(0)
+    mock_measure = mocker.patch(
+        "competitive_verifier.oj.oj_test.measure_command",
+        return_value=OjExecInfo(
+            answer=answer, elapsed=0, memory=None, returncode=returncode
+        ),
+    )
+    assert (
+        special_judge(
+            "/special/check",
+            "a b c\n",
+            input_path=testtemp / "input",
+            expected_output_path=testtemp / "expected",
+        )
+        == expected
+    )
+
+    check_cmd = [
+        "/special/check",
+        str(testtemp / "input"),
+        str(testtemp / "1/actual.out"),
+        str(testtemp / "expected"),
+    ]
+    mock_measure.assert_called_once_with(check_cmd)
+    assert caplog.record_tuples[0] == (
+        "competitive_verifier.oj.oj_test",
+        10,
+        f"$ {check_cmd!s}",
+    )
+    assert caplog.record_tuples[1:] == expected_log

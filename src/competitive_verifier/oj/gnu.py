@@ -16,7 +16,10 @@ class GnuTimeRunner(abc.ABC):
     @abc.abstractmethod
     def get_command(self, command: list[str]) -> list[str]: ...
     @abc.abstractmethod
-    def get_report(self) -> str | None: ...
+    def get_memory(self) -> float | None:
+        """Return the amount of memory used, in megabytes, if possible."""
+        ...
+
     @abc.abstractmethod
     def clean(self) -> None: ...
 
@@ -25,7 +28,7 @@ class _GnuTimeRunnerDummy(GnuTimeRunner):
     def get_command(self, command: list[str]) -> list[str]:
         return command
 
-    def get_report(self) -> str | None:
+    def get_memory(self) -> float | None:
         pass
 
     def clean(self) -> None:
@@ -41,8 +44,15 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
     def get_command(self, command: list[str]) -> list[str]:
         return [self.gnu_time, "-f", "%M", "-o", str(self.outfile), "--", *command]
 
-    def get_report(self) -> str | None:
-        return self.outfile.read_text("utf-8").strip()
+    def get_memory(self) -> float | None:
+        if self.outfile.exists() and (
+            report := self.outfile.read_text("utf-8").strip()
+        ):
+            logger.debug("GNU time says:\n%s", report)
+            tail = report.splitlines()[-1]
+            if tail.isdigit():
+                return int(tail) / 1000
+        return None
 
     def clean(self) -> None:
         self.tmpdir.cleanup()
@@ -50,12 +60,12 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
 
 class GnuTimeWrapper(contextlib.AbstractContextManager["GnuTimeRunner"]):
     _gnu_time: str | None
-    _runner: GnuTimeRunner | None
+    _runner: GnuTimeRunner
 
     def __init__(self, *, enabled: bool = True) -> None:
         super().__init__()
         self._gnu_time = time_command() if enabled else None
-        self._runner = None
+        self._runner = _GnuTimeRunnerDummy()
 
     def __enter__(self):
         if self._gnu_time:
@@ -65,13 +75,10 @@ class GnuTimeWrapper(contextlib.AbstractContextManager["GnuTimeRunner"]):
                 tmpdir=tmpdir,
                 outfile=pathlib.Path(tmpdir.name) / "gnu_time_report.txt",
             )
-        else:
-            self._runner = _GnuTimeRunnerDummy()
         return self._runner
 
     def __exit__(self, *excinfo: object):
-        if self._runner:
-            self._runner.clean()
+        self._runner.clean()
 
 
 @cache
@@ -79,13 +86,17 @@ def time_command() -> str | None:
     cmds = ["time", "gtime"]
     if os.name == "posix":
         cmds += ["/bin/time", "/usr/bin/time"]
-    for cmd in cmds:
-        if _check_gnu_time(cmd):
-            return cmd
+    return _find_gnu_time(cmds)
+
+
+def _find_gnu_time(gnu_time_candidate: list[str]) -> str | None:
+    for gnu_time in gnu_time_candidate:
+        if check_gnu_time(gnu_time):
+            return gnu_time
     return None
 
 
-def _check_gnu_time(gnu_time: str) -> bool:
+def check_gnu_time(gnu_time: str) -> bool:
     try:
         with tempfile.TemporaryDirectory() as td:
             tmp = pathlib.Path(td) / "out"
@@ -100,12 +111,13 @@ def _check_gnu_time(gnu_time: str) -> bool:
                     "echo",
                     "check_gnu_time",
                 ],
+                encoding="utf-8",
                 capture_output=True,
                 check=True,
             )
             if (
                 ret.returncode == 0
-                and ret.stdout.rstrip() == b"check_gnu_time"
+                and ret.stdout.rstrip() == "check_gnu_time"
                 and re.match(r"^\d+ KB$", tmp.read_text("utf-8").strip())
             ):
                 return True
