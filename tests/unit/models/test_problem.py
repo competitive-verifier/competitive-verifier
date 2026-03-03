@@ -1,14 +1,17 @@
 import logging
 import pathlib
 import uuid
-from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier.models import Problem
 from competitive_verifier.models.problem import TestCaseFile as TstCaseFile
-from competitive_verifier.oj.problem import LocalProblem, YukicoderProblem
+from competitive_verifier.oj.problem import (
+    AOJArenaProblem,
+    LocalProblem,
+    YukicoderProblem,
+)
 
 
 @pytest.mark.allow_mkdir
@@ -89,32 +92,11 @@ test_problem_params = [
 
 
 def test_problem_eq():
-    class DummyProblem(Problem):
-        def __init__(self, url: str) -> None:
-            self._url = url
-
-        @property
-        def url(self):
-            return self._url
-
-        @classmethod
-        def from_url(cls, url: str):
-            return cls(url)
-
-        def download_system_cases(self) -> Any:
-            raise NotImplementedError
-
-        def iter_system_cases(self) -> Any:
-            raise NotImplementedError
-
     yukicoder = YukicoderProblem(problem_id=227)
-    dummy = DummyProblem("https://yukicoder.me/problems/227")
 
     assert yukicoder == YukicoderProblem(problem_id=227)
     assert yukicoder != YukicoderProblem(problem_no=227)
-    assert yukicoder.url == dummy.url
-    assert yukicoder != yukicoder.url
-    assert yukicoder != dummy
+    assert yukicoder != AOJArenaProblem(arena_id="AOJ", alphabet="A")
 
 
 @pytest.mark.parametrize(
