@@ -1,2 +1,2 @@
-# competitive-verifier: PROBLEM https://yukicoder.me/problems/no/1088
+# competitive-verifier: LOCALCASE //examples/data/aplusb
 $0=$1+$2
