@@ -14,6 +14,7 @@ from pydantic import Field, ValidationError
 
 from competitive_verifier import config, git
 from competitive_verifier.arg import IncludeExcludeArguments, VerboseArguments
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     AddtionalSource,
     CommandVerification,
@@ -170,7 +171,11 @@ class OjResolver:
 
         problem = problem_from_url(url)
         if problem is None:
-            logger.error('The URL "%s" is not supported', url)
+            logger.error(
+                'The URL "%s" is not supported',
+                url,
+                extra={"github": GitHubMessageParams()},
+            )
             yield ConstVerification(status=ResultStatus.FAILURE)
         else:
             tempdir = problem.problem_directory
@@ -270,7 +275,7 @@ class OjResolver:
 
         for path in git.ls_files(*self.include):
             if self._match_exclude(path):
-                logger.debug("exclude=%s", path.as_posix())
+                logger.debug("exclude=%s", path)
                 continue
 
             language = self._lang_dict.get(path.suffix)
@@ -340,13 +345,16 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
             logger.info("no config file")
             config = OjVerifyConfig()
         elif not isinstance(self.config, OjVerifyConfig):
+            config_path = pathlib.Path(self.config)
             try:
-                config_path = self.config
-                with pathlib.Path(config_path).open("rb") as fp:
+                with config_path.open("rb") as fp:
                     config = OjVerifyConfig.load(fp)
-                    logger.info("config file loaded: %s: %s", str(config_path), config)
+                    logger.info("config file loaded: %s: %s", config_path, config)
             except ValidationError:
-                logger.exception("config file validation error")
+                logger.exception(
+                    "config file validation error",
+                    extra={"github": GitHubMessageParams(file=config_path)},
+                )
                 config = OjVerifyConfig()
         else:
             config = self.config

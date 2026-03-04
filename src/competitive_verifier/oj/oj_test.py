@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import BinaryIO
 
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     JudgeStatus,
     ResultStatus,
@@ -83,7 +84,11 @@ def measure_command(
                 start_new_session=start_new_session,
             )
         except Exception as e:
-            logger.exception("'%s' is not executable.", command)
+            logger.exception(
+                "'%s' is not executable.",
+                command,
+                extra={"github": GitHubMessageParams()},
+            )
             raise CaseExecutionError from e
 
         try:
@@ -169,13 +174,13 @@ class OjTestcaseResult:
         logger.info(self)
 
     def _log_input(self) -> None:
-        logger.info("%s:input:\n%s", self.name, Printer(self.input))
+        logger.info("%s:input: %s", self.name, Printer(self.input))
 
     def _log_expected(self) -> None:
-        logger.info("%s:expected:\n%s", self.name, Printer(self.expected))
+        logger.info("%s:expected: %s", self.name, Printer(self.expected))
 
     def _log_answer(self) -> None:
-        logger.info("%s:answer:\n%s", self.name, Printer(self.answer))
+        logger.info("%s:answer: %s", self.name, Printer(self.answer))
 
 
 @dataclass
@@ -226,9 +231,6 @@ def compare_answer(actual: str, expected: str, *, error: float | None) -> bool:
     Returns:
         bool: True if they are considered equal
     """
-    if error is not None and error > 1:
-        logger.warning("the tolerance is too large: relative = %s", error)
-
     actual = actual.replace("\r\n", "\n")
     expected = expected.replace("\r\n", "\n")
 
@@ -286,7 +288,7 @@ def special_judge(
 
         logger.debug("$ %s", command)
         info = measure_command(command)
-    logger.debug("judge's output:\n%s", Printer(info.answer or ""))
+    logger.debug("judge's output: %s", Printer(info.answer or ""))
     return info.returncode == 0
 
 
@@ -360,7 +362,11 @@ def single_case(
             memory=memory,
         )
     except CaseExecutionError:
-        logger.exception("Failed to run: %s", args)
+        logger.exception(
+            "Failed to run: %s",
+            args,
+            extra={"github": GitHubMessageParams()},
+        )
         return OjTestcaseResult(
             name=test_name,
             input=test_input_path,
@@ -385,9 +391,13 @@ def gnu_time_message(args: OjTestArguments):
         if platform.system() == "Darwin":
             logger.info(
                 "[HINT]: You can install GNU time with: $ brew install gnu-time",
+                extra={"github": GitHubMessageParams()},
             )
         if args.mle is not None:
-            logger.warning("--mle is used but GNU time does not exist")
+            logger.warning(
+                "--mle is used but GNU time does not exist",
+                extra={"github": GitHubMessageParams()},
+            )
 
 
 class _StatusCounter(Counter[JudgeStatus]):
@@ -441,6 +451,9 @@ def summarize(history: list[OjTestcaseResult]):
 
 def _run(args: OjTestArguments) -> OjTestResult:
     gnu_time_message(args)
+
+    if args.error is not None and args.error > 1:
+        logger.warning("the tolerance is too large: relative = %s", args.error)
 
     tests = list(args.problem.iter_system_cases())
 

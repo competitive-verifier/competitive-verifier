@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 
 from pydantic import BaseModel, Field
 
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.util import to_relative
 
 from ._scc import SccGraph
@@ -143,7 +144,9 @@ class VerificationInput(BaseModel):
             rp = to_relative(p)
             if not rp:
                 logger.warning(
-                    "Files in other directories are not subject to verification: %s", p
+                    "Files in other directories are not subject to verification: %s",
+                    p,
+                    extra={"github": GitHubMessageParams()},
                 )
                 continue
             f.dependencies = {d for d in map(to_relative, f.dependencies) if d}
@@ -214,11 +217,13 @@ class VerificationInput(BaseModel):
                 if src == dst:
                     continue
                 if dst not in depends_on:  # pragma: no cover
-                    msg = (
+                    logger.warning(
                         "The file `%s` which is depended from `%s` is ignored "
-                        "because it's not listed as a source code file."
+                        "because it's not listed as a source code file.",
+                        dst,
+                        src,
+                        extra={"github": GitHubMessageParams()},
                     )
-                    logger.warning(msg, dst, src)
                     continue
 
                 depends_on[src].add(dst)

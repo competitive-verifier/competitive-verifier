@@ -24,11 +24,7 @@ class DocumentBuilder(BaseModel):
     exclude: list[str] | None
 
     def build(self) -> bool:
-        logger.info(
-            "Working directory: %s",
-            pathlib.Path.cwd().as_posix(),
-        )
-
+        logger.info("Working directory: %s", pathlib.Path.cwd().as_posix())
         logger.info("Generate documents...")
 
         # implementation

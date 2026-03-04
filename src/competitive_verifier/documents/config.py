@@ -7,6 +7,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from competitive_verifier import git, github
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import RelativeDirectoryPath, SortedPathSet
 
 _CONFIG_YML_PATH = "_config.yml"
@@ -92,17 +93,21 @@ def _load_user_render_config_yml(docs_dir: pathlib.Path) -> ConfigYaml | None:
 
     user_config_yml_path = docs_dir / _CONFIG_YML_PATH
     if user_config_yml_path.exists():
-        logger.info("Parse user config: %s", user_config_yml_path)
+        logger.info("Parse user _config.yml: %s", user_config_yml_path)
         try:
             user_config_yml = yaml.safe_load(user_config_yml_path.read_bytes())
             return ConfigYaml.model_validate(user_config_yml)
         except Exception:
-            logger.exception("Failed to parse %s", user_config_yml_path.as_posix())
+            logger.exception(
+                "Failed to parse _config.yml: %s",
+                user_config_yml_path,
+                extra={"github": GitHubMessageParams(file=user_config_yml_path)},
+            )
     return None
 
 
 def load_config_yml(docs_dir: pathlib.Path) -> ConfigYaml:
-    logger.info("docs_dir=%s", docs_dir.as_posix())
+    logger.info("docs_dir=%s", docs_dir)
 
     config_yml = _load_user_render_config_yml(docs_dir)
     if not config_yml:

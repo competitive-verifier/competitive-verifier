@@ -1,12 +1,17 @@
+import pathlib
 from typing import Literal, TextIO
 
 
+def debug(message: str, *, stream: TextIO | None = None):
+    print("::debug::" + message.replace("\n", "\\n"), file=stream)
+
+
 def message(
-    command: Literal["error", "warning", "notice", "debug"],
+    command: Literal["error", "warning", "notice"],
     message: str,
     *,
     title: str | None = None,
-    file: str | None = None,
+    file: str | pathlib.Path | None = None,
     col: int | None = None,
     end_column: int | None = None,
     line: int | None = None,
@@ -33,7 +38,7 @@ def message(
         f"{name}={value}"
         for name, value in (
             ("title", title),
-            ("file", file),
+            ("file", file.absolute() if isinstance(file, pathlib.Path) else file),
             ("col", col),
             ("endColumn", end_column),
             ("line", line),

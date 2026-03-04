@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from competitive_verifier.exec import command_stdout
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.oj.verify.models import (
     Language,
     LanguageEnvironment,
@@ -80,14 +81,15 @@ def _cplusplus_list_depending_files(
     try:
         data = command_stdout(command)
     except Exception:
-        logger.error(  # noqa: TRY400
+        logger.exception(
             "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
             " The paths must exist, must not contain '\\', and must be case-sensitive.)",
             CXX,
-            str(path),
+            path,
+            exc_info=False,
         )
         raise
-    logger.debug("dependencies of %s: %s", str(path), repr(data))
+    logger.debug("dependencies of %s: %r", path, data)
     makefile_rule = shlex.split(
         data.strip().replace("\\\n", "").replace("\\\r\n", ""),
         posix=not is_windows,
@@ -141,7 +143,8 @@ class CPlusPlusLanguage(Language):
 
         if "CXXFLAGS" in os.environ and not self.config.environments:
             logger.warning(
-                "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon"
+                "Usage of $CXXFLAGS envvar to specify options is deprecated and will be removed soon",
+                extra={"github": GitHubMessageParams()},
             )
             default_CXXFLAGS = shlex.split(os.environ["CXXFLAGS"])  # noqa: N806
 
@@ -159,7 +162,8 @@ class CPlusPlusLanguage(Language):
         elif "CXX" in os.environ:
             # old-style: 以前は $CXX を使ってたけど設定ファイルに移行したい
             logger.warning(
-                "Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon"
+                "Usage of $CXX envvar to restrict compilers is deprecated and will be removed soon",
+                extra={"github": GitHubMessageParams()},
             )
             envs.append(
                 CPlusPlusLanguageEnvironment(

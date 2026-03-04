@@ -18,6 +18,7 @@ from typing import ClassVar, Optional, TypeVar
 import requests
 
 from competitive_verifier import config
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     Problem,
     TestCaseData,
@@ -49,7 +50,10 @@ class _BaseProblem(Problem):
 
         # Check samples
         if not samples:
-            logger.error("Sample not found")
+            logger.error(
+                "Sample not found",
+                extra={"github": GitHubMessageParams()},
+            )
             return False
 
         # write samples to files
@@ -110,7 +114,8 @@ class LibraryCheckerProblem(Problem):
             subprocess.check_call(command, stdout=sys.stderr, stderr=sys.stderr)
         except subprocess.CalledProcessError:
             logger.exception(
-                "the generate.py failed: check https://github.com/yosupo06/library-checker-problems/issues"
+                "the generate.py failed: check https://github.com/yosupo06/library-checker-problems/issues",
+                extra={"github": GitHubMessageParams()},
             )
             raise
 
@@ -156,7 +161,11 @@ class LibraryCheckerProblem(Problem):
                 stderr=sys.stderr,
             )
         except FileNotFoundError:
-            logger.exception("git command not found")
+            logger.exception(
+                "git command not found",
+                exc_info=False,
+                extra={"github": GitHubMessageParams()},
+            )
             raise
 
         path = self.repo_path
@@ -171,7 +180,7 @@ class LibraryCheckerProblem(Problem):
             )
         else:
             # sync the problem repository
-            logger.info("$ git -C %s pull", str(path))
+            logger.info("$ git -C %s pull", path)
             subprocess.check_call(
                 ["git", "-C", str(path), "pull"],  # noqa: S607
                 stdout=sys.stderr,

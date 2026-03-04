@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from functools import cached_property
 from logging import getLogger
 
-from competitive_verifier import git, github, log
+from competitive_verifier import git, log
 from competitive_verifier.download import download_files as run_download
 from competitive_verifier.models import (
     FileResult,
@@ -59,15 +59,9 @@ class InputContainer(ABC):
         base_time = min(self.verification_time, self.get_file_timestamp(path))
         result = file_result.need_verification(base_time)
         if result:
-            logger.info(
-                "%s needs verification. base_time: %s", path.as_posix(), base_time
-            )
+            logger.info("%s needs verification. base_time: %s", path, base_time)
         else:
-            logger.info(
-                "%s doesn't need verification. base_time: %s",
-                path.as_posix(),
-                base_time,
-            )
+            logger.info("%s doesn't need verification. base_time: %s", path, base_time)
         return result
 
     @cached_property
@@ -168,7 +162,7 @@ class BaseVerifier(InputContainer):
         download: bool,
         deadline: float,
     ) -> list[VerificationResult]:
-        logger.debug(repr(f))
+        logger.debug("%r", f)
         verifications = list[VerificationResult]()
         try:
             if time.perf_counter() > deadline:
@@ -185,11 +179,15 @@ class BaseVerifier(InputContainer):
             verifications.append(
                 self.create_command_result(ResultStatus.FAILURE, time.perf_counter())
             )
-            logger.exception("Failed to download")
+            logger.exception(
+                "Failed to download: %s",
+                f,
+                extra={"github": log.GitHubMessageParams()},
+            )
             return verifications
 
         for ve in f.verification_list:
-            logger.debug("command=%s", repr(ve))
+            logger.debug("command=%r", ve)
             prev_time = time.perf_counter()
             try:
                 if prev_time > deadline:
@@ -202,17 +200,13 @@ class BaseVerifier(InputContainer):
                         error_message,
                         p,
                         ve.model_dump_json(exclude_unset=True),
-                    )
-                    github.message(
-                        "error",
-                        message=f"{error_message} {p.as_posix()}",
-                        file=str(p.resolve()),
+                        extra={"github": log.GitHubMessageParams(file=p)},
                     )
                 verifications.append(
                     self.create_command_result(rs, prev_time, name=ve.name)
                 )
             except VerifcationTimeoutError:
-                logger.warning("Skip[Timeout]: %s, %s", p, repr(ve))
+                logger.warning("Skip[Timeout]: %s, %r", p, ve)
                 verifications.append(
                     self.create_command_result(
                         ResultStatus.SKIPPED,
@@ -221,7 +215,12 @@ class BaseVerifier(InputContainer):
                     )
                 )
             except BaseException:
-                logger.exception("Failed to verify: %s, %s", p, repr(ve))
+                logger.exception(
+                    "Failed to verify: %s, %r",
+                    p,
+                    ve,
+                    extra={"github": log.GitHubMessageParams()},
+                )
                 verifications.append(
                     self.create_command_result(
                         ResultStatus.FAILURE,
@@ -299,7 +298,7 @@ class BaseVerifier(InputContainer):
         results = dict[pathlib.Path, FileResult]()
         if self.is_first:
             for p, f in self.skippable_verification_files.items():
-                logger.info("Start skippable: %s", p.as_posix())
+                logger.info("Start skippable: %s", p)
                 verifications = list[VerificationResult]()
                 prev_time = time.perf_counter()
 
