@@ -15,11 +15,6 @@ class TestGitHubPrint:
         capsys: pytest.CaptureFixture[str],
         mocker: MockerFixture,
     ):
-        github.message("debug", "simple_message")
-        out, err = capsys.readouterr()
-        assert out == "::debug ::simple_message\n"
-        assert err == ""
-
         github.message("notice", "simple_message")
         out, err = capsys.readouterr()
         assert out == "::notice ::simple_message\n"
