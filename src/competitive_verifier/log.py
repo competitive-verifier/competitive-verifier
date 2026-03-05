@@ -31,8 +31,9 @@ class GitHubMessageParams:
 
 
 class GitHubActionsHandler(Handler):
-    def __init__(self, level: int | str = NOTSET) -> None:
+    def __init__(self, level: int | str = NOTSET, stream: TextIO = sys.stderr) -> None:
         super().__init__(level)
+        self.stream = stream
 
     def emit(self, record: LogRecord) -> None:
         if record.levelno >= ERROR:
@@ -48,7 +49,7 @@ class GitHubActionsHandler(Handler):
                     if record.name.startswith("competitive_verifier")
                     else f"{record.name}:{record.lineno}:"
                 )
-                github.debug(other_name + record.getMessage())
+                github.debug(other_name + record.getMessage(), stream=self.stream)
             return
 
         if (gh := getattr(record, "github", None)) is None or not isinstance(

@@ -2488,7 +2488,7 @@ class TestCommandDocuments:
             LogComparer(
                 "Markdown(dummy/dummy.md) documentation_of: ./dummy.py is not found.",
                 level=30,
-                github=GitHubMessageParams(file=pathlib.Path("./dummy.md")),
+                github=GitHubMessageParams(file=pathlib.Path("dummy/dummy.md")),
             ),
         ]
 
