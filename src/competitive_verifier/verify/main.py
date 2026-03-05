@@ -14,6 +14,7 @@ from competitive_verifier.arg import (
     VerifyFilesJsonArguments,
     WriteSummaryArguments,
 )
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 from .verifier import SplitState, Verifier
@@ -50,7 +51,11 @@ class Verify(
         try:
             return VerifyCommandResult.parse_file_relative(self.prev_result)
         except Exception:
-            logger.warning("Failed to parse prev_result: %s", self.prev_result)
+            logger.warning(
+                "Failed to parse prev_result: %s",
+                self.prev_result,
+                extra={"github": GitHubMessageParams(file=self.prev_result)},
+            )
 
     def write_result(self, result: VerifyCommandResult):
         super().write_result(result)
@@ -148,7 +153,7 @@ class Verify(
 
     def _run(self) -> bool:
         logger.debug("arguments:%s", self)
-        logger.info("verify_files_json=%s", str(self.verify_files_json))
+        logger.info("verify_files_json=%s", self.verify_files_json)
         verifications = VerificationInput.parse_file_relative(self.verify_files_json)
         prev_result = self.read_prev_result()
 

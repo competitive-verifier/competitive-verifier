@@ -67,7 +67,7 @@ def _python_list_depending_files(
         raise RuntimeError(
             f"Failed to analyze the dependency graph (circular imports?): {path}"
         ) from e
-    logger.debug("the dependency graph of %s: %s", str(path), node_deps_pairs)
+    logger.debug("the dependency graph of %s: %s", path, node_deps_pairs)
 
     # collect Python files which are depended by the `path` and under `basedir`
     res_deps: list[pathlib.Path] = []

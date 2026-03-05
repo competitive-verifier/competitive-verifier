@@ -48,7 +48,7 @@ class _GnuTimeRunnerImpl(GnuTimeRunner):
         if self.outfile.exists() and (
             report := self.outfile.read_text("utf-8").strip()
         ):
-            logger.debug("GNU time says:\n%s", report)
+            logger.debug("GNU time says: %s", report)
             tail = report.splitlines()[-1]
             if tail.isdigit():
                 return int(tail) / 1000
@@ -126,5 +126,5 @@ def check_gnu_time(gnu_time: str) -> bool:
     except AttributeError:
         raise  # AttributeError is also a mistake
     except Exception:  # noqa: BLE001
-        logger.debug("Failed to check gnu_time", exc_info=True)
+        logger.debug("Failed to check gnu_time: %s", gnu_time, exc_info=True)
     return False

@@ -289,7 +289,7 @@ class Bundler:
         if path.resolve() in self.pragma_once:
             logger.debug(
                 "%s: skipped since this file is included once with include guard",
-                str(path),
+                path,
             )
             return
 
@@ -344,7 +344,7 @@ class Bundler:
                 if re.match(
                     rb"\s*#\s*pragma\s+once\s*", line
                 ):  # #pragma once は comment 扱いで消されてしまう
-                    logger.debug("%s: line %s: #pragma once", str(path), i + 1)
+                    logger.debug("%s: line %s: #pragma once", path, i + 1)
                     if non_guard_line_found:
                         # 先頭以外で #pragma once されてた場合は諦める
                         raise BundleErrorAt(
@@ -375,7 +375,7 @@ class Bundler:
                         include_guard_macro = matched.group(1).decode()
                         logger.debug(
                             "%s: line %s: #ifndef %s",
-                            str(path),
+                            path,
                             i + 1,
                             include_guard_macro,
                         )
@@ -389,7 +389,7 @@ class Bundler:
                         self.pragma_once.add(path.resolve())
                         logger.debug(
                             "%s: line %s: #define %s",
-                            str(path),
+                            path,
                             i + 1,
                             include_guard_macro,
                         )
@@ -426,7 +426,7 @@ class Bundler:
                 if matched:
                     included = matched.group(1).decode()
                     logger.debug(
-                        "%s: line %s: #include <%s>", str(path), i + 1, str(included)
+                        "%s: line %s: #include <%s>", path, i + 1, str(included)
                     )
                     if included in self.pragma_once_system:
                         self._line(i + 2, path)
@@ -467,9 +467,7 @@ class Bundler:
                 matched = re.match(rb'\s*#\s*include\s*"(.*)"\s*', uncommented_line)
                 if matched:
                     included = matched.group(1).decode()
-                    logger.debug(
-                        '%s: line %s: #include "%s"', str(path), i + 1, included
-                    )
+                    logger.debug('%s: line %s: #include "%s"', path, i + 1, included)
                     if not is_toplevel:
                         # #if の中から #include されると #pragma once 系の判断が不可能になるので諦める
                         raise BundleErrorAt(

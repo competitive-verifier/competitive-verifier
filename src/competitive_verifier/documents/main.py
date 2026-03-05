@@ -65,21 +65,20 @@ class Docs(
 
     def _run(self) -> bool:
         logger.debug("arguments:%s", self)
-        logger.info("verify_files_json=%s", str(self.verify_files_json))
-        logger.info("result_json=%s", [str(p) for p in self.result_json])
-
+        logger.info("path of verify_files_json=%s", self.verify_files_json)
+        logger.info("path of result_json=%s", [str(p) for p in self.result_json])
         verifications = VerificationInput.parse_file_relative(self.verify_files_json)
 
         result = MergeResult(
             subcommand="merge-result",
             result_json=self.result_json,
-            write_summary=self.write_summary,
         ).merge()
 
-        logger.debug(
-            "verifications=%s", verifications.model_dump_json(exclude_none=True)
-        )
-        logger.debug("result=%s", result.model_dump_json(exclude_none=True))
+        if self.write_summary:
+            self.write_result(result)
+
+        logger.debug("verifications=%s", verifications)
+        logger.debug("result=%s", result)
 
         return DocumentBuilder(
             verifications=verifications,

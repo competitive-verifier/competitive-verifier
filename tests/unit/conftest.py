@@ -10,9 +10,8 @@ from pytest_mock import MockerFixture
 
 @pytest.fixture
 def mock_perf_counter(mocker: MockerFixture, request: pytest.FixtureRequest):
-    if hasattr(request, "param") and request.param:
+    if values := getattr(request, "param", None):
         assert isinstance(request.param, list)
-        values = request.param  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
     else:
         values = [float(i) for i in range(1000)]
 

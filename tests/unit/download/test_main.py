@@ -15,6 +15,7 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
+from tests import LogComparer
 
 
 def get_problem_command(url: str) -> ProblemVerification:
@@ -230,15 +231,13 @@ def test_download_run(
     assert Download(urls=urls, verify_files_json=verify_files_json).run()
 
     mock_download_files.assert_called_once_with(expected, group_log=True)
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.download.download",
-            logging.DEBUG,
+    assert caplog.records == [
+        LogComparer(
             f"arguments:{Download(urls=urls, verify_files_json=verify_files_json)}",
+            logging.DEBUG,
         ),
-        (
-            "competitive_verifier.download.download",
-            logging.INFO,
+        LogComparer(
             f"verify_files_json={verify_files_json}, urls={urls}",
+            logging.INFO,
         ),
     ]

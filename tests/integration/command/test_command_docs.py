@@ -16,7 +16,9 @@ from pytest_mock import MockerFixture
 from competitive_verifier import app
 from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
 from competitive_verifier.documents.front_matter import split_front_matter_raw
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.oj.gnu import time_command
+from tests import LogComparer
 
 from .data.user_defined_and_python import UserDefinedAndPythonData
 from .types import FilePaths
@@ -2387,7 +2389,7 @@ class TestCommandDocuments:
 
         check_common(destination, data=data, subtests=subtests)
 
-        assert not caplog.record_tuples
+        assert not caplog.records
 
     @pytest.mark.usefixtures("setup_docs")
     def test_logging_include(
@@ -2418,7 +2420,7 @@ class TestCommandDocuments:
 
         check_common(destination, data=data, subtests=subtests)
 
-        assert not caplog.record_tuples
+        assert not caplog.records
 
     @pytest.mark.parametrize(
         "exclude",
@@ -2454,7 +2456,7 @@ class TestCommandDocuments:
 
         check_common(destination, data=data, subtests=subtests)
 
-        assert not caplog.record_tuples
+        assert not caplog.records
 
     @pytest.mark.usefixtures("setup_docs")
     def test_logging_exclude_code_but_include_docs(
@@ -2482,11 +2484,11 @@ class TestCommandDocuments:
 
         check_common(destination, data=data, subtests=subtests)
 
-        assert caplog.record_tuples == [
-            (
-                "competitive_verifier.documents.render",
-                30,
+        assert caplog.records == [
+            LogComparer(
                 "Markdown(dummy/dummy.md) documentation_of: ./dummy.py is not found.",
+                level=30,
+                github=GitHubMessageParams(file=pathlib.Path("./dummy.md")),
             ),
         ]
 

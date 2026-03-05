@@ -17,7 +17,11 @@ def main(url: str, *, group_log: bool = False) -> bool:
     # prepare values
     problem = problem_from_url(url)
     if problem is None:
-        logger.error('The URL "%s" is not supported', url)
+        logger.error(
+            'The URL "%s" is not supported',
+            url,
+            extra={"github": log.GitHubMessageParams()},
+        )
         return False
 
     with (
@@ -29,8 +33,16 @@ def main(url: str, *, group_log: bool = False) -> bool:
             _run(problem=problem)
         except Exception as e:
             if isinstance(e, NotLoggedInError):
-                logger.exception("Login is required to download the problem. %r", url)
+                logger.exception(
+                    "Login is required to download the problem. %r",
+                    url,
+                    extra={"github": log.GitHubMessageParams()},
+                )
             else:
-                logger.exception("Failed to download. %r", url)
+                logger.exception(
+                    "Failed to download. %r",
+                    url,
+                    extra={"github": log.GitHubMessageParams()},
+                )
             return False
     return True

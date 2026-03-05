@@ -8,6 +8,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import app
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
@@ -16,6 +17,7 @@ from competitive_verifier.models import (
 )
 from competitive_verifier.verify import Verify
 from competitive_verifier.verify.verifier import SplitState
+from tests import LogComparer
 
 test_get_split_state_params = [
     (None, None, None),
@@ -104,11 +106,11 @@ def test_invalid_prev_result(
 
     assert parsed.read_prev_result() is None
 
-    assert caplog.record_tuples == [
-        (
-            "competitive_verifier.verify.main",
+    assert caplog.records == [
+        LogComparer(
+            f"Failed to parse prev_result: {testtemp / 'prev.json'}",
             logging.WARNING,
-            "Failed to parse prev_result: " + str(testtemp / "prev.json"),
+            github=GitHubMessageParams(file=testtemp / "prev.json"),
         )
     ]
 

@@ -100,6 +100,7 @@ class UserMarkdowns:
                         "Markdown(%s) documentation_of: %s is not found.",
                         md.path,
                         md.front_matter.documentation_of,
+                        extra={"github": log.GitHubMessageParams(file=md.path)},
                     )
             else:
                 multi_documentation_of: list[pathlib.Path] = []
@@ -115,6 +116,7 @@ class UserMarkdowns:
                             "Markdown(%s) documentation_of: %s is not found.",
                             md.path,
                             d,
+                            extra={"github": log.GitHubMessageParams(file=md.path)},
                         )
                 if multi_documentation_of:
                     multi.append(
@@ -129,6 +131,7 @@ class UserMarkdowns:
                     logger.warning(
                         "Markdown(%s) documentation_of have no valid files.",
                         md.path,
+                        extra={"github": log.GitHubMessageParams(file=md.path)},
                     )
 
         for m in multi:
@@ -369,7 +372,7 @@ class RenderJob(ABC):
                 if plain_job is not None:
                     jobs.append(plain_job)
                 elif source.suffix != ".md":
-                    logger.info("Skip file: %s", source.as_posix())
+                    logger.info("Skip file: %s", source)
                 continue
             group_dir = None
             if config.consolidate:

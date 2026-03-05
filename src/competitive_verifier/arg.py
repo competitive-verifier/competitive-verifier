@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from competitive_verifier import github, summary
 
-from .log import configure_stderr_logging
+from .log import GitHubMessageParams, configure_stderr_logging
 
 if TYPE_CHECKING:
     from competitive_verifier.models import VerifyCommandResult
@@ -123,7 +123,10 @@ class WriteSummaryArguments(BaseArguments):
                 with gh_summary_path.open("w", encoding="utf-8") as fp:
                     summary.write_summary(fp, result)
             else:
-                logger.warning("write_summary=True but not found $GITHUB_STEP_SUMMARY")
+                logger.warning(
+                    "write_summary=True but not found $GITHUB_STEP_SUMMARY",
+                    extra={"github": GitHubMessageParams()},
+                )
 
 
 class IncludeExcludeArguments(BaseArguments):

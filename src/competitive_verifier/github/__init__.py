@@ -1,13 +1,15 @@
 from . import env
 from .print import (
     begin_group,
+    debug,
     end_group,
-    print_error,
+    message,
 )
 
 __all__ = [
     "begin_group",
+    "debug",
     "end_group",
     "env",
-    "print_error",
+    "message",
 ]

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, field_validator
 
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.util import to_relative
 
 from .path import ForcePosixPath
@@ -150,7 +151,9 @@ class VerifyCommandResult(BaseModel):
             rp = to_relative(p)
             if not rp:
                 logger.warning(
-                    "Files in other directories are not subject to verification: %s", p
+                    "Files in other directories are not subject to verification: %s",
+                    p,
+                    extra={"github": GitHubMessageParams()},
                 )
                 continue
             new_files[rp] = f

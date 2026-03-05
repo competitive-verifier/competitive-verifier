@@ -12,27 +12,20 @@ from competitive_verifier.oj.problem import (
     LocalProblem,
     YukicoderProblem,
 )
+from tests import LogComparer
 
 
 @pytest.mark.allow_mkdir
 def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path):
-    NOT_FOUND_TUPLE = (
-        "competitive_verifier.oj.problem",
-        logging.WARNING,
-        "no cases found",
-    )
-    DANGLING_OUTPUT_TUPLE = (
-        "competitive_verifier.oj.problem",
-        logging.WARNING,
-        "dangling output case",
-    )
+    NOT_FOUND_RECORD = LogComparer("no cases found", logging.WARNING)
+    DANGLING_OUTPUT_RECORD = LogComparer("dangling output case", logging.WARNING)
 
     problem = LocalProblem(testtemp)
     assert not problem.download_system_cases()
-    assert caplog.record_tuples == [NOT_FOUND_TUPLE]
+    assert caplog.records == [NOT_FOUND_RECORD]
     caplog.clear()
     assert list(problem.iter_system_cases()) == []
-    assert caplog.record_tuples == [NOT_FOUND_TUPLE]
+    assert caplog.records == [NOT_FOUND_RECORD]
     caplog.clear()
 
     (testtemp / "top.in").touch()
@@ -57,7 +50,7 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
             output_path=testtemp / "top.out",
         ),
     ]
-    assert caplog.record_tuples == []
+    assert not caplog.records
 
     (testtemp / "subdir" / "only_in.in").touch()
     (testtemp / "subdir" / "only_out.out").touch()
@@ -74,7 +67,7 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
             output_path=testtemp / "top.out",
         ),
     ]
-    assert caplog.record_tuples == [DANGLING_OUTPUT_TUPLE, DANGLING_OUTPUT_TUPLE]
+    assert caplog.records == [DANGLING_OUTPUT_RECORD, DANGLING_OUTPUT_RECORD]
 
 
 test_problem_params = [

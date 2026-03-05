@@ -67,16 +67,16 @@ def migrate_conf_dir(*, dry_run: bool):
         if not dry_run:
             new_docs_dir.mkdir(parents=True, exist_ok=True)
             gitignore.write_bytes(b"/*/\n!docs/")
-        logger.warning("Create directory: %s", new_docs_dir.as_posix())
+        logger.warning("Create directory: %s", new_docs_dir)
 
     for p in old_docs_dir.glob("**/*"):
         relative = p.relative_to(old_docs_dir)
         new_path = new_docs_dir / relative
         if p.is_dir():
-            logger.warning("Create directory: %s", new_path.as_posix())
+            logger.warning("Create directory: %s", new_path)
             new_path.mkdir(parents=True, exist_ok=True)
         elif p.is_file():
-            logger.warning("Move docs file: %s → %s", p.as_posix(), new_path.as_posix())
+            logger.warning("Move docs file: %s → %s", p, new_path)
             if not dry_run:
                 new_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(p, new_path)
@@ -102,14 +102,14 @@ def _strip_quote(s: str) -> str:
 
 def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     hit = False
-    logger.debug("Migrate file: %s", path.as_posix())
+    logger.debug("Migrate file: %s", path)
     content = path.read_text(encoding="utf-8")
 
     new_content, hit_cnt = problem_subn(content)
     if hit_cnt > 0:
         logger.warning(
             "[Updated] %s: Replace `#define PROBLEM` to `competitive-verifier: PROBLEM`",
-            path.as_posix(),
+            path,
         )
         content = new_content
         hit = True
@@ -118,7 +118,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     if hit_cnt > 0:
         logger.warning(
             "[Updated] %s: Replace `#define ERROR` to `competitive-verifier: ERROR`",
-            path.as_posix(),
+            path,
         )
         content = new_content
         hit = True
@@ -126,25 +126,19 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
     doc_path = _get_docs_path(content, path=path)
     if doc_path:
         if not doc_path.exists():
-            logger.error("`%s` doesn't exits.", doc_path.as_posix())
+            logger.error("`%s` doesn't exits.", doc_path)
 
         docs = doc_path.read_text("utf-8")
         docs_lines = docs.splitlines(keepends=True)
 
-        logger.warning("[Updated] %s: Remove `@docs`", path.as_posix())
+        logger.warning("[Updated] %s: Remove `@docs`", path)
         content, _ = _docs_pattern.subn("", content)
         hit = True
 
         if _documentation_of_pattern.search(docs):
-            logger.debug(
-                "[Not Updated] %s: Add `documentation_of:`",
-                doc_path.as_posix(),
-            )
+            logger.debug("[Not Updated] %s: Add `documentation_of:`", doc_path)
         else:
-            logger.warning(
-                "[Updated] %s: Add `documentation_of:`",
-                doc_path.as_posix(),
-            )
+            logger.warning("[Updated] %s: Add `documentation_of:`", doc_path)
             documentation_of = f"documentation_of: //{path.as_posix()}\n"
             if docs.startswith("---"):
                 docs_lines.insert(1, documentation_of)
@@ -161,7 +155,7 @@ def migrate_cpp_annotations(path: pathlib.Path, *, dry_run: bool):
         if not dry_run:
             path.write_text(content, "utf-8")
     else:
-        logger.debug("Not updated: %s", path.as_posix())
+        logger.debug("Not updated: %s", path)
 
 
 def _lang_type_to_str(lang: Language | None) -> str | None:
