@@ -22,7 +22,7 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
     with:
-      coverage: true
+      coverage: ${{ github.event_name != 'pull_request' }}
   verify-external:
     runs-on: ubuntu-latest
     steps:
