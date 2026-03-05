@@ -1,5 +1,6 @@
 import logging
 
+from competitive_verifier.log import GitHubMessageParams
 from tests import LogComparer
 
 
@@ -28,9 +29,16 @@ def test_comparer():
         {"msg": "%d", "args": (123,), "name": "2"}
     )
 
-    assert LogComparer(message="123", extra={"foo": 1}) == logging.makeLogRecord(
-        {"msg": "%d", "args": (123,), "foo": 1}
+    assert LogComparer(
+        message="123", github=GitHubMessageParams(title="air")
+    ) == logging.makeLogRecord(
+        {"msg": "%d", "args": (123,), "github": GitHubMessageParams(title="air")}
     )
-    assert LogComparer(message="123", extra={"foo": 1}) != logging.makeLogRecord(
-        {"msg": "%d", "args": (123,), "foo": 2}
+    assert LogComparer(
+        message="123", github=GitHubMessageParams(title="air2")
+    ) != logging.makeLogRecord(
+        {"msg": "%d", "args": (123,), "github": GitHubMessageParams(title="air")}
+    )
+    assert LogComparer(message="123") != logging.makeLogRecord(
+        {"msg": "%d", "args": (123,), "github": GitHubMessageParams(title="air")}
     )

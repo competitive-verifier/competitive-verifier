@@ -181,7 +181,7 @@ class BaseVerifier(InputContainer):
             )
             logger.exception(
                 "Failed to download: %s",
-                f,
+                f.verification,
                 extra={"github": log.GitHubMessageParams()},
             )
             return verifications

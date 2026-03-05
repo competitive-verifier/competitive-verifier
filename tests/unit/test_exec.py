@@ -23,7 +23,7 @@ def test_exec_group_log(
 
     exec_command("echo 1", group_log=True)
 
-    assert caplog.records == []
+    assert not caplog.records
     out, err = capsys.readouterr()
     assert out == ""
     assert err == "::group::subprocess.run: echo 1\nmockrun\n::endgroup::\n"

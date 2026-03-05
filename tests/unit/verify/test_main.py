@@ -8,6 +8,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import app
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     FileResult,
     ResultStatus,
@@ -107,8 +108,9 @@ def test_invalid_prev_result(
 
     assert caplog.records == [
         LogComparer(
-            "Failed to parse prev_result: " + str(testtemp / "prev.json"),
+            f"Failed to parse prev_result: {testtemp / 'prev.json'}",
             logging.WARNING,
+            github=GitHubMessageParams(file=testtemp / "prev.json"),
         )
     ]
 

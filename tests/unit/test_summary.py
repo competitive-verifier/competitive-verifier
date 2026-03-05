@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 
 from competitive_verifier import summary
 from competitive_verifier.arg import WriteSummaryArguments
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     FileResult,
     JudgeStatus,
@@ -87,6 +88,7 @@ def test_summary_not_exist(mocker: MockerFixture, caplog: pytest.LogCaptureFixtu
         LogComparer(
             "write_summary=True but not found $GITHUB_STEP_SUMMARY",
             logging.WARNING,
+            github=GitHubMessageParams(),
         )
     ]
 

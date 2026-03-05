@@ -16,6 +16,7 @@ from pytest_mock import MockerFixture
 from competitive_verifier import app
 from competitive_verifier.documents.config import ConfigIcons, ConfigYaml
 from competitive_verifier.documents.front_matter import split_front_matter_raw
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.oj.gnu import time_command
 from tests import LogComparer
 
@@ -2487,6 +2488,7 @@ class TestCommandDocuments:
             LogComparer(
                 "Markdown(dummy/dummy.md) documentation_of: ./dummy.py is not found.",
                 level=30,
+                github=GitHubMessageParams(file=pathlib.Path("./dummy.md")),
             ),
         ]
 

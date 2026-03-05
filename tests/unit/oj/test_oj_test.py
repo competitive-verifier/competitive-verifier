@@ -7,6 +7,7 @@ import pytest
 from pytest_mock import MockerFixture, MockType
 
 from competitive_verifier import oj
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     JudgeStatus,
     Problem,
@@ -23,7 +24,6 @@ from competitive_verifier.oj.oj_test import (
     OjTestArguments,
     OjTestcaseResult,
     OjTestResult,
-    compare_answer,
     gnu_time_message,
     single_case,
     special_judge,
@@ -56,12 +56,6 @@ def make_result(
         expected=pathlib.Path(),
         answer="",
     )
-
-
-def log_output(
-    message: str, *, module: str = OJ_TEST_MODULE, level: int = logging.INFO
-):
-    return LogComparer(message, level=level, name=module)
 
 
 @pytest.fixture
@@ -134,8 +128,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("default: start"),
-            log_output("default: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("default: start"),
+            LogComparer("default: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -148,8 +142,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("Nones: start"),
-            log_output("Nones: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("Nones: start"),
+            LogComparer("Nones: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -165,8 +159,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("memory: start"),
-            log_output(
+            LogComparer("memory: start"),
+            LogComparer(
                 "memory: \x1b[32mAC\x1b[39m, time: 1.250000 sec, memory: 10.700000 MB"
             ),
         ],
@@ -181,16 +175,16 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("spaces: start"),
-            log_output(
-                "spaces:input:\n"
+            LogComparer("spaces: start"),
+            LogComparer(
+                "spaces:input: "
                 "\x1b[1mfoo\x1b[0m\x1b[2m_\\t_\x1b[0m\x1b[1mbar\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mbaz\x1b[0m\x1b[2m\\t_\x1b[0m\x1b[2m(trailing whitespace)\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mhoge\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mfuga\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("spaces:answer:\n\x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("spaces:expected:\n\x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("spaces: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("spaces:answer: \x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("spaces:expected: \x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("spaces: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -203,11 +197,11 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("empty-lines: start"),
-            log_output("empty-lines:input:\n\x1b[2m\\n\\n\\n\\n\x1b[0m"),
-            log_output("empty-lines:answer:\n\x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("empty-lines:expected:\n\x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("empty-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("empty-lines: start"),
+            LogComparer("empty-lines:input: \x1b[2m\\n\\n\\n\\n\x1b[0m"),
+            LogComparer("empty-lines:answer: \x1b[1m2\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("empty-lines:expected: \x1b[1m1\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("empty-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -223,8 +217,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("judge-AC: start"),
-            log_output("judge-AC: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("judge-AC: start"),
+            LogComparer("judge-AC: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -240,11 +234,11 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("judge-WA: start"),
-            log_output("judge-WA:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("judge-WA:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("judge-WA:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("judge-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("judge-WA: start"),
+            LogComparer("judge-WA:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("judge-WA:answer: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("judge-WA:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("judge-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -260,15 +254,15 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("judge-WA-no-expected-out: start"),
-            log_output(
-                "judge-WA-no-expected-out:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
+            LogComparer("judge-WA-no-expected-out: start"),
+            LogComparer(
+                "judge-WA-no-expected-out:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
-            log_output(
-                "judge-WA-no-expected-out:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"
+            LogComparer(
+                "judge-WA-no-expected-out:answer: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
-            log_output("judge-WA-no-expected-out:expected:\n\x1b[2m(empty)\x1b[0m"),
-            log_output(
+            LogComparer("judge-WA-no-expected-out:expected: \x1b[2m(empty)\x1b[0m"),
+            LogComparer(
                 "judge-WA-no-expected-out: \x1b[31mWA\x1b[39m, time: 1.250000 sec"
             ),
         ],
@@ -285,19 +279,19 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("check_output-WA: start"),
-            log_output(
+            LogComparer("check_output-WA: start"),
+            LogComparer(
                 "This was AC if spaces and newlines were ignored.",
                 level=logging.WARNING,
             ),
-            log_output(
-                "check_output-WA:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer(
+                "check_output-WA:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("check_output-WA:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "check_output-WA:expected:\n\x1b[1mABC\x1b[0m\x1b[2m(no trailing newline)\x1b[0m",
+            LogComparer("check_output-WA:answer: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
+                "check_output-WA:expected: \x1b[1mABC\x1b[0m\x1b[2m(no trailing newline)\x1b[0m",
             ),
-            log_output("check_output-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("check_output-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -312,8 +306,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("check_output-AC: start"),
-            log_output("check_output-AC: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("check_output-AC: start"),
+            LogComparer("check_output-AC: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -329,8 +323,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-AC-equals: start"),
-            log_output("error-AC-equals: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-AC-equals: start"),
+            LogComparer("error-AC-equals: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -346,8 +340,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-AC-long: start"),
-            log_output("error-AC-long: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-AC-long: start"),
+            LogComparer("error-AC-long: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -363,8 +357,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-AC-short: start"),
-            log_output("error-AC-short: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-AC-short: start"),
+            LogComparer("error-AC-short: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -380,8 +374,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-small-AC-abs: start"),
-            log_output("error-small-AC-abs: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-small-AC-abs: start"),
+            LogComparer("error-small-AC-abs: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -397,8 +391,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-small-AC-abs-short: start"),
-            log_output(
+            LogComparer("error-small-AC-abs-short: start"),
+            LogComparer(
                 "error-small-AC-abs-short: \x1b[32mAC\x1b[39m, time: 1.250000 sec"
             ),
         ],
@@ -416,18 +410,18 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("error-small-WA-abs: start"),
-            log_output(
-                "error-small-WA-abs:input:\n"
+            LogComparer("error-small-WA-abs: start"),
+            LogComparer(
+                "error-small-WA-abs:input: "
                 "\x1b[1mPlanck\x1b[0m\x1b[2m_\x1b[0m\x1b[1mmass\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "error-small-WA-abs:answer:\n\x1b[1m0.0000000217647\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer(
+                "error-small-WA-abs:answer: \x1b[1m0.0000000217647\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "error-small-WA-abs:expected:\n\x1b[1m0.0000000217640\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer(
+                "error-small-WA-abs:expected: \x1b[1m0.0000000217640\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("error-small-WA-abs: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-small-WA-abs: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -446,8 +440,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-large-AC-rel: start"),
-            log_output("error-large-AC-rel: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-large-AC-rel: start"),
+            LogComparer("error-large-AC-rel: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -466,8 +460,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-large-AC-rel-diff: start"),
-            log_output(
+            LogComparer("error-large-AC-rel-diff: start"),
+            LogComparer(
                 "error-large-AC-rel-diff: \x1b[32mAC\x1b[39m, time: 1.250000 sec"
             ),
         ],
@@ -488,18 +482,18 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("error-large-WA-rel: start"),
-            log_output(
-                "error-large-WA-rel:input:\n"
+            LogComparer("error-large-WA-rel: start"),
+            LogComparer(
+                "error-large-WA-rel:input: "
                 "\x1b[1mPlanck\x1b[0m\x1b[2m_\x1b[0m\x1b[1mtemp\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "error-large-WA-rel:answer:\n\x1b[1m141678400000021987654321987654321\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer(
+                "error-large-WA-rel:answer: \x1b[1m141678400000021987654321987654321\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "error-large-WA-rel:expected:\n\x1b[1m141678400000000000000000000000000\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer(
+                "error-large-WA-rel:expected: \x1b[1m141678400000000000000000000000000\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("error-large-WA-rel: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-large-WA-rel: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -514,8 +508,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("lines-same: start"),
-            log_output("lines-same: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-same: start"),
+            LogComparer("lines-same: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -530,8 +524,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("lines-crlf: start"),
-            log_output("lines-crlf: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-crlf: start"),
+            LogComparer("lines-crlf: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -546,17 +540,17 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("lines-diff: start"),
-            log_output("lines-diff:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "lines-diff:answer:\n"
+            LogComparer("lines-diff: start"),
+            LogComparer("lines-diff:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
+                "lines-diff:answer: "
                 "\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mDDF\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mGH\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "lines-diff:expected:\n"
+            LogComparer(
+                "lines-diff:expected: "
                 "\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mDEF\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mGH\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("lines-diff: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-diff: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -572,8 +566,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("lines-error-diff-len: start"),
-            log_output("lines-error-diff-len: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-error-diff-len: start"),
+            LogComparer("lines-error-diff-len: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -592,8 +586,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("lines-error-grid: start"),
-            log_output("lines-error-grid: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-error-grid: start"),
+            LogComparer("lines-error-grid: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -612,21 +606,21 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("lines-grid-diff: start"),
-            log_output("lines-grid-diff:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "lines-grid-diff:answer:\n"
+            LogComparer("lines-grid-diff: start"),
+            LogComparer("lines-grid-diff:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
+                "lines-grid-diff:answer: "
                 "\x1b[1mABC\x1b[0m\x1b[2m_\x1b[0m\x1b[1mCD\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mDEF\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.14159265\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.14\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1m3.14159265\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "lines-grid-diff:expected:\n"
+            LogComparer(
+                "lines-grid-diff:expected: "
                 "\x1b[1mABC\x1b[0m\x1b[2m_\x1b[0m\x1b[1mCD\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mDEF\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.141592653589\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1m3.14159265358979\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("lines-grid-diff: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("lines-grid-diff: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -645,23 +639,25 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("lines-grid-diff-lines: start"),
-            log_output(
-                "lines-grid-diff-lines:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
+            LogComparer("lines-grid-diff-lines: start"),
+            LogComparer(
+                "lines-grid-diff-lines:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
-            log_output(
-                "lines-grid-diff-lines:answer:\n"
+            LogComparer(
+                "lines-grid-diff-lines:answer: "
                 "\x1b[1mABC\x1b[0m\x1b[2m_\x1b[0m\x1b[1mCD\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mDEF\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.14159265\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.14\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1m3.14159265\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1mno\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "lines-grid-diff-lines:expected:\n"
+            LogComparer(
+                "lines-grid-diff-lines:expected: "
                 "\x1b[1mABC\x1b[0m\x1b[2m_\x1b[0m\x1b[1mCD\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1mDEF\x1b[0m\x1b[2m_\x1b[0m\x1b[1m3.141592653589\x1b[0m\x1b[2m\\n"
                 "\x1b[0m\x1b[1m3.14159265358979\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("lines-grid-diff-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer(
+                "lines-grid-diff-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"
+            ),
         ],
     ),
     SingleCaseParams(
@@ -677,8 +673,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("error-str-same: start"),
-            log_output("error-str-same: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-str-same: start"),
+            LogComparer("error-str-same: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -694,11 +690,11 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("error-str-WA: start"),
-            log_output("error-str-WA:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("error-str-WA:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("error-str-WA:expected:\n\x1b[1mDEF\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("error-str-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("error-str-WA: start"),
+            LogComparer("error-str-WA:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("error-str-WA:answer: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("error-str-WA:expected: \x1b[1mDEF\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("error-str-WA: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -714,10 +710,10 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.TLE,
         ),
         expected_log=[
-            log_output("TLE: start"),
-            log_output("TLE:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("TLE:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("TLE: \x1b[31mTLE\x1b[39m, time: 1.250000 sec"),
+            LogComparer("TLE: start"),
+            LogComparer("TLE:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("TLE:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("TLE: \x1b[31mTLE\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -733,10 +729,10 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.RE,
         ),
         expected_log=[
-            log_output("RE: start"),
-            log_output("RE:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("RE:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("RE: \x1b[31mRE\x1b[39m, time: 1.250000 sec, return code: 1"),
+            LogComparer("RE: start"),
+            LogComparer("RE:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("RE:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("RE: \x1b[31mRE\x1b[39m, time: 1.250000 sec, return code: 1"),
         ],
     ),
     SingleCaseParams(
@@ -752,8 +748,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("MLE-NotMeasure: start"),
-            log_output("MLE-NotMeasure: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
+            LogComparer("MLE-NotMeasure: start"),
+            LogComparer("MLE-NotMeasure: \x1b[32mAC\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -768,8 +764,8 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.AC,
         ),
         expected_log=[
-            log_output("MLE-Safe: start"),
-            log_output(
+            LogComparer("MLE-Safe: start"),
+            LogComparer(
                 "MLE-Safe: \x1b[32mAC\x1b[39m, time: 1.250000 sec, memory: 128.000000 MB"
             ),
         ],
@@ -789,11 +785,11 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.MLE,
         ),
         expected_log=[
-            log_output("MLE: start"),
-            log_output("MLE:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("MLE:answer:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("MLE:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
+            LogComparer("MLE: start"),
+            LogComparer("MLE:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("MLE:answer: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("MLE:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
                 "MLE: \x1b[31mMLE\x1b[39m,"
                 " time: 1.250000 sec, memory: 128.100000 MB, return code: 1"
             ),
@@ -819,15 +815,15 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("long-lines: start"),
-            log_output("long-lines:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "long-lines:answer:\n"
+            LogComparer("long-lines: start"),
+            LogComparer("long-lines:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
+                "long-lines:answer: "
                 "\x1b[1mea226088-3cc7-4d33-9\x1b[0m\x1b[2m... (145 chars) "
                 "...\x1b[0m\x1b[1md-9f86-b0bba61f2608\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output("long-lines:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("long-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("long-lines:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("long-lines: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -847,17 +843,17 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("long-text: start"),
-            log_output(
-                "long-text:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m",
+            LogComparer("long-text: start"),
+            LogComparer(
+                "long-text:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "long-text:answer:\n"
+            LogComparer(
+                "long-text:answer: "
                 "\x1b[1mea226088-3cc7-4d33-9\x1b[0m\x1b[2m... (178 chars) ...\x1b[0m"
                 "\x1b[1m-bb82-ae4591ed8ccd\x1b[0m\x1b[2m\\r\\n\x1b[0m",
             ),
-            log_output("long-text:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output("long-text: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("long-text:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer("long-text: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
     SingleCaseParams(
@@ -880,17 +876,17 @@ test_single_case_params: list[SingleCaseParams] = [
             status=JudgeStatus.WA,
         ),
         expected_log=[
-            log_output("long-lines-break: start"),
-            log_output("long-lines-break:input:\n\x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
-            log_output(
-                "long-lines-break:answer:\n"
+            LogComparer("long-lines-break: start"),
+            LogComparer("long-lines-break:input: \x1b[1mabc\x1b[0m\x1b[2m\\n\x1b[0m"),
+            LogComparer(
+                "long-lines-break:answer: "
                 "\x1b[1mea226088-3cc7-4d33-\x1b[0m\x1b[2m\\n\x1b[0m\x1b[2m... (147 chars) "
                 "...\x1b[0m\x1b[2m\\n\x1b[0m\x1b[1m-9f86-b0bba61f2608\x1b[0m\x1b[2m\\n\x1b[0m",
             ),
-            log_output(
-                "long-lines-break:expected:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"
+            LogComparer(
+                "long-lines-break:expected: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m"
             ),
-            log_output("long-lines-break: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
+            LogComparer("long-lines-break: \x1b[31mWA\x1b[39m, time: 1.250000 sec"),
         ],
     ),
 ]
@@ -987,12 +983,13 @@ def test_single_case_error(
                 == expected
             )
             assert caplog.records == [
-                log_output("error: start"),
-                log_output(
+                LogComparer("error: start"),
+                LogComparer(
                     "Failed to run: OjTestArguments(command='" + cmd + "', "
                     "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
                     "tle=None, mle=None, error=None, env=None, deadline=inf)",
                     level=logging.ERROR,
+                    github=GitHubMessageParams(),
                 ),
             ]
         with subtests.test(msg="Exception"):
@@ -1013,25 +1010,16 @@ def test_single_case_error(
                 )
                 == expected
             )
-            assert caplog.records[0] == log_output("error: start")
-            assert caplog.records[2] == log_output(
+            assert caplog.records[0] == LogComparer("error: start")
+            assert caplog.records[2] == LogComparer(
                 "Failed to run: OjTestArguments(command='git', "
                 "problem=AOJProblem.from_url('http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=1'), "
                 "tle=None, mle=None, error=None, env=None, deadline=inf)",
                 level=logging.ERROR,
+                github=GitHubMessageParams(),
             )
 
             assert caplog.records[1].msg.endswith("is not executable.")
-
-
-def test_compare_answer_too_large_error(caplog: pytest.LogCaptureFixture):
-    assert compare_answer("1", "2", error=1)
-    assert caplog.records == []
-
-    assert compare_answer("1", "2", error=1.0001)
-    assert caplog.records == [
-        LogComparer("the tolerance is too large: relative = 1.0001", logging.WARNING),
-    ]
 
 
 class GnuTimeMessageParam(NamedTuple):
@@ -1054,10 +1042,12 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
             LogComparer(
                 "[HINT]: You can install GNU time with: $ brew install gnu-time",
                 logging.INFO,
+                github=GitHubMessageParams(),
             ),
             LogComparer(
                 "--mle is used but GNU time does not exist",
                 logging.WARNING,
+                github=GitHubMessageParams(),
             ),
         ],
     ),
@@ -1069,6 +1059,7 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
             LogComparer(
                 "[HINT]: You can install GNU time with: $ brew install gnu-time",
                 logging.INFO,
+                github=GitHubMessageParams(),
             ),
         ],
     ),
@@ -1080,6 +1071,7 @@ test_gnu_time_message_params: list[GnuTimeMessageParam] = [
             LogComparer(
                 "--mle is used but GNU time does not exist",
                 logging.WARNING,
+                github=GitHubMessageParams(),
             ),
         ],
     ),
@@ -1283,6 +1275,40 @@ def test_oj_test_run(mocker: MockerFixture, subtests: pytest.Subtests):
         )
 
 
+def test_compare_answer_too_large_error(
+    mocker: MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+):
+    mocker.patch("competitive_verifier.oj.oj_test.summarize")
+
+    oj.test(
+        problem=MockCasesProblem([]),
+        command="dummy",
+        env=None,
+        tle=None,
+        mle=None,
+        error=0.9999,
+    )
+    assert not caplog.records
+
+    oj.test(
+        problem=MockCasesProblem([]),
+        command="dummy",
+        env=None,
+        tle=None,
+        mle=None,
+        error=1.0001,
+    )
+
+    assert caplog.records == [
+        LogComparer(
+            "the tolerance is too large: relative = 1.0001",
+            logging.WARNING,
+            github=GitHubMessageParams(),
+        ),
+    ]
+
+
 EXPECTED_CASES = cast("list[OjTestcaseResult]", ...)
 test_summarize_params = [
     pytest.param(
@@ -1295,7 +1321,7 @@ test_summarize_params = [
             testcases=EXPECTED_CASES,
         ),
         [
-            log_output("\x1b[32mSUCCESS\x1b[39m 0 cases"),
+            LogComparer("\x1b[32mSUCCESS\x1b[39m 0 cases"),
         ],
         id="empty",
     ),
@@ -1317,9 +1343,9 @@ test_summarize_params = [
             testcases=EXPECTED_CASES,
         ),
         [
-            log_output("slowest: 4.500000 sec  (for case9)"),
-            log_output("max memory: 13.500000 MB  (for case9)"),
-            log_output("\x1b[32mSUCCESS\x1b[39m 10 cases"),
+            LogComparer("slowest: 4.500000 sec  (for case9)"),
+            LogComparer("max memory: 13.500000 MB  (for case9)"),
+            LogComparer("\x1b[32mSUCCESS\x1b[39m 10 cases"),
         ],
         id="shuffle",
     ),
@@ -1340,8 +1366,8 @@ test_summarize_params = [
             testcases=EXPECTED_CASES,
         ),
         [
-            log_output("slowest: 4.500000 sec  (for case9)"),
-            log_output("\x1b[32mSUCCESS\x1b[39m 10 cases"),
+            LogComparer("slowest: 4.500000 sec  (for case9)"),
+            LogComparer("\x1b[32mSUCCESS\x1b[39m 10 cases"),
         ],
         id="no_memory",
     ),
@@ -1372,9 +1398,9 @@ test_summarize_params = [
             testcases=EXPECTED_CASES,
         ),
         [
-            log_output("slowest: 7.000000 sec  (for case14)"),
-            log_output("max memory: 21.000000 MB  (for case14)"),
-            log_output(
+            LogComparer("slowest: 7.000000 sec  (for case14)"),
+            LogComparer("max memory: 21.000000 MB  (for case14)"),
+            LogComparer(
                 "\x1b[31mFAILURE\x1b[39m 1 AC, 2 WA, 3 RE, 4 TLE, 5 MLE / 15 cases",
             ),
         ],
@@ -1403,7 +1429,7 @@ test_special_judge_params = [
         False,
         [
             LogComparer(
-                "judge's output:\n\x1b[2m(empty)\x1b[0m",
+                "judge's output: \x1b[2m(empty)\x1b[0m",
                 10,
             )
         ],
@@ -1414,7 +1440,7 @@ test_special_judge_params = [
         False,
         [
             LogComparer(
-                "judge's output:\n"
+                "judge's output: "
                 "\x1b[1ma\x1b[0m\x1b[2m_\x1b[0m\x1b[1mb\x1b[0m\x1b[2m_\x1b[0m\x1b[1mc\x1b[0m"
                 "\x1b[2m(no trailing newline)\x1b[0m",
                 10,
@@ -1427,7 +1453,7 @@ test_special_judge_params = [
         True,
         [
             LogComparer(
-                "judge's output:\n\x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m",
+                "judge's output: \x1b[1mABC\x1b[0m\x1b[2m\\n\x1b[0m",
                 10,
             )
         ],

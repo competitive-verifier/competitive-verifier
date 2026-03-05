@@ -50,7 +50,7 @@ def test_local_problem(caplog: pytest.LogCaptureFixture, testtemp: pathlib.Path)
             output_path=testtemp / "top.out",
         ),
     ]
-    assert caplog.records == []
+    assert not caplog.records
 
     (testtemp / "subdir" / "only_in.in").touch()
     (testtemp / "subdir" / "only_out.out").touch()

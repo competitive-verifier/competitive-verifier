@@ -269,7 +269,7 @@ def test_log(testtemp: pathlib.Path, caplog: pytest.LogCaptureFixture):
 }"""
     )
     assert Check(verbose=True, result_json=[testtemp / "success.json"]).run()
-    assert caplog.records == []
+    assert not caplog.records
 
     assert not Check(
         verbose=True,

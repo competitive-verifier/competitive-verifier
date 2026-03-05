@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
     ConstVerification,
     FileResult,
@@ -650,24 +651,25 @@ def test_verify_download_error(
     caplog: pytest.LogCaptureFixture,
 ):
     mocker.patch("competitive_verifier.oj.download", return_value=False)
+    verification = [
+        ProblemVerification(
+            name="foo",
+            command="false",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+        ),
+        ProblemVerification(
+            name="bar",
+            command="false",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+        ),
+    ]
     verifier = MockVerifier(
         {
             "files": {
                 "lib/hoge1.py": {},
                 "test/foo.py": {
                     "dependencies": ["lib/hoge1.py"],
-                    "verification": [
-                        ProblemVerification(
-                            name="foo",
-                            command="false",
-                            problem="https://judge.yosupo.jp/problem/aplusb",
-                        ),
-                        ProblemVerification(
-                            name="bar",
-                            command="false",
-                            problem="https://judge.yosupo.jp/problem/aplusb",
-                        ),
-                    ],
+                    "verification": verification,
                 },
             }
         },
@@ -691,8 +693,9 @@ def test_verify_download_error(
     }
     assert caplog.records == [
         LogComparer(
-            "Failed to download",
+            f"Failed to download: {verification}",
             logging.ERROR,
+            github=GitHubMessageParams(),
         ),
     ]
 
@@ -765,27 +768,25 @@ def test_verify_compile_error(
             f"Failed to compile: {pathlib.Path('test/foo.py')}, "
             'verification={"name":"foo","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
             logging.ERROR,
+            github=GitHubMessageParams(file=pathlib.Path("test/foo.py")),
         ),
         LogComparer(
             f"Failed to compile: {pathlib.Path('test/foo.py')}, verification="
             '{"name":"bar","command":"false","problem":"https://judge.yosupo.jp/problem/aplusb"}',
             logging.ERROR,
+            github=GitHubMessageParams(file=pathlib.Path("test/foo.py")),
         ),
     ]
 
     out, err = capsys.readouterr()
 
+    assert out == ""
     if is_github_actions:
-        assert out == (
-            f"::error file={pathlib.Path('/any/dir/test/mock.py')}::Failed to compile test/foo.py\n"
-            f"::error file={pathlib.Path('/any/dir/test/mock.py')}::Failed to compile test/foo.py\n"
-        )
         assert err == (
             "::group::current_verification_files\n::endgroup::\n"
             "::group::Verify: test/foo.py\n::endgroup::\n"
         )
     else:
-        assert out == ""
         assert err == (
             "<------------- \x1b[36m Start group:\x1b[33mcurrent_verification_files\x1b[0m ------------->\n"
             "<------------- \x1b[36mFinish group:\x1b[33mcurrent_verification_files\x1b[0m ------------->\n"
@@ -848,6 +849,7 @@ def test_verify_error(
             f"Failed to verify: {pathlib.Path('test/foo.py')}, "
             "ErrorVerification(name='foo', type='const', status=<ResultStatus.FAILURE: 'failure'>)",
             logging.ERROR,
+            github=GitHubMessageParams(),
         ),
     ]
 
@@ -908,7 +910,7 @@ def test_verify_failure(
             }
         },
     }
-    assert caplog.records == []
+    assert not caplog.records
 
     out, err = capsys.readouterr()
 

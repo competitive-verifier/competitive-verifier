@@ -4,6 +4,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import oj
+from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.oj.problem import NotLoggedInError, YukicoderProblem
 from tests import LogComparer
 
@@ -15,6 +16,7 @@ def test_oj_download_not_supported(caplog: pytest.LogCaptureFixture):
         LogComparer(
             'The URL "https://example.com/notfound" is not supported',
             logging.ERROR,
+            github=GitHubMessageParams(),
         ),
     ]
 
@@ -40,6 +42,7 @@ def test_oj_download_not_logged_in(
             "Login is required to download the problem. "
             "'https://yukicoder.me/problems/no/499'",
             logging.ERROR,
+            github=GitHubMessageParams(),
         ),
     ]
 
@@ -64,5 +67,6 @@ def test_oj_download_error(
         LogComparer(
             "Failed to download. 'https://yukicoder.me/problems/no/499'",
             logging.ERROR,
+            github=GitHubMessageParams(),
         ),
     ]

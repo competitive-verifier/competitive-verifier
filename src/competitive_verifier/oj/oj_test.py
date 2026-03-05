@@ -453,7 +453,11 @@ def _run(args: OjTestArguments) -> OjTestResult:
     gnu_time_message(args)
 
     if args.error is not None and args.error > 1:
-        logger.warning("the tolerance is too large: relative = %s", args.error)
+        logger.warning(
+            "the tolerance is too large: relative = %s",
+            args.error,
+            extra={"github": GitHubMessageParams()},
+        )
 
     tests = list(args.problem.iter_system_cases())
 
