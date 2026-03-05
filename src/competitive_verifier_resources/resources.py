@@ -46,6 +46,7 @@ def jekyll_files() -> dict[str, bytes]:
             "_includes/multidoc_header.html",
             "_includes/toppage_header.html",
             "_includes/toppage_body.html",
+            "_includes/toppage_footer.html",
             "assets/css/default.scss",
             "assets/css/code.scss",
             "assets/js/code.js",
