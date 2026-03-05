@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 import pytest
 
-from competitive_verifier.util import resolve_relative_or_abs_path
+from competitive_verifier.util import resolve_referenced_path
 
 
 class DirStructure(NamedTuple):
@@ -12,7 +12,7 @@ class DirStructure(NamedTuple):
 
 
 @pytest.mark.allow_mkdir
-def test_resolve_relative_or_abs_path(
+def test_resolve_referenced_path(
     monkeypatch: pytest.MonkeyPatch,
     testtemp: pathlib.Path,
 ):
@@ -45,47 +45,47 @@ def test_resolve_relative_or_abs_path(
     monkeypatch.chdir(testtemp / "root")
 
     assert (
-        resolve_relative_or_abs_path(str(testtemp / "outer"), basedir=testtemp / "root")
+        resolve_referenced_path(str(testtemp / "outer"), basedir=testtemp / "root")
         is None
     )
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         "./file1.txt", basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir1/file1.txt")
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         "../dir2/file1.txt", basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir2/file1.txt")
 
     assert (
-        resolve_relative_or_abs_path("./file2.txt", basedir=testtemp / "root/dir1")
+        resolve_referenced_path("./file2.txt", basedir=testtemp / "root/dir1")
         is None
     )
 
     assert (
-        resolve_relative_or_abs_path(
+        resolve_referenced_path(
             "../dir2/file2.txt", basedir=testtemp / "root/dir1"
         )
         is None
     )
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         "//dir1/file1.txt", basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir1/file1.txt")
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         "//dir2/file1.txt", basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir2/file1.txt")
 
     assert (
-        resolve_relative_or_abs_path("//file2.txt", basedir=testtemp / "root/dir1")
+        resolve_referenced_path("//file2.txt", basedir=testtemp / "root/dir1")
         is None
     )
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         "file1.txt", basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir1/file1.txt")
 
-    assert resolve_relative_or_abs_path(
+    assert resolve_referenced_path(
         str(testtemp / "root/dir1/file1.txt"), basedir=testtemp / "root/dir1"
     ) == pathlib.Path("dir1/file1.txt")
