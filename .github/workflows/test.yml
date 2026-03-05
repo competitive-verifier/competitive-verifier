@@ -55,6 +55,8 @@ jobs:
 
       - name: Run test all
         run: poetry run pytest ${{ inputs.coverage && '-vv --cov=src/ --cov-branch --cov-report=html:coverage' || '' }}
+        env:
+          TZ: Asia/Tokyo
 
       - name: Upload coverage
         if: inputs.coverage

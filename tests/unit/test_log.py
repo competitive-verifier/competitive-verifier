@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from io import StringIO
@@ -5,38 +6,75 @@ from io import StringIO
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier import github
-from competitive_verifier.log import group
+from competitive_verifier.log import GitHubActionsHandler, GitHubMessageParams, group
+
+test_github_actions_handler_params = []
 
 
-class TestGitHubPrint:
-    def test_message(
-        self,
-        capsys: pytest.CaptureFixture[str],
-        mocker: MockerFixture,
-    ):
-        github.message("notice", "simple_message")
-        out, err = capsys.readouterr()
-        assert out == "::notice ::simple_message\n"
-        assert err == ""
+def test_github_actions_handler(capsys: pytest.CaptureFixture[str]):
+    handler = GitHubActionsHandler(stream=sys.stderr)
 
-        github.message(
-            "error",
-            "many_message",
-            title="TestTitle",
-            file="foo.txt",
-            col=10,
-            end_column=20,
-            line=100,
-            end_line=101,
-            stream=sys.stderr,
-        )
-        out, err = capsys.readouterr()
-        assert out == ""
-        assert (
-            err
-            == "::error title=TestTitle,file=foo.txt,col=10,endColumn=20,line=100,endLine=101::many_message\n"
-        )
+    def getLogger(name: str):
+        logger = logging.getLogger(name)
+        logger.addHandler(handler)
+        logger.setLevel(1)
+        return logger
+
+    GitHub = "GitHub"
+    logger = getLogger("competitive_verifier.handler")
+
+    logger.log(1, "Super low", extra={"github": GitHubMessageParams()})
+    logger.debug("DebugLog")
+    logger.debug("%sDebugLog\nFin", GitHub, extra={"github": GitHubMessageParams()})
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "::debug::DebugLog\n::debug::GitHubDebugLog\\nFin\n"
+
+    logger.info("InfoLog")
+    logger.info("%sInfoLog\nFin", GitHub, extra={"github": GitHubMessageParams()})
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "::notice ::GitHubInfoLog\\nFin\n"
+
+    logger.warning("WarningLog")
+    logger.warning("%sWarningLog\nFin", GitHub, extra={"github": GitHubMessageParams()})
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "::warning ::GitHubWarningLog\\nFin\n"
+
+    logger.exception("ErrorLog")
+    logger.error(
+        "%sErrorLog\nFin",
+        GitHub,
+        extra={
+            "github": GitHubMessageParams(
+                title="TestTitle",
+                file="foo.txt",
+                col=10,
+                end_column=20,
+                line=100,
+                end_line=101,
+            )
+        },
+    )
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert (
+        err
+        == "::error title=TestTitle,file=foo.txt,col=10,endColumn=20,line=100,endLine=101::GitHubErrorLog\\nFin\n"
+    )
+
+    logger2 = getLogger("otherlib.handler")
+    logger2.error("%sErrorLog\nFin", GitHub, extra={"github": GitHubMessageParams()})
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "::error title=otherlib.handler::GitHubErrorLog\\nFin\n"
+
+    logger2 = getLogger("otherlib.handler")
+    logger2.error("%sErrorLog\nFin", GitHub, extra={"github": GitHubMessageParams()})
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == "::error title=otherlib.handler::GitHubErrorLog\\nFin\n"
 
 
 class TestLogGroup:
