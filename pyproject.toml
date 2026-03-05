@@ -170,6 +170,7 @@ exclude = [
 
 [tool.ruff.lint]
 typing-extensions = false
+allowed-confusables = ["ノ"]
 
 select = ["ALL"]
 ignore = [
