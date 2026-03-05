@@ -1,4 +1,3 @@
-import abc
 import contextlib
 import os
 import pathlib
@@ -8,23 +7,28 @@ import tempfile
 from dataclasses import dataclass
 from functools import cache
 from logging import getLogger
+from typing import Protocol
 
 logger = getLogger(__name__)
 
 
-class GnuTimeRunner(abc.ABC):
-    @abc.abstractmethod
+class GnuTimeRunner(Protocol):
+    @property
+    def gnu_time(self) -> str | None: ...
+
     def get_command(self, command: list[str]) -> list[str]: ...
-    @abc.abstractmethod
     def get_memory(self) -> float | None:
         """Return the amount of memory used, in megabytes, if possible."""
         ...
 
-    @abc.abstractmethod
     def clean(self) -> None: ...
 
 
-class _GnuTimeRunnerDummy(GnuTimeRunner):
+class _GnuTimeRunnerDummy:
+    @property
+    def gnu_time(self) -> None:
+        return None
+
     def get_command(self, command: list[str]) -> list[str]:
         return command
 
@@ -36,7 +40,7 @@ class _GnuTimeRunnerDummy(GnuTimeRunner):
 
 
 @dataclass
-class _GnuTimeRunnerImpl(GnuTimeRunner):
+class _GnuTimeRunnerImpl:
     gnu_time: str
     tmpdir: tempfile.TemporaryDirectory[str]
     outfile: pathlib.Path

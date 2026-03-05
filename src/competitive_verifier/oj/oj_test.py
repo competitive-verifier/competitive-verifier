@@ -1,11 +1,9 @@
-import contextlib
 import math
 import os
 import pathlib
 import platform
 import shlex
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -69,20 +67,27 @@ def measure_command(
         begin = time.perf_counter()
 
         # We need kill processes called from the "time" command using process groups. Without this, orphans spawn. see https://github.com/kmyk/online-judge-tools/issues/640
-        start_new_session = gnu.time_command() is not None and os.name == "posix"
+        start_new_session = gw.gnu_time is not None
 
         try:
-            if env:
+            if env is not None:
                 env = os.environ | env
-            proc = subprocess.Popen(
+            proc = subprocess.run(
                 command,
+                env=env,
+                timeout=timeout,
                 stdin=stdin,
                 stdout=subprocess.PIPE,
-                env=env,
                 stderr=sys.stderr,
                 encoding="utf-8",
                 start_new_session=start_new_session,
+                check=False,
             )
+            answer = proc.stdout
+            returncode = proc.returncode
+        except subprocess.TimeoutExpired:
+            answer = None
+            returncode = None
         except Exception as e:
             logger.exception(
                 "'%s' is not executable.",
@@ -91,23 +96,12 @@ def measure_command(
             )
             raise CaseExecutionError from e
 
-        try:
-            answer, _ = proc.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            answer = None
-        finally:  # pragma: no cover
-            if start_new_session:
-                with contextlib.suppress(ProcessLookupError):
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-            else:
-                proc.terminate()
-
         end = time.perf_counter()
         return OjExecInfo(
             answer=answer,
             elapsed=end - begin,
             memory=gw.get_memory(),
-            returncode=proc.returncode,
+            returncode=returncode,
         )
 
 
