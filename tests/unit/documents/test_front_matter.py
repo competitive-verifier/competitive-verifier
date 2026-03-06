@@ -135,6 +135,7 @@ def test_markdown(
     content: bytes,
     front_matter: dict[str, Any] | None,
     markdown_content: bytes,
+    testtemp: pathlib.Path,
 ):
     with BytesIO(content) as fp:
         md = Markdown.load(fp)
@@ -143,6 +144,11 @@ def test_markdown(
         content=markdown_content,
     )
     assert md == expected
+
+    (testtemp / "cotent.md").write_bytes(content)
+    assert Markdown.load_file(testtemp / "cotent.md") == expected.model_copy(
+        update={"path": testtemp / "cotent.md"}
+    )
 
     actual_front_matter, actual_content = split_front_matter(content)
     assert actual_content == markdown_content
@@ -169,6 +175,13 @@ def test_markdown(
         md.dump_merged(fp)
         fp.seek(0)
         assert fp.read() == merged
+
+
+def test_make_default_makedown():
+    assert Markdown.make_default(pathlib.Path("../foo/p.txt")) == Markdown(
+        front_matter=FrontMatter(documentation_of="../foo/p.txt"),
+        content=b"",
+    )
 
 
 test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
@@ -265,9 +278,10 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                                         icon=StatusIcon.TEST_WRONG_ANSWER,
                                     ),
                                     RenderLink(
-                                        path=pathlib.Path("/z/b/c/e.txt"),
+                                        path=pathlib.Path("c/e.txt"),
                                         filename="e.txt",
                                         icon=StatusIcon.TEST_WAITING_JUDGE,
+                                        title="c/e.txt",
                                     ),
                                 ],
                             ),
@@ -324,7 +338,7 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
                     title: D(text)
                   - filename: e.txt
                     icon: TEST_WAITING_JUDGE
-                    path: /z/b/c/e.txt
+                    path: c/e.txt
                 type: Verification
             documentation_of: ../foo.txt
             layout: document
