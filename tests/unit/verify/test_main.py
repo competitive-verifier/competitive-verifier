@@ -87,11 +87,9 @@ def test_get_split_state_error(args: list[str], message: str):
 
 
 def test_invalid_prev_result(
-    monkeypatch: pytest.MonkeyPatch,
     testtemp: pathlib.Path,
     caplog: pytest.LogCaptureFixture,
 ):
-    monkeypatch.chdir(testtemp)
     (testtemp / "prev.json").write_bytes(b'[1,2,3,"invalid"]')
     parsed = app.ArgumentParser().parse(
         [
