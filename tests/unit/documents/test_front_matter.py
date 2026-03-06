@@ -1,4 +1,5 @@
 import datetime
+import json
 import pathlib
 import textwrap
 from io import BytesIO
@@ -7,6 +8,7 @@ from typing import Any
 import pytest
 import yaml
 
+from competitive_verifier.documents.config import ConfigIcons
 from competitive_verifier.documents.front_matter import (
     DocumentOutputMode,
     FrontMatter,
@@ -570,3 +572,18 @@ test_front_matter_dump_yml_params: list[tuple[FrontMatter, bytes]] = [
 )
 def test_front_matter_dump_yml(front_matter: FrontMatter, expected: bytes):
     assert front_matter.model_dump_yml() == expected
+
+
+@pytest.mark.parametrize(("status_icon"), list(StatusIcon))
+def test_status_icon(status_icon: StatusIcon):
+    assert status_icon.startswith(("LIBRARY_", "TEST_"))
+    assert status_icon.is_test == status_icon.startswith("TEST_")
+
+
+def test_status_icon_json():
+    assert json.dumps(list(StatusIcon)) == json.dumps([s.name for s in StatusIcon])
+    assert json.dumps(list(StatusIcon)) == json.dumps([s.value for s in StatusIcon])
+
+
+def test_config_icons_fields():
+    assert set(ConfigIcons.model_fields.keys()) == {s.name for s in StatusIcon}
