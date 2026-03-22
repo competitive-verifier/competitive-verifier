@@ -26,7 +26,7 @@ class LanguageEnvironment(abc.ABC):
     ) -> ShellCommandLike: ...
 
 
-class Language:
+class Language(BaseModel):
     def list_attributes(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> dict[str, Any]:

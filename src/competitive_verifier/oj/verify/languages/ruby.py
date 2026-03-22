@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
@@ -13,5 +15,5 @@ class OjVerifyRubyConfig(OjVerifyUserDefinedConfig):
 
 
 class RubyLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: OjVerifyRubyConfig | None):
-        super().__init__(extension="rb", config=config or OjVerifyRubyConfig())
+    extension: Literal["rb"] = "rb"  # pyright: ignore[reportIncompatibleVariableOverride]
+    config: OjVerifyRubyConfig = Field(default_factory=OjVerifyRubyConfig)  # pyright: ignore[reportIncompatibleVariableOverride]

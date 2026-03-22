@@ -19,9 +19,13 @@ from competitive_verifier.oj.verify.languages.ruby import (
 )
 from competitive_verifier.oj.verify.languages.rust import (
     OjVerifyRustConfig,
+    OjVerifyRustListDependenciesBackend,
     RustLanguage,
 )
-from competitive_verifier.oj.verify.languages.user_defined import UserDefinedLanguage
+from competitive_verifier.oj.verify.languages.user_defined import (
+    OjVerifyUserDefinedConfig,
+    UserDefinedLanguage,
+)
 
 __all__ = [
     "CPlusPlusLanguage",
@@ -36,6 +40,8 @@ __all__ = [
     "OjVerifyNimConfig",
     "OjVerifyRubyConfig",
     "OjVerifyRustConfig",
+    "OjVerifyRustListDependenciesBackend",
+    "OjVerifyUserDefinedConfig",
     "PythonLanguage",
     "RubyLanguage",
     "RustLanguage",

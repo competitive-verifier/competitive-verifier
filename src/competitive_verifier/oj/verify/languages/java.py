@@ -1,9 +1,9 @@
 import pathlib
 from collections.abc import Sequence
 from logging import getLogger
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import ValidationInfo, field_validator
+from pydantic import Field, ValidationInfo, field_validator
 
 from competitive_verifier.oj.verify.models import (
     LanguageEnvironment,
@@ -45,8 +45,8 @@ class JavaLanguageEnvironment(LanguageEnvironment):
 
 
 class JavaLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: OjVerifyJavaConfig | None):
-        super().__init__(extension="java", config=config or OjVerifyJavaConfig())
+    extension: Literal["java"] = "java"  # pyright: ignore[reportIncompatibleVariableOverride]
+    config: OjVerifyJavaConfig = Field(default_factory=OjVerifyJavaConfig)  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def list_environments(
         self, path: pathlib.Path, *, basedir: pathlib.Path

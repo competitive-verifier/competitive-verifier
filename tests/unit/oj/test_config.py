@@ -7,6 +7,26 @@ import pytest
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
+from competitive_verifier.oj.verify.languages import (
+    CPlusPlusLanguage,
+    GoLanguage,
+    HaskellLanguage,
+    JavaLanguage,
+    NimLanguage,
+    OjVerifyCPlusPlusConfig,
+    OjVerifyGoConfig,
+    OjVerifyHaskellConfig,
+    OjVerifyJavaConfig,
+    OjVerifyNimConfig,
+    OjVerifyRubyConfig,
+    OjVerifyRustConfig,
+    OjVerifyRustListDependenciesBackend,
+    OjVerifyUserDefinedConfig,
+    PythonLanguage,
+    RubyLanguage,
+    RustLanguage,
+    UserDefinedLanguage,
+)
 from competitive_verifier.oj.verify.list import OjVerifyConfig
 
 default_languages: dict[str, Any] = {
@@ -149,9 +169,58 @@ test_oj_resolve_config_load_params: dict[str, tuple[str, dict[str, Any]]] = {
     test_oj_resolve_config_load_params.values(),
     ids=test_oj_resolve_config_load_params.keys(),
 )
-def test_oj_resolve_config_load(toml: str, expected: Any):
+def test_config_load(toml: str, expected: Any):
     with io.BytesIO(toml.encode("utf-8")) as fp:
         assert OjVerifyConfig.load(fp).model_dump(exclude_none=True) == expected
+
+
+def test_config_dict_default():
+    assert OjVerifyConfig().get_dict() == {
+        ".cc": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".cpp": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".go": GoLanguage(config=OjVerifyGoConfig()),
+        ".h": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".hpp": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".hs": HaskellLanguage(config=OjVerifyHaskellConfig()),
+        ".java": JavaLanguage(config=OjVerifyJavaConfig()),
+        ".nim": NimLanguage(config=OjVerifyNimConfig()),
+        ".py": PythonLanguage(),
+        ".rs": RustLanguage(config=OjVerifyRustConfig()),
+        ".ruby": RubyLanguage(config=OjVerifyRubyConfig()),
+    }
+
+
+def test_config_dict_defined():
+    assert OjVerifyConfig.model_validate(
+        {
+            "languages": {
+                "rust": {"list_dependencies_backend": {"kind": "cargo-udeps"}},
+                "cs": {"execute": "dotnet run {path}"},
+            }
+        }
+    ).get_dict() == {
+        ".cc": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".cpp": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".go": GoLanguage(config=OjVerifyGoConfig()),
+        ".h": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".hpp": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
+        ".hs": HaskellLanguage(config=OjVerifyHaskellConfig()),
+        ".java": JavaLanguage(config=OjVerifyJavaConfig()),
+        ".nim": NimLanguage(config=OjVerifyNimConfig()),
+        ".py": PythonLanguage(),
+        ".rs": RustLanguage(
+            config=OjVerifyRustConfig(
+                list_dependencies_backend=OjVerifyRustListDependenciesBackend(
+                    kind="cargo-udeps",
+                ),
+            ),
+        ),
+        ".ruby": RubyLanguage(config=OjVerifyRubyConfig()),
+        ".cs": UserDefinedLanguage(
+            extension="cs",
+            config=OjVerifyUserDefinedConfig(execute="dotnet run {path}"),
+        ),
+    }
 
 
 class ErrorDetailsWithUrl(ErrorDetails):

@@ -102,10 +102,7 @@ def _list_direct_dependencies(
 
 
 class NimLanguage(Language):
-    config: OjVerifyNimConfig
-
-    def __init__(self, *, config: OjVerifyNimConfig | None):
-        self.config = config or OjVerifyNimConfig()
+    config: OjVerifyNimConfig = Field(default_factory=OjVerifyNimConfig)
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
