@@ -48,7 +48,6 @@ class MockVerifier(BaseVerifier):
             default_mle=256,
             timeout=10,
         )
-        self.mock_current_time = datetime.datetime(2006, 1, 2, 15, 4, 5)
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         return datetime.datetime(2005, 1, 2, 15, 4, 5)
