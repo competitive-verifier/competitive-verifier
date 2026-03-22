@@ -1,7 +1,9 @@
+import os
 from logging import LogRecord
 from typing import TypeGuard, TypeVar
 
 import pytest
+from pytest_mock import MockerFixture
 
 from tests import LogComparer
 
@@ -48,3 +50,8 @@ def _typed_list(value: object, cls: type[TVal]) -> TypeGuard[list[TVal]]:
     return (
         isinstance(value, list) and all(isinstance(v, cls) for v in value)  # pyright: ignore[reportUnknownVariableType]
     )
+
+
+@pytest.fixture(autouse=True)
+def force_not_github_actions(mocker: MockerFixture):
+    mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": ""})

@@ -102,10 +102,7 @@ class TestLogGroup:
             fp.seek(0)
             assert fp.read() == "::endgroup::\n"
 
-    def test_log_group_console(
-        self, capsys: pytest.CaptureFixture[str], mocker: MockerFixture
-    ):
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": ""}, clear=True)
+    def test_log_group_console(self, capsys: pytest.CaptureFixture[str]):
         with group("TestTitle"):
             out, err = capsys.readouterr()
             assert out == ""
@@ -121,8 +118,7 @@ class TestLogGroup:
             == "<------------- \x1b[36mFinish group:\x1b[33mTestTitle\x1b[0m ------------->\n"
         )
 
-    def test_log_group_console_stream(self, mocker: MockerFixture):
-        mocker.patch.dict(os.environ, {"GITHUB_ACTIONS": ""}, clear=True)
+    def test_log_group_console_stream(self):
         with StringIO() as fp:
             with group("TestTitle", stream=fp):
                 fp.seek(0)
