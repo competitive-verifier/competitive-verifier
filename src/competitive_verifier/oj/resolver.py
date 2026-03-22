@@ -29,8 +29,8 @@ from competitive_verifier.models import (
 from competitive_verifier.util import resolve_referenced_path
 
 from .problem import problem_from_url
+from .verify.languages import LanguageEnvironment
 from .verify.list import OjVerifyConfig
-from .verify.models import LanguageEnvironment
 
 logger = getLogger(__name__)
 

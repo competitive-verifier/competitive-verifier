@@ -10,13 +10,9 @@ from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import command_stdout
 from competitive_verifier.log import GitHubMessageParams
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 
 from . import special_comments
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 from .cplusplus_bundle import Bundler
 
 # ruff: noqa: N803

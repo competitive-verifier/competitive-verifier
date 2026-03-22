@@ -5,11 +5,7 @@ from typing import Any, Literal
 
 from pydantic import Field, ValidationInfo, field_validator
 
-from competitive_verifier.oj.verify.models import (
-    LanguageEnvironment,
-    OjVerifyUserDefinedConfig,
-)
-
+from .base import LanguageEnvironment, OjVerifyUserDefinedConfig
 from .user_defined import UserDefinedLanguage
 
 logger = getLogger(__name__)

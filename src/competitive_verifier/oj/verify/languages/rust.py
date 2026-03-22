@@ -15,12 +15,9 @@ from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import command_stdout
 from competitive_verifier.models import ShellCommand
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 from competitive_verifier.util import read_text_normalized
+
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 
 # ruff: noqa: PLR2004
 

@@ -18,13 +18,13 @@ from competitive_verifier.oj.verify.languages import (
     GoLanguage,
     HaskellLanguage,
     JavaLanguage,
+    Language,
     NimLanguage,
     PythonLanguage,
     RubyLanguage,
     RustLanguage,
 )
 from competitive_verifier.oj.verify.list import OjVerifyConfig
-from competitive_verifier.oj.verify.models import Language
 from competitive_verifier.util import resolve_referenced_path
 
 logger = getLogger(__name__)

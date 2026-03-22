@@ -6,12 +6,9 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field
 
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 from competitive_verifier.util import read_text_normalized
+
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 
 logger = getLogger(__name__)
 

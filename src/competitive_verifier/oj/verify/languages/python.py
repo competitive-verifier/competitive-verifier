@@ -14,7 +14,8 @@ import importlab.fs
 import importlab.graph
 
 from competitive_verifier.models import ShellCommand
-from competitive_verifier.oj.verify.models import Language, LanguageEnvironment
+
+from .base import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
 

@@ -3,8 +3,8 @@ from typing import Literal
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
-from competitive_verifier.oj.verify.models import OjVerifyUserDefinedConfig
 
+from .base import OjVerifyUserDefinedConfig
 from .user_defined import UserDefinedLanguage
 
 
