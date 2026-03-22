@@ -211,7 +211,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success1.py",
+                            "command": {
+                                "command": ["python", "python/success1.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/success1.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -239,7 +255,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.wa.py",
+                            "command": {
+                                "command": ["python", "python/failure.wa.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/failure.wa.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -259,7 +291,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.mle.py",
+                            "command": {
+                                "command": ["python", "python/failure.mle.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/failure.mle.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                             "mle": 100.0,
                         }
@@ -295,7 +343,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/success2.py",
+                            "command": {
+                                "command": ["python", "python/success2.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/success2.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -320,7 +384,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.re.py",
+                            "command": {
+                                "command": ["python", "python/failure.re.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/failure.re.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://judge.yosupo.jp/problem/aplusb",
                         }
                     ],
@@ -345,7 +425,23 @@ class UserDefinedAndPythonData(IntegrationData):
                         {
                             "name": "Python",
                             "type": "problem",
-                            "command": f"env PYTHONPATH={self.targets_path.as_posix()} python python/failure.tle.py",
+                            "command": {
+                                "command": ["python", "python/failure.tle.py"],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
+                            "compile": {
+                                "command": [
+                                    "python",
+                                    "-m",
+                                    "py_compile",
+                                    "python/failure.tle.py",
+                                ],
+                                "env": {
+                                    "PYTHONPATH": str(self.targets_path),
+                                },
+                            },
                             "problem": "https://onlinejudge.u-aizu.ac.jp/courses/lesson/2/ITP1/1/ITP1_1_A",
                             "tle": 0.1,
                         }

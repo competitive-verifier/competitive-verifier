@@ -15,10 +15,10 @@ class LanguageEnvironment(abc.ABC):
     @abc.abstractmethod
     def name(self) -> str: ...
 
+    @abc.abstractmethod
     def get_compile_command(
         self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> ShellCommandLike | None:
-        return None
+    ) -> ShellCommandLike | None: ...
 
     @abc.abstractmethod
     def get_execute_command(

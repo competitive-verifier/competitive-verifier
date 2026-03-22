@@ -13,6 +13,7 @@ import importlab.environment
 import importlab.fs
 import importlab.graph
 
+from competitive_verifier.models import ShellCommand
 from competitive_verifier.oj.verify.models import Language, LanguageEnvironment
 
 logger = getLogger(__name__)
@@ -23,16 +24,29 @@ class PythonLanguageEnvironment(LanguageEnvironment):
     def name(self) -> str:
         return "Python"
 
-    def get_execute_command(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
+    def _python_path(self, *, basedir: pathlib.Path) -> str:
         python_path = os.getenv("PYTHONPATH")
-        python_path = (
+        return (
             basedir.resolve().as_posix() + os.pathsep + python_path
             if python_path
             else basedir.resolve().as_posix()
         )
-        return f"env PYTHONPATH={python_path} python {path}"
+
+    def get_compile_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> ShellCommand:
+        return ShellCommand(
+            command=["python", "-m", "py_compile", str(path)],
+            env={"PYTHONPATH": self._python_path(basedir=basedir)},
+        )
+
+    def get_execute_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> ShellCommand:
+        return ShellCommand(
+            command=["python", str(path)],
+            env={"PYTHONPATH": self._python_path(basedir=basedir)},
+        )
 
 
 @functools.cache
