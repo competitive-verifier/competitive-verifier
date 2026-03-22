@@ -111,7 +111,7 @@ jobs:
       - name: Add coverage result
         shell: bash
         run: |
-          mv .artifacts/pytest-coverage-ubuntu*-py${PYTHON_VERSION} .competitive-verifier/docs/static/coverage
+          mv .artifacts/pytest-coverage-ubuntu*-py${PYTHON_VERSION} .competitive-verifier/docs/static/coverage || true
         env:
           PYTHON_VERSION: "3.14"
 
