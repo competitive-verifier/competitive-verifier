@@ -1156,9 +1156,10 @@ def test_timeout(
 class TestMeasureCommand:
     @pytest.fixture
     def mock_run(self, mocker: MockerFixture, request: pytest.FixtureRequest):
+        mocker.patch("shutil.which", side_effect=lambda cmd: cmd == "dummy_command")  # pyright: ignore[reportUnknownLambdaType]
         ret = getattr(request, "param", None)
         if ret is None:
-            ret = CompletedProcess[str]("echo 1", returncode=0)
+            ret = CompletedProcess[str]("dummy_command 1", returncode=0)
 
         if isinstance(ret, CompletedProcess):
             return mocker.patch("subprocess.run", return_value=ret)
@@ -1171,15 +1172,15 @@ class TestMeasureCommand:
         ("mock_run", "expected"),
         [
             (
-                CompletedProcess[str]("echo 1", returncode=0, stdout="ABC\n"),
+                CompletedProcess[str]("dummy_command 1", returncode=0, stdout="ABC\n"),
                 OjExecInfo(answer="ABC\n", elapsed=1.0, memory=None, returncode=0),
             ),
             (
-                CompletedProcess[str]("echo 1", returncode=1, stdout="ABC\n"),
+                CompletedProcess[str]("dummy_command 1", returncode=1, stdout="ABC\n"),
                 OjExecInfo(answer="ABC\n", elapsed=1.0, memory=None, returncode=1),
             ),
             (
-                TimeoutExpired("echo 1", timeout=2, output="ABC\n"),
+                TimeoutExpired("dummy_command 1", timeout=2, output="ABC\n"),
                 OjExecInfo(answer=None, elapsed=1.0, memory=None, returncode=None),
             ),
         ],
@@ -1193,8 +1194,8 @@ class TestMeasureCommand:
         subtests: pytest.Subtests,
     ):
         with subtests.test(msg="gnu_time=False"):
-            assert measure_command("echo", gnu_time=False) == expected
-            assert mock_run.call_args.args == (["echo"],)
+            assert measure_command("dummy_command", gnu_time=False) == expected
+            assert mock_run.call_args.args == (["dummy_command"],)
             assert mock_run.call_args.kwargs["start_new_session"] is False
             mock_run.reset_mock()
 
@@ -1202,8 +1203,8 @@ class TestMeasureCommand:
             subtests.test(msg="gnu_time=True but no gnu_time"),
             mock.patch("competitive_verifier.oj.gnu.time_command", return_value=None),
         ):
-            assert measure_command("echo", gnu_time=True) == expected
-            assert mock_run.call_args.args == (["echo"],)
+            assert measure_command("dummy_command", gnu_time=True) == expected
+            assert mock_run.call_args.args == (["dummy_command"],)
             assert mock_run.call_args.kwargs["start_new_session"] is False
             mock_run.reset_mock()
 
@@ -1217,7 +1218,7 @@ class TestMeasureCommand:
                 return_value=22.5,
             ),
         ):
-            assert measure_command("echo", gnu_time=True) == replace(
+            assert measure_command("dummy_command", gnu_time=True) == replace(
                 expected, memory=22.5
             )
             assert mock_run.call_args.args == (
@@ -1228,7 +1229,7 @@ class TestMeasureCommand:
                     "-o",
                     str(testtemp / "1" / "gnu_time_report.txt"),
                     "--",
-                    "echo",
+                    "dummy_command",
                 ],
             )
             assert mock_run.call_args.kwargs["start_new_session"] is True
@@ -1237,8 +1238,8 @@ class TestMeasureCommand:
     @pytest.mark.parametrize(
         ("cmd", "expected"),
         [
-            ("echo -- -a", ["echo", "--", "-a"]),
-            (["echo", "--", "-a"], ["echo", "--", "-a"]),
+            ("dummy_command -- -a", ["dummy_command", "--", "-a"]),
+            (["dummy_command", "--", "-a"], ["dummy_command", "--", "-a"]),
         ],
     )
     def test_command(
@@ -1279,7 +1280,7 @@ class TestMeasureCommand:
         mock_run: MockType,
     ):
         mocker.patch.dict(os.environ, {"Foo": "1", "Bar": "2"}, clear=True)
-        measure_command("echo -- a", env=env, gnu_time=False)
+        measure_command("dummy_command -- a", env=env, gnu_time=False)
 
         mock_run.assert_called_once()
         assert mock_run.call_args.kwargs["env"] == expected_env
