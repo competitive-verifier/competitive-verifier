@@ -1260,15 +1260,15 @@ class TestMeasureCommand:
             ),
             (
                 {},
-                {"Foo": "1", "Bar": "2"},
+                {"FOO": "1", "BAR": "2"},
             ),
             (
-                {"Baz": "3"},
-                {"Foo": "1", "Bar": "2", "Baz": "3"},
+                {"BAZ": "3"},
+                {"FOO": "1", "BAR": "2", "BAZ": "3"},
             ),
             (
-                {"Baz": "3", "Bar": "4"},
-                {"Foo": "1", "Bar": "4", "Baz": "3"},
+                {"BAZ": "3", "BAR": "4"},
+                {"FOO": "1", "BAR": "4", "BAZ": "3"},
             ),
         ],
     )
@@ -1279,7 +1279,7 @@ class TestMeasureCommand:
         mocker: MockerFixture,
         mock_run: MockType,
     ):
-        mocker.patch.dict(os.environ, {"Foo": "1", "Bar": "2"}, clear=True)
+        mocker.patch.dict(os.environ, {"FOO": "1", "BAR": "2"}, clear=True)
         measure_command("dummy_command -- a", env=env, gnu_time=False)
 
         mock_run.assert_called_once()
