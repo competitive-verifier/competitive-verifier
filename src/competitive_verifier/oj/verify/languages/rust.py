@@ -11,16 +11,13 @@ from enum import Enum
 from logging import getLogger
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import command_stdout
 from competitive_verifier.models import ShellCommand
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 from competitive_verifier.util import read_text_normalized
+
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 
 # ruff: noqa: PLR2004
 
@@ -42,7 +39,7 @@ class OjVerifyRustConfig(OjVerifyLanguageConfig):
     list_dependencies_backend: OjVerifyRustListDependenciesBackend | None = None
 
 
-class _ListDependenciesBackend:
+class _ListDependenciesBackend(abc.ABC, BaseModel):
     @abc.abstractmethod
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
@@ -60,10 +57,6 @@ class _NoBackend(_ListDependenciesBackend):
 
 class _CargoUdeps(_ListDependenciesBackend):
     toolchain: str = "nightly"
-
-    def __init__(self, *, toolchain: str | None):
-        if toolchain is not None:
-            self.toolchain = toolchain
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
@@ -394,24 +387,23 @@ class RustLanguageEnvironment(LanguageEnvironment):
 
 
 class RustLanguage(Language):
-    _list_dependencies_backend: _ListDependenciesBackend
+    config: OjVerifyRustConfig = Field(default_factory=OjVerifyRustConfig)
 
-    def __init__(self, *, config: OjVerifyRustConfig | None):
-        if config and config.list_dependencies_backend:
-            list_dependencies_backend = config.list_dependencies_backend
-
-            if list_dependencies_backend.kind == "none":
-                self._list_dependencies_backend = _NoBackend()
-            elif list_dependencies_backend.kind == "cargo-udeps":
-                self._list_dependencies_backend = _CargoUdeps(
-                    toolchain=list_dependencies_backend.toolchain,
-                )
-            else:
-                raise RuntimeError(
-                    "expected 'none' or 'cargo-udeps' for `languages.rust.list_dependencies_backend.kind`"
-                )
-        else:
-            self._list_dependencies_backend = _NoBackend()
+    @functools.cached_property
+    def _list_dependencies_backend(self) -> _ListDependenciesBackend:
+        list_dependencies_backend = self.config.list_dependencies_backend
+        if (
+            list_dependencies_backend is None
+            or list_dependencies_backend.kind == "none"
+        ):
+            return _NoBackend()
+        if list_dependencies_backend.kind == "cargo-udeps":
+            if toolchain := list_dependencies_backend.toolchain:
+                return _CargoUdeps(toolchain=toolchain)
+            return _CargoUdeps()
+        raise RuntimeError(
+            "expected 'none' or 'cargo-udeps' for `languages.rust.list_dependencies_backend.kind`"
+        )
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path

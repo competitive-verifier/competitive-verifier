@@ -9,6 +9,7 @@ from competitive_verifier.oj.verify.languages import (
     GoLanguage,
     HaskellLanguage,
     JavaLanguage,
+    Language,
     NimLanguage,
     OjVerifyCPlusPlusConfig,
     OjVerifyGoConfig,
@@ -17,12 +18,12 @@ from competitive_verifier.oj.verify.languages import (
     OjVerifyNimConfig,
     OjVerifyRubyConfig,
     OjVerifyRustConfig,
+    OjVerifyUserDefinedConfig,
     PythonLanguage,
     RubyLanguage,
     RustLanguage,
     UserDefinedLanguage,
 )
-from competitive_verifier.oj.verify.models import Language, OjVerifyUserDefinedConfig
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     import tomllib as tomli

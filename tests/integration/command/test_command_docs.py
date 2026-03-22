@@ -1,4 +1,3 @@
-# ruff: noqa: RUF001
 import filecmp
 import inspect
 import logging

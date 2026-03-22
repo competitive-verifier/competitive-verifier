@@ -31,7 +31,12 @@ class GitHubMessageParams:
 
 
 class GitHubActionsHandler(Handler):
-    def __init__(self, level: int | str = NOTSET, stream: TextIO = sys.stderr) -> None:
+    def __init__(
+        self,
+        *,
+        stream: TextIO,
+        level: int | str = NOTSET,
+    ) -> None:
         super().__init__(level)
         self.stream = stream
 
@@ -57,10 +62,10 @@ class GitHubActionsHandler(Handler):
         ):
             return
 
-        if not gh.title:
+        if not (gh.title or record.name.startswith("competitive_verifier")):
             gh.title = record.name
 
-        github.message(command, record.getMessage(), stream=sys.stderr, **asdict(gh))
+        github.message(command, record.getMessage(), stream=self.stream, **asdict(gh))
 
 
 def configure_stderr_logging(
@@ -77,7 +82,7 @@ def configure_stderr_logging(
     handlers: list[Handler] = [colorlog_handler]
 
     if github.env.is_in_github_actions():
-        handlers.append(GitHubActionsHandler())
+        handlers.append(GitHubActionsHandler(stream=sys.stderr))
 
     basicConfig(
         level=NOTSET,

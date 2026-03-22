@@ -3,8 +3,17 @@ import pathlib
 import pytest
 from pytest_mock import MockerFixture
 
-from competitive_verifier import app
+from competitive_verifier.documents.main import Docs, get_default_docs_dir
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
+
+
+@pytest.mark.allow_mkdir
+def test_get_default_docs_dir(testtemp: pathlib.Path):
+    assert get_default_docs_dir() == pathlib.Path(".competitive-verifier/docs")
+    (testtemp / ".verify-helper/docs").mkdir(parents=True)
+    assert get_default_docs_dir() == pathlib.Path(".verify-helper/docs")
+    (testtemp / ".competitive-verifier/docs").mkdir(parents=True)
+    assert get_default_docs_dir() == pathlib.Path(".competitive-verifier/docs")
 
 
 @pytest.mark.parametrize("write_summary", [True, False])
@@ -34,7 +43,7 @@ def test_summary(
     )
 
     assert (
-        app.Docs(
+        Docs(
             verify_files_json=verify_files_json,
             result_json=[testtemp / "result.json"],
             destination=testtemp / "out",

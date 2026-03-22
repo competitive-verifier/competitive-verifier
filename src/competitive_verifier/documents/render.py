@@ -27,7 +27,7 @@ from competitive_verifier.models import (
 from competitive_verifier.util import (
     normalize_bytes_text,
     read_text_normalized,
-    resolve_relative_or_abs_path,
+    resolve_referenced_path,
 )
 
 from .config import ConfigYaml
@@ -88,7 +88,7 @@ class UserMarkdowns:
                 continue
 
             if isinstance(md.front_matter.documentation_of, str):
-                source_path = resolve_relative_or_abs_path(
+                source_path = resolve_referenced_path(
                     md.front_matter.documentation_of,
                     basedir=md.path.parent,
                 )
@@ -105,7 +105,7 @@ class UserMarkdowns:
             else:
                 multi_documentation_of: list[pathlib.Path] = []
                 for d in md.front_matter.documentation_of:
-                    source_path = resolve_relative_or_abs_path(
+                    source_path = resolve_referenced_path(
                         d,
                         basedir=md.path.parent,
                     )

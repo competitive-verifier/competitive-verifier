@@ -1,7 +1,11 @@
 import logging
+import os
 import pathlib
+from dataclasses import replace
 from itertools import chain
+from subprocess import CompletedProcess, TimeoutExpired
 from typing import Any, NamedTuple, cast
+from unittest import mock
 
 import pytest
 from pytest_mock import MockerFixture, MockType
@@ -25,6 +29,7 @@ from competitive_verifier.oj.oj_test import (
     OjTestcaseResult,
     OjTestResult,
     gnu_time_message,
+    measure_command,
     single_case,
     special_judge,
     summarize,
@@ -1146,6 +1151,139 @@ def test_timeout(
         )
 
     assert single_case_mock.call_count == 3
+
+
+class TestMeasureCommand:
+    @pytest.fixture
+    def mock_run(self, mocker: MockerFixture, request: pytest.FixtureRequest):
+        mocker.patch("shutil.which", side_effect=lambda cmd: cmd == "dummy_command")  # pyright: ignore[reportUnknownLambdaType]
+        ret = getattr(request, "param", None)
+        if ret is None:
+            ret = CompletedProcess[str]("dummy_command 1", returncode=0)
+
+        if isinstance(ret, CompletedProcess):
+            return mocker.patch("subprocess.run", return_value=ret)
+        if isinstance(ret, Exception):
+            return mocker.patch("subprocess.run", side_effect=ret)
+        raise NotImplementedError
+
+    @pytest.mark.usefixtures("mock_perf_counter")
+    @pytest.mark.parametrize(
+        ("mock_run", "expected"),
+        [
+            (
+                CompletedProcess[str]("dummy_command 1", returncode=0, stdout="ABC\n"),
+                OjExecInfo(answer="ABC\n", elapsed=1.0, memory=None, returncode=0),
+            ),
+            (
+                CompletedProcess[str]("dummy_command 1", returncode=1, stdout="ABC\n"),
+                OjExecInfo(answer="ABC\n", elapsed=1.0, memory=None, returncode=1),
+            ),
+            (
+                TimeoutExpired("dummy_command 1", timeout=2, output="ABC\n"),
+                OjExecInfo(answer=None, elapsed=1.0, memory=None, returncode=None),
+            ),
+        ],
+        indirect=["mock_run"],
+    )
+    def test_result(
+        self,
+        expected: OjExecInfo,
+        mock_run: MockType,
+        testtemp: pathlib.Path,
+        subtests: pytest.Subtests,
+    ):
+        with subtests.test(msg="gnu_time=False"):
+            assert measure_command("dummy_command", gnu_time=False) == expected
+            assert mock_run.call_args.args == (["dummy_command"],)
+            assert mock_run.call_args.kwargs["start_new_session"] is False
+            mock_run.reset_mock()
+
+        with (
+            subtests.test(msg="gnu_time=True but no gnu_time"),
+            mock.patch("competitive_verifier.oj.gnu.time_command", return_value=None),
+        ):
+            assert measure_command("dummy_command", gnu_time=True) == expected
+            assert mock_run.call_args.args == (["dummy_command"],)
+            assert mock_run.call_args.kwargs["start_new_session"] is False
+            mock_run.reset_mock()
+
+        with (
+            subtests.test(msg="gnu_time=True"),
+            mock.patch(
+                "competitive_verifier.oj.gnu.time_command", return_value="dummy_time"
+            ),
+            mock.patch(
+                "competitive_verifier.oj.gnu._GnuTimeRunnerImpl.get_memory",
+                return_value=22.5,
+            ),
+        ):
+            assert measure_command("dummy_command", gnu_time=True) == replace(
+                expected, memory=22.5
+            )
+            assert mock_run.call_args.args == (
+                [
+                    "dummy_time",
+                    "-f",
+                    "%M",
+                    "-o",
+                    str(testtemp / "1" / "gnu_time_report.txt"),
+                    "--",
+                    "dummy_command",
+                ],
+            )
+            assert mock_run.call_args.kwargs["start_new_session"] is True
+            mock_run.reset_mock()
+
+    @pytest.mark.parametrize(
+        ("cmd", "expected"),
+        [
+            ("dummy_command -- -a", ["dummy_command", "--", "-a"]),
+            (["dummy_command", "--", "-a"], ["dummy_command", "--", "-a"]),
+        ],
+    )
+    def test_command(
+        self,
+        cmd: str | list[str],
+        expected: list[str],
+        mock_run: MockType,
+    ):
+        measure_command(cmd, gnu_time=False)
+        assert mock_run.call_args.args == (expected,)
+
+    @pytest.mark.parametrize(
+        ("env", "expected_env"),
+        [
+            (
+                None,
+                None,
+            ),
+            (
+                {},
+                {"FOO": "1", "BAR": "2"},
+            ),
+            (
+                {"BAZ": "3"},
+                {"FOO": "1", "BAR": "2", "BAZ": "3"},
+            ),
+            (
+                {"BAZ": "3", "BAR": "4"},
+                {"FOO": "1", "BAR": "4", "BAZ": "3"},
+            ),
+        ],
+    )
+    def test_env(
+        self,
+        env: dict[str, str] | None,
+        expected_env: dict[str, str],
+        mocker: MockerFixture,
+        mock_run: MockType,
+    ):
+        mocker.patch.dict(os.environ, {"FOO": "1", "BAR": "2"}, clear=True)
+        measure_command("dummy_command -- a", env=env, gnu_time=False)
+
+        mock_run.assert_called_once()
+        assert mock_run.call_args.kwargs["env"] == expected_env
 
 
 test_oj_test_params: dict[str, tuple[dict[str, Any], OjTestArguments]] = {

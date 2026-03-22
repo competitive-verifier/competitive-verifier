@@ -8,13 +8,9 @@ from tempfile import TemporaryDirectory
 from pydantic import BaseModel
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyUserDefinedConfig,
-)
 
 from . import special_comments
+from .base import Language, LanguageEnvironment, OjVerifyUserDefinedConfig
 
 logger = getLogger(__name__)
 
@@ -97,10 +93,6 @@ class UserDefinedLanguageEnvironment(LanguageEnvironment):
 class UserDefinedLanguage(Language):
     extension: str
     config: OjVerifyUserDefinedConfig
-
-    def __init__(self, *, extension: str, config: OjVerifyUserDefinedConfig):
-        self.extension = extension
-        self.config = config
 
     def list_attributes(
         self, path: pathlib.Path, *, basedir: pathlib.Path

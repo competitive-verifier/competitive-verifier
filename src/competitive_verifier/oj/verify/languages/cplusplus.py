@@ -6,17 +6,13 @@ import shutil
 from logging import getLogger
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import command_stdout
 from competitive_verifier.log import GitHubMessageParams
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 
 from . import special_comments
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 from .cplusplus_bundle import Bundler
 
 # ruff: noqa: N803
@@ -124,10 +120,7 @@ _STANDALONE = "STANDALONE"
 
 
 class CPlusPlusLanguage(Language):
-    config: OjVerifyCPlusPlusConfig
-
-    def __init__(self, *, config: OjVerifyCPlusPlusConfig | None):
-        self.config = config or OjVerifyCPlusPlusConfig()
+    config: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806

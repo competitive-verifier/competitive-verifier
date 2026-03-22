@@ -6,12 +6,9 @@ from logging import getLogger
 
 from pydantic import BaseModel, Field
 
-from competitive_verifier.oj.verify.models import (
-    Language,
-    LanguageEnvironment,
-    OjVerifyLanguageConfig,
-)
 from competitive_verifier.util import read_text_normalized
+
+from .base import Language, LanguageEnvironment, OjVerifyLanguageConfig
 
 logger = getLogger(__name__)
 
@@ -102,10 +99,7 @@ def _list_direct_dependencies(
 
 
 class NimLanguage(Language):
-    config: OjVerifyNimConfig
-
-    def __init__(self, *, config: OjVerifyNimConfig | None):
-        self.config = config or OjVerifyNimConfig()
+    config: OjVerifyNimConfig = Field(default_factory=OjVerifyNimConfig)
 
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path

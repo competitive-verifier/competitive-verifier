@@ -87,11 +87,9 @@ def test_get_split_state_error(args: list[str], message: str):
 
 
 def test_invalid_prev_result(
-    monkeypatch: pytest.MonkeyPatch,
     testtemp: pathlib.Path,
     caplog: pytest.LogCaptureFixture,
 ):
-    monkeypatch.chdir(testtemp)
     (testtemp / "prev.json").write_bytes(b'[1,2,3,"invalid"]')
     parsed = app.ArgumentParser().parse(
         [
@@ -113,6 +111,75 @@ def test_invalid_prev_result(
             github=GitHubMessageParams(file=testtemp / "prev.json"),
         )
     ]
+
+
+def test_prev_result(testtemp: pathlib.Path):
+    parsed = app.ArgumentParser().parse(["verify", "--verify-json", "verify.json"])
+    assert isinstance(parsed, app.Verify)
+    assert parsed.read_prev_result() is None
+
+    (testtemp / "prev.json").write_text(
+        '{"total_seconds":1.25,"files":{'
+        '"' + (testtemp / "file1.txt").as_posix() + '"'
+        ':{"verifications":[{"verification_name":"v1","status":"success","elapsed":1.2,"last_execution_time":"2025-09-21T08:09:10.001131-02:00"}],"newest":false},'
+        '"file2.txt":{"verifications":[{"verification_name":"v2","status":"success","elapsed":1.3,"last_execution_time":"2025-09-21T08:09:11.004253-09:00"}],"newest":true}}}'
+    )
+    parsed = app.ArgumentParser().parse(
+        [
+            "verify",
+            "--verify-json",
+            "verify.json",
+            "--prev-result",
+            str(testtemp / "prev.json"),
+        ]
+    )
+    assert isinstance(parsed, app.Verify)
+
+    assert parsed.read_prev_result() == VerifyCommandResult(
+        total_seconds=1.25,
+        files={
+            pathlib.Path("file1.txt"): FileResult(
+                newest=False,
+                verifications=[
+                    VerificationResult(
+                        verification_name="v1",
+                        status=ResultStatus.SUCCESS,
+                        last_execution_time=datetime(
+                            2025,
+                            9,
+                            21,
+                            8,
+                            9,
+                            10,
+                            1131,
+                            tzinfo=timezone(timedelta(hours=-2)),
+                        ),
+                        elapsed=1.2,
+                    ),
+                ],
+            ),
+            pathlib.Path("file2.txt"): FileResult(
+                newest=True,
+                verifications=[
+                    VerificationResult(
+                        verification_name="v2",
+                        status=ResultStatus.SUCCESS,
+                        last_execution_time=datetime(
+                            2025,
+                            9,
+                            21,
+                            8,
+                            9,
+                            11,
+                            4253,
+                            tzinfo=timezone(timedelta(hours=-9)),
+                        ),
+                        elapsed=1.3,
+                    ),
+                ],
+            ),
+        },
+    )
 
 
 @pytest.mark.allow_mkdir

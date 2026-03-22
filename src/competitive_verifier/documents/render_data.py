@@ -9,43 +9,40 @@ from pydantic.alias_generators import to_camel
 from competitive_verifier.models import ForcePosixPath, SortedPathList, TestcaseResult
 
 
+class FileType(enum.Enum):
+    LIBRARY = enum.auto()
+    TEST = enum.auto()
+
+
 class StatusIcon(str, enum.Enum):
+    def __new__(cls, file_type: FileType, result: str, _: object) -> "StatusIcon":
+        value = f"{file_type.name}_{result}"
+        member = str.__new__(cls, value)
+        member._value_ = value
+        return member
+
+    def __init__(self, file_type: FileType, result: str, is_success: bool) -> None:  # noqa: FBT001
+        super().__init__()
+        self.file_type = file_type
+        self.result = result
+        self.is_success = is_success
+
+    LIBRARY_ALL_AC = (FileType.LIBRARY, "ALL_AC", True)
+    LIBRARY_PARTIAL_AC = (FileType.LIBRARY, "PARTIAL_AC", True)
+    LIBRARY_SOME_WA = (FileType.LIBRARY, "SOME_WA", False)
+    LIBRARY_ALL_WA = (FileType.LIBRARY, "ALL_WA", False)
+    LIBRARY_NO_TESTS = (FileType.LIBRARY, "NO_TESTS", True)
+    TEST_ACCEPTED = (FileType.TEST, "ACCEPTED", True)
+    TEST_WRONG_ANSWER = (FileType.TEST, "WRONG_ANSWER", False)
+    TEST_WAITING_JUDGE = (FileType.TEST, "WAITING_JUDGE", True)
+
     @property
     def is_failed(self) -> bool:
         return not self.is_success
 
     @property
-    def is_success(self) -> bool:
-        return self in (
-            self.LIBRARY_ALL_AC,
-            self.LIBRARY_PARTIAL_AC,
-            self.LIBRARY_NO_TESTS,
-            self.TEST_ACCEPTED,
-            self.TEST_WAITING_JUDGE,
-        )
-
-    @property
     def is_test(self) -> bool:
-        return not self.is_library
-
-    @property
-    def is_library(self) -> bool:
-        return self in (
-            self.LIBRARY_ALL_AC,
-            self.LIBRARY_PARTIAL_AC,
-            self.LIBRARY_SOME_WA,
-            self.LIBRARY_ALL_WA,
-            self.LIBRARY_NO_TESTS,
-        )
-
-    LIBRARY_ALL_AC = "LIBRARY_ALL_AC"
-    LIBRARY_PARTIAL_AC = "LIBRARY_PARTIAL_AC"
-    LIBRARY_SOME_WA = "LIBRARY_SOME_WA"
-    LIBRARY_ALL_WA = "LIBRARY_ALL_WA"
-    LIBRARY_NO_TESTS = "LIBRARY_NO_TESTS"
-    TEST_ACCEPTED = "TEST_ACCEPTED"
-    TEST_WRONG_ANSWER = "TEST_WRONG_ANSWER"
-    TEST_WAITING_JUDGE = "TEST_WAITING_JUDGE"
+        return self.file_type == FileType.TEST
 
 
 class RenderBaseModel(BaseModel):

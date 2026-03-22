@@ -171,11 +171,8 @@ def test_check(
     expected_out: str,
     expected: bool,
     testtemp: pathlib.Path,
-    monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ):
-    monkeypatch.chdir(testtemp)
-
     file_list: list[pathlib.Path] = []
     for k, v in files.items():
         p = testtemp / k

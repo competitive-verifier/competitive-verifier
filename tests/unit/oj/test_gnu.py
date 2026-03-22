@@ -38,6 +38,19 @@ def test_find_gnu_time_candidate(
     find_gnu_time.assert_called_once_with(expected)
 
 
+@pytest.mark.parametrize(
+    ("os_name", "expected"),
+    [("nt", None), ("posix", "/bin/time")],
+)
+def test_find_gnu_time(os_name: str, expected: str, mocker: MockerFixture):
+    def check(gnu_time: str) -> bool:
+        return gnu_time == "/bin/time"
+
+    mocker.patch.object(gnu, "check_gnu_time", side_effect=check)
+    with mock.patch("os.name", os_name):
+        assert gnu.time_command() == expected
+
+
 test_check_gnu_time_params = [
     (
         CompletedProcess[str](

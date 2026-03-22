@@ -1,8 +1,10 @@
+from typing import Literal
+
 from pydantic import Field
 
 from competitive_verifier.models import ShellCommand, ShellCommandLike
-from competitive_verifier.oj.verify.models import OjVerifyUserDefinedConfig
 
+from .base import OjVerifyUserDefinedConfig
 from .user_defined import UserDefinedLanguage
 
 
@@ -16,5 +18,5 @@ class OjVerifyGoConfig(OjVerifyUserDefinedConfig):
 
 
 class GoLanguage(UserDefinedLanguage):
-    def __init__(self, *, config: OjVerifyGoConfig | None):
-        super().__init__(extension="go", config=config or OjVerifyGoConfig())
+    extension: Literal["go"] = "go"  # pyright: ignore[reportIncompatibleVariableOverride]
+    config: OjVerifyGoConfig = Field(default_factory=OjVerifyGoConfig)  # pyright: ignore[reportIncompatibleVariableOverride]

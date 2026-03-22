@@ -1,5 +1,4 @@
 import json
-import pathlib
 from typing import Protocol
 
 import pytest
@@ -16,16 +15,6 @@ from .types import FilePaths
 def setenv_resolve(mocker: MockerFixture):
     special_comments.list_special_comments.cache_clear()
     special_comments.list_embedded_urls.cache_clear()
-
-    def python_get_execute_command(
-        path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return f"env PYTHONPATH={basedir.resolve().as_posix()} python {path.as_posix()}"
-
-    mocker.patch(
-        "competitive_verifier.oj.verify.languages.python.PythonLanguageEnvironment.get_execute_command",
-        side_effect=python_get_execute_command,
-    )
 
 
 class _ArgsFunc(Protocol):

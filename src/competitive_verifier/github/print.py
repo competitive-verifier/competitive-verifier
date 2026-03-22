@@ -2,7 +2,7 @@ import pathlib
 from typing import Literal, TextIO
 
 
-def debug(message: str, *, stream: TextIO | None = None):
+def debug(message: str, *, stream: TextIO):
     print("::debug::" + message.replace("\n", "\\n"), file=stream)
 
 
@@ -47,6 +47,7 @@ def message(
         if value is not None
     )
 
+    message = message.replace("\n", "\\n")
     print(f"::{command} {annotation}::{message}", file=stream)
 
 

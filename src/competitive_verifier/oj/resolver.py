@@ -26,11 +26,11 @@ from competitive_verifier.models import (
     VerificationFile,
     VerificationInput,
 )
-from competitive_verifier.util import resolve_relative_or_abs_path
+from competitive_verifier.util import resolve_referenced_path
 
 from .problem import problem_from_url
+from .verify.languages import LanguageEnvironment
 from .verify.list import OjVerifyConfig
-from .verify.models import LanguageEnvironment
 
 logger = getLogger(__name__)
 
@@ -203,7 +203,7 @@ class OjResolver:
         casedir = attr.get("LOCALCASE")
         if casedir is None:
             return
-        casedir = resolve_relative_or_abs_path(casedir, basedir=path.parent)
+        casedir = resolve_referenced_path(casedir, basedir=path.parent)
         if casedir is None:
             return
 
