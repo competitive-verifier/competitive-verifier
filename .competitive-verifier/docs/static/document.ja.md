@@ -11,6 +11,98 @@ lang: ja
 - [English Version](document.html)
 - [日本語バージョン](document.ja.html)
 
+## 各サービスでの自動検証
+
+### 対応サービス一覧
+{:#supported-platforms}
+
+|サービス名|備考|
+|---|---|
+| [Library Checker](https://judge.yosupo.jp/) | |
+| [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp/home) | |
+| [yukicoder](https://yukicoder.me) | 環境変数 `YUKICODER_TOKEN` の設定が必要です。[ヘルプ - yukicoder](https://yukicoder.me/help) の「ログインしてないと使えない機能をAPIとして使いたい」の節や [暗号化されたシークレットの作成と利用 - GitHub ヘルプ](https://help.github.com/ja/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets) 参考にして設定してください。 |
+
+これらの他サービスはテストケースを利用できる形で公開してくれていないため利用できません。
+
+### 利用可能な属性
+
+|変数名|説明|備考|
+|---|---|---|
+| `PROBLEM` | 提出する問題の URL を指定します | |
+| `LOCALCASE` | ローカルのテストケースを指定します | |
+| `ERROR` | 許容誤差を指定します | |
+| `TLE` | TLE までの秒数を指定します | |
+| `STANDALONE` | main 関数で実行されるユニットテストファイルに指定します | |
+| `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
+| `TITLE` | ドキュメントのタイトルを指定します | |
+| `DISPLAY` | ドキュメントの表示方法を指定します | `visible`, `no-index`, `hidden`, `never` |
+
+#### `PROBLEM`
+
+[対応サービス](#supported-platforms) の URL を指定することで `oj-resolve` によってテスト実行ファイルとして収集されます。
+
+```cpp
+// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+#### `LOCALCASE`
+
+ディレクトリを指定することで `oj-resolve` によってテスト実行ファイルとして収集されます。
+
+```cpp
+// competitive-verifier: LOCALCASE ./local_aplusb_cases
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+テストケースは `{name}.in` という入力ファイルと `{name}.out` という出力ファイルからなります。サブディレクトリも再帰的に検索します[^relative_path]。
+
+#### `ERROR`, `TLE`
+
+`PROBLEM` や `LOCALCASE` の実行時に使用する許容誤差や実行制限時間の値を指定します。
+
+#### `STANDALONE`
+
+`oj-resolve` によってテスト実行ファイルとして収集されます。成功したかはステータスコードが 0 かどうかで判定します。C++ のようにユニットテストを main 関数で実行するような環境で有用です。
+
+#### `UNITTEST`
+
+`oj-resolve` の実行時に指定された環境変数が存在すれば成功、なければ失敗と判定します。Go のようにユニットテストを main 関数以外から実行するような環境で有用です。
+
+参照: [#unittest-settings](#unittest-settings)
+
+
+#### `TITLE`
+
+ドキュメントのタイトルを指定します。
+
+#### `DISPLAY`
+
+ドキュメントの表示方法を指定します。
+
+- `visible`(default): ドキュメントを生成し表示する。
+- `no-index`: ドキュメントを生成するが目次ページには表示しない。「Depends on」などの依存関係には表示する。
+- `hidden`: ドキュメントを生成するが目次ページや「Depends on」などの依存関係には表示しない。
+- `never`: ドキュメントを生成しない。
+
 ## 依存関係の解決
 ### oj-resolve
 
@@ -203,98 +295,6 @@ int main()
 ### csharp-resolver: C# の設定
 
 [https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver) を使います。
-
-## verify 自動実行
-
-### 対応サービス一覧
-{:#supported-platforms}
-
-|サービス名|備考|
-|---|---|
-| [Library Checker](https://judge.yosupo.jp/) | |
-| [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp/home) | |
-| [yukicoder](https://yukicoder.me) | 環境変数 `YUKICODER_TOKEN` の設定が必要です。[ヘルプ - yukicoder](https://yukicoder.me/help) の「ログインしてないと使えない機能をAPIとして使いたい」の節や [暗号化されたシークレットの作成と利用 - GitHub ヘルプ](https://help.github.com/ja/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets) 参考にして設定してください。 |
-
-これらの他サービスはテストケースを利用できる形で公開してくれていないため利用できません。
-
-### 利用可能な属性
-
-|変数名|説明|備考|
-|---|---|---|
-| `PROBLEM` | 提出する問題の URL を指定します | |
-| `LOCALCASE` | ローカルのテストケースを指定します | |
-| `ERROR` | 許容誤差を指定します | |
-| `TLE` | TLE までの秒数を指定します | |
-| `STANDALONE` | main 関数で実行されるユニットテストファイルに指定します | |
-| `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
-| `TITLE` | ドキュメントのタイトルを指定します | |
-| `DISPLAY` | ドキュメントの表示方法を指定します | `visible`, `no-index`, `hidden`, `never` |
-
-#### `PROBLEM`
-
-[対応サービス](#supported-platforms) の URL を指定することで `oj-resolve` によってテスト実行ファイルとして収集されます。
-
-```cpp
-// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
-#include <iostream>
-using namespace std;
-
-int main()
-{
-    long a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-
-#### `LOCALCASE`
-
-ディレクトリを指定することで `oj-resolve` によってテスト実行ファイルとして収集されます。
-
-```cpp
-// competitive-verifier: LOCALCASE ./local_aplusb_cases
-#include <iostream>
-using namespace std;
-
-int main()
-{
-    long a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-
-テストケースは `{name}.in` という入力ファイルと `{name}.out` という出力ファイルからなります。サブディレクトリも再帰的に検索します[^relative_path]。
-
-#### `ERROR`, `TLE`
-
-`PROBLEM` や `LOCALCASE` の実行時に使用する許容誤差や実行制限時間の値を指定します。
-
-#### `STANDALONE`
-
-`oj-resolve` によってテスト実行ファイルとして収集されます。成功したかはステータスコードが 0 かどうかで判定します。C++ のようにユニットテストを main 関数で実行するような環境で有用です。
-
-#### `UNITTEST`
-
-`oj-resolve` の実行時に指定された環境変数が存在すれば成功、なければ失敗と判定します。Go のようにユニットテストを main 関数以外から実行するような環境で有用です。
-
-参照: [#unittest-settings](#unittest-settings)
-
-
-#### `TITLE`
-
-ドキュメントのタイトルを指定します。
-
-#### `DISPLAY`
-
-ドキュメントの表示方法を指定します。
-
-- `visible`(default): ドキュメントを生成し表示する。
-- `no-index`: ドキュメントを生成するが目次ページには表示しない。「Depends on」などの依存関係には表示する。
-- `hidden`: ドキュメントを生成するが目次ページや「Depends on」などの依存関係には表示しない。
-- `never`: ドキュメントを生成しない。
 
 ## ドキュメント生成
 
