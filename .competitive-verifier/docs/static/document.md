@@ -130,6 +130,8 @@ You can specify compilers and options with writing `config.toml` as below.
 If there are no settings, oj-resolve automatically detects compilers (`g++` and `clang++` if exists) and use recommended options.
 
 ``` toml
+[languages.cpp]
+read_macros = false
 [[languages.cpp.environments]]
 CXX = "g++"
 
@@ -140,6 +142,10 @@ CXXFLAGS = ["-std=c++17", "-Wall", "-g", "-fsanitize=undefined", "-D_GLIBCXX_DEB
 
 -   If you use environments which [`ulimit`](https://linux.die.net/man/3/ulimit) doesn't work on, and if you want to set `CXXFLAGS` by yourself, please be careful about the stack size.
 -   The supported extensions are `.cpp`, `.hpp`, `.cc`, and `.h`. Please note that files with other extensions like `.c` `.h++` and files without extensions are not recognized.
+
+**macros**
+
+For compatibility, C++ also allows attributes to be defined via macros, such as `#define PROBLEM "https://judge.yosupo.jp/problem/aplusb"`. However, enumerating these requires compilation, which slows down `oj-resolve`. It is therefore recommended to avoid macro-based attribute definitions and instead set `read_macros = false` as described above.
 
 #### Settings for Nim
 
