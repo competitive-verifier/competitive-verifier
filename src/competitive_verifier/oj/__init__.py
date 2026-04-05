@@ -1,3 +1,5 @@
+"""Port of oj-verify."""
+
 from .oj_download import main as download
 from .oj_test import main as test
 from .problem import LocalProblem, problem_from_url

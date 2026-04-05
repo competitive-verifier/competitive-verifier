@@ -240,7 +240,7 @@ convention = "google"
 ]
 "src/competitive_verifier/*/main.py" = ["BLE001"]
 "src/competitive_verifier/**" = ["T201"]
-"src/competitive_verifier/oj/verify/languages/**" = [
+"src/competitive_verifier/oj/languages/**" = [
     "S101",
     "C901",
     "PLR0912",

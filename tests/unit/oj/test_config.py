@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
-from competitive_verifier.oj.verify.languages import (
+from competitive_verifier.oj.languages import (
     CPlusPlusLanguage,
     GoLanguage,
     HaskellLanguage,
@@ -26,8 +26,8 @@ from competitive_verifier.oj.verify.languages import (
     RubyLanguage,
     RustLanguage,
     UserDefinedLanguage,
+    VerificationConfig,
 )
-from competitive_verifier.oj.verify.list import OjVerifyConfig
 
 default_languages: dict[str, Any] = {
     "cpp": {"read_macros": True},
@@ -173,11 +173,11 @@ test_oj_resolve_config_load_params: dict[str, tuple[str, dict[str, Any]]] = {
 )
 def test_config_load(toml: str, expected: Any):
     with io.BytesIO(toml.encode("utf-8")) as fp:
-        assert OjVerifyConfig.load(fp).model_dump(exclude_none=True) == expected
+        assert VerificationConfig.load(fp).model_dump(exclude_none=True) == expected
 
 
 def test_config_dict_default():
-    assert OjVerifyConfig().get_dict() == {
+    assert VerificationConfig().get_dict() == {
         ".cc": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
         ".cpp": CPlusPlusLanguage(config=OjVerifyCPlusPlusConfig()),
         ".go": GoLanguage(config=OjVerifyGoConfig()),
@@ -193,7 +193,7 @@ def test_config_dict_default():
 
 
 def test_config_dict_defined():
-    assert OjVerifyConfig.model_validate(
+    assert VerificationConfig.model_validate(
         {
             "languages": {
                 "rust": {"list_dependencies_backend": {"kind": "cargo-udeps"}},
@@ -352,7 +352,7 @@ test_oj_resolve_config_load_error_params: dict[
 def test_oj_resolve_config_load_error(toml: str, expected_error: list[ErrorDetails]):
     with io.BytesIO(toml.encode("utf-8")) as fp:
         with pytest.raises(ValidationError) as excinfo:
-            OjVerifyConfig.load(fp)
+            VerificationConfig.load(fp)
         e: ValidationError = excinfo.value
         errors = e.errors()
         assert len(errors) == len(expected_error)

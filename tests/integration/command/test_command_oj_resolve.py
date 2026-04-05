@@ -5,7 +5,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from competitive_verifier import app
-from competitive_verifier.oj.verify.languages import special_comments
+from competitive_verifier.oj.languages import special_comments
 
 from .data.integration_data import IntegrationData
 from .types import FilePaths
