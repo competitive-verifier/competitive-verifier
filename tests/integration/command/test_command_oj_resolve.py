@@ -427,3 +427,56 @@ class TestCommandOjResolve:
                 },
             },
         }
+
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_cpp_no_macros(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        monkeypatch.chdir(file_paths.root / "CppData")
+        args = make_args(
+            config="config_no_macros.toml",
+        )
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.run()
+
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == {
+            "files": {
+                "aplusb.hpp": {
+                    "additonal_sources": [],
+                    "dependencies": ["aplusb.hpp"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "aplusb.main.cpp": {
+                    "additonal_sources": [],
+                    "dependencies": ["aplusb.hpp", "aplusb.main.cpp"],
+                    "document_attributes": {"links": []},
+                    "verification": [],
+                },
+                "aplusb.test.cpp": {
+                    "additonal_sources": [],
+                    "dependencies": ["aplusb.hpp", "aplusb.test.cpp", "macros.hpp"],
+                    "document_attributes": {
+                        "links": ["https://judge.yosupo.jp/problem/aplusb"],
+                    },
+                    "verification": [],
+                },
+                "macros.hpp": {
+                    "additonal_sources": [],
+                    "dependencies": ["macros.hpp"],
+                    "document_attributes": {
+                        "links": [],
+                        "EXTRA_ATTR": "",
+                        "EXTRA_ATTR_VAL": "text",
+                    },
+                    "verification": [],
+                },
+            },
+        }
