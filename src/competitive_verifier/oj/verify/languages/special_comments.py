@@ -9,16 +9,17 @@ from competitive_verifier.util import read_text_normalized
 
 logger = getLogger(__name__)
 
+SPECIAL_COMMENTS_PATTERN = re.compile(
+    r"(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"
+)
+
 
 # special comments like Vim and Python: see https://www.python.org/dev/peps/pep-0263/
 @functools.cache
 def list_special_comments(path: pathlib.Path) -> Mapping[str, str]:
-    pattern = re.compile(
-        r"\b(?:verify-helper|verification-helper|competitive-verifier):\s*([0-9A-Za-z_]+)(?:\s(.*))?$"
-    )
     attributes: dict[str, str] = {}
     for line in read_text_normalized(path).splitlines():
-        matched = pattern.search(line)
+        matched = SPECIAL_COMMENTS_PATTERN.search(line)
         if matched:
             key = matched.group(1)
             value = (matched.group(2) or "").strip()

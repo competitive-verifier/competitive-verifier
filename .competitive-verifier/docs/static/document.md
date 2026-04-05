@@ -21,9 +21,9 @@
 
 Other judging platforms do not currently publish the test cases in usable forms, and so are not currently supported.
 
-### Available macro definitions
+### Available attributes definitions
 
-|Macro name|Description|Remarks|
+|attribute name|Description|Remarks|
 |---|---|---|
 | `PROBLEM` | specify the URL of the problem to submit | |
 | `LOCALCASE` | specify the path of the test cases | |
@@ -33,6 +33,9 @@ Other judging platforms do not currently publish the test cases in usable forms,
 | `UNITTEST` | specify the environment variable which represents unit test status  | |
 | `TITLE` | specify the title of source  | |
 | `DISPLAY` | specify the document output mode | `visible`, `no-index`, `hidden`, `never` |
+
+In `oj-resolve`, attributes are specified using strings in the source code that match `competitive-verifier:\s*([0-9A-Za-z_]+)(?:\s(.*))?$` (e.g., `competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb`).
+They can be included within comments in each language.
 
 #### `PROBLEM`
 
@@ -166,7 +169,7 @@ There is no config now.
 
 #### Settings for Rust
 
-`oj-verify` uses [root source files](https://docs.rs/cargo_metadata/0.12.0/cargo_metadata/struct.Target.html#structfield.src_path) of [binary targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#binaries) or [example targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#examples) (excluding targets which `crate-type` is specified) which have the [`PROBLEM`](#available-macro-definitions) attribute
+`oj-verify` uses [root source files](https://docs.rs/cargo_metadata/0.12.0/cargo_metadata/struct.Target.html#structfield.src_path) of [binary targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#binaries) or [example targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#examples) (excluding targets which `crate-type` is specified) which have the [`PROBLEM`](#available-attribute-definitions) attribute
 
 You can customize the method to list depending files with `languages.rust.list_dependencies_backend` of `config.toml`.
 

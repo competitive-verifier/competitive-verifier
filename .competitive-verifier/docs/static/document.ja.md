@@ -26,7 +26,7 @@ lang: ja
 
 ### 利用可能な属性
 
-|変数名|説明|備考|
+|属性名|説明|備考|
 |---|---|---|
 | `PROBLEM` | 提出する問題の URL を指定します | |
 | `LOCALCASE` | ローカルのテストケースを指定します | |
@@ -36,6 +36,9 @@ lang: ja
 | `UNITTEST` | ユニットテストが成功したかどうかを表す環境変数を指定します | |
 | `TITLE` | ドキュメントのタイトルを指定します | |
 | `DISPLAY` | ドキュメントの表示方法を指定します | `visible`, `no-index`, `hidden`, `never` |
+
+`oj-resolve` では、ソースコード上で `competitive-verifier:\s*([0-9A-Za-z_]+)(?:\s(.*))?$` にマッチするような文字列 (e.g. `competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb`) で指定します。
+各言語のコメントに含めることで指定できます。
 
 #### `PROBLEM`
 
