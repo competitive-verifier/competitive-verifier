@@ -13,7 +13,7 @@ from pydantic import Field
 from competitive_verifier import git
 from competitive_verifier.arg import VerboseArguments
 from competitive_verifier.exec import command_stdout
-from competitive_verifier.oj.verify.languages import (
+from competitive_verifier.oj.languages import (
     CPlusPlusLanguage,
     GoLanguage,
     HaskellLanguage,
@@ -23,8 +23,8 @@ from competitive_verifier.oj.verify.languages import (
     PythonLanguage,
     RubyLanguage,
     RustLanguage,
+    VerificationConfig,
 )
-from competitive_verifier.oj.verify.list import OjVerifyConfig
 from competitive_verifier.util import resolve_referenced_path
 
 logger = getLogger(__name__)
@@ -208,7 +208,7 @@ def main(*, dry_run: bool) -> bool:
     migrate_conf_dir(dry_run=dry_run)
 
     languages = set[str]()
-    lang_dict = OjVerifyConfig().get_dict()
+    lang_dict = VerificationConfig().get_dict()
 
     for path in git.ls_files():
         lang = lang_dict.get(path.suffix)

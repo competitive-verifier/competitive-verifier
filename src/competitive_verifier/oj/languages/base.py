@@ -7,7 +7,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from competitive_verifier.models import ShellCommandLike
-from competitive_verifier.oj.verify.languages import special_comments
+from competitive_verifier.oj.languages import special_comments
 
 
 class LanguageEnvironment(abc.ABC):

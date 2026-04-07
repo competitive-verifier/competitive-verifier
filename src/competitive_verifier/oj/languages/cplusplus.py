@@ -26,6 +26,7 @@ class OjVerifyCPlusPlusConfigEnv(BaseModel):
 
 
 class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
+    read_macros: bool = True
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
 
 
@@ -187,7 +188,7 @@ class CPlusPlusLanguage(Language):
         comments = special_comments.list_special_comments(path.resolve())
         if comments:
             attributes.update(comments)
-        else:
+        elif self.config.read_macros:
             # use old-style if special comments not found
             # #define PROBLEM "https://..." の形式は複数 environments との相性がよくない。あと遅い
             attributes[_NOT_SPECIAL_COMMENTS] = ""

@@ -28,9 +28,8 @@ from competitive_verifier.models import (
 )
 from competitive_verifier.util import resolve_referenced_path
 
+from .languages import LanguageEnvironment, VerificationConfig
 from .problem import problem_from_url
-from .verify.languages import LanguageEnvironment
-from .verify.list import OjVerifyConfig
 
 logger = getLogger(__name__)
 
@@ -56,7 +55,7 @@ def _write_bundled(content: bytes, *, path: pathlib.Path) -> pathlib.Path:
 class OjResolver:
     include: list[str]
     exclude: list[str]
-    config: OjVerifyConfig
+    config: VerificationConfig
     _match_exclude_cache: dict[pathlib.Path, bool]
 
     def __init__(
@@ -64,7 +63,7 @@ class OjResolver:
         *,
         include: list[str],
         exclude: list[str],
-        config: OjVerifyConfig,
+        config: VerificationConfig,
     ) -> None:
         def _remove_slash(s: str):
             s = os.path.normpath(s)
@@ -323,7 +322,7 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
         description="Create verify_files json using `oj-verify`",
     )
     bundle: bool = True
-    config: pathlib.Path | OjVerifyConfig | None = None
+    config: pathlib.Path | VerificationConfig | None = None
 
     @classmethod
     def add_parser(cls, parser: ArgumentParser):
@@ -343,19 +342,19 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
     def to_resolver(self) -> OjResolver:
         if self.config is None:
             logger.info("no config file")
-            config = OjVerifyConfig()
-        elif not isinstance(self.config, OjVerifyConfig):
+            config = VerificationConfig()
+        elif not isinstance(self.config, VerificationConfig):
             config_path = pathlib.Path(self.config)
             try:
                 with config_path.open("rb") as fp:
-                    config = OjVerifyConfig.load(fp)
+                    config = VerificationConfig.load(fp)
                     logger.info("config file loaded: %s: %s", config_path, config)
             except ValidationError:
                 logger.exception(
                     "config file validation error",
                     extra={"github": GitHubMessageParams(file=config_path)},
                 )
-                config = OjVerifyConfig()
+                config = VerificationConfig()
         else:
             config = self.config
 

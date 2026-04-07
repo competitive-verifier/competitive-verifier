@@ -8,6 +8,101 @@
 - [English Version](document.html)
 - [日本語バージョン](document.ja.html)
 
+## Automating the verification
+
+### Supported judging platforms
+{:#supported-platforms}
+
+|Name|Remarks|
+|---|---|
+| [Library Checker](https://judge.yosupo.jp/) | |
+| [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp/home) | |
+| [yukicoder](https://yukicoder.me) | You must set the `YUKICODER_TOKEN` environment variable. See 「ログインしてないと使えない機能をAPIとして使いたい」 in [ヘルプ - yukicoder](https://yukicoder.me/help) and [Creating and using encrypted secrets - GitHub Help](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets). |
+
+Other judging platforms do not currently publish the test cases in usable forms, and so are not currently supported.
+
+### Available attributes definitions
+
+|attribute name|Description|Remarks|
+|---|---|---|
+| `PROBLEM` | specify the URL of the problem to submit | |
+| `LOCALCASE` | specify the path of the test cases | |
+| `ERROR` | specify the absolute or relative error to be considered as correct | |
+| `TLE` | specify the TLE time in seconds | |
+| `STANDALONE` | specify in the unit test file executed by the main function | |
+| `UNITTEST` | specify the environment variable which represents unit test status  | |
+| `TITLE` | specify the title of source  | |
+| `DISPLAY` | specify the document output mode | `visible`, `no-index`, `hidden`, `never` |
+
+In `oj-resolve`, attributes are specified using strings in the source code that match `competitive-verifier:\s*([0-9A-Za-z_]+)(?:\s(.*))?$` (e.g., `competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb`).
+They can be included within comments in each language.
+
+#### `PROBLEM`
+
+By specifying the URL of a [supported service](#supported-platforms), `oj-resolve` will collect this as a test executable file.
+
+```cpp
+// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+#### `LOCALCASE`
+
+By specifying a directory, `oj-resolve` will collect this as a test executable file.
+
+```cpp
+// competitive-verifier: LOCALCASE ./local_aplusb_cases
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}
+```
+
+Each test case consists of an input file named `{name}.in` and an output file named `{name}.out`. Subdirectories are searched recursively [^relative_path].
+
+#### `ERROR`, `TLE`
+
+Specifies the tolerance and execution time limit values to be used when running `PROBLEM` or `LOCALCASE`.
+
+#### `STANDALONE`
+
+`oj-resolve` will collect this as a test executable file. Whether a test has succeeded is determined by checking if the exit status code is 0.
+This is useful in environments like C++, where unit tests are executed within the `main` function.
+
+#### `UNITTEST`
+
+When running `oj-resolve`, it is considered successful if the specified environment variable exists; otherwise, it is considered a failure.
+
+This is useful in environments like Go, where unit tests are executed outside of the `main` function.
+
+See: [#unittest-settings](#unittest-settings)
+
+#### `TITLE`
+Specify the title of source.
+
+#### `DISPLAY`
+Specify the document output mode.
+
+- `visible` (default): Generate and display the document.
+- `no-index`: Generate the document, but do not show it on the index page. It will still appear in dependency lists such as “Depends on”.
+- `hidden`: Generate the document, but do not show it on the index page or in dependency lists such as “Depends on”.
+- `never`: Do not generate the document.
+
 ## Resolving dependencies
 ### oj-resolve
 
@@ -35,6 +130,8 @@ You can specify compilers and options with writing `config.toml` as below.
 If there are no settings, oj-resolve automatically detects compilers (`g++` and `clang++` if exists) and use recommended options.
 
 ``` toml
+[languages.cpp]
+read_macros = false
 [[languages.cpp.environments]]
 CXX = "g++"
 
@@ -45,6 +142,10 @@ CXXFLAGS = ["-std=c++17", "-Wall", "-g", "-fsanitize=undefined", "-D_GLIBCXX_DEB
 
 -   If you use environments which [`ulimit`](https://linux.die.net/man/3/ulimit) doesn't work on, and if you want to set `CXXFLAGS` by yourself, please be careful about the stack size.
 -   The supported extensions are `.cpp`, `.hpp`, `.cc`, and `.h`. Please note that files with other extensions like `.c` `.h++` and files without extensions are not recognized.
+
+**macros**
+
+For compatibility, C++ also allows attributes to be defined via macros, such as `#define PROBLEM "https://judge.yosupo.jp/problem/aplusb"`. However, enumerating these requires compilation, which slows down `oj-resolve`. It is therefore recommended to avoid macro-based attribute definitions and instead set `read_macros = false` as described above.
 
 #### Settings for Nim
 
@@ -74,7 +175,7 @@ There is no config now.
 
 #### Settings for Rust
 
-`oj-verify` uses [root source files](https://docs.rs/cargo_metadata/0.12.0/cargo_metadata/struct.Target.html#structfield.src_path) of [binary targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#binaries) or [example targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#examples) (excluding targets which `crate-type` is specified) which have the [`PROBLEM`](#available-macro-definitions) attribute
+`oj-verify` uses [root source files](https://docs.rs/cargo_metadata/0.12.0/cargo_metadata/struct.Target.html#structfield.src_path) of [binary targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#binaries) or [example targets](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#examples) (excluding targets which `crate-type` is specified) which have the [`PROBLEM`](#available-attribute-definitions) attribute
 
 You can customize the method to list depending files with `languages.rust.list_dependencies_backend` of `config.toml`.
 
@@ -200,99 +301,6 @@ int main()
 ### csharp-resolver: C# settings
 
 Use [https://github.com/competitive-verifier/csharp-resolver](competitive-verifier/csharp-resolver).
-
-
-## Automating the verification
-
-### Supported judging platforms
-{:#supported-platforms}
-
-|Name|Remarks|
-|---|---|
-| [Library Checker](https://judge.yosupo.jp/) | |
-| [Aizu Online Judge](https://onlinejudge.u-aizu.ac.jp/home) | |
-| [yukicoder](https://yukicoder.me) | You must set the `YUKICODER_TOKEN` environment variable. See 「ログインしてないと使えない機能をAPIとして使いたい」 in [ヘルプ - yukicoder](https://yukicoder.me/help) and [Creating and using encrypted secrets - GitHub Help](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets). |
-
-Other judging platforms do not currently publish the test cases in usable forms, and so are not currently supported.
-
-### Available macro definitions
-
-|Macro name|Description|Remarks|
-|---|---|---|
-| `PROBLEM` | specify the URL of the problem to submit | |
-| `LOCALCASE` | specify the path of the test cases | |
-| `ERROR` | specify the absolute or relative error to be considered as correct | |
-| `TLE` | specify the TLE time in seconds | |
-| `STANDALONE` | specify in the unit test file executed by the main function | |
-| `UNITTEST` | specify the environment variable which represents unit test status  | |
-| `TITLE` | specify the title of source  | |
-| `DISPLAY` | specify the document output mode | `visible`, `no-index`, `hidden`, `never` |
-
-#### `PROBLEM`
-
-By specifying the URL of a [supported service](#supported-platforms), `oj-resolve` will collect this as a test executable file.
-
-```cpp
-// competitive-verifier: PROBLEM https://judge.yosupo.jp/problem/aplusb
-#include <iostream>
-using namespace std;
-
-int main()
-{
-    long a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-
-#### `LOCALCASE`
-
-By specifying a directory, `oj-resolve` will collect this as a test executable file.
-
-```cpp
-// competitive-verifier: LOCALCASE ./local_aplusb_cases
-#include <iostream>
-using namespace std;
-
-int main()
-{
-    long a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-}
-```
-
-Each test case consists of an input file named `{name}.in` and an output file named `{name}.out`. Subdirectories are searched recursively [^relative_path].
-
-#### `ERROR`, `TLE`
-
-Specifies the tolerance and execution time limit values to be used when running `PROBLEM` or `LOCALCASE`.
-
-#### `STANDALONE`
-
-`oj-resolve` will collect this as a test executable file. Whether a test has succeeded is determined by checking if the exit status code is 0.
-This is useful in environments like C++, where unit tests are executed within the `main` function.
-
-#### `UNITTEST`
-
-When running `oj-resolve`, it is considered successful if the specified environment variable exists; otherwise, it is considered a failure.
-
-This is useful in environments like Go, where unit tests are executed outside of the `main` function.
-
-See: [#unittest-settings](#unittest-settings)
-
-#### `TITLE`
-Specify the title of source.
-
-#### `DISPLAY`
-Specify the document output mode.
-
-- `visible` (default): Generate and display the document.
-- `no-index`: Generate the document, but do not show it on the index page. It will still appear in dependency lists such as “Depends on”.
-- `hidden`: Generate the document, but do not show it on the index page or in dependency lists such as “Depends on”.
-- `never`: Do not generate the document.
 
 
 ## Generating Documentation

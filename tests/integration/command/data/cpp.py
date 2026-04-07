@@ -147,7 +147,8 @@ class CppWithoutConfigData(IntegrationData):
                     ],
                     "dependencies": ["macros.hpp"],
                     "document_attributes": {
-                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "EXTRA_ATTR": "",
+                        "EXTRA_ATTR_VAL": "text",
                         "links": [],
                     },
                     "verification": [],
@@ -490,7 +491,8 @@ class CppWithConfigData(CppWithoutConfigData):
                     ],
                     "dependencies": ["macros.hpp"],
                     "document_attributes": {
-                        "*NOT_SPECIAL_COMMENTS*": "",
+                        "EXTRA_ATTR": "",
+                        "EXTRA_ATTR_VAL": "text",
                         "links": [],
                     },
                     "verification": [],
