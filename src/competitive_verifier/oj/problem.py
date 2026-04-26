@@ -148,10 +148,10 @@ class LibraryCheckerProblem(Problem):
                 return cls(problem_id=m.group(1))
         return None
 
-    _is_repository_updated = False
+    _is_repository_updated: ClassVar[set[pathlib.Path]] = set()
 
     def update_cloned_repository(self) -> None:
-        if self._is_repository_updated:
+        if self.repo_path in self._is_repository_updated:
             return
 
         try:
@@ -187,7 +187,7 @@ class LibraryCheckerProblem(Problem):
                 stderr=sys.stderr,
             )
 
-        self._is_repository_updated = True
+        LibraryCheckerProblem._is_repository_updated.add(self.repo_path)
 
 
 class _YukicoderProblemNo(int):
