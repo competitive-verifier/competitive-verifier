@@ -187,7 +187,7 @@ class LibraryCheckerProblem(Problem):
                 stderr=sys.stderr,
             )
 
-        self._is_repository_updated = True
+        LibraryCheckerProblem._is_repository_updated = True
 
 
 class _YukicoderProblemNo(int):
