@@ -270,7 +270,9 @@ class OjResolver:
 
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
-        basedir = pathlib.Path.cwd()
+        # Relative so that commands recorded in verify_files.json (which run
+        # from the same directory) don't depend on the checkout location.
+        basedir = pathlib.Path()
 
         for path in git.ls_files(*self.include):
             if self._match_exclude(path):
