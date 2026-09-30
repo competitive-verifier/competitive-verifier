@@ -1,5 +1,5 @@
 import json
-from typing import Protocol
+from typing import Any, Protocol
 
 import pytest
 from pytest_mock import MockerFixture
@@ -7,8 +7,9 @@ from pytest_mock import MockerFixture
 from competitive_verifier import app
 from competitive_verifier.oj.languages import special_comments
 
+from .data.cpp import CppWithoutConfigData
 from .data.integration_data import IntegrationData
-from .types import FilePaths
+from .types import ConfigDirSetter, FilePaths
 
 
 @pytest.fixture
@@ -25,6 +26,7 @@ class _ArgsFunc(Protocol):
         include: list[str] | None = None,
         exclude: list[str] | None = None,
         config: str | None = None,
+        relative_path: bool = False,
     ) -> list[str]: ...
 
 
@@ -36,8 +38,11 @@ def make_args() -> _ArgsFunc:
         include: list[str] | None = None,
         exclude: list[str] | None = None,
         config: str | None = None,
+        relative_path: bool = False,
     ) -> list[str]:
         args: list[str] = ["oj-resolve"]
+        if relative_path:
+            args.append("--relative-path")
         if not bundle:
             args.append("--no-bundle")
         if include is not None:
@@ -85,6 +90,46 @@ class TestCommandOjResolve:
         verify.write_text(stdout, encoding="utf-8")
 
         integration_data.assert_oj_resolve()
+
+    @pytest.mark.usefixtures("setenv_resolve")
+    def test_relative_path(
+        self,
+        make_args: _ArgsFunc,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+        set_config_dir: ConfigDirSetter,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        data = CppWithoutConfigData(monkeypatch, set_config_dir, file_paths)
+        assert data.check_envinronment()
+
+        def relativize(obj: Any) -> Any:
+            if isinstance(obj, dict):
+                return {k: relativize(v) for k, v in obj.items()}  # pyright: ignore[reportUnknownVariableType, reportUnknownArgumentType]
+            if isinstance(obj, list):
+                return [relativize(v) for v in obj]  # pyright: ignore[reportUnknownVariableType]
+            if obj == str(data.targets_path):
+                return "."
+            return obj
+
+        expected = relativize(data.expected_verify_json())
+        assert expected != data.expected_verify_json()
+
+        args = make_args(
+            include=data.include_path,
+            exclude=data.exclude_path,
+            config=data.config_path,
+            bundle=True,
+            relative_path=True,
+        )
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.OjResolve)
+        assert parsed.relative_path
+        assert parsed.run()
+
+        stdout = capfd.readouterr().out
+        resolved = json.loads(stdout)
+        assert resolved == expected
 
     @pytest.mark.usefixtures("setenv_resolve")
     def test_without_include_exclude(
