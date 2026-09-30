@@ -3,6 +3,7 @@ import inspect
 import logging
 import os
 import pathlib
+import shutil
 from dataclasses import dataclass
 from itertools import chain
 from typing import Any
@@ -2490,6 +2491,50 @@ class TestCommandDocuments:
                 github=GitHubMessageParams(file=pathlib.Path("dummy/dummy.md")),
             ),
         ]
+
+    @pytest.mark.usefixtures("setup_docs")
+    def test_from_other_cwd(
+        self,
+        user_defined_and_python_data: UserDefinedAndPythonData,
+        package_dst: pathlib.Path,
+        data: DocsData,
+        subtests: pytest.Subtests,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """`docs` chdirs to `basedir` of verify.json; CLI paths are relative to the original cwd."""
+        other_cwd = package_dst / inspect.stack()[0].function
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        docs_settings_dir = user_defined_and_python_data.targets_path / "docs_settings"
+        shutil.copytree(
+            docs_settings_dir, other_cwd / "docs_settings", dirs_exist_ok=True
+        )
+
+        monkeypatch.chdir(other_cwd)
+        parsed = app.ArgumentParser().parse(
+            [
+                "docs",
+                "--docs",
+                "docs_settings",
+                "--destination",
+                "dst",
+                *data.default_args,
+            ]
+        )
+        assert isinstance(parsed, app.Docs)
+        assert parsed.run()
+
+        assert pathlib.Path.cwd() == user_defined_and_python_data.targets_path
+        destination = other_cwd / "dst"
+        check_common(destination, data=data, subtests=subtests)
+
+        config_yml = yaml.safe_load((destination / "_config.yml").read_bytes())
+        assert (
+            config_yml["basedir"] == "integration_test_data/UserDefinedAndPythonData/"
+        )
+        assert config_yml["description"] == "My description"
+        assert (destination / "static.md").read_text(
+            encoding="utf-8"
+        ) == "# Static page\n\nI'm Static!"
 
 
 @pytest.mark.integration

@@ -14,6 +14,7 @@ class RustWithoutConfigData(IntegrationData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
+            "basedir": str(self.targets_path),
             "files": {
                 "crates/helloworld/hello/src/lib.rs": {
                     "additonal_sources": [],
@@ -70,10 +71,7 @@ class RustWithoutConfigData(IntegrationData):
                     },
                     "verification": [
                         {
-                            "command": str(
-                                self.targets_path
-                                / "target/release/aizu-online-judge-itp1-1-a"
-                            ),
+                            "command": "target/release/aizu-online-judge-itp1-1-a",
                             "compile": {
                                 "command": [
                                     "cargo",
@@ -82,7 +80,7 @@ class RustWithoutConfigData(IntegrationData):
                                     "--bin",
                                     "aizu-online-judge-itp1-1-a",
                                 ],
-                                "cwd": str(self.targets_path / "verification/src/bin"),
+                                "cwd": "verification/src/bin",
                             },
                             "name": "Rust",
                             "problem": "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ITP1_1_A",
@@ -104,10 +102,7 @@ class RustWithoutConfigData(IntegrationData):
                     },
                     "verification": [
                         {
-                            "command": str(
-                                self.targets_path
-                                / "target/release/library-checker-aplusb"
-                            ),
+                            "command": "target/release/library-checker-aplusb",
                             "compile": {
                                 "command": [
                                     "cargo",
@@ -116,7 +111,7 @@ class RustWithoutConfigData(IntegrationData):
                                     "--bin",
                                     "library-checker-aplusb",
                                 ],
-                                "cwd": str(self.targets_path / "verification/src/bin"),
+                                "cwd": "verification/src/bin",
                             },
                             "name": "Rust",
                             "problem": "https://judge.yosupo.jp/problem/aplusb",

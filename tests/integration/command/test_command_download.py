@@ -318,3 +318,40 @@ class TestCommandDownload:
         assert {
             t.name: t.output_path.read_bytes() for t in testcases
         } == expected_outputs
+
+    def test_from_other_cwd(
+        self,
+        download_config_dir: pathlib.Path,
+        mocker: MockerFixture,
+        monkeypatch: pytest.MonkeyPatch,
+        file_paths: FilePaths,
+    ):
+        """`download` chdirs to `basedir` of verify.json."""
+        url = "https://judge.yosupo.jp/problem/aplusb"
+        basedir = download_config_dir / "basedir"
+        other_cwd = download_config_dir / "other_cwd"
+        basedir.mkdir(parents=True, exist_ok=True)
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        (other_cwd / "verify.json").write_text(
+            VerificationInput(
+                basedir=basedir,
+                files={
+                    pathlib.Path("test.txt"): VerificationFile(
+                        verification=ProblemVerification(
+                            name="aplusb", command="true", problem=url
+                        )
+                    ),
+                },
+            ).model_dump_json()
+        )
+        download = mocker.patch("competitive_verifier.oj.download", return_value=True)
+
+        monkeypatch.chdir(other_cwd)
+        parsed = app.ArgumentParser().parse(
+            ["download", "--verify-json", "verify.json"]
+        )
+        assert isinstance(parsed, app.Download)
+        assert parsed.run()
+
+        assert pathlib.Path.cwd() == basedir
+        download.assert_called_once_with(url, group_log=True)

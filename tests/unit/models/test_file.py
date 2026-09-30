@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 from typing import Any
 
@@ -396,4 +397,111 @@ def test_transitive_depends_on():
             pathlib.Path("file2.c"),
             pathlib.Path("file4.c"),
         },
+    }
+
+
+@pytest.mark.allow_mkdir
+def test_parse_file_relative_basedir(testtemp: pathlib.Path):
+    basedir = testtemp / "repo"
+    other = testtemp / "other"
+    basedir.mkdir()
+    other.mkdir()
+    tmp = other / "verify.json"
+    tmp.write_text(
+        VerificationInput(
+            basedir=basedir,
+            files={
+                pathlib.Path("libfile.py"): VerificationFile(
+                    dependencies={pathlib.Path("libfile2.py")}
+                ),
+                pathlib.Path("libfile2.py"): VerificationFile(),
+                pathlib.Path("../outer.py"): VerificationFile(),
+            },
+        ).model_dump_json()
+    )
+
+    os.chdir(other)
+    parsed = VerificationInput.parse_file_relative(tmp, chdir=False)
+    assert pathlib.Path.cwd() == other
+    assert parsed.basedir == basedir
+    assert set(parsed.files.keys()) == {
+        pathlib.Path("libfile.py"),
+        pathlib.Path("libfile2.py"),
+    }
+
+    os.chdir(other)
+    parsed = VerificationInput.parse_file_relative(tmp)
+    assert pathlib.Path.cwd() == basedir
+    assert parsed.basedir == basedir
+    assert (
+        parsed.model_dump()
+        == VerificationInput(
+            basedir=basedir,
+            files={
+                pathlib.Path("libfile.py"): VerificationFile(
+                    dependencies={pathlib.Path("libfile2.py")}
+                ),
+                pathlib.Path("libfile2.py"): VerificationFile(),
+            },
+        ).model_dump()
+    )
+
+
+def test_parse_file_relative_without_basedir_keeps_cwd(testtemp: pathlib.Path):
+    tmp = testtemp / "verify.json"
+    tmp.write_text(
+        VerificationInput(
+            files={pathlib.Path("a.py"): VerificationFile()}
+        ).model_dump_json()
+    )
+    parsed = VerificationInput.parse_file_relative(tmp)
+    assert pathlib.Path.cwd() == testtemp
+    assert parsed.basedir is None
+    assert set(parsed.files.keys()) == {pathlib.Path("a.py")}
+
+
+def test_chdir_missing_basedir_keeps_cwd(testtemp: pathlib.Path):
+    VerificationInput(basedir=testtemp / "missing").chdir()
+    assert pathlib.Path.cwd() == testtemp
+
+
+def test_chdir_requires_absolute_basedir():
+    with pytest.raises(ValueError, match="absolute"):
+        VerificationInput(basedir=pathlib.Path("relative")).chdir()
+
+
+def test_merge_basedir(testtemp: pathlib.Path):
+    a = VerificationInput(
+        basedir=testtemp / "a", files={pathlib.Path("a.py"): VerificationFile()}
+    )
+    b = VerificationInput(files={pathlib.Path("b.py"): VerificationFile()})
+    c = VerificationInput(
+        basedir=testtemp / "c", files={pathlib.Path("c.py"): VerificationFile()}
+    )
+
+    assert (
+        a.merge(b).model_dump()
+        == VerificationInput(
+            basedir=testtemp / "a",
+            files={
+                pathlib.Path("a.py"): VerificationFile(),
+                pathlib.Path("b.py"): VerificationFile(),
+            },
+        ).model_dump()
+    )
+    assert b.merge(a).basedir == testtemp / "a"
+    assert a.merge(a).basedir == testtemp / "a"
+    assert b.merge(b).basedir is None
+    with pytest.raises(ValueError, match="different basedir"):
+        a.merge(c)
+
+
+def test_basedir_json(testtemp: pathlib.Path):
+    obj = VerificationInput(basedir=testtemp, files={})
+    assert json.loads(obj.model_dump_json()) == {
+        "basedir": testtemp.as_posix(),
+        "files": {},
+    }
+    assert json.loads(VerificationInput().model_dump_json(exclude_none=True)) == {
+        "files": {}
     }

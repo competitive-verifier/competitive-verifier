@@ -172,3 +172,75 @@ class TestCommandVerfy:
             json.loads(pathlib.Path(result).read_bytes())
             == integration_data.expected_verify_result()
         )
+
+    @pytest.mark.usefixtures("mock_verification")
+    def test_verify_from_other_cwd(
+        self,
+        integration_data: IntegrationData,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """`verify` chdirs to `basedir` of verify.json, so it can be run from anywhere."""
+        verify = integration_data.config_dir_path / "verify.json"
+        other_cwd = integration_data.config_dir_path / "other_cwd"
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
+
+        monkeypatch.chdir(other_cwd)
+        parsed = app.ArgumentParser().parse(
+            [
+                "verify",
+                "--verify-json",
+                str(verify),
+                "--output",
+                "result_other_cwd.json",
+            ]
+        )
+        assert isinstance(parsed, app.Verify)
+        assert parsed.run()
+
+        assert pathlib.Path.cwd() == integration_data.targets_path
+        result = other_cwd / "result_other_cwd.json"
+        assert (
+            json.loads(result.read_bytes()) == integration_data.expected_verify_result()
+        )
+
+    def test_merge_input_from_other_cwd(
+        self,
+        integration_data: IntegrationData,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        verify = integration_data.config_dir_path / "verify.json"
+        other_cwd = integration_data.config_dir_path / "other_cwd"
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(verify, other_cwd / "a.json")
+        shutil.copyfile(verify, other_cwd / "b.json")
+
+        monkeypatch.chdir(other_cwd)
+        parsed = app.ArgumentParser().parse(["merge-input", "a.json", "b.json"])
+        assert isinstance(parsed, app.MergeInput)
+        assert parsed.run()
+
+        assert pathlib.Path.cwd() == integration_data.targets_path
+        merged = json.loads(capfd.readouterr().out)
+        assert merged == integration_data.expected_verify_json()
+
+    def test_merge_input_different_basedir(
+        self,
+        integration_data: IntegrationData,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        verify = integration_data.config_dir_path / "verify.json"
+        other_cwd = integration_data.config_dir_path / "other_cwd"
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        conflict = json.loads(verify.read_bytes())
+        conflict["basedir"] = other_cwd.as_posix()
+        (other_cwd / "conflict.json").write_text(json.dumps(conflict))
+
+        monkeypatch.chdir(other_cwd)
+        parsed = app.ArgumentParser().parse(
+            ["merge-input", str(verify), "conflict.json"]
+        )
+        assert isinstance(parsed, app.MergeInput)
+        with pytest.raises(ValueError, match="different basedir"):
+            parsed.run()

@@ -17,6 +17,7 @@ class CppWithoutConfigData(IntegrationData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
+            "basedir": str(self.targets_path),
             "files": {
                 "aplusb.hpp": {
                     "additonal_sources": [
@@ -55,7 +56,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
                                 "aplusb.main.cpp",
@@ -73,7 +74,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
                                 "aplusb.main.cpp",
@@ -109,7 +110,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "aplusb.test.cpp",
@@ -127,7 +128,7 @@ class CppWithoutConfigData(IntegrationData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "aplusb.test.cpp",
@@ -365,6 +366,7 @@ class CppWithConfigData(CppWithoutConfigData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
+            "basedir": str(self.targets_path),
             "files": {
                 "aplusb.hpp": {
                     "additonal_sources": [
@@ -402,7 +404,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
                                 "aplusb.main.cpp",
@@ -419,7 +421,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/standalone/4e17a93c916bd2ca29bdf880cce422dc/a.out'}",
                                 "aplusb.main.cpp",
@@ -454,7 +456,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "aplusb.test.cpp",
@@ -471,7 +473,7 @@ class CppWithConfigData(CppWithoutConfigData):
                                 "-Wall",
                                 "-g",
                                 "-I",
-                                str(self.targets_path),
+                                ".",
                                 "-o",
                                 f"{self.config_dir_path / 'cache/problems/8e3916c7805235eb07ec2a58660d89c6/a.out'}",
                                 "aplusb.test.cpp",
