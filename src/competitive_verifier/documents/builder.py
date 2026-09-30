@@ -7,6 +7,7 @@ from pydantic import BaseModel
 import competitive_verifier_resources
 from competitive_verifier import git, github
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
+from competitive_verifier.util import to_relative
 
 from .config import ConfigYaml, load_config_yml
 from .front_matter import Markdown
@@ -93,8 +94,8 @@ class DocumentBuilder(BaseModel):
         logger.info("Write document files...")
 
         exclude = (self.exclude or []) + (config_yml.exclude or [])
-        if static_dir and static_dir.is_relative_to("."):
-            exclude.append(self.docs_dir.relative_to(".").as_posix())
+        if static_dir and (relative_docs_dir := to_relative(self.docs_dir)):
+            exclude.append(relative_docs_dir.as_posix())
 
         sources = git.ls_files(*(self.include or []))
         if exclude:

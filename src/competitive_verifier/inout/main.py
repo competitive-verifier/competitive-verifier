@@ -46,6 +46,7 @@ class MergeInput(VerboseArguments):
         )
 
     def _run(self) -> bool:
+        self.verify_files_json = [p.absolute() for p in self.verify_files_json]
         result = merge(
             map(VerificationInput.parse_file_relative, self.verify_files_json)
         )

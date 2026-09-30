@@ -1,4 +1,5 @@
 import enum
+import os
 import pathlib
 from functools import cached_property
 from logging import getLogger
@@ -128,17 +129,57 @@ class VerificationFile(BaseModel):
 
 
 class VerificationInput(BaseModel):
+    basedir: ForcePosixPath | None = Field(
+        default=None,
+        description="The absolute path of the directory"
+        " that the relative paths and commands in this file are based on."
+        " Consumers change the working directory to this before using them.",
+        examples=["/home/user/repo"],
+    )
     files: dict[ForcePosixPath, VerificationFile] = Field(
         default_factory=dict[ForcePosixPath, VerificationFile],
         description="The key is relative path from the root.",
     )
 
     def merge(self, other: "VerificationInput") -> "VerificationInput":
-        return VerificationInput(files=self.files | other.files)
+        if self.basedir and other.basedir and self.basedir != other.basedir:
+            raise ValueError(
+                f"Cannot merge inputs with different basedir: {self.basedir}, {other.basedir}"
+            )
+        return VerificationInput(
+            basedir=self.basedir or other.basedir,
+            files=self.files | other.files,
+        )
+
+    def chdir(self) -> None:
+        """Change the working directory to `basedir` if it is set."""
+        if self.basedir is None:
+            return
+        if not self.basedir.is_absolute():
+            raise ValueError(f"basedir must be an absolute path: {self.basedir}")
+        if not self.basedir.is_dir():
+            logger.warning(
+                "basedir does not exist. Keep the current directory: %s",
+                self.basedir,
+                extra={"github": GitHubMessageParams()},
+            )
+            return
+        if self.basedir.resolve() != pathlib.Path.cwd().resolve():
+            logger.info("chdir: %s", self.basedir.as_posix())
+            os.chdir(self.basedir)
 
     @classmethod
-    def parse_file_relative(cls, path: "StrPath") -> "VerificationInput":
+    def parse_file_relative(
+        cls, path: "StrPath", *, chdir: bool = True
+    ) -> "VerificationInput":
+        """Parse verify_files.json.
+
+        If `basedir` is set and `chdir` is `True`,
+        change the working directory to it before relativizing the paths.
+        """
         impl = cls.model_validate_json(pathlib.Path(path).read_bytes())
+        if chdir:
+            impl.chdir()
         new_files: dict[pathlib.Path, VerificationFile] = {}
         for p, f in impl.files.items():
             rp = to_relative(p)

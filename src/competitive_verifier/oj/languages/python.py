@@ -28,9 +28,9 @@ class PythonLanguageEnvironment(LanguageEnvironment):
     def _python_path(self, *, basedir: pathlib.Path) -> str:
         python_path = os.getenv("PYTHONPATH")
         return (
-            basedir.resolve().as_posix() + os.pathsep + python_path
+            basedir.as_posix() + os.pathsep + python_path
             if python_path
-            else basedir.resolve().as_posix()
+            else basedir.as_posix()
         )
 
     def get_compile_command(

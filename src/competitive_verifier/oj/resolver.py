@@ -268,11 +268,9 @@ class OjResolver:
             logger.info("UNITTEST envvar %s=%s is truthy.", unit_test_envvar, var)
             yield ConstVerification(status=ResultStatus.SUCCESS)
 
-    def resolve(
-        self, *, bundle: bool, relative_path: bool = False
-    ) -> VerificationInput:
+    def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
-        basedir = pathlib.Path() if relative_path else pathlib.Path.cwd()
+        basedir = pathlib.Path()
 
         for path in git.ls_files(*self.include):
             if self._match_exclude(path):
@@ -315,7 +313,7 @@ class OjResolver:
                 document_attributes=attr,
                 additonal_sources=additonal_sources,
             )
-        return VerificationInput(files=files)
+        return VerificationInput(basedir=pathlib.Path.cwd(), files=files)
 
 
 class OjResolve(IncludeExcludeArguments, VerboseArguments):
@@ -325,7 +323,6 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
     )
     bundle: bool = True
     config: pathlib.Path | VerificationConfig | None = None
-    relative_path: bool = False
 
     @classmethod
     def add_parser(cls, parser: ArgumentParser):
@@ -340,14 +337,6 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
             "--config",
             help="config.toml",
             type=pathlib.Path,
-        )
-        parser.add_argument(
-            "--relative-path",
-            action="store_true",
-            help="(experimental) Use paths relative to the current directory"
-            " instead of absolute paths in the resolved commands,"
-            " so that the output does not depend on the checkout location."
-            " Rust is not supported.",
         )
 
     def to_resolver(self) -> OjResolver:
@@ -377,8 +366,6 @@ class OjResolve(IncludeExcludeArguments, VerboseArguments):
 
     def _run(self) -> bool:
         logger.debug("arguments:%s", self)
-        resolved = self.to_resolver().resolve(
-            bundle=self.bundle, relative_path=self.relative_path
-        )
+        resolved = self.to_resolver().resolve(bundle=self.bundle)
         print(resolved.model_dump_json(exclude_none=True))
         return True

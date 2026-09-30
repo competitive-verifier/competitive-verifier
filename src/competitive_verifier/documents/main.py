@@ -67,6 +67,10 @@ class Docs(
         logger.debug("arguments:%s", self)
         logger.info("path of verify_files_json=%s", self.verify_files_json)
         logger.info("path of result_json=%s", [str(p) for p in self.result_json])
+        self.result_json = [p.absolute() for p in self.result_json]
+        self.destination = self.destination.absolute()
+        if self.docs:
+            self.docs = self.docs.absolute()
         verifications = VerificationInput.parse_file_relative(self.verify_files_json)
 
         result = MergeResult(
