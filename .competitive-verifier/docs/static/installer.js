@@ -134,7 +134,7 @@
           ojResolve = true
           initializeForVerification.push(
             '- name: Install dependencies (Java)',
-            '  uses: actions/setup-java@v4',
+            '  uses: actions/setup-java@v6',
             '  with:',
             '    distribution: "temurin"',
             '    java-version: "17"',
