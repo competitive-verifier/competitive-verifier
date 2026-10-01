@@ -61,6 +61,11 @@ class _BaseProblem(Problem):
         save_testcases(samples, directory=test_directory)
         return samples
 
+    def testdata_hash(self) -> str | None:
+        if not self.test_directory.is_dir():
+            return None
+        return testcases_hash(self.iter_system_cases())
+
     @abstractmethod
     def _download_cases(self) -> Iterable[TestCaseData]: ...
 
@@ -418,15 +423,7 @@ class LocalProblem(TestCaseProvider):
     def testdata_hash(self) -> str | None:
         if not self.path.is_dir():
             return None
-        digest = hashlib.sha256()
-        for case in sorted(self.iter_system_cases(), key=lambda c: c.name):
-            digest.update(case.name.encode())
-            digest.update(b"\0")
-            digest.update(case.input_path.read_bytes())
-            digest.update(b"\0")
-            digest.update(case.output_path.read_bytes())
-            digest.update(b"\0")
-        return digest.hexdigest()
+        return testcases_hash(self.iter_system_cases())
 
 
 def _normpath(path: str) -> str:
@@ -498,6 +495,18 @@ def iter_testcases(
             outputs[_casename(path, directory=directory)] = path
 
     return merge_testcase_files(inputs, outputs)
+
+
+def testcases_hash(cases: Iterable[TestCaseFile]) -> str:
+    digest = hashlib.sha256()
+    for case in sorted(cases, key=lambda c: c.name):
+        digest.update(case.name.encode())
+        digest.update(b"\0")
+        digest.update(case.input_path.read_bytes())
+        digest.update(b"\0")
+        digest.update(case.output_path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def _name_to_filename(name: str, ext: str):

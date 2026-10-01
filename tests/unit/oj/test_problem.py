@@ -1,6 +1,12 @@
-import pytest
+import pathlib
 
+import pytest
+from pytest_mock import MockerFixture
+
+from competitive_verifier.models import TestCaseData as SystemTestCaseData
 from competitive_verifier.oj.problem import (
+    LocalProblem,
+    YukicoderProblem,
     _normpath,  # pyright: ignore[reportPrivateUsage]
     problem_from_url,
 )
@@ -84,3 +90,36 @@ test_problem_repr_params = [
 )
 def test_problem_repr(url: str, expected: str):
     assert repr(problem_from_url(url)) == expected
+
+
+@pytest.mark.allow_mkdir
+def test_oj_problem_testdata_hash(
+    tmp_path: pathlib.Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mocker: MockerFixture,
+):
+    monkeypatch.setenv("COMPETITIVE_VERIFY_CONFIG_PATH", str(tmp_path))
+    problem = YukicoderProblem(problem_no=1088)
+    assert problem.testdata_hash() is None
+
+    cases = [
+        SystemTestCaseData("a", b"1 2\n", b"3\n"),
+        SystemTestCaseData("b", b"5 6\n", b"11\n"),
+    ]
+    download = mocker.patch.object(
+        YukicoderProblem, "_download_cases", return_value=cases
+    )
+    assert problem.download_system_cases()
+    download.assert_called_once()
+    downloaded = problem.testdata_hash()
+    assert downloaded is not None
+    assert problem.testdata_hash() == downloaded
+    assert LocalProblem(problem.test_directory).testdata_hash() == downloaded
+
+    # Cached cases are reused, so the hash describes the cases actually tested.
+    (problem.test_directory / "b.out").write_bytes(b"12\n")
+    assert problem.download_system_cases()
+    download.assert_called_once()
+    changed = problem.testdata_hash()
+    assert changed != downloaded
+    assert LocalProblem(problem.test_directory).testdata_hash() == changed
