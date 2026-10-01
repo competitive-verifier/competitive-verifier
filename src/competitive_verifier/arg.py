@@ -62,24 +62,14 @@ class VerifyFilesJsonArgumentsMixin(BaseArguments):
             help="File path of verify_files.json. default: environ variable $COMPETITIVE_VERIFY_FILES_PATH",
             type=pathlib.Path,
         )
-        parser.add_argument(
-            "--basedir",
-            dest="basedir",
-            default=None,
-            help="The directory that the relative paths in verify_files.json are based on."
-            " Overrides the basedir recorded in the file.",
-            type=pathlib.Path,
-        )
 
 
 class VerifyFilesJsonArguments(VerifyFilesJsonArgumentsMixin):
     verify_files_json: pathlib.Path
-    basedir: pathlib.Path | None = None
 
 
 class OptionalVerifyFilesJsonArguments(VerifyFilesJsonArgumentsMixin):
     verify_files_json: pathlib.Path | None
-    basedir: pathlib.Path | None = None
 
     @classmethod
     def _required(cls) -> bool:

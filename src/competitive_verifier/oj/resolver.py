@@ -313,7 +313,7 @@ class OjResolver:
                 document_attributes=attr,
                 additonal_sources=additonal_sources,
             )
-        return VerificationInput(basedir=basedir.resolve(), files=files)
+        return VerificationInput(files=files)
 
 
 class OjResolve(IncludeExcludeArguments, VerboseArguments):

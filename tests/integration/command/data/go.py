@@ -17,7 +17,6 @@ class GoWithoutConfigData(IntegrationData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
-            "basedir": str(self.targets_path),
             "files": {
                 "helloworld.aoj.go": {
                     "additonal_sources": [],
@@ -126,7 +125,6 @@ class GoWithConfigData(GoWithoutConfigData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
-            "basedir": str(self.targets_path),
             "files": {
                 "helloworld.aoj.go": {
                     "additonal_sources": [],

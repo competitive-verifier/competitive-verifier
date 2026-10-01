@@ -29,7 +29,6 @@ class UserDefinedAndPythonData(IntegrationData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
-            "basedir": str(self.targets_path),
             "files": {
                 "awk/aplusb.awk": {
                     "additonal_sources": [],

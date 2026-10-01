@@ -106,7 +106,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "IncludeExclude"),
             "files": {
                 "a1.txt": {
                     "additonal_sources": [],
@@ -206,7 +205,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "IncludeExclude"),
             "files": {
                 "subdir/a1.txt": {
                     "additonal_sources": [],
@@ -268,7 +266,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "IncludeExclude"),
             "files": {
                 "a1.txt": {
                     "additonal_sources": [],
@@ -318,7 +315,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "IncludeExclude"),
             "files": {
                 "a1.txt": {
                     "additonal_sources": [],
@@ -380,7 +376,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "IncludeExclude"),
             "files": {
                 "c1.txt": {
                     "additonal_sources": [],
@@ -452,7 +447,6 @@ class TestCommandOjResolve:
         stdout = capfd.readouterr().out
         resolved = json.loads(stdout)
         assert resolved == {
-            "basedir": str(file_paths.root / "CppData"),
             "files": {
                 "aplusb.hpp": {
                     "additonal_sources": [],

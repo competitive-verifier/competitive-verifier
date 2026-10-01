@@ -530,23 +530,6 @@
     }
   },
   "properties": {
-    "basedir": {
-      "anyOf": [
-        {
-          "format": "path",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "description": "The absolute path of the directory that the relative paths and commands in this file are based on. Consumers change the working directory to this before using them.",
-      "examples": [
-        "/home/user/repo"
-      ],
-      "title": "Basedir"
-    },
     "files": {
       "additionalProperties": {
         "$ref": "#/$defs/VerificationFile"

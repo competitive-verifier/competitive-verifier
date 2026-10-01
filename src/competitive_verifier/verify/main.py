@@ -154,13 +154,7 @@ class Verify(
     def _run(self) -> bool:
         logger.debug("arguments:%s", self)
         logger.info("verify_files_json=%s", self.verify_files_json)
-        if self.prev_result:
-            self.prev_result = self.prev_result.absolute()
-        if self.output:
-            self.output = self.output.absolute()
-        verifications = VerificationInput.parse_file_relative(
-            self.verify_files_json, basedir=self.basedir
-        )
+        verifications = VerificationInput.parse_file_relative(self.verify_files_json)
         prev_result = self.read_prev_result()
 
         verifier = Verifier(

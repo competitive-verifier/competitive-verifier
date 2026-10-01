@@ -14,7 +14,6 @@ class RustWithoutConfigData(IntegrationData):
 
     def expected_verify_json(self) -> dict[str, Any]:
         return {
-            "basedir": str(self.targets_path),
             "files": {
                 "crates/helloworld/hello/src/lib.rs": {
                     "additonal_sources": [],

@@ -112,7 +112,7 @@ def test_repr():
         }
     )
     assert repr(obj) == (
-        "VerificationInput(basedir=None, "
+        "VerificationInput("
         f"files={{{Path('foo/bar.py')!r}: "
         f"VerificationFile(dependencies=set(), verification=[], document_attributes={{}}, additonal_sources=[]),"
         f" {Path('foo/baz.py')!r}: "
