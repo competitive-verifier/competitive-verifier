@@ -62,6 +62,8 @@ class MockVerifyCommandResult(verifier.VerifyCommandResult):
 
         def rewriteFileResult(path: pathlib.Path, file_result: FileResult):
             seed = path.as_posix().encode()
+            if file_result.content_hash is not None:
+                file_result.content_hash = f"{md5_number(seed + b'content_hash'):032x}"
             file_result.verifications = [
                 rewriteVerificationResult(seed, v) for v in file_result.verifications
             ]

@@ -10,6 +10,7 @@ from .result import FileResult, TestcaseResult, VerificationResult, VerifyComman
 from .result_status import JudgeStatus, ResultStatus
 from .shell import ShellCommand, ShellCommandLike
 from .verification import (
+    BaseProblemVerification,
     BaseVerification,
     CommandVerification,
     ConstVerification,
@@ -22,6 +23,7 @@ from .verification import (
 
 __all__ = [
     "AddtionalSource",
+    "BaseProblemVerification",
     "BaseVerification",
     "CommandVerification",
     "ConstVerification",

@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import pathlib
 import time
 from abc import ABC, abstractmethod
@@ -8,6 +9,7 @@ from logging import getLogger
 from competitive_verifier import git, log
 from competitive_verifier.download import download_files as run_download
 from competitive_verifier.models import (
+    BaseProblemVerification,
     FileResult,
     ResultStatus,
     VerifcationTimeoutError,
@@ -32,6 +34,8 @@ class InputContainer(ABC):
     verification_time: datetime.datetime
     prev_result: VerifyCommandResult | None
     split_state: SplitState | None
+    default_tle: float | None
+    default_mle: float | None
 
     def __init__(
         self,
@@ -40,14 +44,57 @@ class InputContainer(ABC):
         verification_time: datetime.datetime,
         prev_result: VerifyCommandResult | None,
         split_state: SplitState | None,
+        default_tle: float | None = None,
+        default_mle: float | None = None,
     ) -> None:
         self.verifications = verifications
         self.verification_time = verification_time
         self.prev_result = prev_result
         self.split_state = split_state
+        self.default_tle = default_tle
+        self.default_mle = default_mle
+        self._content_hashes: dict[pathlib.Path, str] = {}
 
     @abstractmethod
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
+
+    def file_content_hash(self, path: pathlib.Path) -> str | None:
+        """Digest of the file, its transitive dependencies and its verifications.
+
+        The verifications include their effective time and memory limits
+        and their test data. ``None`` if any dependency is missing.
+        """
+        cached = self._content_hashes.get(path)
+        if cached is not None:
+            return cached
+        digest = hashlib.sha256()
+        f = self.verifications.files.get(path)
+        if f is None:
+            return None
+        for dep in sorted(self.verifications.transitive_depends_on[path]):
+            try:
+                content = dep.read_bytes()
+            except OSError:
+                return None
+            digest.update(dep.as_posix().encode())
+            digest.update(b"\0")
+            digest.update(content)
+            digest.update(b"\0")
+        for v in f.verification_list:
+            digest.update(v.model_dump_json(exclude_none=True).encode())
+            digest.update(b"\0")
+            if isinstance(v, BaseProblemVerification):
+                digest.update(repr(v.tle or self.default_tle).encode())
+                digest.update(b"\0")
+                digest.update(repr(v.mle or self.default_mle).encode())
+                digest.update(b"\0")
+            testdata_hash = v.testdata_hash()
+            if testdata_hash is not None:
+                digest.update(testdata_hash.encode())
+            digest.update(b"\0")
+        result = digest.hexdigest()
+        self._content_hashes[path] = result
+        return result
 
     def file_need_verification(
         self,
@@ -141,11 +188,11 @@ class BaseVerifier(InputContainer):
             verification_time=verification_time or _now(),
             prev_result=prev_result,
             split_state=split_state,
+            default_tle=default_tle,
+            default_mle=default_mle,
         )
         self._input = verifications
         self.timeout = timeout
-        self.default_tle = default_tle
-        self.default_mle = default_mle
         self._result = None
 
     @property
@@ -260,7 +307,8 @@ class BaseVerifier(InputContainer):
                         f,
                         download=download,
                         deadline=deadline,
-                    )
+                    ),
+                    content_hash=self.file_content_hash(p),
                 )
 
         sippable_file_results = self.skippable_results()
@@ -309,6 +357,7 @@ class BaseVerifier(InputContainer):
                     )
                 results[p] = FileResult(
                     verifications=verifications,
+                    content_hash=self.file_content_hash(p),
                     newest=True,
                 )
         return results

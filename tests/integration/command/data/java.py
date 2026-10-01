@@ -117,6 +117,7 @@ class JavaData(IntegrationData):
         return {
             "files": {
                 "examples/Aplusb_main.java": {
+                    "content_hash": "9eec648d2550a9a677a88d9467976f11",
                     "newest": True,
                     "verifications": [
                         {
@@ -128,6 +129,7 @@ class JavaData(IntegrationData):
                     ],
                 },
                 "examples/Aplusb_test.java": {
+                    "content_hash": "c7c353fb35eb05dbb94ad35790272af5",
                     "newest": True,
                     "verifications": [
                         {
@@ -215,6 +217,7 @@ class JavaData(IntegrationData):
                     ],
                 },
                 "examples/HelloWorld_test.java": {
+                    "content_hash": "d760393b1eacd0c4decbd031d1c34211",
                     "newest": True,
                     "verifications": [
                         {

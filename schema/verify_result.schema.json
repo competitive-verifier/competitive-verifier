@@ -10,6 +10,19 @@
           "title": "Verifications",
           "type": "array"
         },
+        "content_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Digest of the file, its transitive dependencies and its verification settings at verification time.",
+          "title": "Content Hash"
+        },
         "newest": {
           "default": true,
           "description": "Whether the verification was performed on the most recent run.",

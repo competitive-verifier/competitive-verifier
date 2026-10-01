@@ -38,6 +38,7 @@ class MockVerifier(BaseVerifier):
         verification_time: datetime.datetime,
         prev_result: VerifyCommandResult | None = None,
         split_state: SplitState | None = None,
+        file_hashes: dict[str, str] | None = None,
     ) -> None:
         super().__init__(
             verifications=VerificationInput.model_validate(varifications),
@@ -48,9 +49,15 @@ class MockVerifier(BaseVerifier):
             default_mle=256,
             timeout=10,
         )
+        self.file_hashes = file_hashes
 
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime:
         return datetime.datetime(2005, 1, 2, 15, 4, 5)
+
+    def file_content_hash(self, path: pathlib.Path) -> str | None:
+        if self.file_hashes is None:
+            return None
+        return self.file_hashes.get(path.as_posix())
 
 
 test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
@@ -286,6 +293,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                     "files": {
                         "test/foo.py": FileResult(
                             newest=True,
+                            content_hash="hash:test/foo.py",
                             verifications=[
                                 VerificationResult(
                                     status=ResultStatus.SUCCESS,
@@ -298,6 +306,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                         ),
                         "test/foo1.py": FileResult(
                             newest=True,
+                            content_hash="hash:test/foo1.py",
                             verifications=[
                                 VerificationResult(
                                     status=ResultStatus.SUCCESS,
@@ -310,6 +319,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                         ),
                         "test/foo2.py": FileResult(
                             newest=True,
+                            content_hash="hash:test/foo2.py",
                             verifications=[
                                 VerificationResult(
                                     status=ResultStatus.SUCCESS,
@@ -322,6 +332,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                         ),
                         "test/foo3.py": FileResult(
                             newest=True,
+                            content_hash="outdated-hash",
                             verifications=[
                                 VerificationResult(
                                     status=ResultStatus.SUCCESS,
@@ -334,6 +345,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                         ),
                         "test/skip.py": FileResult(
                             newest=False,
+                            content_hash="hash:test/skip.py",
                             verifications=[
                                 VerificationResult(
                                     status=ResultStatus.SUCCESS,
@@ -348,12 +360,20 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                 }
             ),
             verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+            file_hashes={
+                "test/foo.py": "hash:test/foo.py",
+                "test/foo1.py": "hash:test/foo1.py",
+                "test/foo2.py": "hash:test/foo2.py",
+                "test/foo3.py": "hash:test/foo3.py",
+                "test/skip.py": "hash:test/skip.py",
+            },
         ),
         {
             "total_seconds": 8.0,
             "files": {
                 "test/foo.py": FileResult(
                     newest=False,
+                    content_hash="hash:test/foo.py",
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -366,6 +386,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                 ),
                 "test/foo1.py": FileResult(
                     newest=False,
+                    content_hash="hash:test/foo1.py",
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -378,6 +399,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                 ),
                 "test/foo2.py": FileResult(
                     newest=False,
+                    content_hash="hash:test/foo2.py",
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -390,6 +412,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                 ),
                 "test/foo3.py": FileResult(
                     newest=True,
+                    content_hash="hash:test/foo3.py",
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,
@@ -400,6 +423,7 @@ test_verify_params: list[tuple[MockVerifier, dict[str, Any]]] = [
                 ),
                 "test/skip.py": FileResult(
                     newest=True,
+                    content_hash="hash:test/skip.py",
                     verifications=[
                         VerificationResult(
                             status=ResultStatus.SUCCESS,

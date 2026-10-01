@@ -41,6 +41,13 @@ class BaseVerification(BaseModel, ABC):
         """The verification is lightweight."""
         return False
 
+    def testdata_hash(self) -> str | None:
+        """Digest identifying the verification's test data.
+
+        ``None`` if the test data can't be cheaply identified.
+        """
+        return None
+
 
 class ConstVerification(BaseVerification):
     type: Literal["const"] = "const"
@@ -147,6 +154,12 @@ class BaseProblemVerification(BaseVerification, ABC):
 
     @abstractmethod
     def _problem(self) -> TestCaseProvider | None: ...
+
+    def testdata_hash(self) -> str | None:
+        problem = self._problem()
+        if problem is None:
+            return None
+        return problem.testdata_hash()
 
     def run(
         self,

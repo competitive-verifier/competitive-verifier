@@ -30,6 +30,13 @@ class TestCaseProvider(ABC):
     def checker(self) -> pathlib.Path | None:
         return None
 
+    def testdata_hash(self) -> str | None:
+        """Digest identifying the provider's test data, computable without downloading.
+
+        ``None`` if the provider can't cheaply identify its test data.
+        """
+        return None
+
 
 class Problem(TestCaseProvider):
     def __repr__(self) -> str:

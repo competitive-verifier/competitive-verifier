@@ -111,6 +111,15 @@ class FileResult(BaseModel):
     """The results of each verification.
     """
 
+    content_hash: str | None = Field(
+        default=None,
+        description="Digest of the file, its transitive dependencies"
+        " and its verification settings at verification time.",
+    )
+    """Digest of the file, its transitive dependencies
+    and its verification settings at verification time.
+    """
+
     newest: bool = Field(
         default=True,
         description="Whether the verification was performed on the most recent run.",

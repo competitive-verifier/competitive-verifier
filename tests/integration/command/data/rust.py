@@ -131,6 +131,7 @@ class RustWithoutConfigData(IntegrationData):
         return {
             "files": {
                 "verification/src/bin/aizu-online-judge-itp1-1-a.rs": {
+                    "content_hash": "1133230e2946eba25835cd40cd37b4fc",
                     "newest": True,
                     "verifications": [
                         {
@@ -152,6 +153,7 @@ class RustWithoutConfigData(IntegrationData):
                     ],
                 },
                 "verification/src/bin/library-checker-aplusb.rs": {
+                    "content_hash": "f54f0cea1b69287aa58572cca0c7d859",
                     "newest": True,
                     "verifications": [
                         {
