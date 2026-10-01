@@ -53,7 +53,6 @@ class InputContainer(ABC):
         self.split_state = split_state
         self.default_tle = default_tle
         self.default_mle = default_mle
-        self._content_hashes: dict[pathlib.Path, str] = {}
 
     @abstractmethod
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
@@ -64,9 +63,6 @@ class InputContainer(ABC):
         The verifications include their effective time and memory limits
         and their test data. ``None`` if any dependency is missing.
         """
-        cached = self._content_hashes.get(path)
-        if cached is not None:
-            return cached
         digest = hashlib.sha256()
         f = self.verifications.files.get(path)
         if f is None:
@@ -92,9 +88,7 @@ class InputContainer(ABC):
             if testdata_hash is not None:
                 digest.update(testdata_hash.encode())
             digest.update(b"\0")
-        result = digest.hexdigest()
-        self._content_hashes[path] = result
-        return result
+        return digest.hexdigest()
 
     def file_need_verification(
         self,
