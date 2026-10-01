@@ -48,6 +48,12 @@ def _hash(
     return h
 
 
+def _testdata_hash(obj: dict[str, Any], path: str = "foo.py") -> str | None:
+    return HashInputContainer(VerificationInput.model_validate(obj)).file_testdata_hash(
+        pathlib.Path(path)
+    )
+
+
 def _problem(**kwargs: Any) -> dict[str, Any]:
     return {
         "files": {
@@ -112,46 +118,68 @@ def test_default_limits_ignored_for_non_problem_verification():
     assert _hash(obj) == _hash(obj, default_tle=1, default_mle=1)
 
 
-def test_hash_changes_with_local_cases():
+def test_content_hash_ignores_testdata(mocker: MockerFixture):
+    base = _hash(_problem())
     cases = pathlib.Path("cases")
     cases.mkdir()
     (cases / "a.in").write_bytes(b"1 2\n")
     (cases / "a.out").write_bytes(b"3\n")
-    with_a = _hash(_local())
-    assert with_a == _hash(_local())
+    local = _hash(_local())
+    (cases / "a.out").write_bytes(b"4\n")
+    assert _hash(_local()) == local
+    mocker.patch.object(ProblemVerification, "testdata_hash", return_value="v1")
+    assert _hash(_problem()) == base
+
+
+def test_testdata_hash_changes_with_local_cases():
+    cases = pathlib.Path("cases")
+    cases.mkdir()
+    (cases / "a.in").write_bytes(b"1 2\n")
+    (cases / "a.out").write_bytes(b"3\n")
+    with_a = _testdata_hash(_local())
+    assert with_a is not None
+    assert with_a == _testdata_hash(_local())
 
     (cases / "a.out").write_bytes(b"4\n")
-    with_a_changed = _hash(_local())
+    with_a_changed = _testdata_hash(_local())
     assert with_a_changed != with_a
 
     (cases / "b.in").write_bytes(b"5 6\n")
     (cases / "b.out").write_bytes(b"11\n")
-    with_a_b = _hash(_local())
+    with_a_b = _testdata_hash(_local())
     assert len({with_a, with_a_changed, with_a_b}) == 3
 
     (cases / "b.in").unlink()
     (cases / "b.out").unlink()
-    assert _hash(_local()) == with_a_changed
+    assert _testdata_hash(_local()) == with_a_changed
 
 
-def test_hash_changes_when_local_cases_missing():
-    missing = _hash(_local())
-    assert missing == _hash(_local())
+def test_testdata_hash_none_when_local_cases_missing():
+    assert _testdata_hash(_local()) is None
     cases = pathlib.Path("cases")
     cases.mkdir()
-    empty = _hash(_local())
-    assert empty != missing
+    empty = _testdata_hash(_local())
+    assert empty is not None
     (cases / "a.in").write_bytes(b"1 2\n")
     (cases / "a.out").write_bytes(b"3\n")
-    assert _hash(_local()) not in {missing, empty}
+    assert _testdata_hash(_local()) not in {None, empty}
 
 
-def test_hash_includes_testdata_hash(mocker: MockerFixture):
-    hashes: list[str] = []
-    for testdata_hash in [None, "version1", "version2"]:
+def test_testdata_hash_combines_verifications(mocker: MockerFixture):
+    hashes: list[str | None] = []
+    for testdata_hash in ["version1", "version2"]:
         mocker.patch.object(
             ProblemVerification, "testdata_hash", return_value=testdata_hash
         )
-        hashes.append(_hash(_problem()))
-        assert _hash(_problem()) == hashes[-1]
+        hashes.append(_testdata_hash(_problem()))
+        assert _testdata_hash(_problem()) == hashes[-1]
+    assert None not in hashes
     assert len(set(hashes)) == len(hashes)
+
+    mocker.patch.object(ProblemVerification, "testdata_hash", return_value=None)
+    assert _testdata_hash(_problem()) is None
+
+    obj: dict[str, Any] = {
+        "files": {"foo.py": {"verification": {"type": "command", "command": "true"}}}
+    }
+    assert _testdata_hash(obj) is None

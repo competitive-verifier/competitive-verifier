@@ -120,6 +120,15 @@ class FileResult(BaseModel):
     and its verification settings at verification time.
     """
 
+    testdata_hash: str | None = Field(
+        default=None,
+        description="Digest of the test data used by the verifications,"
+        " or null if it could not be identified.",
+    )
+    """Digest of the test data used by the verifications,
+    or null if it could not be identified.
+    """
+
     newest: bool = Field(
         default=True,
         description="Whether the verification was performed on the most recent run.",

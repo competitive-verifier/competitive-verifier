@@ -60,8 +60,8 @@ class InputContainer(ABC):
     def file_content_hash(self, path: pathlib.Path) -> str | None:
         """Digest of the file, its transitive dependencies and its verifications.
 
-        The verifications include their effective time and memory limits
-        and their test data. ``None`` if any dependency is missing.
+        The verifications include their effective time and memory limits.
+        ``None`` if any dependency is missing.
         """
         digest = hashlib.sha256()
         f = self.verifications.files.get(path)
@@ -84,9 +84,22 @@ class InputContainer(ABC):
                 digest.update(b"\0")
                 digest.update(repr(v.mle or self.default_mle).encode())
                 digest.update(b"\0")
+        return digest.hexdigest()
+
+    def file_testdata_hash(self, path: pathlib.Path) -> str | None:
+        """Digest of the test data of the file's verifications.
+
+        ``None`` if the test data of any verification can't be identified.
+        """
+        f = self.verifications.files.get(path)
+        if f is None:
+            return None
+        digest = hashlib.sha256()
+        for v in f.verification_list:
             testdata_hash = v.testdata_hash()
-            if testdata_hash is not None:
-                digest.update(testdata_hash.encode())
+            if testdata_hash is None:
+                return None
+            digest.update(testdata_hash.encode())
             digest.update(b"\0")
         return digest.hexdigest()
 
@@ -303,6 +316,7 @@ class BaseVerifier(InputContainer):
                         deadline=deadline,
                     ),
                     content_hash=self.file_content_hash(p),
+                    testdata_hash=self.file_testdata_hash(p),
                 )
 
         sippable_file_results = self.skippable_results()
@@ -352,6 +366,7 @@ class BaseVerifier(InputContainer):
                 results[p] = FileResult(
                     verifications=verifications,
                     content_hash=self.file_content_hash(p),
+                    testdata_hash=self.file_testdata_hash(p),
                     newest=True,
                 )
         return results

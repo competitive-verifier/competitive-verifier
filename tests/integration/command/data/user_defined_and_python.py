@@ -646,6 +646,7 @@ class UserDefinedAndPythonData(IntegrationData):
                 },
                 "awk/myaplusb1.test.awk": {
                     "content_hash": "1a590d2d33fdff207019d77d94dfb51f",
+                    "testdata_hash": "33f9564e85bbf3e052f6c95b593525ea",
                     "newest": True,
                     "verifications": [
                         {
@@ -758,6 +759,7 @@ class UserDefinedAndPythonData(IntegrationData):
                 },
                 "awk/myaplusb2.test.awk": {
                     "content_hash": "47a36f7a335201f42a4accfb4a8209f0",
+                    "testdata_hash": "442a5f7f2d552f319a5676e9fdbe781c",
                     "newest": True,
                     "verifications": [
                         {
@@ -870,6 +872,7 @@ class UserDefinedAndPythonData(IntegrationData):
                 },
                 "awk/myaplusb3.test.awk": {
                     "content_hash": "07664bcbdca591d1a1e059a2df52a2cb",
+                    "testdata_hash": "fae01e093f81402235407d422746abf9",
                     "newest": True,
                     "verifications": [
                         {
