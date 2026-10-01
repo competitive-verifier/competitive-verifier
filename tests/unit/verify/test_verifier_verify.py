@@ -700,6 +700,59 @@ def test_verify_download_error(
 
 
 @pytest.mark.usefixtures("mock_perf_counter")
+def test_verify_not_downloaded(
+    mocker: MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+):
+    mocker.patch(
+        "competitive_verifier.models.ProblemVerification.is_testdata_cached",
+        return_value=False,
+    )
+    verification = [
+        ProblemVerification(
+            name="foo",
+            command="false",
+            problem="https://judge.yosupo.jp/problem/aplusb",
+        ),
+    ]
+    verifier = MockVerifier(
+        {
+            "files": {
+                "lib/hoge1.py": {},
+                "test/foo.py": {
+                    "dependencies": ["lib/hoge1.py"],
+                    "verification": verification,
+                },
+            }
+        },
+        verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+    )
+    result = verifier.verify(download=False)
+    assert result.model_dump(exclude_none=True) == {
+        "total_seconds": 4.0,
+        "files": {
+            pathlib.Path("test/foo.py"): {
+                "newest": True,
+                "verifications": [
+                    {
+                        "elapsed": 1.0,
+                        "last_execution_time": datetime.datetime(2007, 1, 2, 15, 4, 5),
+                        "status": ResultStatus.FAILURE,
+                    },
+                ],
+            }
+        },
+    }
+    assert caplog.records == [
+        LogComparer(
+            f"Failed to download: {verification}",
+            logging.ERROR,
+            github=GitHubMessageParams(),
+        ),
+    ]
+
+
+@pytest.mark.usefixtures("mock_perf_counter")
 @pytest.mark.parametrize("is_github_actions", [False, True])
 def test_verify_compile_error(
     is_github_actions: bool,
@@ -715,6 +768,10 @@ def test_verify_compile_error(
     mocker.patch(
         "competitive_verifier.models.ProblemVerification.run_compile_command",
         return_value=False,
+    )
+    mocker.patch(
+        "competitive_verifier.models.ProblemVerification.is_testdata_cached",
+        return_value=True,
     )
     verifier = MockVerifier(
         {

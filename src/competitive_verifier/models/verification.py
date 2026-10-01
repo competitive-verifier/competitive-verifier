@@ -41,6 +41,13 @@ class BaseVerification(BaseModel, ABC):
         """The verification is lightweight."""
         return False
 
+    def is_testdata_cached(self) -> bool:
+        """Whether the test data is present locally (best effort).
+
+        Must not download anything (see ``TestCaseProvider.is_testdata_cached``).
+        """
+        return True
+
 
 class ConstVerification(BaseVerification):
     type: Literal["const"] = "const"
@@ -147,6 +154,10 @@ class BaseProblemVerification(BaseVerification, ABC):
 
     @abstractmethod
     def _problem(self) -> TestCaseProvider | None: ...
+
+    def is_testdata_cached(self) -> bool:
+        problem = self._problem()
+        return problem is None or problem.is_testdata_cached()
 
     def run(
         self,

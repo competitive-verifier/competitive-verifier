@@ -128,7 +128,8 @@ class Verify(
             "--no-download",
             action="store_false",
             dest="download",
-            help="Suppress `oj download`",
+            help="Suppress `oj download`."
+            " Verifications whose test data isn't downloaded yet fail.",
         )
         parser.add_argument(
             "--output",
