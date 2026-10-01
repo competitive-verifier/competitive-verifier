@@ -218,6 +218,7 @@ class JavaData(IntegrationData):
                 },
                 "examples/HelloWorld_test.java": {
                     "content_hash": "d760393b1eacd0c4decbd031d1c34211",
+                    "testdata_hash": "63f543e351ca4f62d9e6ed5b9aa066dc",
                     "newest": True,
                     "verifications": [
                         {

@@ -132,6 +132,7 @@ class RustWithoutConfigData(IntegrationData):
             "files": {
                 "verification/src/bin/aizu-online-judge-itp1-1-a.rs": {
                     "content_hash": "1133230e2946eba25835cd40cd37b4fc",
+                    "testdata_hash": "6b76d167c1aff730120fc567b0f9eb42",
                     "newest": True,
                     "verifications": [
                         {

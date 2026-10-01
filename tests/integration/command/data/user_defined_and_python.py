@@ -1179,6 +1179,7 @@ class UserDefinedAndPythonData(IntegrationData):
                 },
                 "python/failure.tle.py": {
                     "content_hash": "478482a916fbb31864c55a72cb0a1310",
+                    "testdata_hash": "16184562ffbc1de0145199b3e8597b3a",
                     "verifications": [
                         {
                             "verification_name": "Python",
