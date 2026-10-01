@@ -31,9 +31,11 @@ class TestCaseProvider(ABC):
         return None
 
     def testdata_hash(self) -> str | None:
-        """Digest identifying the provider's test data, computable without downloading.
+        """Digest identifying the test data currently present in the local cache.
 
-        ``None`` if the provider can't cheaply identify its test data.
+        Must not download anything. ``None`` if the test data isn't downloaded yet
+        or the provider can't cheaply identify it; the hash-based prev-result check
+        then assumes the test data is unchanged.
         """
         return None
 

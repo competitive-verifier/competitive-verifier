@@ -42,9 +42,10 @@ class BaseVerification(BaseModel, ABC):
         return False
 
     def testdata_hash(self) -> str | None:
-        """Digest identifying the verification's test data.
+        """Digest identifying the verification's test data present in the local cache.
 
-        ``None`` if the test data can't be cheaply identified.
+        Must not download anything. ``None`` if the test data isn't downloaded yet
+        or can't be cheaply identified (see ``TestCaseProvider.testdata_hash``).
         """
         return None
 
