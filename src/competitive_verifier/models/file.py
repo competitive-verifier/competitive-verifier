@@ -158,26 +158,28 @@ class VerificationInput(BaseModel):
         if not self.basedir.is_absolute():
             raise ValueError(f"basedir must be an absolute path: {self.basedir}")
         if not self.basedir.is_dir():
-            logger.warning(
-                "basedir does not exist. Keep the current directory: %s",
-                self.basedir,
-                extra={"github": GitHubMessageParams()},
-            )
-            return
+            raise FileNotFoundError(f"basedir does not exist: {self.basedir}")
         if self.basedir.resolve() != pathlib.Path.cwd().resolve():
             logger.info("chdir: %s", self.basedir.as_posix())
             os.chdir(self.basedir)
 
     @classmethod
     def parse_file_relative(
-        cls, path: "StrPath", *, chdir: bool = True
+        cls,
+        path: "StrPath",
+        *,
+        chdir: bool = True,
+        basedir: pathlib.Path | None = None,
     ) -> "VerificationInput":
         """Parse verify_files.json.
 
+        `basedir` overrides the one recorded in the file.
         If `basedir` is set and `chdir` is `True`,
         change the working directory to it before relativizing the paths.
         """
         impl = cls.model_validate_json(pathlib.Path(path).read_bytes())
+        if basedir is not None:
+            impl.basedir = basedir.absolute()
         if chdir:
             impl.chdir()
         new_files: dict[pathlib.Path, VerificationFile] = {}

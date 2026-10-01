@@ -460,9 +460,34 @@ def test_parse_file_relative_without_basedir_keeps_cwd(testtemp: pathlib.Path):
     assert set(parsed.files.keys()) == {pathlib.Path("a.py")}
 
 
-def test_chdir_missing_basedir_keeps_cwd(testtemp: pathlib.Path):
-    VerificationInput(basedir=testtemp / "missing").chdir()
+def test_chdir_missing_basedir_raises(testtemp: pathlib.Path):
+    with pytest.raises(FileNotFoundError, match="basedir does not exist"):
+        VerificationInput(basedir=testtemp / "missing").chdir()
     assert pathlib.Path.cwd() == testtemp
+
+
+@pytest.mark.allow_mkdir
+def test_parse_file_relative_basedir_override(testtemp: pathlib.Path):
+    replacement = testtemp / "replacement"
+    replacement.mkdir()
+    (replacement / "a.py").write_text("")
+    tmp = testtemp / "verify.json"
+    tmp.write_text(
+        VerificationInput(
+            basedir=testtemp / "missing",
+            files={pathlib.Path("a.py"): VerificationFile()},
+        ).model_dump_json()
+    )
+    with pytest.raises(FileNotFoundError):
+        VerificationInput.parse_file_relative(tmp)
+    assert pathlib.Path.cwd() == testtemp
+
+    parsed = VerificationInput.parse_file_relative(
+        tmp, basedir=pathlib.Path("replacement")
+    )
+    assert pathlib.Path.cwd() == replacement
+    assert parsed.basedir == replacement
+    assert set(parsed.files.keys()) == {pathlib.Path("a.py")}
 
 
 def test_chdir_requires_absolute_basedir():

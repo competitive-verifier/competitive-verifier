@@ -86,7 +86,7 @@ class Download(OptionalVerifyFilesJsonArguments, VerboseArguments):
         if self.verify_files_json:
             files.extend(
                 VerificationInput.parse_file_relative(
-                    self.verify_files_json
+                    self.verify_files_json, basedir=self.basedir
                 ).files.values()
             )
 

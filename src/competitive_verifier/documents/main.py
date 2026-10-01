@@ -71,7 +71,9 @@ class Docs(
         self.destination = self.destination.absolute()
         if self.docs:
             self.docs = self.docs.absolute()
-        verifications = VerificationInput.parse_file_relative(self.verify_files_json)
+        verifications = VerificationInput.parse_file_relative(
+            self.verify_files_json, basedir=self.basedir
+        )
 
         result = MergeResult(
             subcommand="merge-result",

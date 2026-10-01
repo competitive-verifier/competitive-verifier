@@ -158,7 +158,9 @@ class Verify(
             self.prev_result = self.prev_result.absolute()
         if self.output:
             self.output = self.output.absolute()
-        verifications = VerificationInput.parse_file_relative(self.verify_files_json)
+        verifications = VerificationInput.parse_file_relative(
+            self.verify_files_json, basedir=self.basedir
+        )
         prev_result = self.read_prev_result()
 
         verifier = Verifier(

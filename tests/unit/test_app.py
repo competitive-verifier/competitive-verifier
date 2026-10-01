@@ -48,6 +48,7 @@ test_parse_args_params: list[
             "split_index": None,
             "timeout": math.inf,
             "verbose": False,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -75,6 +76,7 @@ test_parse_args_params: list[
             "split_index": None,
             "timeout": math.inf,
             "verbose": False,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -96,6 +98,7 @@ test_parse_args_params: list[
             "split_index": None,
             "timeout": math.inf,
             "verbose": False,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -137,6 +140,7 @@ test_parse_args_params: list[
             "split_index": 6,
             "timeout": 20.5,
             "verbose": True,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -162,6 +166,7 @@ test_parse_args_params: list[
             "split_index": None,
             "timeout": math.inf,
             "verbose": False,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -185,6 +190,7 @@ test_parse_args_params: list[
             "ignore_error": True,
             "result_json": [pathlib.Path("results/result1.json")],
             "verbose": False,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -223,6 +229,7 @@ test_parse_args_params: list[
                 pathlib.Path("results/result2.json"),
             ],
             "verbose": True,
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -236,6 +243,7 @@ test_parse_args_params: list[
             "subcommand": "download",
             "verbose": False,
             "urls": [],
+            "basedir": None,
             "verify_files_json": None,
         },
     ),
@@ -251,6 +259,7 @@ test_parse_args_params: list[
             "subcommand": "download",
             "verbose": False,
             "urls": ["https://example.com/ex1"],
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -263,6 +272,7 @@ test_parse_args_params: list[
             "subcommand": "download",
             "verbose": True,
             "urls": ["https://example.com/ex1", "https://example.com/ex2"],
+            "basedir": None,
             "verify_files_json": pathlib.Path(
                 ".competitive-verifier/verify_files.json"
             ),
@@ -275,6 +285,7 @@ test_parse_args_params: list[
             "subcommand": "download",
             "verbose": False,
             "urls": ["https://example.com/ex1", "https://example.com/ex2"],
+            "basedir": None,
             "verify_files_json": None,
         },
     ),
@@ -284,6 +295,7 @@ test_parse_args_params: list[
         {
             "subcommand": "merge-input",
             "verbose": False,
+            "basedir": None,
             "verify_files_json": [
                 pathlib.Path("input/verify1.json"),
                 pathlib.Path("input/verify2.json"),

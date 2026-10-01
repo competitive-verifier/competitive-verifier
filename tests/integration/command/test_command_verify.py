@@ -204,6 +204,42 @@ class TestCommandVerfy:
             json.loads(result.read_bytes()) == integration_data.expected_verify_result()
         )
 
+    @pytest.mark.usefixtures("mock_verification")
+    def test_verify_basedir_override(
+        self,
+        integration_data: IntegrationData,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """`--basedir` replaces the basedir recorded in verify.json."""
+        verify = integration_data.config_dir_path / "verify.json"
+        stale = integration_data.config_dir_path / "verify_stale_basedir.json"
+        other_cwd = integration_data.config_dir_path / "other_cwd"
+        other_cwd.mkdir(parents=True, exist_ok=True)
+        shutil.rmtree(integration_data.config_dir_path / "cache", ignore_errors=True)
+
+        obj = json.loads(verify.read_bytes())
+        obj["basedir"] = str(integration_data.config_dir_path / "removed_checkout")
+        stale.write_text(json.dumps(obj), encoding="utf-8")
+
+        monkeypatch.chdir(other_cwd)
+        args = ["verify", "--verify-json", str(stale), "--output", "result.json"]
+        parsed = app.ArgumentParser().parse(args)
+        assert isinstance(parsed, app.Verify)
+        with pytest.raises(FileNotFoundError, match="basedir does not exist"):
+            parsed.run()
+        assert pathlib.Path.cwd() == other_cwd
+
+        parsed = app.ArgumentParser().parse(
+            [*args, "--basedir", str(integration_data.targets_path)]
+        )
+        assert isinstance(parsed, app.Verify)
+        assert parsed.run()
+        assert pathlib.Path.cwd() == integration_data.targets_path
+        assert (
+            json.loads((other_cwd / "result.json").read_bytes())
+            == integration_data.expected_verify_result()
+        )
+
     def test_merge_input_from_other_cwd(
         self,
         integration_data: IntegrationData,

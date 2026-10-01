@@ -34,6 +34,7 @@ class MergeInput(VerboseArguments):
         description="Merge verify_files.json`",
     )
     verify_files_json: list[pathlib.Path]
+    basedir: pathlib.Path | None = None
 
     @classmethod
     def add_parser(cls, parser: ArgumentParser):
@@ -44,11 +45,21 @@ class MergeInput(VerboseArguments):
             help="verify_files.json files",
             type=pathlib.Path,
         )
+        parser.add_argument(
+            "--basedir",
+            dest="basedir",
+            default=None,
+            help="The directory that the relative paths in verify_files.json are based on."
+            " Overrides the basedir recorded in the files.",
+            type=pathlib.Path,
+        )
 
     def _run(self) -> bool:
         self.verify_files_json = [p.absolute() for p in self.verify_files_json]
+        basedir = self.basedir.absolute() if self.basedir else None
         result = merge(
-            map(VerificationInput.parse_file_relative, self.verify_files_json)
+            VerificationInput.parse_file_relative(p, basedir=basedir)
+            for p in self.verify_files_json
         )
         print(result.model_dump_json(exclude_none=True))
         return True
