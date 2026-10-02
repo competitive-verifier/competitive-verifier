@@ -198,6 +198,13 @@ class BaseVerifier(InputContainer):
                 raise VerifcationTimeoutError  # noqa: TRY301
             if download:
                 run_download(f, check=True, group_log=False)
+            else:
+                for v in f.verification_list:
+                    if not v.is_testdata_cached():
+                        raise RuntimeError(  # noqa: TRY301
+                            f"The test data of {v} is not downloaded."
+                            " Run `competitive-verifier download`."
+                        )
         except VerifcationTimeoutError:
             verifications.append(
                 self.create_command_result(ResultStatus.SKIPPED, time.perf_counter())

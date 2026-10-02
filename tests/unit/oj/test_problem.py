@@ -1,6 +1,12 @@
+import pathlib
+
 import pytest
 
+from competitive_verifier.config import COMPETITIVE_VERIFY_CONFIG_PATH
 from competitive_verifier.oj.problem import (
+    LibraryCheckerProblem,
+    LocalProblem,
+    YukicoderProblem,
     _normpath,  # pyright: ignore[reportPrivateUsage]
     problem_from_url,
 )
@@ -84,3 +90,45 @@ test_problem_repr_params = [
 )
 def test_problem_repr(url: str, expected: str):
     assert repr(problem_from_url(url)) == expected
+
+
+@pytest.mark.allow_mkdir
+def test_base_problem_is_testdata_cached(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setenv(COMPETITIVE_VERIFY_CONFIG_PATH, tmp_path.as_posix())
+    p = YukicoderProblem(problem_no=1088)
+    assert p.is_testdata_cached() is False
+
+    p.test_directory.mkdir(parents=True)
+    assert p.is_testdata_cached() is False
+
+    (p.test_directory / "sample_00.in").write_text("1 2\n")
+    assert p.is_testdata_cached() is True
+
+
+@pytest.mark.allow_mkdir
+def test_library_checker_is_testdata_cached(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setenv(COMPETITIVE_VERIFY_CONFIG_PATH, tmp_path.as_posix())
+    p = LibraryCheckerProblem(problem_id="aplusb")
+    assert p.is_testdata_cached() is False
+
+    source = p.repo_path / "sample" / "aplusb"
+    source.mkdir(parents=True)
+    (source / "info.toml").write_text("")
+    assert p.is_testdata_cached() is False
+
+    (source / "in").mkdir()
+    (source / "out").mkdir()
+    (source / "in" / "example_00.in").write_text("1 2\n")
+    assert p.is_testdata_cached() is False
+
+    (source / "out" / "example_00.out").write_text("3\n")
+    assert p.is_testdata_cached() is True
+
+
+@pytest.mark.allow_mkdir
+def test_local_problem_is_testdata_cached(tmp_path: pathlib.Path):
+    assert LocalProblem(tmp_path / "missing").is_testdata_cached() is True

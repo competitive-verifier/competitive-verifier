@@ -762,3 +762,30 @@ def test_local_problem_verification_tempdir(testtemp: pathlib.Path):
     ).run_compile_command()
 
     assert tempdir.is_dir()
+
+
+def test_is_testdata_cached_const():
+    assert ConstVerification(status=ResultStatus.SUCCESS).is_testdata_cached() is True
+    assert CommandVerification(command="true").is_testdata_cached() is True
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_is_testdata_cached_problem(cached: bool, mocker: MockerFixture):
+    mocker.patch(
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.is_testdata_cached",
+        return_value=cached,
+    )
+    obj = ProblemVerification(
+        command="true", problem="https://judge.yosupo.jp/problem/aplusb"
+    )
+    assert obj.is_testdata_cached() is cached
+
+
+def test_is_testdata_cached_unsupported_problem():
+    obj = ProblemVerification(command="true", problem="https://example.com/notfound")
+    assert obj.is_testdata_cached() is True
+
+
+def test_is_testdata_cached_local_problem():
+    obj = LocalProblemVerification(command="true", input=pathlib.Path("testcases"))
+    assert obj.is_testdata_cached() is True

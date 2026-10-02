@@ -37,10 +37,14 @@ class _BaseProblem(Problem):
     def iter_system_cases(self) -> Iterator[TestCaseFile]:
         return iter_testcases(directory=self.test_directory)
 
+    def is_testdata_cached(self) -> bool:
+        test_directory = self.test_directory
+        return test_directory.exists() and any(test_directory.iterdir())
+
     def download_system_cases(self) -> Iterable[TestCaseData] | bool:
         test_directory = self.test_directory
 
-        if test_directory.exists() and any(test_directory.iterdir()):
+        if self.is_testdata_cached():
             logger.info("download:already exists: %s", self.url)
             return True
 
@@ -93,6 +97,12 @@ class LibraryCheckerProblem(Problem):
         for path in self.source_directory.glob("out/*.out"):
             outputs[path.stem] = path
         return merge_testcase_files(inputs, outputs)
+
+    def is_testdata_cached(self) -> bool:
+        try:
+            return any(self.iter_system_cases())
+        except RuntimeError:
+            return False
 
     def download_system_cases(self) -> bool:
         self.problem_directory.mkdir(parents=True, exist_ok=True)

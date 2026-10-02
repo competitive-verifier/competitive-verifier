@@ -26,6 +26,15 @@ class TestCaseProvider(ABC):
     @abstractmethod
     def iter_system_cases(self) -> Iterable[TestCaseFile]: ...
 
+    def is_testdata_cached(self) -> bool:
+        """Whether the test data is present locally (best effort).
+
+        Must not download anything. ``True`` only means that some test data
+        exists in the local cache, not that it's up to date:
+        ``download_system_cases`` may still refresh it.
+        """
+        return True
+
     @property
     def checker(self) -> pathlib.Path | None:
         return None
