@@ -1,7 +1,9 @@
 import datetime
+import hashlib
 import pathlib
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from functools import cached_property
 from logging import getLogger
 
@@ -27,6 +29,24 @@ def _now() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc).astimezone()
 
 
+def content_hash(files: Iterable[pathlib.Path]) -> str | None:
+    """Digest of the paths and contents of ``files``, independent of their order.
+
+    ``None`` if any file can't be read.
+    """
+    digest = hashlib.sha256()
+    for file in sorted(files):
+        try:
+            content = file.read_bytes()
+        except OSError:
+            return None
+        digest.update(file.as_posix().encode())
+        digest.update(b"\0")
+        digest.update(content)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 class InputContainer(ABC):
     verifications: VerificationInput
     verification_time: datetime.datetime
@@ -48,6 +68,15 @@ class InputContainer(ABC):
 
     @abstractmethod
     def get_file_timestamp(self, path: pathlib.Path) -> datetime.datetime: ...
+
+    def file_content_hash(self, path: pathlib.Path) -> str | None:
+        """Digest of the file and its transitive dependencies.
+
+        ``None`` if any dependency is missing.
+        """
+        if path not in self.verifications.files:
+            return None
+        return content_hash(self.verifications.transitive_depends_on[path])
 
     def file_need_verification(
         self,
@@ -267,7 +296,8 @@ class BaseVerifier(InputContainer):
                         f,
                         download=download,
                         deadline=deadline,
-                    )
+                    ),
+                    content_hash=self.file_content_hash(p),
                 )
 
         sippable_file_results = self.skippable_results()
@@ -316,6 +346,7 @@ class BaseVerifier(InputContainer):
                     )
                 results[p] = FileResult(
                     verifications=verifications,
+                    content_hash=self.file_content_hash(p),
                     newest=True,
                 )
         return results

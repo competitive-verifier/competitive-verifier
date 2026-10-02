@@ -160,6 +160,7 @@ class CppWithoutConfigData(IntegrationData):
         return {
             "files": {
                 "aplusb.main.cpp": {
+                    "content_hash": "57cdef1b75cae34f02cbc6465fafbd2d",
                     "newest": True,
                     "verifications": [
                         {
@@ -177,6 +178,7 @@ class CppWithoutConfigData(IntegrationData):
                     ],
                 },
                 "aplusb.test.cpp": {
+                    "content_hash": "f291d1cc1fa4ef491bfa97ba659525ca",
                     "newest": True,
                     "verifications": [
                         {

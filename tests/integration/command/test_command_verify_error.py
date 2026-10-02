@@ -20,6 +20,7 @@ class CompileFailureData(IntegrationData):
             "total_seconds": 1312.56,
             "files": {
                 "verify.json": {
+                    "content_hash": "bb98809796a153e26da2b8dc39085523",
                     "newest": True,
                     "verifications": [
                         {
