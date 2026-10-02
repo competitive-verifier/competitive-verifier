@@ -469,6 +469,7 @@ class UserDefinedAndPythonData(IntegrationData):
             "total_seconds": 14892.72,
             "files": {
                 "awk/aplusb.test.awk": {
+                    "content_hash": "f12af15dc2097a2f3ee7ffc93343263c",
                     "newest": True,
                     "verifications": [
                         {
@@ -556,6 +557,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                 },
                 "awk/aplusb_direct.awk": {
+                    "content_hash": "3327d03aa99ad8992336d8d7825d38a6",
                     "newest": True,
                     "verifications": [
                         {
@@ -643,6 +645,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                 },
                 "awk/myaplusb1.test.awk": {
+                    "content_hash": "1a590d2d33fdff207019d77d94dfb51f",
                     "newest": True,
                     "verifications": [
                         {
@@ -754,6 +757,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                 },
                 "awk/myaplusb2.test.awk": {
+                    "content_hash": "47a36f7a335201f42a4accfb4a8209f0",
                     "newest": True,
                     "verifications": [
                         {
@@ -865,6 +869,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                 },
                 "awk/myaplusb3.test.awk": {
+                    "content_hash": "07664bcbdca591d1a1e059a2df52a2cb",
                     "newest": True,
                     "verifications": [
                         {
@@ -988,6 +993,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     ],
                 },
                 "python/failure.mle.py": {
+                    "content_hash": "ba598be0710ea5187c969683bcf9818b",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1081,6 +1087,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/failure.wa.py": {
+                    "content_hash": "6f80b28c113bd58f15d2d857c0143b2e",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1168,6 +1175,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/failure.tle.py": {
+                    "content_hash": "478482a916fbb31864c55a72cb0a1310",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1189,6 +1197,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/success1.py": {
+                    "content_hash": "d9bb2406ae37acc331b348987966fdc2",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1276,6 +1285,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/success2.py": {
+                    "content_hash": "5c07d1faa8bb0d89de4376ff8b18ee5d",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1363,6 +1373,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/failure.re.py": {
+                    "content_hash": "5321ef5e972b59729046162fdfda5d0c",
                     "verifications": [
                         {
                             "verification_name": "Python",
@@ -1450,6 +1461,7 @@ class UserDefinedAndPythonData(IntegrationData):
                     "newest": True,
                 },
                 "python/skip.py": {
+                    "content_hash": "f8cf65674142151740ae0b1b4ad4e2a9",
                     "verifications": [
                         {
                             "status": "skipped",

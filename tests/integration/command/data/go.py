@@ -71,6 +71,7 @@ class GoWithoutConfigData(IntegrationData):
         return {
             "files": {
                 "helloworld.aoj.go": {
+                    "content_hash": "e0180841b249009fb7650173ab74a360",
                     "newest": True,
                     "verifications": [
                         {
@@ -92,6 +93,7 @@ class GoWithoutConfigData(IntegrationData):
                     ],
                 },
                 "helloworld_test.go": {
+                    "content_hash": "58864a4a33d1dbf4633151c5252a3021",
                     "newest": True,
                     "verifications": [
                         {
