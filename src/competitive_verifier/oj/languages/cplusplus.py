@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import os
 import pathlib
 import platform
@@ -9,7 +10,7 @@ from collections.abc import Sequence
 from logging import getLogger
 from typing import Any
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, Field
 
 from competitive_verifier.exec import command_stdout, exec_command
 from competitive_verifier.log import GitHubMessageParams
@@ -33,13 +34,38 @@ class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
 
 
+@dataclasses.dataclass
+class _IncludeDirectories:
+    """Include directories per basedir, queried from the compiler once each."""
+
+    env: "CPlusPlusLanguageEnvironment"
+    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = dataclasses.field(
+        default_factory=dict[pathlib.Path, list[pathlib.Path]]
+    )
+
+    def get(self, basedir: pathlib.Path) -> list[pathlib.Path]:
+        dirs = self._by_basedir.get(basedir)
+        if dirs is None:
+            # Mirror the verification compile command, which appends -I basedir.
+            dirs = _cplusplus_list_include_directories(
+                CXX=self.env.cxx,
+                CXXFLAGS=[*self.env.cxx_flags, "-I", str(basedir)],
+                cwd=pathlib.Path.cwd(),
+                keep=[basedir],
+            ) or [basedir]
+            self._by_basedir[basedir] = dirs
+        return dirs
+
+
 class CPlusPlusLanguageEnvironment(LanguageEnvironment):
     cxx: pathlib.Path
     cxx_flags: list[str]
+    include_directories: _IncludeDirectories
 
     def __init__(self, *, CXX: pathlib.Path, CXXFLAGS: list[str]):
         self.cxx = CXX
         self.cxx_flags = CXXFLAGS
+        self.include_directories = _IncludeDirectories(self)
 
     @property
     def name(self) -> str:
@@ -175,37 +201,11 @@ _ERROR = "ERROR"
 _STANDALONE = "STANDALONE"
 
 
-@dataclasses.dataclass
-class _IncludeDirectories:
-    """Include directories per basedir, queried from the compiler once each."""
-
-    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = dataclasses.field(
-        default_factory=dict[pathlib.Path, list[pathlib.Path]]
-    )
-
-    def get(
-        self, env: CPlusPlusLanguageEnvironment, basedir: pathlib.Path
-    ) -> list[pathlib.Path]:
-        dirs = self._by_basedir.get(basedir)
-        if dirs is None:
-            # Mirror the verification compile command, which appends -I basedir.
-            dirs = _cplusplus_list_include_directories(
-                CXX=env.cxx,
-                CXXFLAGS=[*env.cxx_flags, "-I", str(basedir)],
-                cwd=pathlib.Path.cwd(),
-                keep=[basedir],
-            ) or [basedir]
-            self._by_basedir[basedir] = dirs
-        return dirs
-
-
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
-    _include_directories: _IncludeDirectories = PrivateAttr(
-        default_factory=_IncludeDirectories
-    )
 
-    def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
+    @functools.cached_property
+    def _environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806
         if platform.system() == "Windows" or "CYGWIN" in platform.system():
             default_CXXFLAGS.append("-Wl,-stack,0x10000000")
@@ -275,7 +275,7 @@ class CPlusPlusLanguage(Language):
             # #define PROBLEM "https://..." の形式は複数 environments との相性がよくない。あと遅い
             attributes[_NOT_SPECIAL_COMMENTS] = ""
             all_ignored = True
-            for env in self._list_environments():
+            for env in self._environments:
                 macros = _cplusplus_list_defined_macros(
                     path.resolve(),
                     CXX=env.cxx,
@@ -311,7 +311,7 @@ class CPlusPlusLanguage(Language):
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
-        env = self._list_environments()[0]
+        env = self._environments[0]
         return _cplusplus_list_depending_files(
             path.resolve(),
             CXX=env.cxx,
@@ -319,8 +319,8 @@ class CPlusPlusLanguage(Language):
         )
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
-        env = self._list_environments()[0]
-        bundler = Bundler(iquotes=self._include_directories.get(env, basedir))
+        env = self._environments[0]
+        bundler = Bundler(iquotes=env.include_directories.get(basedir))
         bundler.update(path)
         return bundler.get()
 
@@ -329,7 +329,7 @@ class CPlusPlusLanguage(Language):
     ) -> list[CPlusPlusLanguageEnvironment]:
         attributes = self.list_attributes(path, basedir=basedir)
         envs: list[CPlusPlusLanguageEnvironment] = []
-        for env in self._list_environments():
+        for env in self._environments:
             if env.is_gcc() and _IGNORE_IF_GCC in attributes:
                 continue
             if env.is_clang() and _IGNORE_IF_CLANG in attributes:
