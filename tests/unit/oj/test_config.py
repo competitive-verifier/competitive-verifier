@@ -30,7 +30,11 @@ from competitive_verifier.oj.languages import (
 )
 
 default_languages: dict[str, Any] = {
-    "cpp": {"read_macros": True},
+    "cpp": {
+        "read_macros": True,
+        "bundle_prelude_includes": [],
+        "bundle_hoist_system_includes": False,
+    },
     "go": {
         "execute": {
             "command": ["go", "run", "{basedir}/{path}"],
@@ -110,6 +114,8 @@ test_oj_resolve_config_load_params: dict[str, tuple[str, dict[str, Any]]] = {
             "languages": {
                 "cpp": {
                     "read_macros": False,
+                    "bundle_prelude_includes": [],
+                    "bundle_hoist_system_includes": False,
                     "environments": [
                         {"CXX": "g++", "CXXFLAGS": ["flags"]},
                         {"CXX": "clang++"},

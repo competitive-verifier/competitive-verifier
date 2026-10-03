@@ -32,6 +32,8 @@ class OjVerifyCPlusPlusConfigEnv(BaseModel):
 class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
     read_macros: bool = True
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
+    bundle_prelude_includes: list[str] = Field(default_factory=list)
+    bundle_hoist_system_includes: bool = False
 
 
 def _cplusplus_list_depending_files(
@@ -317,7 +319,11 @@ class CPlusPlusLanguage(Language):
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
         env = self._environments[0]
-        bundler = Bundler(iquotes=env.include_directories.get(basedir))
+        bundler = Bundler(
+            iquotes=env.include_directories.get(basedir),
+            prelude_includes=self.config.bundle_prelude_includes,
+            hoist_system_includes=self.config.bundle_hoist_system_includes,
+        )
         bundler.update(path)
         return bundler.get()
 
