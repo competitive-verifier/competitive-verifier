@@ -3,16 +3,12 @@ import pathlib
 import platform
 import shlex
 import shutil
-import subprocess
-from collections.abc import Sequence
-from dataclasses import dataclass, field
-from functools import cached_property
 from logging import getLogger
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from competitive_verifier.exec import command_stdout, exec_command
+from competitive_verifier.exec import command_stdout
 from competitive_verifier.log import GitHubMessageParams
 
 from . import special_comments
@@ -32,6 +28,43 @@ class OjVerifyCPlusPlusConfigEnv(BaseModel):
 class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
     read_macros: bool = True
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
+
+
+class CPlusPlusLanguageEnvironment(LanguageEnvironment):
+    cxx: pathlib.Path
+    cxx_flags: list[str]
+
+    def __init__(self, *, CXX: pathlib.Path, CXXFLAGS: list[str]):
+        self.cxx = CXX
+        self.cxx_flags = CXXFLAGS
+
+    @property
+    def name(self) -> str:
+        return self.cxx.name
+
+    def get_compile_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> list[str]:
+        return [
+            str(self.cxx),
+            *self.cxx_flags,
+            "-I",
+            str(basedir),
+            "-o",
+            str(tempdir / "a.out"),
+            str(path),
+        ]
+
+    def get_execute_command(
+        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
+    ) -> str:
+        return str(tempdir / "a.out")
+
+    def is_clang(self) -> bool:
+        return "clang++" in self.cxx.name
+
+    def is_gcc(self) -> bool:
+        return not self.is_clang() and "g++" in self.cxx.name
 
 
 def _cplusplus_list_depending_files(
@@ -78,117 +111,6 @@ def _cplusplus_list_defined_macros(
     return define
 
 
-def _search_dirs(
-    *, CXX: pathlib.Path, CXXFLAGS: Sequence[str], cwd: pathlib.Path
-) -> list[pathlib.Path]:
-    """Include search directories reported by ``$CXX -E -v``, run in ``cwd``."""
-    command = [str(CXX), *CXXFLAGS, "-E", "-x", "c++", "-v", os.devnull]
-    result = exec_command(command, text=True, capture_output=True, cwd=cwd)
-    dirs: list[pathlib.Path] = []
-    collecting = False
-    for line in result.stderr.splitlines():
-        if line in (
-            '#include "..." search starts here:',
-            "#include <...> search starts here:",
-        ):
-            collecting = True
-        elif line == "End of search list.":
-            break
-        elif collecting and line.startswith(" "):
-            # Clang marks framework search entries in its verbose output.
-            d = line.removeprefix(" ").removesuffix(" (framework directory)")
-            dirs.append((cwd / d).resolve())
-    return dirs
-
-
-def _cplusplus_list_include_directories(
-    *,
-    CXX: pathlib.Path,
-    CXXFLAGS: Sequence[str],
-    cwd: pathlib.Path,
-    keep: Sequence[pathlib.Path] = (),
-) -> list[pathlib.Path]:
-    """Include search directories that the configured flags add.
-
-    Asks the preprocessor for its search list with and without the flags and
-    takes the difference, so every directory option (``-I``, ``-iquote``,
-    ``-isystem``, ``-idirafter``, ...) is interpreted by the compiler itself.
-    Relative directories are resolved against ``cwd``, where the compiler runs.
-    Directories in ``keep`` are retained even if the compiler searches them
-    by default (e.g. the project root listed in ``CPATH``).
-    """
-    try:
-        with_flags = _search_dirs(CXX=CXX, CXXFLAGS=CXXFLAGS, cwd=cwd)
-        default = set(_search_dirs(CXX=CXX, CXXFLAGS=[], cwd=cwd))
-    except (OSError, subprocess.SubprocessError):
-        logger.warning("Failed to query include directories from %s", CXX)
-        return []
-    kept = {d.resolve() for d in keep}
-    return [d for d in with_flags if d not in default or d in kept]
-
-
-@dataclass
-class _IncludeDirectories:
-    """Include directories per basedir, queried from the compiler once each."""
-
-    env: "CPlusPlusLanguageEnvironment"
-    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = field(
-        default_factory=dict[pathlib.Path, list[pathlib.Path]]
-    )
-
-    def get(self, basedir: pathlib.Path) -> list[pathlib.Path]:
-        dirs = self._by_basedir.get(basedir)
-        if dirs is None:
-            # Mirror the verification compile command, which appends -I basedir.
-            dirs = _cplusplus_list_include_directories(
-                CXX=self.env.cxx,
-                CXXFLAGS=[*self.env.cxx_flags, "-I", str(basedir)],
-                cwd=pathlib.Path.cwd(),
-                keep=[basedir],
-            ) or [basedir]
-            self._by_basedir[basedir] = dirs
-        return dirs
-
-
-class CPlusPlusLanguageEnvironment(LanguageEnvironment):
-    cxx: pathlib.Path
-    cxx_flags: list[str]
-    include_directories: _IncludeDirectories
-
-    def __init__(self, *, CXX: pathlib.Path, CXXFLAGS: list[str]):
-        self.cxx = CXX
-        self.cxx_flags = CXXFLAGS
-        self.include_directories = _IncludeDirectories(self)
-
-    @property
-    def name(self) -> str:
-        return self.cxx.name
-
-    def get_compile_command(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> list[str]:
-        return [
-            str(self.cxx),
-            *self.cxx_flags,
-            "-I",
-            str(basedir),
-            "-o",
-            str(tempdir / "a.out"),
-            str(path),
-        ]
-
-    def get_execute_command(
-        self, path: pathlib.Path, *, basedir: pathlib.Path, tempdir: pathlib.Path
-    ) -> str:
-        return str(tempdir / "a.out")
-
-    def is_clang(self) -> bool:
-        return "clang++" in self.cxx.name
-
-    def is_gcc(self) -> bool:
-        return not self.is_clang() and "g++" in self.cxx.name
-
-
 _NOT_SPECIAL_COMMENTS = "*NOT_SPECIAL_COMMENTS*"
 _PROBLEM = "PROBLEM"
 _IGNORE = "IGNORE"
@@ -201,8 +123,7 @@ _STANDALONE = "STANDALONE"
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
 
-    @cached_property
-    def _environments(self) -> list[CPlusPlusLanguageEnvironment]:
+    def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806
         if platform.system() == "Windows" or "CYGWIN" in platform.system():
             default_CXXFLAGS.append("-Wl,-stack,0x10000000")
@@ -272,7 +193,7 @@ class CPlusPlusLanguage(Language):
             # #define PROBLEM "https://..." の形式は複数 environments との相性がよくない。あと遅い
             attributes[_NOT_SPECIAL_COMMENTS] = ""
             all_ignored = True
-            for env in self._environments:
+            for env in self._list_environments():
                 macros = _cplusplus_list_defined_macros(
                     path.resolve(),
                     CXX=env.cxx,
@@ -308,7 +229,7 @@ class CPlusPlusLanguage(Language):
     def list_dependencies(
         self, path: pathlib.Path, *, basedir: pathlib.Path
     ) -> list[pathlib.Path]:
-        env = self._environments[0]
+        env = self._list_environments()[0]
         return _cplusplus_list_depending_files(
             path.resolve(),
             CXX=env.cxx,
@@ -316,8 +237,9 @@ class CPlusPlusLanguage(Language):
         )
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
-        env = self._environments[0]
-        bundler = Bundler(iquotes=env.include_directories.get(basedir))
+        include_paths: list[pathlib.Path] = [basedir]
+        assert isinstance(include_paths, list)
+        bundler = Bundler(iquotes=include_paths)
         bundler.update(path)
         return bundler.get()
 
@@ -326,7 +248,7 @@ class CPlusPlusLanguage(Language):
     ) -> list[CPlusPlusLanguageEnvironment]:
         attributes = self.list_attributes(path, basedir=basedir)
         envs: list[CPlusPlusLanguageEnvironment] = []
-        for env in self._environments:
+        for env in self._list_environments():
             if env.is_gcc() and _IGNORE_IF_GCC in attributes:
                 continue
             if env.is_clang() and _IGNORE_IF_CLANG in attributes:
