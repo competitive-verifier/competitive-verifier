@@ -34,6 +34,99 @@ class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
 
 
+def _cplusplus_list_depending_files(
+    path: pathlib.Path,
+    *,
+    CXX: pathlib.Path,
+    CXXFLAGS: list[str],
+) -> list[pathlib.Path]:
+    is_windows = platform.uname().system == "Windows"
+    command = [str(CXX), *CXXFLAGS, "-MM", str(path)]
+    try:
+        data = command_stdout(command)
+    except Exception:
+        logger.exception(
+            "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
+            " The paths must exist, must not contain '\\', and must be case-sensitive.)",
+            CXX,
+            path,
+            exc_info=False,
+        )
+        raise
+    logger.debug("dependencies of %s: %r", path, data)
+    makefile_rule = shlex.split(
+        data.strip().replace("\\\n", "").replace("\\\r\n", ""),
+        posix=not is_windows,
+    )
+    return [pathlib.Path(path).resolve() for path in makefile_rule[1:]]
+
+
+def _cplusplus_list_defined_macros(
+    path: pathlib.Path, *, CXX: pathlib.Path, CXXFLAGS: list[str]
+) -> dict[str, str]:
+    command = [str(CXX), *CXXFLAGS, "-dM", "-E", str(path)]
+    data = command_stdout(command)
+    define: dict[str, str] = {}
+    for line in data.splitlines():
+        assert line.startswith("#define ")
+        a, _, b = line[len("#define ") :].partition(" ")
+        if (b.startswith('"') and b.endswith('"')) or (
+            b.startswith("'") and b.endswith("'")
+        ):
+            b = b[1:-1]
+        define[a] = b
+    return define
+
+
+def _search_dirs(
+    *, CXX: pathlib.Path, CXXFLAGS: Sequence[str], cwd: pathlib.Path
+) -> list[pathlib.Path]:
+    """Include search directories reported by ``$CXX -E -v``, run in ``cwd``."""
+    command = [str(CXX), *CXXFLAGS, "-E", "-x", "c++", "-v", os.devnull]
+    result = exec_command(command, text=True, capture_output=True, cwd=cwd)
+    dirs: list[pathlib.Path] = []
+    collecting = False
+    for line in result.stderr.splitlines():
+        if line in (
+            '#include "..." search starts here:',
+            "#include <...> search starts here:",
+        ):
+            collecting = True
+        elif line == "End of search list.":
+            break
+        elif collecting and line.startswith(" "):
+            # Clang marks framework search entries in its verbose output.
+            d = line.removeprefix(" ").removesuffix(" (framework directory)")
+            dirs.append((cwd / d).resolve())
+    return dirs
+
+
+def _cplusplus_list_include_directories(
+    *,
+    CXX: pathlib.Path,
+    CXXFLAGS: Sequence[str],
+    cwd: pathlib.Path,
+    keep: Sequence[pathlib.Path] = (),
+) -> list[pathlib.Path]:
+    """Include search directories that the configured flags add.
+
+    Asks the preprocessor for its search list with and without the flags and
+    takes the difference, so every directory option (``-I``, ``-iquote``,
+    ``-isystem``, ``-idirafter``, ...) is interpreted by the compiler itself.
+    Relative directories are resolved against ``cwd``, where the compiler runs.
+    Directories in ``keep`` are retained even if the compiler searches them
+    by default (e.g. the project root listed in ``CPATH``).
+    """
+    try:
+        with_flags = _search_dirs(CXX=CXX, CXXFLAGS=CXXFLAGS, cwd=cwd)
+        default = set(_search_dirs(CXX=CXX, CXXFLAGS=[], cwd=cwd))
+    except (OSError, subprocess.SubprocessError):
+        logger.warning("Failed to query include directories from %s", CXX)
+        return []
+    kept = {d.resolve() for d in keep}
+    return [d for d in with_flags if d not in default or d in kept]
+
+
 @dataclass
 class _IncludeDirectories:
     """Include directories per basedir, queried from the compiler once each."""
@@ -94,102 +187,6 @@ class CPlusPlusLanguageEnvironment(LanguageEnvironment):
 
     def is_gcc(self) -> bool:
         return not self.is_clang() and "g++" in self.cxx.name
-
-
-def _cplusplus_list_depending_files(
-    path: pathlib.Path,
-    *,
-    CXX: pathlib.Path,
-    CXXFLAGS: list[str],
-) -> list[pathlib.Path]:
-    is_windows = platform.uname().system == "Windows"
-    command = [str(CXX), *CXXFLAGS, "-MM", str(path)]
-    try:
-        data = command_stdout(command)
-    except Exception:
-        logger.exception(
-            "failed to analyze dependencies with %s: %s  (hint: Please check #include directives of the file and its dependencies."
-            " The paths must exist, must not contain '\\', and must be case-sensitive.)",
-            CXX,
-            path,
-            exc_info=False,
-        )
-        raise
-    logger.debug("dependencies of %s: %r", path, data)
-    makefile_rule = shlex.split(
-        data.strip().replace("\\\n", "").replace("\\\r\n", ""),
-        posix=not is_windows,
-    )
-    return [pathlib.Path(path).resolve() for path in makefile_rule[1:]]
-
-
-def _cplusplus_list_defined_macros(
-    path: pathlib.Path, *, CXX: pathlib.Path, CXXFLAGS: list[str]
-) -> dict[str, str]:
-    command = [str(CXX), *CXXFLAGS, "-dM", "-E", str(path)]
-    data = command_stdout(command)
-    define: dict[str, str] = {}
-    for line in data.splitlines():
-        assert line.startswith("#define ")
-        a, _, b = line[len("#define ") :].partition(" ")
-        if (b.startswith('"') and b.endswith('"')) or (
-            b.startswith("'") and b.endswith("'")
-        ):
-            b = b[1:-1]
-        define[a] = b
-    return define
-
-
-# Clang marks framework search entries in its verbose output.
-_FRAMEWORK_SUFFIX = " (framework directory)"
-
-
-def _search_dirs(
-    *, CXX: pathlib.Path, CXXFLAGS: Sequence[str], cwd: pathlib.Path
-) -> list[pathlib.Path]:
-    """Include search directories reported by ``$CXX -E -v``, run in ``cwd``."""
-    command = [str(CXX), *CXXFLAGS, "-E", "-x", "c++", "-v", os.devnull]
-    result = exec_command(command, text=True, capture_output=True, cwd=cwd)
-    dirs: list[pathlib.Path] = []
-    collecting = False
-    for line in result.stderr.splitlines():
-        if line in (
-            '#include "..." search starts here:',
-            "#include <...> search starts here:",
-        ):
-            collecting = True
-        elif line == "End of search list.":
-            break
-        elif collecting and line.startswith(" "):
-            d = line.removeprefix(" ").removesuffix(_FRAMEWORK_SUFFIX)
-            dirs.append((cwd / d).resolve())
-    return dirs
-
-
-def _cplusplus_list_include_directories(
-    *,
-    CXX: pathlib.Path,
-    CXXFLAGS: Sequence[str],
-    cwd: pathlib.Path,
-    keep: Sequence[pathlib.Path] = (),
-) -> list[pathlib.Path]:
-    """Include search directories that the configured flags add.
-
-    Asks the preprocessor for its search list with and without the flags and
-    takes the difference, so every directory option (``-I``, ``-iquote``,
-    ``-isystem``, ``-idirafter``, ...) is interpreted by the compiler itself.
-    Relative directories are resolved against ``cwd``, where the compiler runs.
-    Directories in ``keep`` are retained even if the compiler searches them
-    by default (e.g. the project root listed in ``CPATH``).
-    """
-    try:
-        with_flags = _search_dirs(CXX=CXX, CXXFLAGS=CXXFLAGS, cwd=cwd)
-        default = set(_search_dirs(CXX=CXX, CXXFLAGS=[], cwd=cwd))
-    except (OSError, subprocess.SubprocessError):
-        logger.warning("Failed to query include directories from %s", CXX)
-        return []
-    kept = {d.resolve() for d in keep}
-    return [d for d in with_flags if d not in default or d in kept]
 
 
 _NOT_SPECIAL_COMMENTS = "*NOT_SPECIAL_COMMENTS*"
