@@ -39,6 +39,15 @@ class TestCaseProvider(ABC):
     def checker(self) -> pathlib.Path | None:
         return None
 
+    def testdata_hash(self) -> str | None:
+        """Digest identifying the test data currently present in the local cache.
+
+        Must not download anything. ``None`` if the provider never expects test
+        data to change, or it isn't downloaded yet; the hash-based prev-result
+        check then assumes the test data is unchanged.
+        """
+        return None
+
 
 class Problem(TestCaseProvider):
     def __repr__(self) -> str:

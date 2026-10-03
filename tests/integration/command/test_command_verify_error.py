@@ -21,6 +21,7 @@ class CompileFailureData(IntegrationData):
             "files": {
                 "verify.json": {
                     "content_hash": "bb98809796a153e26da2b8dc39085523",
+                    "testdata_hash": "b1b6ed32f3f446d39936f9f1e91274ff",
                     "newest": True,
                     "verifications": [
                         {

@@ -262,7 +262,9 @@ def test_file_result_need_verification(
     assert bool(expected) == (expected is not NeedVerification.NO)
 
 
-def _hashed_result(status: ResultStatus, content_hash: str | None) -> FileResult:
+def _hashed_result(
+    status: ResultStatus, content_hash: str | None, testdata_hash: str | None = None
+) -> FileResult:
     return FileResult(
         verifications=[
             VerificationResult(
@@ -272,6 +274,7 @@ def _hashed_result(status: ResultStatus, content_hash: str | None) -> FileResult
             ),
         ],
         content_hash=content_hash,
+        testdata_hash=testdata_hash,
     )
 
 
@@ -305,6 +308,39 @@ def test_file_result_need_verification_content_hash(
     expected: NeedVerification,
 ):
     assert obj.need_verification(content_hash=content_hash) is expected
+
+
+@pytest.mark.parametrize(
+    ("obj", "testdata_hash", "expected"),
+    [
+        (_hashed_result(ResultStatus.SUCCESS, "a"), None, NeedVerification.NO),
+        (_hashed_result(ResultStatus.SUCCESS, "a", "t"), None, NeedVerification.NO),
+        (
+            _hashed_result(ResultStatus.SUCCESS, "a"),
+            "t",
+            NeedVerification.NO_TESTDATA_HASH,
+        ),
+        (
+            _hashed_result(ResultStatus.SUCCESS, "a", "t"),
+            "u",
+            NeedVerification.TESTDATA_CHANGED,
+        ),
+        (
+            _hashed_result(ResultStatus.FAILURE, "a", "t"),
+            "t",
+            NeedVerification.NOT_SUCCESS,
+        ),
+        (_hashed_result(ResultStatus.SUCCESS, "a", "t"), "t", NeedVerification.NO),
+    ],
+)
+def test_file_result_need_verification_testdata_hash(
+    obj: FileResult,
+    testdata_hash: str | None,
+    expected: NeedVerification,
+):
+    assert (
+        obj.need_verification(content_hash="a", testdata_hash=testdata_hash) is expected
+    )
 
 
 test_is_success_params = [

@@ -61,6 +61,27 @@ _APLUSB_AWK_DEPENDANTS = {
         "awk/myaplusb3.test.awk",
     )
 }
+_MYAPLUSB_TESTS = {
+    pathlib.Path(p)
+    for p in (
+        "awk/myaplusb1.test.awk",
+        "awk/myaplusb2.test.awk",
+        "awk/myaplusb3.test.awk",
+    )
+}
+_LIBRARY_CHECKER_TESTS = {
+    pathlib.Path(p)
+    for p in (
+        "awk/aplusb.test.awk",
+        "awk/aplusb_direct.awk",
+        "python/failure.mle.py",
+        "python/failure.re.py",
+        "python/failure.wa.py",
+        "python/success1.py",
+        "python/success2.py",
+    )
+}
+_TESTDATA_HASHED = _MYAPLUSB_TESTS | _LIBRARY_CHECKER_TESTS
 
 
 @dataclasses.dataclass(frozen=True)
@@ -73,6 +94,7 @@ class HashModeCase:
 
     reverified: set[pathlib.Path]
     hash_changed: bool = False
+    testdata_hash_changed: bool = False
     prev_result: Callable[
         [verifier.VerifyCommandResult], verifier.VerifyCommandResult
     ] = lambda r: r
@@ -102,10 +124,23 @@ _hash_mode_cases: dict[str, HashModeCase] = {
         reverified={pathlib.Path("python/success1.py")},
         prev_result=_with_hashes("python/success1.py", content_hash=None),
     ),
+    "stale_testdata_hash": HashModeCase(
+        reverified={pathlib.Path("awk/myaplusb1.test.awk")},
+        prev_result=_with_hashes("awk/myaplusb1.test.awk", testdata_hash="0" * 64),
+    ),
+    "missing_testdata_hash": HashModeCase(
+        reverified={pathlib.Path("awk/myaplusb1.test.awk")},
+        prev_result=_with_hashes("awk/myaplusb1.test.awk", testdata_hash=None),
+    ),
     "dependency": HashModeCase(
         reverified=_APLUSB_AWK_DEPENDANTS,
         hash_changed=True,
         change=(pathlib.Path("awk/aplusb.awk"), b"\n# changed\n"),
+    ),
+    "local_case": HashModeCase(
+        reverified=_MYAPLUSB_TESTS,
+        testdata_hash_changed=True,
+        change=(pathlib.Path("awk/myaplusb/case01.in"), b"\n"),
     ),
 }
 
@@ -283,6 +318,11 @@ class TestCommandVerfy:
         for file_result in first.files.values():
             assert file_result.content_hash
             assert re.fullmatch(r"[0-9a-f]{64}", file_result.content_hash)
+        assert {
+            p for p, f in first.files.items() if f.testdata_hash
+        } == _TESTDATA_HASHED
+        for path in _TESTDATA_HASHED:
+            assert re.fullmatch(r"[0-9a-f]{64}", first.files[path].testdata_hash or "")
 
         prev_result = case.prev_result(first.model_copy(deep=True))
         prev_path = config_dir / "result_hash_prev.json"
@@ -304,8 +344,14 @@ class TestCommandVerfy:
                 assert (
                     file_result.content_hash != prev.content_hash
                 ) == case.hash_changed
+                assert (
+                    file_result.testdata_hash != prev.testdata_hash
+                ) == case.testdata_hash_changed
             elif not file_result.newest:
                 assert file_result.content_hash == prev.content_hash
+                assert (
+                    file_result.testdata_hash == prev_result.files[path].testdata_hash
+                )
                 assert file_result.verifications == prev.verifications
 
     @staticmethod

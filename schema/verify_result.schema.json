@@ -23,6 +23,19 @@
           "description": "Digest of the file and its transitive dependencies at verification time.",
           "title": "Content Hash"
         },
+        "testdata_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Digest of the test data used by the verifications, or null if it is never expected to change or isn't downloaded yet.",
+          "title": "Testdata Hash"
+        },
         "newest": {
           "default": true,
           "description": "Whether the verification was performed on the most recent run.",

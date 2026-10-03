@@ -48,6 +48,14 @@ class BaseVerification(BaseModel, ABC):
         """
         return True
 
+    def testdata_hash(self) -> str | None:
+        """Digest identifying the verification's test data present in the local cache.
+
+        Must not download anything. ``None`` if the test data is never expected to
+        change, or it isn't downloaded yet (see ``TestCaseProvider.testdata_hash``).
+        """
+        return None
+
 
 class ConstVerification(BaseVerification):
     type: Literal["const"] = "const"
@@ -158,6 +166,12 @@ class BaseProblemVerification(BaseVerification, ABC):
     def is_testdata_cached(self) -> bool:
         problem = self._problem()
         return problem is None or problem.is_testdata_cached()
+
+    def testdata_hash(self) -> str | None:
+        problem = self._problem()
+        if problem is None:
+            return None
+        return problem.testdata_hash()
 
     def run(
         self,

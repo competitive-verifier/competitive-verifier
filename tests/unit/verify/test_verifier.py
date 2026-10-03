@@ -115,6 +115,7 @@ class MockInputContainer(InputContainer):
         verification_time: datetime.datetime | None = None,
         file_timestamps: dict[Path, datetime.datetime] | None = None,
         file_hashes: dict[Path, str] | None = None,
+        file_testdata_hashes: dict[Path, str] | None = None,
         split_state: SplitState | None = None,
         change_detection: ChangeDetection | None = None,
     ) -> None:
@@ -131,6 +132,7 @@ class MockInputContainer(InputContainer):
 
         self.file_timestamps = file_timestamps or {}
         self.file_hashes = file_hashes or {}
+        self.file_testdata_hashes = file_testdata_hashes or {}
 
     def get_file_timestamp(self, path: Path) -> datetime.datetime:
         assert self.file_timestamps is not None
@@ -140,6 +142,9 @@ class MockInputContainer(InputContainer):
 
     def file_content_hash(self, path: Path) -> str | None:
         return self.file_hashes.get(path)
+
+    def file_testdata_hash(self, path: Path) -> str | None:
+        return self.file_testdata_hashes.get(path)
 
 
 test_verification_files_params: list[
@@ -403,6 +408,102 @@ test_file_need_verification_params: list[
             ],
         ),
         True,
+    ),
+    # Matching content and test data hashes: skip.
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_hashes={
+                Path("foo"): "hash-foo",
+            },
+            file_testdata_hashes={
+                Path("foo"): "testdata-foo",
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            content_hash="hash-foo",
+            testdata_hash="testdata-foo",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ],
+        ),
+        False,
+    ),
+    # Matching content hash but changed test data: re-verify.
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_hashes={
+                Path("foo"): "hash-foo",
+            },
+            file_testdata_hashes={
+                Path("foo"): "testdata-foo",
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            content_hash="hash-foo",
+            testdata_hash="stale-testdata",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ],
+        ),
+        True,
+    ),
+    # Previous test data unknown but now known: re-verify to stamp it.
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_hashes={
+                Path("foo"): "hash-foo",
+            },
+            file_testdata_hashes={
+                Path("foo"): "testdata-foo",
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            content_hash="hash-foo",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ],
+        ),
+        True,
+    ),
+    # Current test data unknown (not downloaded): assume unchanged, skip.
+    (
+        MockInputContainer(
+            verification_time=datetime.datetime(2018, 12, 25),
+            file_hashes={
+                Path("foo"): "hash-foo",
+            },
+        ),
+        Path("foo"),
+        FileResult(
+            content_hash="hash-foo",
+            testdata_hash="testdata-foo",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime.datetime(2016, 12, 24),
+                ),
+            ],
+        ),
+        False,
     ),
 ]
 

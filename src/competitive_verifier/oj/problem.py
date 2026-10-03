@@ -1,4 +1,5 @@
 import glob
+import hashlib
 import json
 import os
 import pathlib
@@ -128,6 +129,17 @@ class LibraryCheckerProblem(Problem):
                 extra={"github": GitHubMessageParams()},
             )
             raise
+
+    @property
+    def hash_json(self) -> pathlib.Path:
+        """The committed per-case digests of the generated test data."""
+        return self.source_directory / "hash.json"
+
+    def testdata_hash(self) -> str | None:
+        try:
+            return hashlib.sha256(self.hash_json.read_bytes()).hexdigest()
+        except (OSError, RuntimeError):
+            return None
 
     @property
     def source_directory(self):
@@ -423,6 +435,19 @@ class LocalProblem(TestCaseProvider):
 
     def iter_system_cases(self) -> Iterable[TestCaseFile]:
         return iter_testcases(directory=self.path, recursive=True)
+
+    def testdata_hash(self) -> str | None:
+        if not self.path.is_dir():
+            return None
+        digest = hashlib.sha256()
+        for case in sorted(self.iter_system_cases(), key=lambda c: c.name):
+            digest.update(case.name.encode())
+            digest.update(b"\0")
+            digest.update(case.input_path.read_bytes())
+            digest.update(b"\0")
+            digest.update(case.output_path.read_bytes())
+            digest.update(b"\0")
+        return digest.hexdigest()
 
 
 def _normpath(path: str) -> str:
