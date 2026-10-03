@@ -1,3 +1,8 @@
+# Feature to bundle C++ source code into a single file
+# This feature is derived from https://github.com/online-judge-tools/verification-helper
+# Some functionality is missing, but I don't have the capacity to develop and support it rigorously, so I don't plan to update it beyond minor improvements.
+# You can implement your own bundling by performing the bundle separately based on `verify_files.json` and then updating `verify_files.json` with the bundled files.
+
 # Python Version: 3.x
 import contextlib
 import functools
