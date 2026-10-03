@@ -39,11 +39,12 @@ class TestCaseProvider(ABC):
     def checker(self) -> pathlib.Path | None:
         return None
 
-    def sync_testdata(self) -> None:  # noqa: B027
+    def sync_testdata(self) -> None:
         """Fetch the latest upstream test data identity so ``testdata_hash`` reflects it.
 
         Only for providers whose test data can change upstream; no-op otherwise.
         """
+        return
 
     def testdata_hash(self) -> str | None:
         """Digest identifying the test data currently present in the local cache.
