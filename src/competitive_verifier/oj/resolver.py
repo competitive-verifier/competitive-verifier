@@ -270,7 +270,7 @@ class OjResolver:
 
     def resolve(self, *, bundle: bool) -> VerificationInput:
         files: dict[pathlib.Path, VerificationFile] = {}
-        basedir = pathlib.Path()
+        basedir = pathlib.Path.cwd()
 
         for path in git.ls_files(*self.include):
             if self._match_exclude(path):
