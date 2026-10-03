@@ -1,14 +1,17 @@
+import dataclasses
 import os
 import pathlib
 import platform
 import shlex
 import shutil
+import subprocess
+from collections.abc import Sequence
 from logging import getLogger
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
-from competitive_verifier.exec import command_stdout
+from competitive_verifier.exec import command_stdout, exec_command
 from competitive_verifier.log import GitHubMessageParams
 
 from . import special_comments
@@ -111,6 +114,58 @@ def _cplusplus_list_defined_macros(
     return define
 
 
+# Clang marks framework search entries in its verbose output.
+_FRAMEWORK_SUFFIX = " (framework directory)"
+
+
+def _search_dirs(
+    *, CXX: pathlib.Path, CXXFLAGS: Sequence[str], cwd: pathlib.Path
+) -> list[pathlib.Path]:
+    """Include search directories reported by ``$CXX -E -v``, run in ``cwd``."""
+    command = [str(CXX), *CXXFLAGS, "-E", "-x", "c++", "-v", os.devnull]
+    result = exec_command(command, text=True, capture_output=True, cwd=cwd)
+    dirs: list[pathlib.Path] = []
+    collecting = False
+    for line in result.stderr.splitlines():
+        if line in (
+            '#include "..." search starts here:',
+            "#include <...> search starts here:",
+        ):
+            collecting = True
+        elif line == "End of search list.":
+            break
+        elif collecting and line.startswith(" "):
+            d = line.removeprefix(" ").removesuffix(_FRAMEWORK_SUFFIX)
+            dirs.append((cwd / d).resolve())
+    return dirs
+
+
+def _cplusplus_list_include_directories(
+    *,
+    CXX: pathlib.Path,
+    CXXFLAGS: Sequence[str],
+    cwd: pathlib.Path,
+    keep: Sequence[pathlib.Path] = (),
+) -> list[pathlib.Path]:
+    """Include search directories that the configured flags add.
+
+    Asks the preprocessor for its search list with and without the flags and
+    takes the difference, so every directory option (``-I``, ``-iquote``,
+    ``-isystem``, ``-idirafter``, ...) is interpreted by the compiler itself.
+    Relative directories are resolved against ``cwd``, where the compiler runs.
+    Directories in ``keep`` are retained even if the compiler searches them
+    by default (e.g. the project root listed in ``CPATH``).
+    """
+    try:
+        with_flags = _search_dirs(CXX=CXX, CXXFLAGS=CXXFLAGS, cwd=cwd)
+        default = set(_search_dirs(CXX=CXX, CXXFLAGS=[], cwd=cwd))
+    except (OSError, subprocess.SubprocessError):
+        logger.warning("Failed to query include directories from %s", CXX)
+        return []
+    kept = {d.resolve() for d in keep}
+    return [d for d in with_flags if d not in default or d in kept]
+
+
 _NOT_SPECIAL_COMMENTS = "*NOT_SPECIAL_COMMENTS*"
 _PROBLEM = "PROBLEM"
 _IGNORE = "IGNORE"
@@ -120,8 +175,35 @@ _ERROR = "ERROR"
 _STANDALONE = "STANDALONE"
 
 
+@dataclasses.dataclass
+class _IncludeDirectories:
+    """Include directories per basedir, queried from the compiler once each."""
+
+    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = dataclasses.field(
+        default_factory=dict[pathlib.Path, list[pathlib.Path]]
+    )
+
+    def get(
+        self, env: CPlusPlusLanguageEnvironment, basedir: pathlib.Path
+    ) -> list[pathlib.Path]:
+        dirs = self._by_basedir.get(basedir)
+        if dirs is None:
+            # Mirror the verification compile command, which appends -I basedir.
+            dirs = _cplusplus_list_include_directories(
+                CXX=env.cxx,
+                CXXFLAGS=[*env.cxx_flags, "-I", str(basedir)],
+                cwd=pathlib.Path.cwd(),
+                keep=[basedir],
+            ) or [basedir]
+            self._by_basedir[basedir] = dirs
+        return dirs
+
+
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
+    _include_directories: _IncludeDirectories = PrivateAttr(
+        default_factory=_IncludeDirectories
+    )
 
     def _list_environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806
@@ -237,9 +319,8 @@ class CPlusPlusLanguage(Language):
         )
 
     def bundle(self, path: pathlib.Path, *, basedir: pathlib.Path) -> bytes | None:
-        include_paths: list[pathlib.Path] = [basedir]
-        assert isinstance(include_paths, list)
-        bundler = Bundler(iquotes=include_paths)
+        env = self._list_environments()[0]
+        bundler = Bundler(iquotes=self._include_directories.get(env, basedir))
         bundler.update(path)
         return bundler.get()
 
