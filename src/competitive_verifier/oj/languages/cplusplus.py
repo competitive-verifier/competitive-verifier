@@ -1,5 +1,3 @@
-import dataclasses
-import functools
 import os
 import pathlib
 import platform
@@ -7,6 +5,8 @@ import shlex
 import shutil
 import subprocess
 from collections.abc import Sequence
+from dataclasses import dataclass, field
+from functools import cached_property
 from logging import getLogger
 from typing import Any
 
@@ -34,12 +34,12 @@ class OjVerifyCPlusPlusConfig(OjVerifyLanguageConfig):
     environments: list[OjVerifyCPlusPlusConfigEnv] | None = None
 
 
-@dataclasses.dataclass
+@dataclass
 class _IncludeDirectories:
     """Include directories per basedir, queried from the compiler once each."""
 
     env: "CPlusPlusLanguageEnvironment"
-    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = dataclasses.field(
+    _by_basedir: dict[pathlib.Path, list[pathlib.Path]] = field(
         default_factory=dict[pathlib.Path, list[pathlib.Path]]
     )
 
@@ -204,7 +204,7 @@ _STANDALONE = "STANDALONE"
 class CPlusPlusLanguage(Language):
     config: OjVerifyCPlusPlusConfig = Field(default_factory=OjVerifyCPlusPlusConfig)
 
-    @functools.cached_property
+    @cached_property
     def _environments(self) -> list[CPlusPlusLanguageEnvironment]:
         default_CXXFLAGS = ["--std=c++17", "-O2", "-Wall", "-g"]  # noqa: N806
         if platform.system() == "Windows" or "CYGWIN" in platform.system():
