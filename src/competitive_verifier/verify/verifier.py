@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from functools import cached_property
 from logging import getLogger
+from typing import Literal
 
 from competitive_verifier import git, log
 from competitive_verifier.download import download_files as run_download
@@ -47,10 +48,14 @@ def content_hash(files: Iterable[pathlib.Path]) -> str | None:
     return digest.hexdigest()
 
 
+ChangeDetection = Literal["timestamp", "hash"]
+
+
 class InputContainer(ABC):
     verifications: VerificationInput
     verification_time: datetime.datetime
     prev_result: VerifyCommandResult | None
+    change_detection: ChangeDetection
     split_state: SplitState | None
 
     def __init__(
@@ -60,10 +65,12 @@ class InputContainer(ABC):
         verification_time: datetime.datetime,
         prev_result: VerifyCommandResult | None,
         split_state: SplitState | None,
+        change_detection: ChangeDetection = "timestamp",
     ) -> None:
         self.verifications = verifications
         self.verification_time = verification_time
         self.prev_result = prev_result
+        self.change_detection = change_detection
         self.split_state = split_state
 
     @abstractmethod
@@ -85,13 +92,20 @@ class InputContainer(ABC):
     ) -> bool:
         if not path.exists():
             return False
-        base_time = min(self.verification_time, self.get_file_timestamp(path))
-        result = file_result.need_verification(base_time)
-        if result:
-            logger.info("%s needs verification. base_time: %s", path, base_time)
+        if self.change_detection == "timestamp":
+            base_time = min(self.verification_time, self.get_file_timestamp(path))
+            reason = file_result.need_verification(base_time=base_time)
+        elif self.change_detection == "hash":
+            reason = file_result.need_verification(
+                content_hash=self.file_content_hash(path)
+            )
         else:
-            logger.info("%s doesn't need verification. base_time: %s", path, base_time)
-        return result
+            raise AssertionError(f"Unknown change_detection: {self.change_detection}")
+        if reason:
+            logger.info("%s needs verification: %s", path, reason.value)
+        else:
+            logger.info("%s doesn't need verification: %s", path, reason.value)
+        return bool(reason)
 
     @cached_property
     def verification_files(self) -> dict[pathlib.Path, VerificationFile]:
@@ -164,12 +178,14 @@ class BaseVerifier(InputContainer):
         prev_result: VerifyCommandResult | None,
         split_state: SplitState | None,
         verification_time: datetime.datetime | None = None,
+        change_detection: ChangeDetection = "timestamp",
     ) -> None:
         super().__init__(
             verifications=verifications,
             verification_time=verification_time or _now(),
             prev_result=prev_result,
             split_state=split_state,
+            change_detection=change_detection,
         )
         self._input = verifications
         self.timeout = timeout
@@ -383,6 +399,7 @@ class Verifier(BaseVerifier):
         prev_result: VerifyCommandResult | None,
         split_state: SplitState | None,
         verification_time: datetime.datetime | None = None,
+        change_detection: ChangeDetection = "timestamp",
         use_git_timestamp: bool,
     ) -> None:
         super().__init__(
@@ -390,6 +407,7 @@ class Verifier(BaseVerifier):
             verification_time=verification_time or _now(),
             prev_result=prev_result,
             split_state=split_state,
+            change_detection=change_detection,
             timeout=timeout,
             default_tle=default_tle,
             default_mle=default_mle,

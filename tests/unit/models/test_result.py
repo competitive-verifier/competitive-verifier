@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 
 from competitive_verifier.models import (
     FileResult,
+    NeedVerification,
     ResultStatus,
     VerificationResult,
     VerifyCommandResult,
@@ -139,8 +140,14 @@ def test_parse_FileResult(
     assert obj.model_dump_json(exclude_none=True) == output_json
 
 
-test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool]] = [
-    (FileResult(verifications=[]), datetime(2016, 12, 24, 19, 0, 0), True),
+test_file_result_need_verification_params: list[
+    tuple[FileResult, datetime, NeedVerification]
+] = [
+    (
+        FileResult(verifications=[]),
+        datetime(2016, 12, 24, 19, 0, 0),
+        NeedVerification.NO_RESULT,
+    ),
     (
         FileResult(
             verifications=[
@@ -152,7 +159,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        False,
+        NeedVerification.NO,
     ),
     (
         FileResult(
@@ -165,7 +172,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        True,
+        NeedVerification.NOT_SUCCESS,
     ),
     (
         FileResult(
@@ -178,7 +185,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        True,
+        NeedVerification.NOT_SUCCESS,
     ),
     (
         FileResult(
@@ -191,7 +198,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        True,
+        NeedVerification.MODIFIED,
     ),
     (
         FileResult(
@@ -214,7 +221,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        True,
+        NeedVerification.MODIFIED,
     ),
     (
         FileResult(
@@ -237,7 +244,7 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
-        True,
+        NeedVerification.NOT_SUCCESS,
     ),
 ]
 
@@ -249,9 +256,55 @@ test_file_result_need_verification_params: list[tuple[FileResult, datetime, bool
 def test_file_result_need_verification(
     obj: FileResult,
     dt: datetime,
-    expected: bool,
+    expected: NeedVerification,
 ):
-    assert obj.need_verification(dt) == expected
+    assert obj.need_verification(base_time=dt) is expected
+    assert bool(expected) == (expected is not NeedVerification.NO)
+
+
+def _hashed_result(status: ResultStatus, content_hash: str | None) -> FileResult:
+    return FileResult(
+        verifications=[
+            VerificationResult(
+                elapsed=1.5,
+                status=status,
+                last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
+            ),
+        ],
+        content_hash=content_hash,
+    )
+
+
+@pytest.mark.parametrize(
+    ("obj", "content_hash", "expected"),
+    [
+        (FileResult(verifications=[]), "a", NeedVerification.NO_RESULT),
+        (
+            _hashed_result(ResultStatus.SUCCESS, None),
+            "a",
+            NeedVerification.NO_CONTENT_HASH,
+        ),
+        (
+            _hashed_result(ResultStatus.SUCCESS, "a"),
+            "b",
+            NeedVerification.CONTENT_CHANGED,
+        ),
+        (
+            _hashed_result(ResultStatus.SUCCESS, "a"),
+            None,
+            NeedVerification.CONTENT_CHANGED,
+        ),
+        (_hashed_result(ResultStatus.FAILURE, "a"), "a", NeedVerification.NOT_SUCCESS),
+        (_hashed_result(ResultStatus.SKIPPED, "a"), "a", NeedVerification.NOT_SUCCESS),
+        (_hashed_result(ResultStatus.SUCCESS, "a"), "a", NeedVerification.NO),
+    ],
+)
+def test_file_result_need_verification_content_hash(
+    obj: FileResult,
+    content_hash: str | None,
+    expected: NeedVerification,
+):
+    assert obj.need_verification(content_hash=content_hash) is expected
 
 
 test_is_success_params = [

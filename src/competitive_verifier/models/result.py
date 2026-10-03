@@ -1,4 +1,5 @@
 import datetime
+import enum
 import pathlib
 from logging import getLogger
 from typing import TYPE_CHECKING, Any
@@ -103,6 +104,20 @@ class VerificationResult(BaseModel):
         return self.last_execution_time < base_time
 
 
+class NeedVerification(enum.Enum):
+    """Why a previous ``FileResult`` can't be reused; falsy when it can."""
+
+    NO = "unchanged since the previous verification"
+    NO_RESULT = "no previous result"
+    NOT_SUCCESS = "the previous verification didn't succeed"
+    MODIFIED = "modified after the previous verification"
+    NO_CONTENT_HASH = "the previous result has no content hash"
+    CONTENT_CHANGED = "content hash changed"
+
+    def __bool__(self) -> bool:
+        return self is not NeedVerification.NO
+
+
 class FileResult(BaseModel):
     verifications: list[VerificationResult] = Field(
         default_factory=list[VerificationResult],
@@ -126,10 +141,40 @@ class FileResult(BaseModel):
     """Whether the verification was performed on the most recent run.
     """
 
-    def need_verification(self, base_time: datetime.datetime) -> bool:
+    def need_verification(
+        self,
+        *,
+        base_time: datetime.datetime | None = None,
+        content_hash: str | None = None,
+    ) -> NeedVerification:
+        """Whether the file has changed since this result.
+
+        Pass ``base_time`` to compare against the file's modification time,
+        or ``content_hash`` to compare against the recorded content hash.
+        """
         if len(self.verifications) == 0:
-            return True
-        return any(r.need_reverifying(base_time) for r in self.verifications)
+            return NeedVerification.NO_RESULT
+        if base_time is not None:
+            return self._need_verification_by_time(base_time)
+        return self._need_verification_by_hash(content_hash)
+
+    def _need_verification_by_time(
+        self, base_time: datetime.datetime
+    ) -> NeedVerification:
+        if any(r.status != ResultStatus.SUCCESS for r in self.verifications):
+            return NeedVerification.NOT_SUCCESS
+        if any(r.last_execution_time < base_time for r in self.verifications):
+            return NeedVerification.MODIFIED
+        return NeedVerification.NO
+
+    def _need_verification_by_hash(self, content_hash: str | None) -> NeedVerification:
+        if self.content_hash is None:
+            return NeedVerification.NO_CONTENT_HASH
+        if self.content_hash != content_hash:
+            return NeedVerification.CONTENT_CHANGED
+        if not self.is_success(allow_skip=False):
+            return NeedVerification.NOT_SUCCESS
+        return NeedVerification.NO
 
     def is_success(self, *, allow_skip: bool) -> bool:
         if allow_skip:
