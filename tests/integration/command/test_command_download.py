@@ -1,3 +1,5 @@
+import hashlib
+import json
 import os
 import pathlib
 import shutil
@@ -146,6 +148,19 @@ class TestCommandDownload:
                 ).returncode
                 == 0
             )
+
+        hash_json = problem.source_directory / "hash.json"
+        testdata_hash = problem.testdata_hash()
+        assert testdata_hash == hashlib.sha256(hash_json.read_bytes()).hexdigest()
+        assert set(json.loads(hash_json.read_text())) == {
+            f"{case.name}.{ext}" for case in testcases for ext in ("in", "out")
+        }
+
+        assert parsed.run()
+        assert problem.testdata_hash() == testdata_hash
+
+        hash_json.write_text(hash_json.read_text() + "\n")
+        assert problem.testdata_hash() != testdata_hash
 
     @pytest.mark.integration
     @pytest.mark.skipif(

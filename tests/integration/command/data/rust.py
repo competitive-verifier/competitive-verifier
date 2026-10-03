@@ -154,6 +154,7 @@ class RustWithoutConfigData(IntegrationData):
                 },
                 "verification/src/bin/library-checker-aplusb.rs": {
                     "content_hash": "f54f0cea1b69287aa58572cca0c7d859",
+                    "testdata_hash": "5b5f7f44e1e455fdb4c7c30fa3445d48",
                     "newest": True,
                     "verifications": [
                         {

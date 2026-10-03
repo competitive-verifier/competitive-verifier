@@ -85,6 +85,23 @@ class InputContainer(ABC):
             return None
         return content_hash(self.verifications.transitive_depends_on[path])
 
+    def file_testdata_hash(self, path: pathlib.Path) -> str | None:
+        """Digest of the test data of the file's verifications.
+
+        ``None`` if the test data of any verification can't be identified.
+        """
+        f = self.verifications.files.get(path)
+        if f is None:
+            return None
+        digest = hashlib.sha256()
+        for v in f.verification_list:
+            testdata_hash = v.testdata_hash()
+            if testdata_hash is None:
+                return None
+            digest.update(testdata_hash.encode())
+            digest.update(b"\0")
+        return digest.hexdigest()
+
     def file_need_verification(
         self,
         path: pathlib.Path,
@@ -97,7 +114,8 @@ class InputContainer(ABC):
             reason = file_result.need_verification(base_time=base_time)
         elif self.change_detection == "hash":
             reason = file_result.need_verification(
-                content_hash=self.file_content_hash(path)
+                content_hash=self.file_content_hash(path),
+                testdata_hash=self.file_testdata_hash(path),
             )
         else:
             raise AssertionError(f"Unknown change_detection: {self.change_detection}")
@@ -286,6 +304,9 @@ class BaseVerifier(InputContainer):
         start_time = time.perf_counter()
         deadline = start_time + self.timeout
 
+        if download and self.change_detection == "hash":
+            self.sync_testdata()
+
         with log.group("current_verification_files"):
             current_verification_files = self.current_verification_files
             logger.info(
@@ -314,6 +335,7 @@ class BaseVerifier(InputContainer):
                         deadline=deadline,
                     ),
                     content_hash=self.file_content_hash(p),
+                    testdata_hash=self.file_testdata_hash(p),
                 )
 
         sippable_file_results = self.skippable_results()
@@ -346,6 +368,12 @@ class BaseVerifier(InputContainer):
             return rs, "Failed to test"
         return rs, None
 
+    def sync_testdata(self) -> None:
+        """Sync the test data sources so ``file_testdata_hash`` reflects upstream."""
+        for f in self.verification_files.values():
+            for v in f.verification_list:
+                v.sync_testdata()
+
     def skippable_results(self) -> dict[pathlib.Path, FileResult]:
         """Run skippable verification."""
         results = dict[pathlib.Path, FileResult]()
@@ -363,6 +391,7 @@ class BaseVerifier(InputContainer):
                 results[p] = FileResult(
                     verifications=verifications,
                     content_hash=self.file_content_hash(p),
+                    testdata_hash=self.file_testdata_hash(p),
                     newest=True,
                 )
         return results

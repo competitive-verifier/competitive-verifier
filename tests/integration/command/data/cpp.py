@@ -179,6 +179,7 @@ class CppWithoutConfigData(IntegrationData):
                 },
                 "aplusb.test.cpp": {
                     "content_hash": "f291d1cc1fa4ef491bfa97ba659525ca",
+                    "testdata_hash": "86d28c16a4e070ad0eb8f8610130fcd5",
                     "newest": True,
                     "verifications": [
                         {

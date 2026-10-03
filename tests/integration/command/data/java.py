@@ -130,6 +130,7 @@ class JavaData(IntegrationData):
                 },
                 "examples/Aplusb_test.java": {
                     "content_hash": "c7c353fb35eb05dbb94ad35790272af5",
+                    "testdata_hash": "86f51edad48ca302fc110d93bb6bc967",
                     "newest": True,
                     "verifications": [
                         {
