@@ -305,9 +305,7 @@ class BaseVerifier(InputContainer):
         deadline = start_time + self.timeout
 
         if download and self.change_detection == "hash":
-            for f in self.verification_files.values():
-                for v in f.verification_list:
-                    v.sync_testdata()
+            self.sync_testdata()
 
         with log.group("current_verification_files"):
             current_verification_files = self.current_verification_files
@@ -369,6 +367,12 @@ class BaseVerifier(InputContainer):
         if rs.status != ResultStatus.SUCCESS:
             return rs, "Failed to test"
         return rs, None
+
+    def sync_testdata(self) -> None:
+        """Sync the test data sources so ``file_testdata_hash`` reflects upstream."""
+        for f in self.verification_files.values():
+            for v in f.verification_list:
+                v.sync_testdata()
 
     def skippable_results(self) -> dict[pathlib.Path, FileResult]:
         """Run skippable verification."""
