@@ -304,6 +304,11 @@ class BaseVerifier(InputContainer):
         start_time = time.perf_counter()
         deadline = start_time + self.timeout
 
+        if download and self.change_detection == "hash":
+            for f in self.verification_files.values():
+                for v in f.verification_list:
+                    v.sync_testdata()
+
         with log.group("current_verification_files"):
             current_verification_files = self.current_verification_files
             logger.info(

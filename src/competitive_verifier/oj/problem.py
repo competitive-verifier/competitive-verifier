@@ -135,6 +135,9 @@ class LibraryCheckerProblem(Problem):
         """The committed per-case digests of the generated test data."""
         return self.source_directory / "hash.json"
 
+    def sync_testdata(self) -> None:
+        self.update_cloned_repository()
+
     def testdata_hash(self) -> str | None:
         try:
             return hashlib.sha256(self.hash_json.read_bytes()).hexdigest()

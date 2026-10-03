@@ -17,7 +17,12 @@ from competitive_verifier.models import (
     VerificationResult,
     VerifyCommandResult,
 )
-from competitive_verifier.verify.verifier import BaseVerifier, SplitState
+from competitive_verifier.oj.problem import LibraryCheckerProblem
+from competitive_verifier.verify.verifier import (
+    BaseVerifier,
+    ChangeDetection,
+    SplitState,
+)
 from tests import LogComparer
 
 SUCCESS = ResultStatus.SUCCESS
@@ -39,12 +44,14 @@ class MockVerifier(BaseVerifier):
         prev_result: VerifyCommandResult | None = None,
         split_state: SplitState | None = None,
         file_hashes: dict[str, str] | None = None,
+        change_detection: ChangeDetection = "timestamp",
     ) -> None:
         super().__init__(
             verifications=VerificationInput.model_validate(varifications),
             verification_time=verification_time,
             prev_result=prev_result,
             split_state=split_state,
+            change_detection=change_detection,
             default_tle=10,
             default_mle=256,
             timeout=10,
@@ -1048,3 +1055,73 @@ def test_failure_result():
             }
         },
     }
+
+
+@pytest.mark.usefixtures("mock_perf_counter")
+@pytest.mark.parametrize(
+    ("download", "change_detection", "synced"),
+    [
+        (True, "hash", True),
+        (False, "hash", False),
+        (True, "timestamp", False),
+    ],
+)
+def test_verify_syncs_testdata_before_skip_selection(
+    mocker: MockerFixture,
+    download: bool,
+    change_detection: ChangeDetection,
+    synced: bool,
+):
+    mocker.patch.object(pathlib.Path, "exists", return_value=True)
+    update = mocker.patch.object(LibraryCheckerProblem, "update_cloned_repository")
+    run_download = mocker.patch(
+        "competitive_verifier.verify.verifier.run_download", return_value=True
+    )
+    synced_before_hash: list[int] = []
+
+    def file_testdata_hash(path: pathlib.Path) -> str:
+        synced_before_hash.append(update.call_count)
+        return "testdata-foo"
+
+    mocker.patch.object(
+        MockVerifier, "file_testdata_hash", side_effect=file_testdata_hash
+    )
+
+    verifier = MockVerifier(
+        {
+            "files": {
+                "test/foo.py": {
+                    "verification": ProblemVerification(
+                        command="false",
+                        problem="https://judge.yosupo.jp/problem/aplusb",
+                    ),
+                },
+            }
+        },
+        verification_time=datetime.datetime(2007, 1, 2, 15, 4, 5),
+        prev_result=VerifyCommandResult(
+            total_seconds=1.0,
+            files={
+                pathlib.Path("test/foo.py"): FileResult(
+                    content_hash="hash-foo",
+                    testdata_hash="testdata-foo",
+                    verifications=[
+                        VerificationResult(
+                            status=SUCCESS,
+                            elapsed=1.0,
+                            last_execution_time=datetime.datetime(2006, 1, 2),
+                        )
+                    ],
+                )
+            },
+        ),
+        file_hashes={"test/foo.py": "hash-foo"},
+        change_detection=change_detection,
+    )
+    result = verifier.verify(download=download)
+
+    assert result.files[pathlib.Path("test/foo.py")].verifications[0].status == SUCCESS
+    assert update.call_count == (1 if synced else 0)
+    if synced:
+        assert synced_before_hash == [1]
+    run_download.assert_not_called()

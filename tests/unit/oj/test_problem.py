@@ -175,3 +175,13 @@ def test_library_checker_testdata_hash(
 def test_library_checker_testdata_hash_unknown_problem():
     problem = LibraryCheckerProblem(problem_id="no_such_problem")
     assert problem.testdata_hash() is None
+
+
+def test_library_checker_sync_testdata(mocker: MockerFixture):
+    update = mocker.patch.object(LibraryCheckerProblem, "update_cloned_repository")
+    LibraryCheckerProblem(problem_id="aplusb").sync_testdata()
+    update.assert_called_once_with()
+
+
+def test_base_problem_sync_testdata(mocker: MockerFixture):
+    assert YukicoderProblem(problem_no=1088).sync_testdata() is None
