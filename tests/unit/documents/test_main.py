@@ -3,12 +3,14 @@ import pathlib
 import pytest
 from pytest_mock import MockerFixture
 
+from competitive_verifier.config import COMPETITIVE_VERIFY_CONFIG_PATH
 from competitive_verifier.documents.main import Docs, get_default_docs_dir
 from competitive_verifier.models import VerificationInput, VerifyCommandResult
 
 
 @pytest.mark.allow_mkdir
-def test_get_default_docs_dir(testtemp: pathlib.Path):
+def test_get_default_docs_dir(testtemp: pathlib.Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv(COMPETITIVE_VERIFY_CONFIG_PATH)
     assert get_default_docs_dir() == pathlib.Path(".competitive-verifier/docs")
     (testtemp / ".verify-helper/docs").mkdir(parents=True)
     assert get_default_docs_dir() == pathlib.Path(".verify-helper/docs")
