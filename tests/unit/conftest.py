@@ -10,9 +10,15 @@ from pytest_mock import MockerFixture
 from competitive_verifier.config import COMPETITIVE_VERIFY_CONFIG_PATH
 
 
+@pytest.fixture(scope="session")
+def session_tmp_path():
+    with tempfile.TemporaryDirectory() as d:
+        yield d
+
+
 @pytest.fixture(autouse=True)
-def tmp_config_path(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv(COMPETITIVE_VERIFY_CONFIG_PATH, "./dummy")
+def tmp_config_path(session_tmp_path: str, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv(COMPETITIVE_VERIFY_CONFIG_PATH, session_tmp_path)
 
 
 @pytest.fixture
