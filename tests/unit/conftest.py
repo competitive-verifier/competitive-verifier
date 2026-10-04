@@ -7,6 +7,13 @@ from contextlib import nullcontext
 import pytest
 from pytest_mock import MockerFixture
 
+from competitive_verifier.config import COMPETITIVE_VERIFY_CONFIG_PATH
+
+
+@pytest.fixture(autouse=True)
+def tmp_config_path(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv(COMPETITIVE_VERIFY_CONFIG_PATH, "./dummy")
+
 
 @pytest.fixture
 def mock_perf_counter(mocker: MockerFixture, request: pytest.FixtureRequest):
