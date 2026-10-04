@@ -153,6 +153,8 @@ test_parse_args_params: list[
         {COMPETITIVE_VERIFY_FILES_PATH: ".competitive-verifier/verify_files.json"},
         [
             "verify",
+            "--change-detection",
+            "timestamp",
             "-o",
             ".competitive-verifier/out.json",
         ],
