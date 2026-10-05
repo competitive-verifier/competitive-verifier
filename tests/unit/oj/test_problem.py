@@ -183,5 +183,5 @@ def test_library_checker_sync_testdata(mocker: MockerFixture):
     update.assert_called_once_with()
 
 
-def test_base_problem_sync_testdata(mocker: MockerFixture):
+def test_base_problem_sync_testdata():
     assert YukicoderProblem(problem_no=1088).sync_testdata() is None

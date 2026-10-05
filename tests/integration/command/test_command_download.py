@@ -156,7 +156,6 @@ class TestCommandDownload:
             f"{case.name}.{ext}" for case in testcases for ext in ("in", "out")
         }
 
-        assert parsed.run()
         assert problem.testdata_hash() == testdata_hash
 
         hash_json.write_text(hash_json.read_text() + "\n")

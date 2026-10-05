@@ -8,6 +8,7 @@ from pytest_mock import MockerFixture
 
 from competitive_verifier import app
 from competitive_verifier.arg import COMPETITIVE_VERIFY_FILES_PATH
+from competitive_verifier.config import COMPETITIVE_VERIFY_CONFIG_PATH
 
 
 def test_app_help(capsys: pytest.CaptureFixture[str]):
@@ -176,7 +177,7 @@ test_parse_args_params: list[
         },
     ),
     (
-        None,
+        {COMPETITIVE_VERIFY_CONFIG_PATH: ".competitive-verifier"},
         [
             "docs",
             "--verify-json",

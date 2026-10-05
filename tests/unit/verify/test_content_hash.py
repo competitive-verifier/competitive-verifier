@@ -12,8 +12,7 @@ pytestmark = pytest.mark.allow_mkdir
 
 
 @pytest.fixture(autouse=True)
-def chdir_tmp(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.chdir(tmp_path)
+def setup_temp_dir(testtemp: pathlib.Path) -> None:
     pathlib.Path("foo.py").write_bytes(b"print(1)")
     pathlib.Path("bar.py").write_bytes(b"print(2)")
 

@@ -764,13 +764,25 @@ def test_local_problem_verification_tempdir(testtemp: pathlib.Path):
     assert tempdir.is_dir()
 
 
-def test_is_testdata_cached_const():
+def test_is_testdata_cached_default():
     assert ConstVerification(status=ResultStatus.SUCCESS).is_testdata_cached() is True
     assert CommandVerification(command="true").is_testdata_cached() is True
+    assert (
+        ProblemVerification(
+            command="true", problem="https://example.com/notfound"
+        ).is_testdata_cached()
+        is True
+    )
+    assert (
+        LocalProblemVerification(
+            command="true", input=pathlib.Path("testcases")
+        ).is_testdata_cached()
+        is True
+    )
 
 
 @pytest.mark.parametrize("cached", [False, True])
-def test_is_testdata_cached_problem(cached: bool, mocker: MockerFixture):
+def test_is_testdata_cached_library_checker(cached: bool, mocker: MockerFixture):
     mocker.patch(
         "competitive_verifier.oj.problem.LibraryCheckerProblem.is_testdata_cached",
         return_value=cached,
@@ -779,13 +791,3 @@ def test_is_testdata_cached_problem(cached: bool, mocker: MockerFixture):
         command="true", problem="https://judge.yosupo.jp/problem/aplusb"
     )
     assert obj.is_testdata_cached() is cached
-
-
-def test_is_testdata_cached_unsupported_problem():
-    obj = ProblemVerification(command="true", problem="https://example.com/notfound")
-    assert obj.is_testdata_cached() is True
-
-
-def test_is_testdata_cached_local_problem():
-    obj = LocalProblemVerification(command="true", input=pathlib.Path("testcases"))
-    assert obj.is_testdata_cached() is True

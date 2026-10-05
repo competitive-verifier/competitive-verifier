@@ -2,7 +2,7 @@ import datetime
 import enum
 import pathlib
 from logging import getLogger
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -151,6 +151,22 @@ class FileResult(BaseModel):
     )
     """Whether the verification was performed on the most recent run.
     """
+
+    @overload
+    def need_verification(
+        self,
+        *,
+        base_time: datetime.datetime,
+        testdata_hash: str | None = None,
+    ) -> NeedVerification: ...
+
+    @overload
+    def need_verification(
+        self,
+        *,
+        content_hash: str | None,
+        testdata_hash: str | None,
+    ) -> NeedVerification: ...
 
     def need_verification(
         self,
