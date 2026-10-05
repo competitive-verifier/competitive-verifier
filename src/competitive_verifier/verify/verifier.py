@@ -110,8 +110,10 @@ class InputContainer(ABC):
         if not path.exists():
             return False
         if self.change_detection == "timestamp":
-            base_time = min(self.verification_time, self.get_file_timestamp(path))
-            reason = file_result.need_verification(base_time=base_time)
+            reason = file_result.need_verification(
+                base_time=min(self.verification_time, self.get_file_timestamp(path)),
+                testdata_hash=self.file_testdata_hash(path),
+            )
         elif self.change_detection == "hash":
             reason = file_result.need_verification(
                 content_hash=self.file_content_hash(path),
@@ -304,7 +306,7 @@ class BaseVerifier(InputContainer):
         start_time = time.perf_counter()
         deadline = start_time + self.timeout
 
-        if download and self.change_detection == "hash":
+        if download:
             self.sync_testdata()
 
         with log.group("current_verification_files"):

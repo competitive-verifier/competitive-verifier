@@ -132,6 +132,7 @@ def update_cloned_repository():  # pragma: no cover
         return
 
     if not gz_path.exists() and _library_checker_problems_tar_gz:
+        gz_path.parent.mkdir(parents=True, exist_ok=True)
         gz_path.write_bytes(_library_checker_problems_tar_gz)
     if gz_path.exists():
         shutil.unpack_archive(gz_path, config.get_cache_dir())
