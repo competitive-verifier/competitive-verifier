@@ -1,5 +1,4 @@
 import contextlib
-import dataclasses
 import datetime
 import json
 import os
@@ -8,6 +7,7 @@ import random
 import re
 import shutil
 from collections.abc import Callable, Generator
+from dataclasses import dataclass
 
 import pytest
 
@@ -84,7 +84,7 @@ _LIBRARY_CHECKER_TESTS = {
 _TESTDATA_HASHED = _MYAPLUSB_TESTS | _LIBRARY_CHECKER_TESTS
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class HashModeCase:
     """A ``--change-detection hash`` run against the result of an unchanged run.
 
@@ -279,7 +279,7 @@ class TestCommandVerfy:
                 },
             }
 
-    @pytest.mark.usefixtures("mock_verification")
+    @pytest.mark.usefixtures("mock_clone_library_checker", "mock_verification")
     def test_verify(
         self,
         integration_data: IntegrationData,

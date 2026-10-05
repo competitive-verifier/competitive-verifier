@@ -150,11 +150,12 @@ def test_parse_FileResult(
 
 
 test_file_result_need_verification_params: list[
-    tuple[FileResult, datetime, NeedVerification]
+    tuple[FileResult, datetime, str | None, NeedVerification]
 ] = [
     (
         FileResult(verifications=[]),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.NO_RESULT,
     ),
     (
@@ -168,6 +169,7 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.NO,
     ),
     (
@@ -181,6 +183,7 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.NOT_SUCCESS,
     ),
     (
@@ -194,6 +197,7 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.NOT_SUCCESS,
     ),
     (
@@ -207,6 +211,7 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.MODIFIED,
     ),
     (
@@ -230,6 +235,7 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.MODIFIED,
     ),
     (
@@ -253,24 +259,71 @@ test_file_result_need_verification_params: list[
             ]
         ),
         datetime(2016, 12, 24, 19, 0, 0),
+        None,
         NeedVerification.NOT_SUCCESS,
+    ),
+    # testdata_hash
+    (
+        FileResult(
+            testdata_hash="test-hash-1",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
+                )
+            ],
+        ),
+        datetime(2016, 12, 25, 19, 0, 0),
+        "test-hash-1",
+        NeedVerification.NO,
+    ),
+    (
+        FileResult(
+            testdata_hash="test-hash-1",
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
+                )
+            ],
+        ),
+        datetime(2016, 12, 25, 19, 0, 0),
+        "test-hash-2",
+        NeedVerification.TESTDATA_CHANGED,
+    ),
+    (
+        FileResult(
+            verifications=[
+                VerificationResult(
+                    elapsed=1.5,
+                    status=ResultStatus.SUCCESS,
+                    last_execution_time=datetime(2019, 12, 24, 19, 0, 0),
+                )
+            ]
+        ),
+        datetime(2016, 12, 25, 19, 0, 0),
+        "test-hash-1",
+        NeedVerification.NO_TESTDATA_HASH,
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    ("obj", "dt", "expected"),
+    ("obj", "dt", "testdata_hash", "expected"),
     test_file_result_need_verification_params,
 )
 def test_file_result_need_verification_timestamp(
     obj: FileResult,
     dt: datetime,
+    testdata_hash: str | None,
     expected: NeedVerification,
 ):
     assert (
         obj.need_verification(
             base_time=dt,
-            testdata_hash=None,
+            testdata_hash=testdata_hash,
         )
         is expected
     )

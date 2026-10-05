@@ -183,9 +183,16 @@ class FileResult(BaseModel):
         """
         if len(self.verifications) == 0:
             return NeedVerification.NO_RESULT
+
+        if testdata_hash is not None:
+            if self.testdata_hash is None:
+                return NeedVerification.NO_TESTDATA_HASH
+            if self.testdata_hash != testdata_hash:
+                return NeedVerification.TESTDATA_CHANGED
+
         if base_time is not None:
             return self._need_verification_by_time(base_time)
-        return self._need_verification_by_hash(content_hash, testdata_hash)
+        return self._need_verification_by_hash(content_hash)
 
     def _need_verification_by_time(
         self, base_time: datetime.datetime
@@ -196,18 +203,11 @@ class FileResult(BaseModel):
             return NeedVerification.MODIFIED
         return NeedVerification.NO
 
-    def _need_verification_by_hash(
-        self, content_hash: str | None, testdata_hash: str | None
-    ) -> NeedVerification:
+    def _need_verification_by_hash(self, content_hash: str | None) -> NeedVerification:
         if self.content_hash is None:
             return NeedVerification.NO_CONTENT_HASH
         if self.content_hash != content_hash:
             return NeedVerification.CONTENT_CHANGED
-        if testdata_hash is not None:
-            if self.testdata_hash is None:
-                return NeedVerification.NO_TESTDATA_HASH
-            if self.testdata_hash != testdata_hash:
-                return NeedVerification.TESTDATA_CHANGED
         if not self.is_success(allow_skip=False):
             return NeedVerification.NOT_SUCCESS
         return NeedVerification.NO

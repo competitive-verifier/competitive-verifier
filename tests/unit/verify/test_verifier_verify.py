@@ -2,10 +2,10 @@ import datetime
 import logging
 import os
 import pathlib
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockType
 
 from competitive_verifier.log import GitHubMessageParams
 from competitive_verifier.models import (
@@ -27,6 +27,13 @@ from tests import LogComparer
 
 SUCCESS = ResultStatus.SUCCESS
 FAILURE = ResultStatus.FAILURE
+
+
+@pytest.fixture
+def mock_update_cloned_repository(mocker: MockerFixture):
+    mocker.patch(
+        "competitive_verifier.oj.problem.LibraryCheckerProblem.update_cloned_repository"
+    )
 
 
 class NotSkippableConstVerification(ConstVerification):
@@ -675,7 +682,7 @@ def test_verify_timeout(
     download.assert_not_called()
 
 
-@pytest.mark.usefixtures("mock_perf_counter")
+@pytest.mark.usefixtures("mock_perf_counter", "mock_update_cloned_repository")
 def test_verify_download_error(
     mocker: MockerFixture,
     caplog: pytest.LogCaptureFixture,
@@ -730,7 +737,7 @@ def test_verify_download_error(
     ]
 
 
-@pytest.mark.usefixtures("mock_perf_counter")
+@pytest.mark.usefixtures("mock_perf_counter", "mock_update_cloned_repository")
 def test_verify_not_downloaded(
     mocker: MockerFixture,
     caplog: pytest.LogCaptureFixture,
@@ -783,7 +790,7 @@ def test_verify_not_downloaded(
     ]
 
 
-@pytest.mark.usefixtures("mock_perf_counter")
+@pytest.mark.usefixtures("mock_perf_counter", "mock_update_cloned_repository")
 @pytest.mark.parametrize("is_github_actions", [False, True])
 def test_verify_compile_error(
     is_github_actions: bool,
@@ -882,7 +889,7 @@ def test_verify_compile_error(
         )
 
 
-@pytest.mark.usefixtures("mock_perf_counter")
+@pytest.mark.usefixtures("mock_perf_counter", "mock_update_cloned_repository")
 def test_verify_error(
     caplog: pytest.LogCaptureFixture,
     capsys: pytest.CaptureFixture[str],
@@ -1057,21 +1064,14 @@ def test_failure_result():
     }
 
 
-@pytest.mark.usefixtures("mock_perf_counter")
-@pytest.mark.parametrize(
-    ("download", "change_detection", "synced"),
-    [
-        (True, "hash", True),
-        (False, "hash", False),
-        (True, "timestamp", False),
-    ],
-)
-def test_verify_syncs_testdata_before_skip_selection(
-    mocker: MockerFixture,
-    download: bool,
-    change_detection: ChangeDetection,
-    synced: bool,
-):
+class MockSync(NamedTuple):
+    update: MockType
+    run_download: MockType
+    synced_before_hash: list[int]
+
+
+@pytest.fixture
+def mock_sync(mocker: MockerFixture) -> MockSync:
     mocker.patch.object(pathlib.Path, "exists", return_value=True)
     update = mocker.patch.object(LibraryCheckerProblem, "update_cloned_repository")
     run_download = mocker.patch(
@@ -1086,6 +1086,29 @@ def test_verify_syncs_testdata_before_skip_selection(
     mocker.patch.object(
         MockVerifier, "file_testdata_hash", side_effect=file_testdata_hash
     )
+    return MockSync(
+        update=update,
+        run_download=run_download,
+        synced_before_hash=synced_before_hash,
+    )
+
+
+@pytest.mark.usefixtures("mock_perf_counter", "mock_update_cloned_repository")
+@pytest.mark.parametrize(
+    ("download", "change_detection"),
+    [
+        (True, "hash"),
+        (False, "hash"),
+        (True, "timestamp"),
+        (False, "timestamp"),
+    ],
+)
+def test_verify_syncs_testdata_before_skip_selection(
+    mock_sync: MockSync,
+    download: bool,
+    change_detection: ChangeDetection,
+):
+    update = mock_sync.update
 
     verifier = MockVerifier(
         {
@@ -1121,7 +1144,7 @@ def test_verify_syncs_testdata_before_skip_selection(
     result = verifier.verify(download=download)
 
     assert result.files[pathlib.Path("test/foo.py")].verifications[0].status == SUCCESS
-    assert update.call_count == (1 if synced else 0)
-    if synced:
-        assert synced_before_hash == [1]
-    run_download.assert_not_called()
+    assert update.call_count == (1 if download else 0)
+    if download:
+        assert mock_sync.synced_before_hash == [1]
+    mock_sync.run_download.assert_not_called()
